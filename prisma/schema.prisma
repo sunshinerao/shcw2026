@@ -1,0 +1,568 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户角色枚举
+enum UserRole {
+  VISITOR       // 访客（未注册用户）
+  ATTENDEE      // 参会观众
+  ORGANIZATION  // 机构代表
+  SPONSOR       // 赞助商
+  SPEAKER       // 演讲嘉宾
+  MEDIA         // 媒体
+  ADMIN         // 管理员
+  EVENT_MANAGER // 活动管理员
+  STAFF         // 工作人员
+  VERIFIER      // 现场验证人员
+}
+
+// 用户状态枚举
+enum UserStatus {
+  PENDING   // 待审核
+  ACTIVE    // 已激活
+  SUSPENDED // 已禁用
+}
+
+// 报名表状态枚举
+enum RegistrationStatus {
+  REGISTERED   // 已报名
+  CANCELLED    // 已取消
+  ATTENDED     // 已入场
+  WAITLIST     // 候补名单
+}
+
+// 活动维度：层级分类
+enum EventLayer {
+  INSTITUTION    // 制度层
+  ECONOMY        // 经济层
+  ROOT           // 根源层
+  ACCELERATOR    // 加速器
+  COMPREHENSIVE  // 综合
+}
+
+// 活动维度：主办类型
+enum EventHostType {
+  OFFICIAL       // 官方活动
+  CO_HOSTED      // 联合主办活动
+  REGISTERED     // 注册活动
+  SIDE_EVENT     // 边会活动
+  COMMUNITY      // 社区活动
+}
+
+// 联系留言分类
+enum ContactCategory {
+  GENERAL       // 一般咨询
+  ORGANIZATION  // 机构代表
+  PARTNERSHIP   // 合作伙伴申请
+  SPEAKER       // 嘉宾申请
+  MEDIA         // 媒体合作
+  SPONSOR       // 赞助咨询
+  VOLUNTEER     // 志愿者申请
+  OTHER         // 其他
+}
+
+// 联系留言状态
+enum ContactMessageStatus {
+  PENDING    // 待处理
+  REPLIED    // 已回复
+  CLOSED     // 已关闭
+}
+
+// 邀请函申请状态
+enum InvitationStatus {
+  PENDING      // 待处理
+  UPLOADED     // 已上传
+  DOWNLOADED   // 已下载
+  REJECTED     // 已拒绝
+}
+
+// 用户表
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  password      String    // bcrypt加密
+  name          String
+  avatar        String?   // 头像URL
+  phone         String?   // 手机号
+  title         String?   // 职位
+  bio           String?   @db.Text // 个人简介
+  
+  role          UserRole  @default(ATTENDEE)
+  status        UserStatus @default(ACTIVE)
+  
+  // 通行证相关
+  passCode      String    @unique @default(uuid()) // 二维码唯一标识
+  
+  // 气候护照 - 唯一身份证明
+  climatePassportId String? @unique // 格式: SCW2026-XXXXXX
+  
+  // 积分系统
+  points        Int       @default(0)
+  
+  // 邮箱验证
+  emailVerified DateTime?
+  
+  // 关联
+  organization  Organization?
+  registrations Registration[]
+  checkins      CheckIn[]
+  accounts      Account[]
+  sessions      Session[]
+  wishlist      Wishlist[]      // 收藏的活动
+  pointTransactions PointTransaction[] // 积分记录
+  invitationRequests InvitationRequest[] // 邀请函申请
+  contactMessages ContactMessage[]     // 联系留言
+  
+  // 密码重置
+  resetToken    String?   @unique
+  resetTokenExpiry DateTime?
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([email])
+  @@index([passCode])
+  @@index([role])
+  @@map("users")
+}
+
+// 机构表
+model Organization {
+  id          String   @id @default(uuid())
+  name        String
+  logo        String?  // Logo URL
+  website     String?
+  description String?  @db.Text
+  industry    String?  // 行业
+  size        String?  // 规模
+  
+  // 联系信息
+  contactName     String?
+  contactEmail    String?
+  contactPhone    String?
+  
+  // 关联
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("organizations")
+}
+
+// NextAuth 账户表
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+// NextAuth 会话表
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+// NextAuth 验证令牌表
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+// 赛道表
+model Track {
+  id          String   @id @default(uuid())
+  code        String   @unique // 展示编号，如 01 / 13
+  name        String   // 中文名称
+  nameEn      String?  // 英文名称
+  description String   @db.Text
+  descriptionEn String? @db.Text
+  category    String   // institution | economy | foundation | accelerator
+  color       String   // 主题色
+  icon        String   // Lucide图标名称
+  partners    Json?
+  partnersEn  Json?
+  order       Int      @default(0) // 排序
+  
+  // 关联
+  events      Event[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("tracks")
+}
+
+// 活动表
+model Event {
+  id           String   @id @default(uuid())
+  title        String
+  titleEn      String?
+  description  String   @db.Text
+  descriptionEn String? @db.Text
+  shortDesc    String?  // 简短描述
+  shortDescEn  String?
+  
+  // 时间
+  date         DateTime
+  startTime    String
+  endTime      String
+  
+  // 地点
+  venue        String   // 场馆名称
+  venueEn      String?
+  address      String?  // 详细地址
+  city         String?  // 城市归属，例如 Shanghai
+  cityEn       String?
+  
+  // 媒体
+  image        String?  // 封面图片
+  partners     Json?
+  partnersEn   Json?
+  
+  // 类型
+  type         String   // forum | workshop | ceremony | conference | networking
+  
+  // 分类维度
+  eventLayer   EventLayer?    // 所属层级
+  hostType     EventHostType? // 主办类型
+  
+  // 关联
+  trackId      String?
+  track        Track?   @relation(fields: [trackId], references: [id])
+  
+  registrations Registration[]
+  agendaItems   AgendaItem[]
+  checkins      CheckIn[]
+  wishlist      Wishlist[]
+  pointTransactions PointTransaction[]
+  invitationRequests InvitationRequest[]
+  
+  // 限制
+  maxAttendees  Int?     // 人数限制
+  
+  // 状态
+  isPublished   Boolean  @default(false)
+  isFeatured    Boolean  @default(false)
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([date])
+  @@index([trackId])
+  @@map("events")
+}
+
+// 报名表
+model Registration {
+  id          String             @id @default(uuid())
+  userId      String
+  eventId     String
+  status      RegistrationStatus @default(REGISTERED)
+  
+  // 报名信息
+  notes       String?            // 备注
+  dietaryReq  String?            // 饮食要求
+  
+  // 验码记录
+  checkedInAt DateTime?          // 验码时间
+  checkedInBy String?            // 验码人员ID
+  checkInMethod String?          // 验码方式: QR_CODE | MANUAL
+  
+  // 获得的积分
+  pointsEarned Int               @default(0)
+  
+  // 关联
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event       Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+  @@index([checkedInBy])
+  @@map("registrations")
+}
+
+// 收藏表 - 用户收藏的活动
+model Wishlist {
+  id          String   @id @default(uuid())
+  userId      String
+  eventId     String
+  
+  // 关联
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  
+  createdAt   DateTime @default(now())
+  
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+  @@map("wishlists")
+}
+
+// 积分交易记录
+model PointTransaction {
+  id          String   @id @default(uuid())
+  userId      String
+  
+  // 积分变化
+  points      Int      // 正数为获得，负数为消耗
+  
+  // 交易类型
+  type        String   // EVENT_ATTENDANCE | EVENT_REGISTRATION | MANUAL_ADD | MANUAL_DEDUCT | BONUS
+  
+  // 关联信息
+  eventId     String?  // 关联的活动ID（如果有）
+  registrationId String? // 关联的报名ID（如果有）
+  description String   // 描述
+  
+  // 操作人
+  createdBy   String?  // 管理员ID（如果是人工操作）
+  
+  // 关联
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event       Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("point_transactions")
+}
+
+// 议程项表
+model AgendaItem {
+  id          String   @id @default(uuid())
+  eventId     String
+  
+  // 时间
+  startTime   String
+  endTime     String
+  
+  // 内容
+  title       String
+  description String?  @db.Text
+  type        String   // keynote | panel | workshop | break | networking
+  
+  // 地点
+  venue       String?
+  
+  // 关联
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  speakers    Speaker[]
+  
+  order       Int      @default(0) // 排序
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([eventId])
+  @@map("agenda_items")
+}
+
+// 嘉宾表
+model Speaker {
+  id              String   @id @default(uuid())
+  name            String
+  nameEn          String?
+  avatar          String?
+  title           String   // 职位
+  titleEn         String?
+  organization    String   // 机构
+  organizationEn  String?
+  organizationLogo String?
+  bio             String?  @db.Text
+  bioEn           String?  @db.Text
+  email           String?
+  linkedin        String?
+  twitter         String?
+  website         String?
+  
+  // 是否为Keynote
+  isKeynote       Boolean  @default(false)
+  
+  // 关联
+  agendaItems     AgendaItem[]
+  
+  order           Int      @default(0)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("speakers")
+}
+
+// 入场记录表
+model CheckIn {
+  id          String   @id @default(uuid())
+  userId      String
+  eventId     String?
+  
+  // 扫码信息
+  scannedBy   String   // 工作人员ID
+  scannedAt   DateTime @default(now())
+  method      String   // QR_CODE | MANUAL
+  
+  // 关联
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event       Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  
+  createdAt   DateTime @default(now())
+  
+  @@index([userId])
+  @@index([eventId])
+  @@index([scannedBy])
+  @@map("checkins")
+}
+
+// 赞助商表
+model Sponsor {
+  id          String   @id @default(uuid())
+  name        String
+  nameEn      String?
+  logo        String
+  website     String?
+  description String?  @db.Text
+  descriptionEn String? @db.Text
+  
+  // 赞助级别
+  tier        String   // platinum | gold | silver | bronze | partner
+  
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("sponsors")
+}
+
+// 新闻表
+model News {
+  id          String   @id @default(uuid())
+  title       String
+  slug        String   @unique
+  excerpt     String?  // 摘要
+  content     String   @db.Text
+  coverImage  String?
+  
+  // 状态
+  isPublished Boolean  @default(false)
+  publishedAt DateTime?
+  
+  // 元数据
+  views       Int      @default(0)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([publishedAt])
+  @@map("news")
+}
+
+// 邀请函申请表
+model InvitationRequest {
+  id              String           @id @default(uuid())
+  userId          String
+  
+  // 受邀嘉宾信息
+  guestName       String           // 嘉宾姓名
+  guestTitle      String?          // 嘉宾职位
+  guestOrg        String?          // 嘉宾机构
+  guestEmail      String?          // 嘉宾邮箱
+  language        String           @default("zh") // 邀请函语言: zh | en
+  
+  // 关联活动（可选，指定具体活动的邀请函）
+  eventId         String?
+  
+  // 参会说明
+  purpose         String?          @db.Text // 参会目的或说明
+  notes           String?          @db.Text // 备注
+  
+  // 状态与文件
+  status          InvitationStatus @default(PENDING)
+  letterFileUrl   String?          // 管理员上传的邀请函文件URL
+  rejectReason    String?          // 拒绝原因
+  
+  // 关联
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event           Event?           @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([eventId])
+  @@map("invitation_requests")
+}
+
+// 联系留言表
+model ContactMessage {
+  id          String               @id @default(uuid())
+  
+  // 发送者信息
+  name        String
+  email       String
+  phone       String?
+  organization String?             // 机构名称
+  userId      String?              // 关联已注册用户
+  user        User?                @relation(fields: [userId], references: [id])
+  
+  // 内容
+  category    ContactCategory      @default(GENERAL)
+  subject     String
+  message     String               @db.Text
+  metadata    Json?                // 存储合作级别、媒体类型等附加信息
+  
+  // 处理状态
+  status      ContactMessageStatus @default(PENDING)
+  adminReply  String?              @db.Text // 管理员回复内容
+  adminNotes  String?              @db.Text // 管理员内部备注
+  repliedAt   DateTime?
+  repliedBy   String?              // 回复人ID
+  
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  
+  @@index([category])
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("contact_messages")
+}

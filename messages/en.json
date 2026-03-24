@@ -1,0 +1,1866 @@
+{
+  "errorPage": {
+    "title": "Something went wrong",
+    "description": "An error occurred while loading the page. Please try again.",
+    "retry": "Retry",
+    "home": "Back to Home"
+  },
+  "notFoundPage": {
+    "title": "Page not found",
+    "description": "The page you're looking for doesn't exist or has been moved.",
+    "home": "Back to Home",
+    "events": "Browse Events"
+  },
+  "metadata": {
+    "title": "Shanghai Climate Week 2026 - Eastern Momentum",
+    "description": "Shaping the Next Decade of Climate Action (2026-2035)"
+  },
+  "nav": {
+    "home": "Home",
+    "events": "Events",
+    "speakers": "Speakers",
+    "news": "News",
+    "partners": "Partners",
+    "about": "About",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "admin": "Admin"
+  },
+    "dashboardLayout": {
+      "nav": {
+        "home": "Back to Home",
+        "overview": "Overview",
+        "schedule": "My schedule",
+        "pass": "Event pass",
+        "climatePassport": "Climate Passport",
+        "invitations": "Invitation Requests",
+        "messages": "My Messages",
+        "profile": "Profile",
+        "notifications": "Notifications"
+      },
+      "fallbackUser": "User",
+      "roles": {
+        "VISITOR": "Visitor",
+        "ATTENDEE": "Attendee",
+         "ORGANIZATION": "Organization",
+        "SPEAKER": "Speaker",
+        "MEDIA": "Media",
+        "SPONSOR": "Partner",
+        "ADMIN": "Administrator",
+        "STAFF": "Staff",
+        "EVENT_MANAGER": "Event Manager",
+        "VERIFIER": "Verifier"
+      },
+      "logout": "Log out"
+    },
+    "dashboardPassPage": {
+      "title": "Event pass",
+      "subtitle": "Present this QR code for event entry.",
+      "selectEvent": "Select event",
+      "brand": "Shanghai Climate Week 2026",
+      "passport": {
+        "label": "Climate Passport",
+        "points": "Current points"
+      },
+      "passportQr": {
+        "title": "Climate Passport QR code",
+        "badge": "Site-wide",
+        "description": "Use this QR code for identity verification on site. It remains valid for 5 minutes."
+      },
+      "passTypes": {
+        "vip": "VIP Pass",
+        "standard": "Standard Pass"
+      },
+      "showQr": "Show this QR code at the venue entrance.",
+      "share": {
+        "title": "Shanghai Climate Week 2026 Event Pass",
+        "text": "I registered for {eventTitle}."
+      },
+      "fields": {
+        "date": "Date",
+        "time": "Time",
+        "venue": "Venue",
+        "ticket": "Ticket",
+        "pointsEarned": "Points"
+      },
+      "badges": {
+        "checkedIn": "Checked in",
+        "upcoming": "Not active yet",
+        "active": "Ready for entry",
+        "expired": "Expired"
+      },
+      "status": {
+        "title": "Pass active",
+        "description": "Please arrive on time for the event.",
+        "checkedInTitle": "Entry confirmed",
+        "checkedInDescription": "You have checked in successfully. Enjoy the event.",
+        "upcomingTitle": "Entry not open yet",
+        "upcomingDescription": "Your QR code will be issued automatically 90 minutes before the event starts.",
+        "expiredTitle": "Pass expired",
+        "expiredDescription": "This event has ended, so the event pass is no longer valid."
+      },
+      "actions": {
+        "download": "Download pass",
+        "share": "Share"
+      },
+      "empty": {
+        "title": "No event passes yet",
+        "description": "You have not registered for any events yet.",
+        "action": "Browse events"
+      },
+      "messages": {
+        "loadError": "Failed to load passes.",
+        "passportQrError": "Failed to load passport QR code.",
+        "qrRefreshed": "QR code refreshed.",
+        "passDownloaded": "Pass download is ready.",
+        "shareUnavailable": "Sharing is not available on this device.",
+        "qrRefreshWindow": "The event-entry QR code refreshes automatically every 60 seconds while active.",
+        "inactiveQr": "The QR code is only issued during the event entry window and becomes invalid after check-in or after the event ends.",
+        "antiShare": "One registration supports one entry only. On-site staff can cross-check your name, role, and photo when scanning."
+      },
+      "instructions": {
+        "title": "Instructions",
+        "items": [
+          {"title": "Prepare ahead", "description": "Arrive around 15 minutes before the session starts."},
+          {"title": "Show your QR code", "description": "Present the QR code at the check-in desk."},
+          {"title": "Collect materials", "description": "Pick up your event materials after check-in."}
+        ]
+      }
+    },
+    "dashboardSchedulePage": {
+      "title": "My schedule",
+      "subtitle": "Manage your registered and saved events.",
+      "registered": "Registered ({count})",
+      "wishlist": "Saved ({count})",
+      "emptyRegistered": "You have not registered for any events yet.",
+      "emptyWishlist": "No saved events yet.",
+      "browseEvents": "Browse events",
+      "viewPass": "View pass",
+      "registerNow": "Register now",
+      "badges": {
+        "checkedIn": "Checked in",
+        "pointsEarned": "+{points} points"
+      },
+      "messages": {
+        "loadError": "Failed to load schedule.",
+        "removeSuccess": "Removed from saved events.",
+        "actionError": "Action failed."
+      }
+    },
+    "dashboardNotificationsPage": {
+      "title": "Notification settings",
+      "subtitle": "Choose which notifications you want to receive.",
+      "success": {
+        "title": "Saved",
+        "description": "Your notification preferences have been updated."
+      },
+      "tip": {
+        "title": "Tip",
+        "description": "Use the switches below to control the notifications you receive. Keeping important alerts enabled is recommended."
+      },
+      "save": "Save settings",
+      "saving": "Saving...",
+      "groups": {
+        "email": {
+          "title": "Email notifications",
+          "description": "Receive event-related updates by email.",
+          "options": {
+            "eventReminder": {"label": "Event reminders", "description": "Sent 24 hours before an event starts."},
+            "registrationConfirm": {"label": "Registration confirmations", "description": "Sent after a successful registration."},
+            "eventChange": {"label": "Event changes", "description": "Sent when time or venue details change."},
+            "newsletter": {"label": "Newsletter", "description": "Regular updates from Shanghai Climate Week."},
+            "marketing": {"label": "Marketing emails", "description": "Promotions or partner campaign information."}
+          }
+        },
+        "inApp": {
+          "title": "In-app messages",
+          "description": "Receive notifications inside the website.",
+          "options": {
+            "systemAnnouncement": {"label": "System announcements", "description": "Important platform updates and notices."},
+            "eventUpdate": {"label": "Event updates", "description": "Latest updates for events you follow."},
+            "securityAlert": {"label": "Security alerts", "description": "Login and password-change reminders."}
+          }
+        },
+        "sms": {
+          "title": "SMS notifications",
+          "description": "Receive urgent reminders by text message.",
+          "options": {
+            "urgentEventChange": {"label": "Urgent event changes", "description": "Sent for cancellations or major changes."},
+            "entryReminder": {"label": "Entry reminders", "description": "Sent 1 hour before an event begins."}
+          }
+        }
+      }
+    },
+    "adminLayout": {
+      "logoAlt": "Shanghai Climate Week",
+      "title": "Admin Console",
+      "backToSite": "Back to site",
+      "nav": {
+        "dashboard": "Dashboard",
+        "events": "Events",
+        "tracks": "Tracks",
+        "speakers": "Speakers",
+        "invitations": "Invitations",
+        "users": "Users",
+        "partners": "Partners",
+        "messages": "Messages",
+        "settings": "Settings"
+      }
+    },
+    "adminMessagesPage": {
+      "title": "Contact Messages",
+      "subtitle": "Manage inquiries and reply to messages from visitors.",
+      "filters": {
+        "all": "All",
+        "pending": "Pending",
+        "replied": "Replied",
+        "closed": "Closed"
+      },
+      "table": {
+        "name": "Name",
+        "email": "Email",
+        "category": "Type",
+        "subject": "Subject",
+        "status": "Status",
+        "date": "Date",
+        "actions": "Actions"
+      },
+      "detail": {
+        "title": "Message Detail",
+        "from": "From",
+        "category": "Category",
+        "organization": "Organization",
+        "metadata": "Additional Information",
+        "message": "Message",
+        "reply": "Admin Reply",
+        "replyPlaceholder": "Type your reply...",
+        "notes": "Internal Notes",
+        "notesPlaceholder": "Internal notes (not visible to user)...",
+        "sendReply": "Send Reply",
+        "close": "Close Message",
+        "reopen": "Reopen",
+        "repliedBy": "Replied by",
+        "repliedAt": "Replied at"
+      },
+      "empty": "No messages found.",
+      "statusLabels": {
+        "PENDING": "Pending",
+        "REPLIED": "Replied",
+        "CLOSED": "Closed"
+      },
+      "categoryLabels": {
+        "GENERAL": "General",
+        "ORGANIZATION": "Organization",
+        "PARTNERSHIP": "Partnership",
+        "SPEAKER": "Speaker",
+        "MEDIA": "Media",
+        "SPONSOR": "Sponsor",
+        "VOLUNTEER": "Volunteer",
+        "OTHER": "Other"
+      }
+    },
+    "adminDashboardPage": {
+      "title": "Dashboard",
+      "subtitle": "Welcome back, administrator.",
+      "stats": {
+        "users": "Total users",
+        "events": "Events",
+        "registrations": "Registrations",
+        "visits": "Visits today"
+      },
+      "trendTitle": "Registration trend",
+      "months": {
+        "jan": "Jan",
+        "mar": "Mar",
+        "jun": "Jun",
+        "sep": "Sep",
+        "dec": "Dec"
+      },
+      "recentTitle": "Recent registrations",
+      "viewAll": "View all",
+      "statuses": {
+        "success": "Success",
+        "pending": "Pending"
+      },
+      "upcomingTitle": "Upcoming events",
+      "manageEvents": "Manage events",
+      "registeredCapacity": "Registered / capacity",
+      "manage": "Manage"
+    },
+    "adminEventsPage": {
+      "title": "Event management",
+      "subtitle": "Manage all events on the platform.",
+      "loading": "Loading events...",
+      "loadError": "Failed to load events.",
+      "create": "Create event",
+      "searchPlaceholder": "Search by event title or venue...",
+      "listTitle": "Event list ({count})",
+      "featured": "Featured",
+      "published": "Published",
+      "draft": "Draft",
+      "capacity": "{count} / {max}",
+      "empty": "No events match the current search.",
+      "actions": {
+        "publish": "Publish",
+        "unpublish": "Unpublish",
+        "feature": "Mark as featured",
+        "unfeature": "Remove featured"
+      },
+      "form": {
+        "createTitle": "Create event",
+        "editTitle": "Edit event",
+        "createDescription": "Create a new event for the agenda.",
+        "editDescription": "Update the selected event.",
+        "title": "Title",
+        "titleEn": "English title",
+        "description": "Description",
+        "shortDesc": "Short description",
+        "date": "Date",
+        "startTime": "Start time",
+        "endTime": "End time",
+        "venue": "Venue",
+        "city": "City",
+        "track": "Track",
+        "trackPlaceholder": "Unassigned track",
+        "address": "Address",
+        "image": "Image URL",
+        "type": "Type",
+        "maxAttendees": "Capacity",
+        "isPublished": "Published",
+        "isFeatured": "Featured",
+        "eventLayer": "Event layer",
+        "eventLayerPlaceholder": "Unassigned layer",
+        "layers": {
+          "institution": "Institutional",
+          "economy": "Economic",
+          "root": "Foundational",
+          "accelerator": "Accelerator",
+          "comprehensive": "Comprehensive"
+        },
+        "hostType": "Host type",
+        "hostTypePlaceholder": "Unassigned type",
+        "hostTypes": {
+          "official": "Official",
+          "coHosted": "Co-hosted",
+          "registered": "Registered",
+          "sideEvent": "Side Event",
+          "community": "Community"
+        },
+        "create": "Create event",
+        "save": "Save changes"
+      },
+      "delete": {
+        "title": "Delete event",
+        "description": "Delete {name}? This action cannot be undone.",
+        "confirm": "Delete event"
+      },
+      "common": {
+        "cancel": "Cancel"
+      },
+      "messages": {
+        "requiredFields": "Please complete the required event fields.",
+        "createSuccess": "Event created successfully.",
+        "createFailed": "Failed to create the event.",
+        "updateSuccess": "Event updated successfully.",
+        "updateFailed": "Failed to update the event.",
+        "deleteSuccess": "Event deleted successfully.",
+        "deleteFailed": "Failed to delete the event.",
+        "statusUpdateSuccess": "Event status updated successfully.",
+        "statusUpdateFailed": "Failed to update the event status."
+      }
+    },
+    "adminInvitationsPage": {
+      "title": "Invitation Management",
+      "subtitle": "Review and process invitation letter requests.",
+      "loading": "Loading...",
+      "loadError": "Failed to load invitations.",
+      "searchPlaceholder": "Search by guest name or email...",
+      "listTitle": "Invitations ({count})",
+      "empty": "No invitation requests match the current filters.",
+      "filters": {
+        "all": "All statuses"
+      },
+      "applicant": "Applicant",
+      "applicantOrg": "Applicant org",
+      "org": "Organization",
+      "email": "Email",
+      "event": "Event",
+      "purpose": "Purpose",
+      "lang": "Language",
+      "status": {
+        "pending": "Pending",
+        "uploaded": "Uploaded",
+        "downloaded": "Downloaded",
+        "rejected": "Rejected"
+      },
+      "actions": {
+        "process": "Process",
+        "edit": "Edit"
+      },
+      "editDialog": {
+        "title": "Process Invitation",
+        "description": "Process the invitation request for {name}.",
+        "status": "Status",
+        "uploadFile": "Upload invitation file",
+        "selectFile": "Click to select file (PDF/image)",
+        "uploading": "Uploading...",
+        "fileUploaded": "File uploaded",
+        "preview": "Preview",
+        "letterFileUrl": "Letter file URL",
+        "letterFileUrlPlaceholder": "Enter the file download link",
+        "rejectReason": "Rejection reason",
+        "cancel": "Cancel",
+        "save": "Save"
+      },
+      "messages": {
+        "updateSuccess": "Invitation updated successfully.",
+        "updateFailed": "Failed to update the invitation.",
+        "uploadSuccess": "File uploaded successfully.",
+        "uploadFailed": "Failed to upload the file."
+      }
+    },
+    "adminUsersPage": {
+      "title": "User management",
+      "subtitle": "Manage all user accounts on the platform.",
+      "addUser": "Add user",
+      "stats": {
+        "total": "Total users",
+        "active": "Active",
+        "pending": "Pending review",
+        "speakers": "Speakers",
+        "verifiers": "Verifiers"
+      },
+      "searchPlaceholder": "Search by name or email...",
+      "filters": {
+        "allRoles": "All roles",
+        "allStatuses": "All statuses"
+      },
+        "empty": "No users match the current filters.",
+      "roles": {
+        "VISITOR": "Visitor",
+        "ATTENDEE": "Attendee",
+         "ORGANIZATION": "Organization",
+        "SPEAKER": "Speaker",
+        "MEDIA": "Media",
+        "SPONSOR": "Sponsor",
+        "ADMIN": "Administrator",
+        "EVENT_MANAGER": "Event manager",
+        "STAFF": "Staff"
+      },
+      "statuses": {
+        "ACTIVE": "Active",
+        "PENDING": "Pending",
+        "SUSPENDED": "Suspended"
+      },
+      "selected": "Selected {count} users",
+      "batch": {
+        "activate": "Activate selected",
+        "suspend": "Suspend selected",
+        "delete": "Delete selected"
+      },
+      "listTitle": "User list ({count})",
+      "table": {
+        "userInfo": "User info",
+        "role": "Role",
+        "status": "Status",
+        "registeredAt": "Registered",
+        "actions": "Actions"
+      },
+      "actions": {
+        "activate": "Activate account",
+        "suspend": "Suspend account",
+        "delete": "Delete user",
+        "viewPoints": "View points",
+        "setVerifier": "Set as verifier"
+      },
+      "pagination": "Page {current} of {total}",
+      "detail": {
+        "title": "User details",
+        "description": "Review the user's profile and registration history.",
+        "email": "Email",
+        "phone": "Phone",
+        "registeredAt": "Registered",
+        "organization": "Organization",
+        "currentPoints": "Current points",
+        "registrationCount": "Registered events",
+        "pointsValue": "{count} points",
+        "eventCount": "{count} events",
+        "organizationInfo": "Organization details",
+        "organizationName": "Organization name",
+        "titleLabel": "Title",
+        "industry": "Industry",
+        "bio": "Biography",
+        "events": "Registered events",
+        "noEvents": "No registered events yet.",
+        "notProvided": "Not provided",
+        "close": "Close",
+        "edit": "Edit user"
+      },
+      "delete": {
+        "title": "Confirm deletion",
+        "description": "Are you sure you want to delete {name}? This action cannot be undone.",
+        "confirm": "Delete user"
+      },
+      "common": {
+        "cancel": "Cancel"
+      },
+        "form": {
+          "createTitle": "Create user",
+          "createDescription": "Create a new user account and optional organization profile.",
+          "editTitle": "Edit user",
+          "editDescription": "Update the selected user account and organization profile.",
+          "name": "Name",
+          "email": "Email",
+          "password": "Password",
+          "passwordOptional": "Password (leave blank to keep current password)",
+          "phone": "Phone",
+          "title": "Title",
+          "role": "Role",
+          "status": "Status",
+          "avatar": "Avatar URL",
+          "bio": "Biography",
+          "organizationName": "Organization name",
+          "organizationIndustry": "Organization industry",
+          "organizationWebsite": "Organization website",
+          "organizationDescription": "Organization description",
+          "create": "Create user",
+          "save": "Save changes"
+        },
+        "messages": {
+          "requiredFields": "Please provide name, email, and password for a new user.",
+          "createSuccess": "User created successfully.",
+          "createFailed": "Failed to create the user.",
+          "updateSuccess": "User updated successfully.",
+          "updateFailed": "Failed to update the user.",
+          "deleteSuccess": "User deleted successfully.",
+          "deleteFailed": "Failed to delete the user.",
+          "statusUpdateSuccess": "User status updated successfully.",
+          "statusUpdateFailed": "Failed to update the user status.",
+          "verifierAssigned": "{name} is now a verifier.",
+          "verifierAssignFailed": "Failed to update the verifier role.",
+          "batchSuccess": "Batch operation completed successfully.",
+          "batchFailed": "Batch operation failed."
+        },
+        "pointsDialog": {
+          "title": "Points management",
+          "description": "View point details.",
+          "descriptionWithName": "Manage points for {name}.",
+          "loading": "Loading...",
+          "currentPoints": "Current points",
+          "attendedEvents": "Attended events",
+          "eventCount": "{count} events",
+          "recordsTitle": "Point records",
+          "noRecords": "No point records yet.",
+          "adjust": {
+            "title": "Adjust points",
+            "pointsLabel": "Point change",
+            "pointsPlaceholder": "Use a positive number to add or a negative number to deduct",
+            "reasonLabel": "Reason",
+            "reasonPlaceholder": "Enter a reason",
+            "confirm": "Confirm adjustment",
+            "submitting": "Processing...",
+            "added": "Added {points} points successfully.",
+            "deducted": "Deducted {points} points successfully.",
+            "failed": "Failed to adjust points."
+          }
+        },
+      "batchDialog": {
+        "activateTitle": "Activate users",
+        "suspendTitle": "Suspend users",
+        "deleteTitle": "Delete users",
+        "description": "Apply {action} to {count} selected users?",
+        "irreversible": "This action cannot be undone.",
+        "confirm": "Confirm",
+        "actions": {
+          "activate": "activation",
+          "suspend": "suspension",
+          "delete": "deletion"
+        }
+        },
+        "roles": {
+          "VISITOR": "Visitor",
+          "ATTENDEE": "Attendee",
+           "ORGANIZATION": "Organization",
+          "SPEAKER": "Speaker",
+          "MEDIA": "Media",
+          "SPONSOR": "Sponsor",
+          "ADMIN": "Administrator",
+          "EVENT_MANAGER": "Event manager",
+          "STAFF": "Staff",
+          "VERIFIER": "Verifier"
+        }
+    },
+    "adminTracksPage": {
+      "title": "Track management",
+      "subtitle": "Maintain track numbering, categories, content, and partner metadata.",
+      "loading": "Loading tracks...",
+      "loadError": "Failed to load tracks.",
+      "create": "Create track",
+      "searchPlaceholder": "Search by track code, name, or description...",
+      "listTitle": "Track list ({count})",
+      "empty": "No tracks match the current search.",
+      "eventCount": "{count} linked events",
+      "order": "Order {value}",
+      "categories": {
+        "institution": "Institution",
+        "economy": "Economy",
+        "foundation": "Foundation",
+        "accelerator": "Accelerator"
+      },
+      "actions": {
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "form": {
+        "createTitle": "Create track",
+        "editTitle": "Edit track",
+        "createDescription": "Add a new track and maintain both Chinese and English content.",
+        "editDescription": "Update the selected track's metadata, category, and partner content.",
+        "code": "Track code",
+        "name": "Chinese name",
+        "nameEn": "English name",
+        "description": "Chinese description",
+        "descriptionEn": "English description",
+        "category": "Category",
+        "color": "Theme color",
+        "icon": "Icon name",
+        "order": "Sort order",
+        "partners": "Partners (Chinese)",
+        "partnersEn": "Partners (English)",
+        "partnersPlaceholder": "One partner per line, or separate them with commas",
+        "create": "Create track",
+        "save": "Save changes"
+      },
+      "delete": {
+        "title": "Delete track",
+        "description": "Delete {name}? The system will block deletion while events are still linked to this track.",
+        "confirm": "Delete track"
+      },
+      "common": {
+        "cancel": "Cancel"
+      },
+      "messages": {
+        "requiredFields": "Please provide the track code, name, description, category, color, and icon.",
+        "createSuccess": "Track created successfully.",
+        "createFailed": "Failed to create the track.",
+        "updateSuccess": "Track updated successfully.",
+        "updateFailed": "Failed to update the track.",
+        "deleteSuccess": "Track deleted successfully.",
+        "deleteFailed": "Failed to delete the track."
+      }
+    },
+    "dashboardProfilePage": {
+      "title": "Profile",
+      "subtitle": "Manage your personal information and account settings.",
+      "alerts": {
+        "success": "Success",
+        "error": "Error"
+      },
+      "messages": {
+        "avatarUpdated": "Your avatar has been updated.",
+        "profileUpdated": "Your profile has been updated successfully.",
+        "profileFailed": "Update failed. Please try again later.",
+        "passwordUpdated": "Your password has been changed successfully.",
+        "passwordFailed": "Password update failed. Please check your current password."
+      },
+      "tabs": {
+        "profile": "Basic info",
+        "security": "Security",
+        "organization": "Organization"
+      },
+      "fields": {
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone",
+        "title": "Title",
+        "bio": "Bio"
+      },
+      "placeholders": {
+        "name": "Enter your name",
+        "email": "Enter your email",
+        "phone": "Enter your phone number",
+        "title": "Enter your title",
+        "bio": "Tell us a bit about yourself..."
+      },
+      "actions": {
+        "save": "Save changes",
+        "saving": "Saving..."
+      },
+      "profileSection": {
+        "title": "Profile details",
+        "description": "Update the information shown on your public profile.",
+        "avatarTitle": "Avatar",
+        "avatarHelp": "Supports JPG and PNG files up to 2MB.",
+        "currentRole": "Current role:"
+      },
+      "password": {
+        "title": "Change password",
+        "description": "Changing your password regularly helps keep your account secure.",
+        "fields": {
+          "current": "Current password",
+          "new": "New password",
+          "confirm": "Confirm new password"
+        },
+        "placeholders": {
+          "current": "Enter your current password",
+          "new": "Enter your new password",
+          "confirm": "Enter your new password again"
+        },
+        "hint": "Use at least 8 characters, including letters and numbers.",
+        "submit": "Update password",
+        "submitting": "Updating...",
+        "errors": {
+          "currentRequired": "Please enter your current password.",
+          "newRequired": "Please enter a new password.",
+          "minLength": "Password must be at least 8 characters.",
+          "confirmRequired": "Please confirm your new password.",
+          "mismatch": "The passwords do not match."
+        }
+      },
+      "organization": {
+        "title": "Organization",
+        "description": "View the organization associated with your account.",
+        "industry": "Industry",
+        "website": "Website",
+        "about": "About the organization",
+        "noDescription": "No description available.",
+        "noticeTitle": "Note",
+        "notice": "If you need to update organization information, please contact an administrator or email admin@shcw2026.org.",
+        "emptyTitle": "No organization linked",
+        "emptyDescription": "Your account is not currently linked to an organization. Contact an administrator if you need to add one.",
+        "contactAdmin": "Contact administrator"
+      }
+    },
+    "adminPartnersPage": {
+      "title": "Partners",
+      "subtitle": "Manage sponsors and partner information.",
+      "add": "Add partner",
+      "searchPlaceholder": "Search by company name...",
+      "filters": {
+        "tierPlaceholder": "Sponsor tier",
+        "allTiers": "All tiers",
+        "statusPlaceholder": "Status",
+        "allStatuses": "All statuses"
+      },
+      "tiers": {
+        "platinum": "Platinum",
+        "gold": "Gold",
+        "silver": "Silver",
+        "bronze": "Bronze",
+        "partner": "Partner"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "listTitle": "Partner list ({count})",
+      "table": {
+        "logo": "Logo",
+        "company": "Company",
+        "tier": "Tier",
+        "order": "Order",
+        "website": "Website",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "visit": "Visit",
+      "emptyTitle": "No partners yet",
+      "emptyDescription": "Use the button above to add a new partner.",
+      "dialog": {
+        "editTitle": "Edit partner",
+        "createTitle": "Add partner",
+        "editDescription": "Update the selected partner details.",
+        "createDescription": "Fill in the details below to create a new partner."
+      },
+      "form": {
+        "logo": "Company logo",
+        "uploadLogo": "Upload logo",
+        "logoHelp": "Recommended size: 400x400px. Supports PNG, JPG, and SVG.",
+        "companyName": "Company name",
+        "companyNamePlaceholder": "Enter the company name",
+        "companyNameEn": "English company name",
+        "companyNameEnPlaceholder": "Enter the English company name",
+        "website": "Website",
+        "websitePlaceholder": "https://example.com",
+        "description": "Company description",
+        "descriptionPlaceholder": "Enter a short company description...",
+        "descriptionEn": "English company description",
+        "descriptionEnPlaceholder": "Enter the English company description...",
+        "tier": "Sponsor tier",
+        "order": "Display order",
+        "orderPlaceholder": "Lower numbers appear first",
+        "status": "Active status",
+        "statusHelp": "Active partners are visible on the public site."
+      },
+      "delete": {
+        "title": "Confirm deletion",
+        "description": "Are you sure you want to delete partner \"{name}\"? This action cannot be undone.",
+        "confirm": "Delete partner"
+      },
+      "common": {
+        "cancel": "Cancel",
+        "save": "Save changes",
+        "create": "Create partner"
+      }
+    },
+    "adminSpeakersPage": {
+      "title": "Speakers",
+      "subtitle": "Manage all speaker records on the platform.",
+      "loading": "Loading speakers...",
+      "loadError": "Failed to load speakers.",
+      "add": "Add speaker",
+      "searchPlaceholder": "Search by speaker name, English name, or organization...",
+      "filters": {
+        "organizationPlaceholder": "Filter by organization",
+        "allOrganizations": "All organizations",
+        "typePlaceholder": "Filter by type",
+        "allTypes": "All types",
+        "keynote": "Keynote speakers",
+        "regular": "Regular speakers"
+      },
+      "listTitle": "Speaker list ({count})",
+      "summary": "Keynote: {keynote} / Total: {total}",
+      "badges": {
+        "keynote": "Keynote"
+      },
+      "links": {
+        "linkedin": "LinkedIn",
+        "twitter": "Twitter"
+      },
+      "eventCount": "events",
+      "order": "Order: {count}",
+      "emptyTitle": "No speakers found",
+      "emptyDescription": "Add a speaker above or adjust your filters.",
+      "dialog": {
+        "editTitle": "Edit speaker",
+        "createTitle": "Add speaker",
+        "editDescription": "Update the selected speaker details.",
+        "createDescription": "Fill in the information below to create a new speaker."
+      },
+      "form": {
+        "uploadAvatar": "Upload avatar",
+        "avatarHelp": "Supports JPG and PNG. Recommended size: 400x400.",
+        "name": "Name",
+        "namePlaceholder": "Enter the speaker's Chinese name",
+        "nameEn": "English name",
+        "nameEnPlaceholder": "Enter the speaker's English name",
+        "title": "Title",
+        "titlePlaceholder": "For example: Dean, CEO, Professor",
+        "titleEn": "English title",
+        "titleEnPlaceholder": "Enter the speaker's English title",
+        "organization": "Organization",
+        "organizationPlaceholder": "Enter the organization name",
+        "organizationEn": "English organization",
+        "organizationEnPlaceholder": "Enter the organization's English name",
+        "bio": "Biography",
+        "bioPlaceholder": "Enter the speaker biography...",
+        "bioEn": "English biography",
+        "bioEnPlaceholder": "Enter the speaker biography in English...",
+        "contact": "Contact information",
+        "emailPlaceholder": "Email address",
+        "linkedinPlaceholder": "LinkedIn URL",
+        "twitterPlaceholder": "Twitter handle",
+        "websitePlaceholder": "Personal website",
+        "order": "Display order",
+        "orderPlaceholder": "Lower numbers appear first",
+        "keynote": "Mark as keynote speaker"
+      },
+      "delete": {
+        "title": "Confirm deletion",
+        "description": "Are you sure you want to delete speaker {name}? This action cannot be undone.",
+        "confirm": "Delete speaker"
+      },
+      "common": {
+        "cancel": "Cancel",
+        "save": "Save changes",
+        "create": "Create speaker"
+      }
+    },
+  "language": {
+    "zh": "Chinese",
+    "en": "English",
+    "switch": "Switch Language"
+  },
+  "hero": {
+    "badge": "April 20-28, 2026 · Shanghai, China",
+    "title": "Eastern Momentum New Voyage",
+    "subtitle": "Shaping the Next Decade of Climate Action (2026-2035)",
+    "description": "The Eastern Momentum for the Decisive Decade",
+    "location": "Shanghai · Eastern Momentum Point",
+    "cta": {
+      "explore": "Explore Agenda",
+      "video": "Watch Video"
+    }
+  },
+  "stats": {
+    "days": "Event Days",
+    "forums": "Thematic Forums",
+    "speakers": "Speakers",
+    "attendees": "Attendees"
+  },
+  "mission": {
+    "title": "Our Mission",
+    "subtitle": "Partnership and Profit for People and the Planet",
+    "description": "Shanghai Climate Week 2026 is positioned as a global climate action platform, serving as an Eastern Momentum Point connecting China and the world in climate governance. We believe that only through system reshaping, real action, Eastern momentum, and win-win cooperation can we achieve climate goals in the next decade.",
+    "learnMore": "Learn More",
+    "highlights": {
+      "system": {
+        "title": "System Reshaping",
+        "desc": "From commitment-driven to result-oriented"
+      },
+      "action": {
+        "title": "Real Action",
+        "desc": "Words matter, actions matter more"
+      },
+      "momentum": {
+        "title": "Eastern Momentum",
+        "desc": "China's green power drives global transformation"
+      },
+      "winwin": {
+        "title": "Win-Win Cooperation",
+        "desc": "No decoupling, build together, strengthen connectivity"
+      }
+    }
+  },
+  "tracks": {
+    "title": "12+1 Thematic Track System",
+    "subtitle": "Top Level Defines Rules | Middle Level Generates Growth | Bottom Level Consolidates Foundation",
+    "tabs": {
+      "all": "All",
+      "institution": "Institution",
+      "economy": "Economy",
+      "foundation": "Foundation",
+      "accelerator": "Accelerator"
+    },
+    "card": {
+      "eventCount": "{count} events",
+      "exploreMore": "Explore more"
+    },
+    "viewAll": "View Full Track System"
+  },
+  "events": {
+    "title": "Event Calendar",
+    "subtitle": "April 20-28, 2026",
+    "viewAll": "View Full Schedule",
+    "register": "Register Now",
+    "details": "Learn More",
+    "partners": "Partners",
+    "capacity": "Limited to {count} people"
+  },
+  "dashboardInvitations": {
+    "title": "Invitation Requests",
+    "subtitle": "Request and manage your event invitation letters.",
+    "create": "New Request",
+    "loading": "Loading...",
+    "empty": "No invitation requests yet.",
+    "listTitle": "Request history ({count})",
+    "forEvent": "Event",
+    "language": "Language",
+    "rejectReason": "Rejection reason",
+    "download": "Download Letter",
+    "status": {
+      "pending": "Pending",
+      "uploaded": "Uploaded",
+      "downloaded": "Downloaded",
+      "rejected": "Rejected"
+    },
+    "form": {
+      "title": "Request Invitation Letter",
+      "description": "Fill in the guest information and submit your request.",
+      "applicantInfo": "Applicant Information",
+      "applicantName": "Name",
+      "applicantEmail": "Email",
+      "guestName": "Guest name",
+      "guestNameRequired": "Guest name is required",
+      "guestTitle": "Guest title",
+      "guestOrg": "Guest organization",
+      "guestEmail": "Guest email",
+      "language": "Letter language",
+      "event": "Associated event",
+      "eventPlaceholder": "No specific event",
+      "purpose": "Purpose of attendance",
+      "notes": "Notes",
+      "cancel": "Cancel",
+      "submit": "Submit Request"
+    },
+    "messages": {
+      "createSuccess": "Invitation request submitted successfully.",
+      "createFailed": "Failed to submit the invitation request."
+    }
+  },
+  "eventsPage": {
+    "hero": {
+      "title": "Event Schedule",
+      "subtitle": "April 20-28, 2026. Explore 13 featured programs."
+    },
+    "loading": "Loading events...",
+    "loadError": "Unable to load events right now.",
+    "retry": "Retry",
+    "filters": {
+      "all": "All events",
+      "ceremony": "Ceremonies",
+      "forum": "Forums",
+      "conference": "Conferences",
+      "workshop": "Workshops",
+      "networking": "Networking"
+    },
+    "layerFilter": {
+      "label": "Event Layer",
+      "all": "All Layers",
+      "INSTITUTION": "Institutional",
+      "ECONOMY": "Economic",
+      "ROOT": "Foundational",
+      "ACCELERATOR": "Accelerator",
+      "COMPREHENSIVE": "Comprehensive"
+    },
+    "hostTypeFilter": {
+      "label": "Host Type",
+      "all": "All Types",
+      "OFFICIAL": "Official",
+      "CO_HOSTED": "Co-hosted",
+      "REGISTERED": "Registered",
+      "SIDE_EVENT": "Side Event",
+      "COMMUNITY": "Community"
+    },
+    "emptyState": "No events found for this category",
+    "eventCount": "{count} events",
+    "capacity": "Limited to {count} attendees",
+    "partners": "Partners",
+    "details": "View details",
+    "register": "Register now"
+  },
+  "partners": {
+    "title": "Partners",
+    "subtitle": "Thanks to the following organizations for their generous support of Shanghai Climate Week 2026",
+    "tiers": {
+      "chief": "Chief Partners",
+      "partner": "Partners",
+      "ecosystem": "Ecosystem Partners"
+    },
+    "ctaText": "Want to become our partner?",
+    "cta": "Explore Partnership"
+  },
+  "cta": {
+    "title": "Shape the Climate Action of the Next Decade Together",
+    "subtitle": "Join us and become part of the change. Together with global climate leaders, innovators, and activists, contribute to achieving the 2030 climate goals.",
+    "register": "Register Now",
+    "contact": "Contact Us",
+    "stats": {
+      "countries": "Countries/Regions",
+      "speakers": "Featured Speakers",
+      "events": "Thematic Side Events",
+      "moment": "Historic Moment"
+    }
+  },
+  "footer": {
+    "brand": {
+      "title": "Committed to becoming the 'Eastern Momentum' for global climate action in the next decade.",
+      "subtitle": "Partnership and profit for people and the planet.",
+      "address": "8 Hengshan Road, Xuhui District, Shanghai",
+      "email": "info@shanghaiclimateweek.org.cn"
+    },
+    "links": {
+      "explore": "Explore",
+      "participate": "Participate",
+      "support": "Support"
+    },
+    "nav": {
+      "home": "Home",
+      "events": "Event Calendar",
+      "tracks": "Tracks",
+      "speakers": "Speakers",
+      "partners": "Partners",
+      "attendeeRegister": "Attendee Registration",
+      "organization": "Organization Representative",
+      "sponsor": "Partnership Application",
+      "speaker": "Speaker Application",
+      "media": "Media Registration",
+      "about": "About Us",
+      "news": "News",
+      "faq": "FAQ",
+      "contact": "Contact Us"
+    },
+    "copyright": "© 2026 Shanghai Climate Week. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Use"
+  },
+  "common": {
+    "backHome": "← Back to home",
+    "backToLogin": "Back to login"
+  },
+  "userMenu": {
+    "pass": "Event Pass",
+    "climatePassport": "Climate Passport",
+    "profile": "Profile"
+  },
+  "roles": {
+    "attendee": "Attendee",
+    "organization": "Organization Representative",
+    "sponsor": "Partner",
+    "speaker": "Speaker",
+    "media": "Media",
+    "admin": "Administrator",
+    "staff": "Staff",
+    "event_manager": "Event Manager",
+    "verifier": "Verifier",
+    "visitor": "Visitor"
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome Back",
+      "subtitle": "Sign in to your Shanghai Climate Week account",
+      "pageTitle": "Welcome back",
+      "pageSubtitle": "Sign in to continue to Shanghai Climate Week 2026",
+      "email": "Email",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "your@email.com",
+      "password": "Password",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "remember": "Remember me",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign In",
+      "submitting": "Signing in...",
+      "or": "Or sign in with",
+      "noAccount": "Don't have an account?",
+      "register": "Register now",
+      "errors": {
+        "invalidCredentials": "Incorrect email or password",
+        "failed": "Sign in failed. Please try again later."
+      }
+    },
+    "register": {
+      "title": "Join Shanghai Climate Week 2026",
+      "subtitle": "Shape the next decade of climate action",
+      "pageTitle": "Create your account",
+      "pageSubtitle": "Join the Shanghai Climate Week 2026 community",
+      "name": "Name",
+      "nameLabel": "Full name",
+      "namePlaceholder": "Enter your name",
+      "email": "Email",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "your@email.com",
+      "password": "Password",
+      "passwordLabel": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm Password",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Enter your password again",
+      "organization": "Organization",
+      "title": "Title",
+      "phone": "Phone",
+      "role": {
+        "label": "Select Role",
+        "attendee": "Attendee",
+        "speaker": "Speaker",
+        "media": "Media",
+        "sponsor": "Partner"
+      },
+      "submit": "Register",
+      "submitting": "Creating account...",
+      "or": "Or register with",
+      "hasAccount": "Already have an account?",
+      "login": "Sign in",
+      "successTitle": "Registration successful!",
+      "successSubtitle": "Redirecting you to the sign-in page...",
+      "errors": {
+        "passwordMismatch": "The two passwords do not match",
+        "passwordTooShort": "Password must be at least 8 characters",
+        "emailTaken": "This email is already registered. Please sign in instead.",
+        "failed": "Registration failed. Please try again later."
+      }
+    },
+    "forgotPassword": {
+      "pageTitle": "Forgot password",
+      "pageSubtitle": "Enter your email address and we will send you a reset link",
+      "sentTitle": "Reset link sent",
+      "sentSubtitle": "Check your inbox and click the link to reset your password",
+      "emailLabel": "Email address",
+      "emailPlaceholder": "your@email.com",
+      "submit": "Send reset link",
+      "submitting": "Sending...",
+      "sentDescription": "We have sent a password reset link to <strong>{email}</strong>",
+      "resendHint": "If you do not see the email, check your spam folder or wait 60 seconds before requesting another one.",
+      "useAnotherEmail": "Use another email",
+      "errors": {
+        "required": "Please enter your email address",
+        "invalidEmail": "Please enter a valid email address",
+        "emailNotFound": "This email has not been registered. Please check the address or create an account first.",
+        "failed": "Failed to send the reset link. Please try again later.",
+        "network": "Network error. Please try again later."
+      }
+    },
+    "resetPassword": {
+      "validating": "Validating link...",
+      "invalidTitle": "Invalid link",
+      "requestAgain": "Request a new reset link",
+      "successTitle": "Password reset successful",
+      "successSubtitle": "Your password has been updated. Please sign in with your new password.",
+      "goToLogin": "Go to sign in",
+      "pageTitle": "Set a new password",
+      "pageSubtitle": "Enter your new password below",
+      "passwordLabel": "New password",
+      "passwordPlaceholder": "At least 8 characters with upper, lower, and number",
+      "confirmPasswordLabel": "Confirm password",
+      "confirmPasswordPlaceholder": "Enter your new password again",
+      "requirementsTitle": "Password requirements:",
+      "requirements": {
+        "minLength": "At least {min} characters",
+        "upperAndLower": "Contains uppercase and lowercase letters",
+        "number": "Contains a number"
+      },
+      "submit": "Reset password",
+      "submitting": "Resetting...",
+      "errors": {
+        "invalidLink": "This reset link is invalid. Please request a new password reset.",
+        "invalidLinkShort": "Invalid reset link",
+        "expiredLink": "This reset link has expired. Please request a new password reset.",
+        "validationFailed": "Failed to validate the reset link",
+        "passwordRequired": "Please enter a new password",
+        "passwordTooShort": "Password must be at least {min} characters",
+        "passwordWeak": "Password must include uppercase, lowercase, and a number",
+        "confirmPasswordRequired": "Please confirm your password",
+        "passwordMismatch": "The two passwords do not match",
+        "failed": "Failed to reset password",
+        "network": "Network error. Please try again later."
+      }
+    },
+    "error": {
+      "title": "Sign-in failed",
+      "messages": {
+        "CredentialsSignin": "Incorrect email or password. Please try again.",
+        "AccessDenied": "You do not have permission to access this page.",
+        "SessionRequired": "Please sign in to continue.",
+        "Default": "An error occurred during sign-in. Please try again later."
+      },
+      "actions": {
+        "backToLogin": "Back to sign in",
+        "backHome": "Back to home"
+      }
+    }
+  },
+  "dashboard": {
+    "overview": "Overview",
+    "schedule": "My Schedule",
+    "pass": "Event Pass",
+    "profile": "Profile",
+    "notifications": "Notifications",
+    "welcome": "Welcome back",
+    "logout": "Logout"
+  },
+  "speakersPage": {
+    "hero": {
+      "title": "Speakers",
+      "description": "A lineup of global climate leaders, policy experts, academics, and innovators. Explore {count} featured speakers."
+    },
+    "searchPlaceholder": "Search by speaker, organization, or topic...",
+    "keynoteTitle": "Keynote speakers",
+    "allTitle": "All speakers ({count})",
+    "emptyState": "No speakers match your current search",
+    "eventCount": "Speaking in {count} events"
+  },
+  "contactPage": {
+    "hero": {
+      "title": "Contact Us",
+      "description": "Questions, partnership ideas, or press inquiries are welcome. Reach out to the Shanghai Climate Week team."
+    },
+    "info": {
+      "email": {
+        "title": "Email",
+        "description": "General inquiries"
+      },
+      "phone": {
+        "title": "Phone",
+        "description": "Weekdays 09:00-18:00"
+      },
+      "address": {
+        "title": "Office",
+        "content": "1500 Expo Avenue, Pudong New Area, Shanghai",
+        "description": "Shanghai Expo Center"
+      }
+    },
+    "inquiryTypes": {
+      "label": "Inquiry Type",
+      "placeholder": "Select inquiry type",
+      "types": {
+        "general": "General Inquiry",
+        "partnership": "Partnership Application",
+        "speaker": "Speaker Application",
+        "media": "Media Registration",
+        "sponsor": "Sponsorship Inquiry",
+        "volunteer": "Volunteer Application",
+        "other": "Other"
+      }
+    },
+    "quickLinks": {
+      "title": "Apply or Register Directly",
+      "subtitle": "Select the option that best describes your interest",
+      "links": {
+        "partnership": {
+          "title": "Partnership Application",
+          "description": "Explore sponsorship and collaboration opportunities",
+          "cta": "Apply Now"
+        },
+        "speaker": {
+          "title": "Speaker Application",
+          "description": "Share your expertise at Shanghai Climate Week 2026",
+          "cta": "Apply Now"
+        },
+        "media": {
+          "title": "Media Registration",
+          "description": "Register for press access and media facilities",
+          "cta": "Register Now"
+        },
+        "volunteer": {
+          "title": "Volunteer",
+          "description": "Join our volunteer team and support the event",
+          "cta": "Learn More"
+        }
+      }
+    },
+    "partnershipForm": {
+      "organizationName": "Organization Name",
+      "organizationNamePlaceholder": "Your organization name",
+      "organizationType": "Organization Type",
+      "organizationTypePlaceholder": "e.g., NGO, Corporation, Research Institute",
+      "partnershipTier": "Partnership Tier of Interest",
+      "partnershipTierPlaceholder": "Select a tier",
+      "tiers": {
+        "chief": "Chief Partner",
+        "presenting": "Presenting Partner",
+        "ecosystem": "Ecosystem Partner",
+        "media": "Media / Institutional Partner",
+        "forum": "Forum Partner",
+        "knowledge": "Knowledge Partner",
+        "community": "Community Partner",
+        "showcase": "Showcase Partner"
+      },
+      "website": "Organization Website",
+      "websitePlaceholder": "https://example.com"
+    },
+    "speakerForm": {
+      "speakerTitle": "Title / Position",
+      "speakerTitlePlaceholder": "e.g., Chief Sustainability Officer",
+      "organization": "Organization",
+      "organizationPlaceholder": "Your organization name",
+      "topic": "Proposed Topic",
+      "topicPlaceholder": "Briefly describe the topic you'd like to speak on",
+      "experience": "Speaking Experience",
+      "experiencePlaceholder": "Briefly describe your previous speaking experience"
+    },
+    "mediaForm": {
+      "outlet": "Media Outlet",
+      "outletPlaceholder": "Name of your publication or media organization",
+      "mediaType": "Media Type",
+      "mediaTypePlaceholder": "Select media type",
+      "mediaTypes": {
+        "print": "Print / Online News",
+        "broadcast": "Broadcast (TV / Radio)",
+        "podcast": "Podcast",
+        "blog": "Blog / Independent Journalist",
+        "agency": "News Agency",
+        "other": "Other"
+      },
+      "role": "Your Role",
+      "rolePlaceholder": "e.g., Journalist, Editor, Photographer",
+      "pressCard": "Press Card / Credential Number",
+      "pressCardPlaceholder": "Optional"
+    },
+    "registerPrompt": {
+      "title": "Want to track your inquiry?",
+      "description": "Create a free account to view your message status and receive replies directly in your dashboard.",
+      "register": "Create Account",
+      "login": "I already have an account",
+      "skip": "No thanks"
+    },
+    "form": {
+      "title": "Send a Message",
+      "successTitle": "Message Sent",
+      "successDescription": "We will get back to you as soon as possible.",
+      "submit": "Send Message",
+      "submitting": "Sending...",
+      "fields": {
+        "name": {
+          "label": "Name",
+          "placeholder": "Your name"
+        },
+        "email": {
+          "label": "Email"
+        },
+        "subject": {
+          "label": "Subject",
+          "placeholder": "Message subject"
+        },
+        "message": {
+          "label": "Message",
+          "placeholder": "Tell us how we can help..."
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "items": {
+        "registration": {
+          "question": "How do I register for Shanghai Climate Week 2026?",
+          "answer": "Create an account on the website, then visit the events page to register for the sessions you want to attend. Some events may require approval."
+        },
+        "fees": {
+          "question": "Do I need to pay to attend?",
+          "answer": "Most sessions are free to attend. Some closed-door meetings and special dinners may be paid or invitation-only. Please review each event page for details."
+        },
+        "partnership": {
+          "question": "How can my organization become a partner?",
+          "answer": "Use this contact page or email partners@shanghaiclimateweek.org.cn and our partnership team will follow up with you."
+        },
+        "speaker": {
+          "question": "Can I apply to become a speaker?",
+          "answer": "Yes. Experts and practitioners are welcome to apply. Choose the speaker role during registration and submit the requested information."
+        },
+        "interpretation": {
+          "question": "Will interpretation be provided?",
+          "answer": "Major sessions provide Chinese-English simultaneous interpretation. Some side events may operate in a single language, so please confirm before attending."
+        }
+      }
+    }
+  },
+  "dashboardPage": {
+    "hero": {
+      "title": "Welcome back!",
+      "description": "This is your personal hub for Shanghai Climate Week 2026."
+    },
+    "stats": {
+      "registered": "Registered events",
+      "saved": "Saved events",
+      "attended": "Checked-in events",
+      "points": "Climate points"
+    },
+    "quickActions": {
+      "title": "Quick actions",
+      "pass": "View pass",
+      "events": "Browse events",
+      "schedule": "Manage my schedule",
+      "passport": "Open climate passport"
+    },
+    "upcoming": {
+      "title": "Starting soon",
+      "viewAll": "View all",
+      "empty": "You have not registered for any events yet",
+      "browse": "Browse events"
+    }
+  },
+  "dashboardMessagesPage": {
+    "title": "My Messages",
+    "subtitle": "View your contact inquiries and replies from the organizing team.",
+    "empty": "You haven't sent any messages yet.",
+    "sendNew": "Send a message",
+    "status": {
+      "PENDING": "Pending",
+      "REPLIED": "Replied",
+      "CLOSED": "Closed"
+    },
+    "category": {
+      "GENERAL": "General",
+      "ORGANIZATION": "Organization",
+      "PARTNERSHIP": "Partnership",
+      "SPEAKER": "Speaker",
+      "MEDIA": "Media",
+      "SPONSOR": "Sponsor",
+      "VOLUNTEER": "Volunteer",
+      "OTHER": "Other"
+    },
+    "detail": {
+      "yourMessage": "Your message",
+      "adminReply": "Reply from organizer",
+      "sentAt": "Sent",
+      "repliedAt": "Replied",
+      "noReply": "Awaiting reply..."
+    }
+  },
+  "dashboardPassportPage": {
+    "title": "Climate Passport",
+    "subtitle": "Your climate identity, points, and achievements in one credential.",
+    "card": {
+      "authority": "Shanghai Climate Week 2026",
+      "name": "Climate Passport",
+      "description": "This credential links your event identity, on-site verification, and climate participation footprint.",
+      "active": "Active",
+      "pendingId": "Passport ID pending",
+      "issueDate": "Issued on {date}",
+      "achievements": "{count} achievements unlocked"
+    },
+    "stats": {
+      "points": "Points",
+      "attended": "Attended",
+      "learning": "Learning time"
+    },
+    "qr": {
+      "label": "Identity QR",
+      "title": "Passport verification code",
+      "badge": "Universal",
+      "description": "Use this code for on-site identity verification. Event entry still requires the event-specific pass."
+    },
+    "achievements": {
+      "title": "Achievements",
+      "unlocked": "Unlocked",
+      "locked": "Locked"
+    },
+    "summary": {
+      "title": "Passport summary",
+      "registered": "Registered events",
+      "saved": "Saved events",
+      "identity": "Registered email",
+      "viewEventPasses": "View event passes"
+    }
+  },
+  "eventDetailPage": {
+    "notFound": {
+      "title": "Event not found",
+      "description": "This event may have been removed or does not exist.",
+      "back": "Back to events"
+    },
+    "backToEvents": "Back to events",
+    "featured": "Featured event",
+    "tabs": {
+      "about": "Overview",
+      "agenda": "Agenda",
+      "speakers": "Speakers"
+    },
+    "about": {
+      "title": "About this event",
+      "description": "This session brings together climate leaders, experts, and practitioners from across sectors to discuss emerging priorities, practical actions, and forward-looking opportunities for collaboration.",
+      "highlightsTitle": "Highlights",
+      "highlights": [
+        "Connect directly with leading voices in climate action",
+        "Gain the latest insights on policy and implementation trends",
+        "Expand your professional network across sectors",
+        "Take part in milestone moments and initiative launches"
+      ]
+    },
+    "agenda": {
+      "title": "Agenda",
+      "empty": "Detailed agenda will be announced soon.",
+      "speaker": "Speaker: ",
+      "types": {
+        "keynote": "Keynote",
+        "ceremony": "Ceremony",
+        "networking": "Networking",
+        "registration": "Registration"
+      }
+    },
+    "speakersTitle": "Featured speakers",
+    "speakersEmpty": "Speaker lineup will be announced soon.",
+    "loading": "Loading event details...",
+    "loadError": "Unable to load this event right now.",
+    "retry": "Retry",
+    "register": {
+      "title": "Register",
+      "description": "Seats are limited. Reserve your place now.",
+      "save": "Save",
+      "saved": "Saved",
+      "registered": "Already registered",
+      "share": "Share",
+      "saveSuccess": "Event saved to favorites",
+      "unsaveSuccess": "Removed from favorites",
+      "shareSuccess": "Link copied to clipboard"
+    },
+    "locationTitle": "Location",
+    "viewMap": "View Map"
+  },
+  "aboutPage": {
+    "hero": {
+      "title": "About Shanghai Climate Week",
+      "description": "Shanghai Climate Week is a global climate action platform positioned as the “Eastern Momentum Point,” connecting China and the world in climate governance and shaping climate action for the next decade (2026-2035)."
+    },
+    "mission": {
+      "title": "Our Mission",
+      "tagline": "Partnership and Profit for People and the Planet",
+      "description": "We believe that only through system reshaping, real action, Eastern momentum, and win-win cooperation can climate goals be achieved in the next decade. Shanghai Climate Week is committed to serving as the “Eastern Momentum Point” for global climate governance, connecting China with the world and turning commitments into action.",
+      "exploreEvents": "Explore events",
+      "becomePartner": "Become a partner"
+    },
+    "highlights": {
+      "system": {
+        "title": "System Reshaping",
+        "description": "Move from commitment-driven ambition to results-oriented climate action"
+      },
+      "action": {
+        "title": "Real Action",
+        "description": "Deliver credible actions and measurable outcomes"
+      },
+      "momentum": {
+        "title": "Eastern Momentum",
+        "description": "Turn China’s green capacity into momentum for global transformation"
+      },
+      "winwin": {
+        "title": "Shared Prosperity",
+        "description": "Strengthen co-creation, connectivity, and mutual benefit for a shared future"
+      }
+    },
+    "timelineTitle": "Our Journey",
+    "timelineSubtitle": "The growth path of Shanghai Climate Week",
+    "timeline": {
+      "2024": {
+        "title": "Shanghai Climate Week Launches",
+        "description": "The inaugural Shanghai Climate Week attracted more than 5,000 participants"
+      },
+      "2025": {
+        "title": "International Expansion",
+        "description": "Strategic partnerships were established with UNFCCC and the COP presidency"
+      },
+      "2026": {
+        "title": "A New Voyage of Eastern Momentum",
+        "description": "The theme evolves to focus on the critical decade from 2026 to 2035"
+      }
+    },
+    "teamTitle": "Core Team",
+    "teamSubtitle": "A leadership team committed to advancing climate action",
+    "team": {
+      "chair": {
+        "name": "Li Hua",
+        "role": "Chair",
+        "bio": "Founder of Shanghai Climate Week"
+      },
+      "viceChair": {
+        "name": "Zhang Ming",
+        "role": "Vice Chair",
+        "bio": "Former Director-General of the Climate Change Department at the Ministry of Ecology and Environment"
+      },
+      "secretaryGeneral": {
+        "name": "Wang Fang",
+        "role": "Secretary-General",
+        "bio": "Senior climate policy expert"
+      }
+    },
+    "cta": {
+      "title": "Join Our Mission",
+      "description": "Whether you are a company, institution, or individual, you can contribute to climate action",
+      "register": "Register to attend",
+      "contact": "Contact Us"
+    }
+  },
+  "partnersPage": {
+    "hero": {
+      "title": "Become a Partner",
+      "description": "Join Shanghai Climate Week 2026 and work with global climate leaders to shape climate action for the next decade. Through strategic partnership, you can strengthen brand influence and unlock new business opportunities.",
+      "download": "Download sponsorship deck",
+      "contact": "Contact us"
+    },
+    "tiersTitle": "Sponsorship Packages",
+    "tiersSubtitle": "Choose the right level of partnership and help accelerate climate action",
+    "currentPartners": "Current partners",
+    "tiers": {
+      "chief": {
+        "name": "Chief Partner",
+        "nameEn": "Chief Partner",
+        "features": [
+          "Co-hosting opportunities for G20-level programs within the Global Climate Week network",
+          "Joint side events with international institutions such as the UN and ADB",
+          "Eligibility to co-host flagship programs such as Future Food",
+          "Global executive roundtables for a 500+ CEO audience",
+          "International PR coverage and top-tier media interviews",
+          "36 sqm standard booth with priority placement",
+          "20 VIP passes"
+        ],
+        "sponsors": ["Asian Development Bank", "UNESCO"]
+      },
+      "partner": {
+        "name": "Presenting Partner",
+        "nameEn": "Presenting Partner",
+        "features": [
+          "SDG Week collaboration opportunity",
+          "Prominent logo placement in key visual assets",
+          "Roundtable or forum speaking opportunity",
+          "18 sqm standard booth",
+          "10 VIP passes",
+          "Branded materials in attendee bags",
+          "Media exposure and mention in press releases"
+        ],
+        "sponsors": ["Global Climate Academy", "New Development Bank", "WWF China", "Chatham House"]
+      },
+      "ecosystem": {
+        "name": "Ecosystem Partner",
+        "nameEn": "Ecosystem Partner",
+        "features": [
+          "Access to the Shanghai Climate Week ecosystem network",
+          "Logo placement in key visual assets",
+          "Participation opportunities in event programming",
+          "9 sqm standard booth",
+          "5 VIP passes",
+          "Mention in press releases"
+        ],
+        "sponsors": ["Hema Fresh", "Oatly", "Institute of Public and Environmental Affairs", "Chapter Zero Alliance"]
+      },
+      "media": {
+        "name": "Media / Institutional Partner",
+        "nameEn": "Media / Institutional Partner",
+        "price": "Custom package",
+        "features": [
+          "Exclusive coverage and interview priority",
+          "Joint brand promotion opportunities",
+          "Dedicated on-site media access",
+          "Official media partner designation",
+          "Co-created content opportunities"
+        ],
+        "sponsors": ["Yicai", "Caixin", "The Paper"]
+      }
+    },
+    "otherWaysTitle": "Other Ways to Collaborate",
+    "otherWaysSubtitle": "Beyond sponsorship, we offer multiple forms of partnership",
+    "partnerTypes": {
+      "forum": {
+        "title": "Forum Partner",
+        "description": "Co-host thematic forums, share industry insight, and build thought leadership"
+      },
+      "knowledge": {
+        "title": "Knowledge Partner",
+        "description": "Co-publish reports and white papers while convening thematic discussions together"
+      },
+      "community": {
+        "title": "Community Partner",
+        "description": "Mobilize communities and expand public participation in climate action"
+      },
+      "showcase": {
+        "title": "Showcase Partner",
+        "description": "Present innovative products and solutions in the exhibition area with targeted visibility"
+      }
+    },
+    "cta": {
+      "title": "Ready to join us?",
+      "description": "Contact our partnership team for a detailed proposal and tailored recommendations"
+    }
+  },
+  "newsPage": {
+    "hero": {
+      "title": "Newsroom",
+      "subtitle": "Stay up to date with Shanghai Climate Week announcements, speakers, and event news"
+    },
+    "searchPlaceholder": "Search news...",
+    "latest": "Latest updates",
+    "readMore": "Read more",
+    "categories": {
+      "all": "All",
+      "announcement": "Announcements",
+      "speaker": "Speaker Updates",
+      "partner": "Partners",
+      "signing": "Partnership Signing",
+      "exhibitor": "Exhibitors"
+    },
+    "items": {
+      "1": {
+        "title": "Registration for Shanghai Climate Week 2026 is now open, with global climate leaders heading to Shanghai",
+        "excerpt": "Under the theme Eastern Momentum, New Voyage, this year’s edition is expected to welcome more than 1,000 participants from around the world to discuss the climate action agenda for the next decade..."
+      },
+      "2": {
+        "title": "Special Envoy Xie Zhenhua confirmed to attend the opening ceremony and deliver a keynote speech",
+        "excerpt": "China’s Special Envoy for Climate Change Xie Zhenhua has confirmed his attendance at the Shanghai Climate Week 2026 opening ceremony, where he will speak about China’s climate policy and global cooperation..."
+      },
+      "3": {
+        "title": "Partner lineup announced for the Green Finance Innovation Summit",
+        "excerpt": "The People’s Bank of China, the Green Finance Committee, MSCI, Goldman Sachs, and other institutions will jointly host the summit to explore ESG investment and sustainable finance..."
+      },
+      "4": {
+        "title": "Shanghai Climate Week signs a strategic cooperation agreement with UNDP",
+        "excerpt": "The two sides will deepen collaboration in climate governance, capacity building, and technology transfer to accelerate climate action across the Asia-Pacific region..."
+      },
+      "5": {
+        "title": "Applications open for the Youth Climate Leaders Summit",
+        "excerpt": "Open to global climate leaders aged 18 to 35, the summit will offer dialogue with leading climate experts and support outstanding projects..."
+      },
+      "6": {
+        "title": "Tesla and BYD confirmed for the Renewable Energy Transition Conference",
+        "excerpt": "The two EV leaders will showcase their latest electric mobility technologies and sustainable energy solutions to support transport decarbonization..."
+      }
+    }
+  },
+  "eventRegister": {
+    "title": "Event Registration",
+    "subtitle": "Fill in the information below to register for the event",
+    "backToEvent": "Back to Event",
+    "eventNotFound": "Event not found",
+    "backToEvents": "Back to Events",
+    "loading": "Loading event details...",
+    "submitError": "Registration failed, please try again later",
+    "loginRequired": {
+      "title": "Login Required",
+      "description": "You need to be logged in to register for events. Don't have an account? Register for free.",
+      "login": "Login Now",
+      "register": "Register Free"
+    },
+    "form": {
+      "title": "Registration Information",
+      "autoFilled": "Your information has been auto-filled",
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "organization": "Organization",
+      "title": "Title",
+      "titlePlaceholder": "Enter your job title",
+      "dietary": "Dietary Requirements",
+      "dietaryPlaceholder": "e.g., vegetarian, allergies",
+      "notes": "Notes",
+      "submit": "Confirm Registration",
+      "submitting": "Submitting..."
+    },
+    "eventInfo": {
+      "title": "Event Information",
+      "capacity": "Limited to {count} people"
+    },
+    "success": {
+      "title": "Registration Successful!",
+      "description": "You have successfully registered for this event. Please check your email for confirmation.",
+      "viewEvent": "View Event",
+      "goToDashboard": "Go to Dashboard"
+    }
+  },
+  "faqPage": {
+    "title": "FAQ",
+    "subtitle": "Frequently asked questions about Shanghai Climate Week 2026",
+    "backToHome": "Back to Home",
+    "categories": {
+      "registration": "Registration & Participation",
+      "events": "Events & Schedule",
+      "venue": "Venue & Transportation"
+    },
+    "items": {
+      "q1": {
+        "question": "How do I register for Shanghai Climate Week 2026?",
+        "answer": "You can register through our official website. Click the \"Register\" button in the top right corner and fill in your basic information to complete registration. After registration, you can sign up for events that interest you."
+      },
+      "q2": {
+        "question": "Is there a fee to attend events?",
+        "answer": "Most events at Shanghai Climate Week 2026 are free and open to the public. Some exclusive closed-door sessions or workshops may require a fee. Please check the event details page for specific information."
+      },
+      "q3": {
+        "question": "How can I become a speaker or partner?",
+        "answer": "If you wish to be a speaker, please select the \"Speaker\" role during registration, and our team will review your application. Organizations interested in becoming partners can submit an application through the \"Partners\" page or contact our partnership team directly."
+      },
+      "q4": {
+        "question": "Where can I view the event schedule?",
+        "answer": "You can view the complete schedule on the \"Events\" page of the website. All events are categorized by date and theme, and you can filter and register according to your interests."
+      },
+      "q5": {
+        "question": "Can I cancel my event registration?",
+        "answer": "Yes, you can cancel registered events in the \"My Schedule\" section of your personal dashboard. Please cancel at least 24 hours before the event starts so we can release the spot to other participants."
+      },
+      "q6": {
+        "question": "Will events offer online participation?",
+        "answer": "Some important forums and summits will offer live streaming. You can check the event details page to see if live streaming is available. Online participation also requires advance registration."
+      },
+      "q7": {
+        "question": "Where are the event venues located?",
+        "answer": "The main venues for Shanghai Climate Week 2026 include the Shanghai International Convention Center, Shanghai Tower, Zhangjiang Science City, and others. Please check each event's details page for specific addresses."
+      },
+      "q8": {
+        "question": "How do I get to the event venues?",
+        "answer": "All venues are located in easily accessible areas of Shanghai and can be reached by subway, bus, or taxi. Detailed transportation guides will be sent to registered participants before the events."
+      }
+    },
+    "contact": {
+      "title": "Still have questions?",
+      "description": "If you couldn't find the answer you're looking for, please feel free to contact our team.",
+      "button": "Contact Us"
+    }
+  }
+}

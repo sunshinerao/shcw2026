@@ -1,0 +1,144 @@
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
+import { generatePassCode, generateClimatePassportId } from "@/lib/utils";
+import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const {
+      name,
+      email,
+      password,
+      phone,
+      title,
+      role = "ATTENDEE",
+      organization,
+      locale,
+    } = body;
+    const requestLocale = resolveRequestLocale(req, locale);
+
+    // Validation
+    if (!name || !email || !password) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "registerRequired") },
+        { status: 400 }
+      );
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "invalidEmailFormat") },
+        { status: 400 }
+      );
+    }
+
+    const SELF_REGISTER_ROLES = new Set(["ATTENDEE", "ORGANIZATION", "SPONSOR", "SPEAKER", "MEDIA"]);
+    if (!SELF_REGISTER_ROLES.has(role)) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "invalidRole") },
+        { status: 400 }
+      );
+    }
+
+    if (password.length < 8) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "passwordMin") },
+        { status: 400 }
+      );
+    }
+
+    // Check if email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (existingUser) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "emailTaken") },
+        { status: 400 }
+      );
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    // Generate unique pass code
+    let passCode = generatePassCode();
+    let existingCode = await prisma.user.findUnique({
+      where: { passCode },
+    });
+    while (existingCode) {
+      passCode = generatePassCode();
+      existingCode = await prisma.user.findUnique({
+        where: { passCode },
+      });
+    }
+
+    // Generate unique climate passport ID
+    let climatePassportId = generateClimatePassportId();
+    let existingPassport = await prisma.user.findUnique({
+      where: { climatePassportId },
+    });
+    while (existingPassport) {
+      climatePassportId = generateClimatePassportId();
+      existingPassport = await prisma.user.findUnique({
+        where: { climatePassportId },
+      });
+    }
+
+    // Create user with transaction
+    const user = await prisma.$transaction(async (tx) => {
+      const newUser = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          phone,
+          title,
+          role,
+          passCode,
+          climatePassportId,
+          status: role === "ATTENDEE" ? "ACTIVE" : "PENDING",
+        },
+      });
+
+      // Create organization if provided
+      if (organization?.name) {
+        await tx.organization.create({
+          data: {
+            name: organization.name,
+            industry: organization.industry,
+            website: organization.website,
+            userId: newUser.id,
+          },
+        });
+      }
+
+      return newUser;
+    });
+
+    return NextResponse.json({
+      success: true,
+      message:
+        role === "ATTENDEE"
+          ? apiMessage(requestLocale, "registerSuccessLogin")
+          : apiMessage(requestLocale, "registerSuccessReview"),
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    const requestLocale = resolveRequestLocale(req);
+    return NextResponse.json(
+      { success: false, error: apiMessage(requestLocale, "registerFailed") },
+      { status: 500 }
+    );
+  }
+}
