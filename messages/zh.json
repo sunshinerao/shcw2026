@@ -205,6 +205,8 @@
         "invitations": "邀请函管理",
         "users": "用户管理",
         "partners": "合作伙伴",
+        "news": "新闻管理",
+        "content": "内容管理",
         "messages": "留言管理",
         "settings": "系统设置"
       }
@@ -1944,5 +1946,62 @@
       "passportVerify": "护照验证"
     },
     "noPermission": "您没有验证人员权限"
+  },
+  "speakersSection": {
+    "title": "特邀嘉宾",
+    "subtitle": "来自全球的行业领袖与专家",
+    "viewAll": "查看所有嘉宾"
+  },
+  "newsSection": {
+    "title": "最新动态",
+    "subtitle": "了解上海气候周的最新资讯",
+    "readMore": "阅读更多",
+    "viewAll": "查看所有新闻"
+  },
+  "adminNews": {
+    "title": "新闻管理",
+    "subtitle": "管理网站新闻与动态",
+    "create": "发布新闻",
+    "edit": "编辑",
+    "delete": "删除",
+    "confirmDelete": "确定要删除这条新闻吗？",
+    "loadError": "获取新闻列表失败",
+    "createSuccess": "新闻发布成功",
+    "updateSuccess": "新闻更新成功",
+    "deleteSuccess": "新闻已删除",
+    "form": {
+      "title": "标题",
+      "titleEn": "英文标题",
+      "excerpt": "摘要",
+      "excerptEn": "英文摘要",
+      "content": "内容",
+      "contentEn": "英文内容",
+      "coverImage": "封面图片",
+      "slug": "URL别名",
+      "isPublished": "发布",
+      "save": "保存",
+      "cancel": "取消"
+    },
+    "status": {
+      "published": "已发布",
+      "draft": "草稿"
+    }
+  },
+  "adminSiteContent": {
+    "title": "内容管理",
+    "subtitle": "管理首页「关于我们」等内容",
+    "aboutUs": "关于我们",
+    "mission": "使命愿景",
+    "saveSuccess": "内容已保存",
+    "saveFailed": "保存失败",
+    "form": {
+      "sectionTitle": "标题",
+      "sectionTitleEn": "英文标题",
+      "sectionSubtitle": "副标题",
+      "sectionSubtitleEn": "英文副标题",
+      "sectionDescription": "描述",
+      "sectionDescriptionEn": "英文描述",
+      "save": "保存"
+    }
   }
 }

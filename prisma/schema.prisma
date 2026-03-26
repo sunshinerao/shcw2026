@@ -476,9 +476,12 @@ model Sponsor {
 model News {
   id          String   @id @default(uuid())
   title       String
+  titleEn     String?
   slug        String   @unique
   excerpt     String?  // 摘要
+  excerptEn   String?
   content     String   @db.Text
+  contentEn   String?  @db.Text
   coverImage  String?
   
   // 状态
@@ -494,6 +497,23 @@ model News {
   @@index([slug])
   @@index([publishedAt])
   @@map("news")
+}
+
+// 站点内容（关于我们等可编辑区块）
+model SiteContent {
+  id          String   @id @default(uuid())
+  key         String   @unique  // e.g. "about_us", "mission"
+  title       String?
+  titleEn     String?
+  subtitle    String?
+  subtitleEn  String?
+  description String?  @db.Text
+  descriptionEn String? @db.Text
+  extra       Json?    // 扩展字段
+  
+  updatedAt   DateTime @updatedAt
+  
+  @@map("site_contents")
 }
 
 // 邀请函申请表

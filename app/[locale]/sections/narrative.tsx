@@ -1,11 +1,11 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { RefreshCw, Target, Compass, HeartHandshake, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 const narratives = [
   {
@@ -34,10 +34,46 @@ const narratives = [
   },
 ];
 
+type SiteContent = {
+  title: string | null;
+  titleEn: string | null;
+  subtitle: string | null;
+  subtitleEn: string | null;
+  description: string | null;
+  descriptionEn: string | null;
+};
+
 export function NarrativeSection() {
   const t = useTranslations();
+  const locale = useLocale();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [content, setContent] = useState<SiteContent | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch("/api/site-content?key=mission");
+        const json = await res.json();
+        if (json.success && json.data) {
+          setContent(json.data);
+        }
+      } catch {
+        // fall back to i18n
+      }
+    }
+    load();
+  }, []);
+
+  const title = content
+    ? (locale === "en" ? content.titleEn || content.title : content.title) || t("mission.title")
+    : t("mission.title");
+  const subtitle = content
+    ? (locale === "en" ? content.subtitleEn || content.subtitle : content.subtitle) || t("mission.subtitle")
+    : t("mission.subtitle");
+  const description = content
+    ? (locale === "en" ? content.descriptionEn || content.description : content.description) || t("mission.description")
+    : t("mission.description");
 
   return (
     <section className="py-20 sm:py-28 bg-white" ref={ref}>
@@ -50,13 +86,13 @@ export function NarrativeSection() {
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-6 leading-tight">
-              {t("mission.title")}
+              {title}
             </h2>
             <p className="text-xl text-emerald-600 font-semibold mb-6">
-              {t("mission.subtitle")}
+              {subtitle}
             </p>
             <p className="text-slate-600 text-lg leading-relaxed mb-8">
-              {t("mission.description")}
+              {description}
             </p>
             <Link href="/about">
               <Button 

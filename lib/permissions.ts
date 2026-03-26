@@ -19,6 +19,8 @@ export type AdminSectionKey =
   | "users"
   | "partners"
   | "messages"
+  | "news"
+  | "content"
   | "settings";
 
 const ADMIN_ONLY_SECTIONS: AdminSectionKey[] = [
@@ -26,6 +28,8 @@ const ADMIN_ONLY_SECTIONS: AdminSectionKey[] = [
   "users",
   "partners",
   "messages",
+  "news",
+  "content",
   "settings",
 ];
 

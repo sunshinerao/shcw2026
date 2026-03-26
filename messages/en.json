@@ -205,6 +205,8 @@
         "invitations": "Invitations",
         "users": "Users",
         "partners": "Partners",
+        "news": "News",
+        "content": "Content",
         "messages": "Messages",
         "settings": "Settings"
       }
@@ -1944,5 +1946,62 @@
       "passportVerify": "Passport verification"
     },
     "noPermission": "You do not have verifier permissions"
+  },
+  "speakersSection": {
+    "title": "Featured Speakers",
+    "subtitle": "Industry leaders and experts from around the world",
+    "viewAll": "View All Speakers"
+  },
+  "newsSection": {
+    "title": "Latest News",
+    "subtitle": "Stay updated with Shanghai Climate Week",
+    "readMore": "Read More",
+    "viewAll": "View All News"
+  },
+  "adminNews": {
+    "title": "News Management",
+    "subtitle": "Manage website news and updates",
+    "create": "Publish News",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirmDelete": "Are you sure you want to delete this news article?",
+    "loadError": "Failed to load news",
+    "createSuccess": "News published successfully",
+    "updateSuccess": "News updated successfully",
+    "deleteSuccess": "News deleted",
+    "form": {
+      "title": "Title",
+      "titleEn": "English Title",
+      "excerpt": "Excerpt",
+      "excerptEn": "English Excerpt",
+      "content": "Content",
+      "contentEn": "English Content",
+      "coverImage": "Cover Image",
+      "slug": "URL Slug",
+      "isPublished": "Published",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "status": {
+      "published": "Published",
+      "draft": "Draft"
+    }
+  },
+  "adminSiteContent": {
+    "title": "Content Management",
+    "subtitle": "Manage homepage About Us and other content",
+    "aboutUs": "About Us",
+    "mission": "Mission",
+    "saveSuccess": "Content saved",
+    "saveFailed": "Failed to save",
+    "form": {
+      "sectionTitle": "Title",
+      "sectionTitleEn": "English Title",
+      "sectionSubtitle": "Subtitle",
+      "sectionSubtitleEn": "English Subtitle",
+      "sectionDescription": "Description",
+      "sectionDescriptionEn": "English Description",
+      "save": "Save"
+    }
   }
 }
