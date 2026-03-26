@@ -1,72 +1,78 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Target, Globe, Users, Zap, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 
+type SiteContent = {
+  key: string;
+  title: string | null;
+  titleEn: string | null;
+  subtitle: string | null;
+  subtitleEn: string | null;
+  description: string | null;
+  descriptionEn: string | null;
+  extra: Record<string, Record<string, string>> | null;
+};
+
 export default function AboutPage() {
   const t = useTranslations("aboutPage");
+  const locale = useLocale();
+  const [contents, setContents] = useState<Record<string, SiteContent>>({});
 
-  const highlights = [
-    {
-      icon: Target,
-      title: t("highlights.system.title"),
-      description: t("highlights.system.description"),
-    },
-    {
-      icon: Zap,
-      title: t("highlights.action.title"),
-      description: t("highlights.action.description"),
-    },
-    {
-      icon: Globe,
-      title: t("highlights.momentum.title"),
-      description: t("highlights.momentum.description"),
-    },
-    {
-      icon: Users,
-      title: t("highlights.winwin.title"),
-      description: t("highlights.winwin.description"),
-    },
-  ];
+  useEffect(() => {
+    const keys = ["about_us", "mission", "highlights", "timeline", "team"];
+    keys.forEach(async (key) => {
+      try {
+        const res = await fetch(`/api/site-content?key=${key}`);
+        const json = await res.json();
+        if (json.success && json.data) {
+          setContents((prev) => ({ ...prev, [key]: json.data }));
+        }
+      } catch { /* use i18n fallback */ }
+    });
+  }, []);
 
-  const timeline = [
-    {
-      year: "2024",
-      title: t("timeline.2024.title"),
-      description: t("timeline.2024.description"),
-    },
-    {
-      year: "2025",
-      title: t("timeline.2025.title"),
-      description: t("timeline.2025.description"),
-    },
-    {
-      year: "2026",
-      title: t("timeline.2026.title"),
-      description: t("timeline.2026.description"),
-    },
-  ];
+  /** Read a top-level field from a content block, with locale awareness. */
+  function loc(c: SiteContent | undefined, field: "title" | "subtitle" | "description"): string | null {
+    if (!c) return null;
+    const en = c[`${field}En` as keyof SiteContent] as string | null;
+    const zh = c[field] as string | null;
+    return locale === "en" ? en || zh : zh;
+  }
 
-  const team = [
-    {
-      name: t("team.chair.name"),
-      role: t("team.chair.role"),
-      bio: t("team.chair.bio"),
-    },
-    {
-      name: t("team.viceChair.name"),
-      role: t("team.viceChair.role"),
-      bio: t("team.viceChair.bio"),
-    },
-    {
-      name: t("team.secretaryGeneral.name"),
-      role: t("team.secretaryGeneral.role"),
-      bio: t("team.secretaryGeneral.bio"),
-    },
-  ];
+  /** Read a nested extra field from a content block. */
+  function ext(c: SiteContent | undefined, itemKey: string, field: string): string | null {
+    const extra = c?.extra;
+    if (!extra?.[itemKey]) return null;
+    const item = extra[itemKey];
+    return locale === "en" ? item[`${field}En`] || item[field] : item[field];
+  }
+
+  const highlightKeys = ["system", "action", "momentum", "winwin"] as const;
+  const highlightIcons = [Target, Zap, Globe, Users];
+
+  const highlights = highlightKeys.map((key, i) => ({
+    icon: highlightIcons[i],
+    title: ext(contents.highlights || contents.mission, key, "title") || t(`highlights.${key}.title`),
+    description: ext(contents.highlights || contents.mission, key, "description") || t(`highlights.${key}.description`),
+  }));
+
+  const timeline = ["2024", "2025", "2026"].map((year) => ({
+    year,
+    title: ext(contents.timeline, year, "title") || t(`timeline.${year}.title`),
+    description: ext(contents.timeline, year, "description") || t(`timeline.${year}.description`),
+  }));
+
+  const teamKeys = ["chair", "viceChair", "secretaryGeneral"] as const;
+  const team = teamKeys.map((key) => ({
+    name: ext(contents.team, key, "name") || t(`team.${key}.name`),
+    role: ext(contents.team, key, "role") || t(`team.${key}.role`),
+    bio: ext(contents.team, key, "bio") || t(`team.${key}.bio`),
+  }));
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -99,12 +105,12 @@ export default function AboutPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
             >
-                <h2 className="text-3xl font-bold text-slate-900 mb-6">{t("mission.title")}</h2>
+                <h2 className="text-3xl font-bold text-slate-900 mb-6">{loc(contents.mission, "title") || t("mission.title")}</h2>
               <p className="text-lg text-emerald-600 font-semibold mb-4">
-                  {t("mission.tagline")}
+                  {loc(contents.mission, "subtitle") || t("mission.tagline")}
               </p>
               <p className="text-slate-600 leading-relaxed mb-6">
-                  {t("mission.description")}
+                  {loc(contents.mission, "description") || t("mission.description")}
               </p>
               <div className="flex gap-4">
                 <Link href="/events">
@@ -147,8 +153,8 @@ export default function AboutPage() {
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">{t("timelineTitle")}</h2>
-              <p className="text-slate-600">{t("timelineSubtitle")}</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">{loc(contents.timeline, "title") || t("timelineTitle")}</h2>
+              <p className="text-slate-600">{loc(contents.timeline, "subtitle") || t("timelineSubtitle")}</p>
           </div>
           <div className="max-w-3xl mx-auto">
             {timeline.map((item, index) => (
@@ -178,8 +184,8 @@ export default function AboutPage() {
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">{t("teamTitle")}</h2>
-              <p className="text-slate-600">{t("teamSubtitle")}</p>
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">{loc(contents.team, "title") || t("teamTitle")}</h2>
+              <p className="text-slate-600">{loc(contents.team, "subtitle") || t("teamSubtitle")}</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             {team.map((member, index) => (

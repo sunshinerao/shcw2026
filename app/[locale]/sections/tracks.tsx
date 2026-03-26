@@ -158,7 +158,7 @@ export function TracksSection() {
   if (!isLoading && tracks.length === 0) return null;
 
   return (
-    <section id="tracks" className="py-20 sm:py-28 bg-slate-50" ref={ref}>
+    <section id="tracks" className="pt-20 sm:pt-28 pb-12 sm:pb-16 bg-slate-50" ref={ref}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -207,9 +207,9 @@ export function TracksSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center mt-12"
+          className="text-center mt-8"
         >
-          <Link href="/tracks">
+          <Link href="/events">
             <Button
               variant="outline"
               size="lg"

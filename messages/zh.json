@@ -1992,6 +1992,9 @@
     "subtitle": "管理首页「关于我们」等内容",
     "aboutUs": "关于我们",
     "mission": "使命愿景",
+    "highlights": "四个标签",
+    "timeline": "发展历程",
+    "team": "核心团队",
     "saveSuccess": "内容已保存",
     "saveFailed": "保存失败",
     "form": {
@@ -2001,6 +2004,12 @@
       "sectionSubtitleEn": "英文副标题",
       "sectionDescription": "描述",
       "sectionDescriptionEn": "英文描述",
+      "name": "姓名",
+      "nameEn": "英文姓名",
+      "role": "职务",
+      "roleEn": "英文职务",
+      "bio": "简介",
+      "bioEn": "英文简介",
       "save": "保存"
     }
   }

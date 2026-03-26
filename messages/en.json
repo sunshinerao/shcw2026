@@ -1992,6 +1992,9 @@
     "subtitle": "Manage homepage About Us and other content",
     "aboutUs": "About Us",
     "mission": "Mission",
+    "highlights": "Highlights",
+    "timeline": "Timeline",
+    "team": "Core Team",
     "saveSuccess": "Content saved",
     "saveFailed": "Failed to save",
     "form": {
@@ -2001,6 +2004,12 @@
       "sectionSubtitleEn": "English Subtitle",
       "sectionDescription": "Description",
       "sectionDescriptionEn": "English Description",
+      "name": "Name",
+      "nameEn": "English Name",
+      "role": "Role",
+      "roleEn": "English Role",
+      "bio": "Bio",
+      "bioEn": "English Bio",
       "save": "Save"
     }
   }
