@@ -37,7 +37,7 @@ export async function GET(
       where: { id: params.id },
       include: {
         user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },
-        event: { select: { id: true, title: true, titleEn: true, date: true } },
+        event: { select: { id: true, title: true, titleEn: true, startDate: true } },
       },
     });
 
@@ -125,7 +125,7 @@ export async function PUT(
         data: { status: InvitationStatus.DOWNLOADED },
         include: {
           user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },
-          event: { select: { id: true, title: true, titleEn: true, date: true } },
+          event: { select: { id: true, title: true, titleEn: true, startDate: true } },
         },
       });
 
@@ -155,7 +155,7 @@ export async function PUT(
       data: updateData,
       include: {
         user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },
-        event: { select: { id: true, title: true, titleEn: true, date: true } },
+        event: { select: { id: true, title: true, titleEn: true, startDate: true } },
       },
     });
 

@@ -20,7 +20,8 @@ type PublicEvent = {
   descriptionEn?: string | null;
   shortDesc?: string | null;
   shortDescEn?: string | null;
-  date: string;
+  startDate: string;
+  endDate: string;
   startTime: string;
   endTime: string;
   venue: string;
@@ -149,7 +150,7 @@ export default function EventsPage() {
   });
 
   const groupedEvents = filteredEvents.reduce<Record<string, PublicEvent[]>>((acc, event) => {
-    const dateKey = event.date.slice(0, 10);
+    const dateKey = event.startDate.slice(0, 10);
 
     if (!acc[dateKey]) {
       acc[dateKey] = [];

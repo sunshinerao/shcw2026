@@ -91,7 +91,7 @@ export async function GET(req: NextRequest) {
         },
         include: {
           event: {
-            select: { title: true, date: true, startTime: true, endTime: true },
+            select: { title: true, startDate: true, startTime: true, endTime: true },
           },
         },
       });
@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
       }
 
       const passState = getEventPassState({
-        date: registration.event.date,
+        startDate: registration.event.startDate,
         startTime: registration.event.startTime,
         endTime: registration.event.endTime,
         checkedInAt: registration.checkedInAt,

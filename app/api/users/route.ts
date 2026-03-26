@@ -148,7 +148,7 @@ export async function GET(req: NextRequest) {
                   id: true,
                   title: true,
                   titleEn: true,
-                  date: true,
+                  startDate: true,
                 },
               },
             },

@@ -128,7 +128,7 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-        orderBy: [{ date: "asc" }, { startTime: "asc" }],
+        orderBy: [{ startDate: "asc" }, { startTime: "asc" }],
         skip,
         take: pageSize,
       }),
@@ -186,7 +186,8 @@ export async function POST(req: NextRequest) {
       descriptionEn,
       shortDesc,
       shortDescEn,
-      date,
+      startDate,
+      endDate,
       startTime,
       endTime,
       venue,
@@ -206,7 +207,7 @@ export async function POST(req: NextRequest) {
       hostType,
     } = body;
 
-    if (!title || !description || !date || !startTime || !endTime || !venue || !type) {
+    if (!title || !description || !startDate || !startTime || !endTime || !venue || !type) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "eventRequired") },
         { status: 400 }
@@ -220,8 +221,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const parsedDate = parseEventDate(date);
-    if (!parsedDate) {
+    const parsedStartDate = parseEventDate(startDate);
+    if (!parsedStartDate) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "invalidEventDate") },
+        { status: 400 }
+      );
+    }
+
+    const parsedEndDate = endDate ? parseEventDate(endDate) : parsedStartDate;
+    if (!parsedEndDate) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "invalidEventDate") },
         { status: 400 }
@@ -236,7 +245,8 @@ export async function POST(req: NextRequest) {
         descriptionEn: descriptionEn || null,
         shortDesc: shortDesc || null,
         shortDescEn: shortDescEn || null,
-        date: parsedDate,
+        startDate: parsedStartDate,
+        endDate: parsedEndDate,
         startTime,
         endTime,
         venue,

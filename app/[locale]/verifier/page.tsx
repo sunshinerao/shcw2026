@@ -48,7 +48,7 @@ interface CheckInResult {
     event?: {
       id: string;
       title: string;
-      date: Date;
+      startDate: Date;
       venue: string;
     };
     registration?: {
@@ -328,7 +328,7 @@ export default function VerifierPage() {
                         </div>
                         <h4 className="font-semibold text-slate-900">{result.data.event.title}</h4>
                         <p className="text-sm text-slate-500">
-                          {new Date(result.data.event.date).toLocaleDateString("zh-CN")} · {result.data.event.venue}
+                          {new Date(result.data.event.startDate).toLocaleDateString("zh-CN")} · {result.data.event.venue}
                         </p>
                       </div>
                     )}

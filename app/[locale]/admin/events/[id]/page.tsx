@@ -71,7 +71,8 @@ type EventInfo = {
   id: string;
   title: string;
   titleEn?: string | null;
-  date: string;
+  startDate: string;
+  endDate: string;
   startTime: string;
   endTime: string;
   venue: string;
@@ -440,8 +441,13 @@ export default function EventAgendaPage({
               <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
                 <span className="inline-flex items-center">
                   <Calendar className="mr-1 h-4 w-4" />
-                  {new Date(event.date).toLocaleDateString(
+                  {new Date(event.startDate).toLocaleDateString(
                     locale === "en" ? "en-US" : "zh-CN"
+                  )}
+                  {event.endDate && event.endDate.slice(0, 10) !== event.startDate.slice(0, 10) && (
+                    <> - {new Date(event.endDate).toLocaleDateString(
+                      locale === "en" ? "en-US" : "zh-CN"
+                    )}</>
                   )}
                 </span>
                 <span className="inline-flex items-center">

@@ -29,7 +29,7 @@ type InvitationRequest = {
   guestEmail?: string | null;
   language: string;
   eventId?: string | null;
-  event?: { id: string; title: string; titleEn?: string | null; date: string } | null;
+  event?: { id: string; title: string; titleEn?: string | null; startDate: string } | null;
   user: { id: string; name: string; email: string; title?: string | null; organization?: { name: string } | null };
   purpose?: string | null;
   notes?: string | null;

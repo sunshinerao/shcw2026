@@ -79,9 +79,9 @@ export default function PassPage() {
         const nextPasses = await Promise.all(
           registrations.map(async (registration: any) => {
             const event = registration.event;
-            const eventDate = new Date(event.date);
+            const eventDate = new Date(event.startDate);
             const passState = getEventPassState({
-              date: event.date,
+              startDate: event.startDate,
               startTime: event.startTime,
               endTime: event.endTime,
               checkedInAt: registration.checkedInAt,
@@ -110,7 +110,7 @@ export default function PassPage() {
               qrCodeSvg,
               checkedIn: Boolean(registration.checkedInAt),
               pointsEarned: registration.pointsEarned,
-              date: event.date,
+              date: event.startDate,
               startTime: event.startTime,
               endTime: event.endTime,
               passState,

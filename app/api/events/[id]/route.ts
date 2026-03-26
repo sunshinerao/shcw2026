@@ -147,7 +147,8 @@ export async function PUT(
       descriptionEn,
       shortDesc,
       shortDescEn,
-      date,
+      startDate,
+      endDate,
       startTime,
       endTime,
       venue,
@@ -169,7 +170,7 @@ export async function PUT(
 
     if (
       title !== undefined &&
-      (!title || !description || !date || !startTime || !endTime || !venue || !type)
+      (!title || !description || !startDate || !startTime || !endTime || !venue || !type)
     ) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "eventRequired") },
@@ -184,17 +185,28 @@ export async function PUT(
       );
     }
 
-    let parsedDate: Date | undefined;
-    if (date !== undefined) {
-      const nextDate = parseEventDate(date);
+    let parsedStartDate: Date | undefined;
+    if (startDate !== undefined) {
+      const nextDate = parseEventDate(startDate);
       if (!nextDate) {
         return NextResponse.json(
           { success: false, error: apiMessage(requestLocale, "invalidEventDate") },
           { status: 400 }
         );
       }
+      parsedStartDate = nextDate;
+    }
 
-      parsedDate = nextDate;
+    let parsedEndDate: Date | undefined;
+    if (endDate !== undefined) {
+      const nextDate = parseEventDate(endDate);
+      if (!nextDate) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "invalidEventDate") },
+          { status: 400 }
+        );
+      }
+      parsedEndDate = nextDate;
     }
 
     const event = await prisma.event.update({
@@ -206,7 +218,8 @@ export async function PUT(
         ...(descriptionEn !== undefined && { descriptionEn: descriptionEn || null }),
         ...(shortDesc !== undefined && { shortDesc: shortDesc || null }),
         ...(shortDescEn !== undefined && { shortDescEn: shortDescEn || null }),
-        ...(parsedDate && { date: parsedDate }),
+        ...(parsedStartDate && { startDate: parsedStartDate }),
+        ...(parsedEndDate && { endDate: parsedEndDate }),
         ...(startTime !== undefined && { startTime }),
         ...(endTime !== undefined && { endTime }),
         ...(venue !== undefined && { venue }),

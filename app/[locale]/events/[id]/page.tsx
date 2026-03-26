@@ -61,7 +61,8 @@ type PublicEvent = {
   descriptionEn?: string | null;
   shortDesc?: string | null;
   shortDescEn?: string | null;
-  date: string;
+  startDate: string;
+  endDate: string;
   startTime: string;
   endTime: string;
   venue: string;
@@ -336,7 +337,10 @@ export default function EventDetailPage() {
           <div className="flex flex-wrap items-center gap-6 text-sm">
             <div className="flex items-center text-slate-600">
               <Calendar className="w-4 h-4 mr-2 text-emerald-600" />
-              {formatEventDateLabel(event.date, locale)}
+              {formatEventDateLabel(event.startDate, locale)}
+              {event.endDate && event.endDate.slice(0, 10) !== event.startDate.slice(0, 10) && (
+                <> - {formatEventDateLabel(event.endDate, locale)}</>
+              )}
             </div>
             <div className="flex items-center text-slate-600">
               <Clock className="w-4 h-4 mr-2 text-emerald-600" />

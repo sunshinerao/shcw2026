@@ -87,7 +87,7 @@ type RegistrationSummary = {
     id: string;
     title: string;
     titleEn?: string | null;
-    date: string;
+    startDate: string;
   };
 };
 
@@ -799,7 +799,7 @@ export default function AdminUsersPage() {
                         <div className="flex items-center justify-between">
                           <p className="text-slate-700 font-medium">{eventTitle(registration)}</p>
                         </div>
-                        <p className="text-sm text-slate-500">{formatDate(registration.event.date)}</p>
+                        <p className="text-sm text-slate-500">{formatDate(registration.event.startDate)}</p>
                       </div>
                     ))}
                   </div>

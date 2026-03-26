@@ -25,7 +25,8 @@ type PublicEvent = {
   descriptionEn?: string | null;
   shortDesc?: string | null;
   shortDescEn?: string | null;
-  date: string;
+  startDate: string;
+  endDate: string;
   startTime: string;
   endTime: string;
   venue: string;
@@ -442,7 +443,10 @@ export default function EventRegisterPage() {
                   <Calendar className="w-5 h-5 text-emerald-600 mt-0.5" />
                   <div>
                     <p className="font-medium text-slate-900">
-                      {formatEventDateLabel(event.date, locale)}
+                      {formatEventDateLabel(event.startDate, locale)}
+                      {event.endDate && event.endDate.slice(0, 10) !== event.startDate.slice(0, 10) && (
+                        <> - {formatEventDateLabel(event.endDate, locale)}</>
+                      )}
                     </p>
                     <p className="text-sm text-slate-500">
                       {event.startTime} - {event.endTime}

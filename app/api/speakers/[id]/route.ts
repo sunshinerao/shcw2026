@@ -42,7 +42,7 @@ export async function GET(
                 id: true,
                 title: true,
                 titleEn: true,
-                date: true,
+                startDate: true,
                 venue: true,
               },
             },

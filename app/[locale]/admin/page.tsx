@@ -23,8 +23,8 @@ const recentRegistrations = [
 ];
 
 const upcomingEvents = [
-  { id: "1", title: "开幕典礼暨全球气候领导力峰会", titleEn: "Opening Ceremony and Global Climate Leadership Summit", date: "2026-04-20", registered: 234, capacity: 800 },
-  { id: "2", title: "未来食物系统工作坊", titleEn: "Future Food Systems Workshop", date: "2026-04-20", registered: 89, capacity: 120 },
+  { id: "1", title: "开幕典礼暨全球气候领导力峰会", titleEn: "Opening Ceremony and Global Climate Leadership Summit", startDate: "2026-04-20", registered: 234, capacity: 800 },
+  { id: "2", title: "未来食物系统工作坊", titleEn: "Future Food Systems Workshop", startDate: "2026-04-20", registered: 89, capacity: 120 },
 ];
 
 export default function AdminDashboard() {
@@ -172,7 +172,7 @@ export default function AdminDashboard() {
                 <div key={event.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100">
                   <div>
                     <h3 className="font-semibold text-slate-900">{locale === "en" ? event.titleEn : event.title}</h3>
-                    <p className="text-sm text-slate-500">{event.date}</p>
+                    <p className="text-sm text-slate-500">{event.startDate}</p>
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">

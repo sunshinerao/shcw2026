@@ -32,7 +32,8 @@ type ManagedEvent = {
   titleEn?: string | null;
   description: string;
   shortDesc?: string | null;
-  date: string;
+  startDate: string;
+  endDate: string;
   startTime: string;
   endTime: string;
   venue: string;
@@ -73,7 +74,8 @@ type EventFormState = {
   titleEn: string;
   description: string;
   shortDesc: string;
-  date: string;
+  startDate: string;
+  endDate: string;
   startTime: string;
   endTime: string;
   venue: string;
@@ -96,7 +98,8 @@ const initialFormState: EventFormState = {
   titleEn: "",
   description: "",
   shortDesc: "",
-  date: "",
+  startDate: "",
+  endDate: "",
   startTime: "09:00",
   endTime: "17:00",
   venue: "",
@@ -206,12 +209,19 @@ export default function AdminEventsPage() {
     });
   }, [events, locale, searchQuery]);
 
-  const formatDate = (value: string) => {
-    return new Date(value).toLocaleDateString(locale === "en" ? "en-US" : "zh-CN", {
+  const formatDate = (startDate: string, endDate?: string) => {
+    const opts: Intl.DateTimeFormatOptions = {
       year: "numeric",
       month: "short",
       day: "numeric",
-    });
+    };
+    const loc = locale === "en" ? "en-US" : "zh-CN";
+    const start = new Date(startDate).toLocaleDateString(loc, opts);
+    if (endDate && endDate.slice(0, 10) !== startDate.slice(0, 10)) {
+      const end = new Date(endDate).toLocaleDateString(loc, opts);
+      return `${start} - ${end}`;
+    }
+    return start;
   };
 
   const resetForm = () => {
@@ -231,7 +241,8 @@ export default function AdminEventsPage() {
       titleEn: event.titleEn || "",
       description: event.description,
       shortDesc: event.shortDesc || "",
-      date: new Date(event.date).toISOString().slice(0, 10),
+      startDate: new Date(event.startDate).toISOString().slice(0, 10),
+      endDate: new Date(event.endDate).toISOString().slice(0, 10),
       startTime: event.startTime,
       endTime: event.endTime,
       venue: event.venue,
@@ -268,7 +279,7 @@ export default function AdminEventsPage() {
     if (
       !formState.title ||
       !formState.description ||
-      !formState.date ||
+      !formState.startDate ||
       !formState.startTime ||
       !formState.endTime ||
       !formState.venue
@@ -286,7 +297,8 @@ export default function AdminEventsPage() {
         titleEn: formState.titleEn || null,
         description: formState.description,
         shortDesc: formState.shortDesc || null,
-        date: formState.date,
+        startDate: formState.startDate,
+        endDate: formState.endDate || formState.startDate,
         startTime: formState.startTime,
         endTime: formState.endTime,
         venue: formState.venue,
@@ -475,7 +487,7 @@ export default function AdminEventsPage() {
                             {event.isFeatured ? <Badge className="bg-amber-100 text-amber-700">{t("featured")}</Badge> : null}
                           </div>
                           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                            <span>{formatDate(event.date)}</span>
+                            <span>{formatDate(event.startDate, event.endDate)}</span>
                             <span>·</span>
                             <span>{event.startTime} - {event.endTime}</span>
                             <span>·</span>
@@ -582,8 +594,12 @@ export default function AdminEventsPage() {
               <Textarea id="event-short-desc" rows={2} value={formState.shortDesc} onChange={(event) => setFormState((previous) => ({ ...previous, shortDesc: event.target.value }))} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="event-date">{t("form.date")}</Label>
-              <Input id="event-date" type="date" value={formState.date} onChange={(event) => setFormState((previous) => ({ ...previous, date: event.target.value }))} />
+              <Label htmlFor="event-start-date">{t("form.startDate")}</Label>
+              <Input id="event-start-date" type="date" value={formState.startDate} onChange={(event) => setFormState((previous) => ({ ...previous, startDate: event.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="event-end-date">{t("form.endDate")}</Label>
+              <Input id="event-end-date" type="date" value={formState.endDate} onChange={(event) => setFormState((previous) => ({ ...previous, endDate: event.target.value }))} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="event-type">{t("form.type")}</Label>

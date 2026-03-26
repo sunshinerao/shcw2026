@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
         where,
         include: {
           user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },
-          event: { select: { id: true, title: true, titleEn: true, date: true } },
+          event: { select: { id: true, title: true, titleEn: true, startDate: true } },
         },
         orderBy: { createdAt: "desc" },
         skip,
@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
       },
       include: {
         user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },
-        event: { select: { id: true, title: true, titleEn: true, date: true } },
+        event: { select: { id: true, title: true, titleEn: true, startDate: true } },
       },
     });
 

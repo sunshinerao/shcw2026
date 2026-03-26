@@ -5,7 +5,7 @@ export type SupportedLocale = "zh" | "en";
 export type EventPassState = "upcoming" | "active" | "checkedIn" | "expired";
 
 interface EventTimeInput {
-  date: Date | string;
+  startDate: Date | string;
   startTime: string;
   endTime: string;
   checkedInAt?: Date | string | null;
@@ -37,8 +37,8 @@ export function getEventPassState(event: EventTimeInput, now = new Date()): Even
     return "checkedIn";
   }
 
-  const startAt = combineEventDateTime(event.date, event.startTime);
-  const endAt = combineEventDateTime(event.date, event.endTime);
+  const startAt = combineEventDateTime(event.startDate, event.startTime);
+  const endAt = combineEventDateTime(event.startDate, event.endTime);
   const entryOpenAt = new Date(startAt.getTime() - EVENT_PASS_ENTRY_WINDOW_MS);
 
   if (now > endAt) {

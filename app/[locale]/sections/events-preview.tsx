@@ -67,7 +67,7 @@ export function EventsPreviewSection() {
   }, [locale]);
 
   const groupedEvents = events.reduce((acc, event) => {
-    const dateKey = event.date.slice(0, 10);
+    const dateKey = event.startDate.slice(0, 10);
     if (!acc[dateKey]) {
       acc[dateKey] = [];
     }

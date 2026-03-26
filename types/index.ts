@@ -57,7 +57,8 @@ export interface Event {
   descriptionEn?: string;
   shortDesc?: string;
   shortDescEn?: string;
-  date: Date;
+  startDate: Date;
+  endDate: Date;
   startTime: string;
   endTime: string;
   venue: string;

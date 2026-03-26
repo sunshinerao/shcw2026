@@ -18,7 +18,7 @@ interface RegistrationItem {
     id: string;
     title: string;
     titleEn?: string | null;
-    date: string;
+    startDate: string;
     startTime: string;
     endTime: string;
     venue: string;
@@ -109,11 +109,11 @@ export default function DashboardPage() {
 
   const upcomingEvents = useMemo(() => {
     return registrations
-      .filter((registration) => combineEventDateTime(registration.event.date, registration.event.endTime).getTime() >= Date.now())
+      .filter((registration) => combineEventDateTime(registration.event.startDate, registration.event.endTime).getTime() >= Date.now())
       .sort(
         (left, right) =>
-          combineEventDateTime(left.event.date, left.event.startTime).getTime() -
-          combineEventDateTime(right.event.date, right.event.startTime).getTime()
+          combineEventDateTime(left.event.startDate, left.event.startTime).getTime() -
+          combineEventDateTime(right.event.startDate, right.event.startTime).getTime()
       )
       .slice(0, 3);
   }, [registrations]);
@@ -233,7 +233,7 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 {upcomingEvents.map((registration) => {
                   const event = registration.event;
-                  const eventDate = new Date(event.date);
+                  const eventDate = new Date(event.startDate);
                   const monthLabel = locale === "en"
                     ? eventDate.toLocaleString("en-US", { month: "short" })
                     : `${eventDate.getMonth() + 1}月`;

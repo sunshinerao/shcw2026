@@ -189,7 +189,7 @@ async function verifyAndCheckIn(
           id: true,
           title: true,
           titleEn: true,
-          date: true,
+          startDate: true,
           startTime: true,
           endTime: true,
           type: true,
@@ -214,7 +214,7 @@ async function verifyAndCheckIn(
   }
 
   const passState = getEventPassState({
-    date: registration.event.date,
+    startDate: registration.event.startDate,
     startTime: registration.event.startTime,
     endTime: registration.event.endTime,
     checkedInAt: registration.checkedInAt,
@@ -388,7 +388,7 @@ export async function GET(req: NextRequest) {
           select: {
             id: true,
             title: true,
-            date: true,
+            startDate: true,
           },
         },
       },

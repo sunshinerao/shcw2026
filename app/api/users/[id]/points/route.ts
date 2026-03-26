@@ -60,7 +60,7 @@ export async function GET(
             select: {
               id: true,
               title: true,
-              date: true,
+              startDate: true,
             },
           },
         },

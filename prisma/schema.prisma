@@ -232,8 +232,9 @@ model Event {
   shortDesc    String?  // 简短描述
   shortDescEn  String?
   
-  // 时间
-  date         DateTime
+  // 时间（支持跨天活动）
+  startDate    DateTime
+  endDate      DateTime
   startTime    String
   endTime      String
   
@@ -277,7 +278,7 @@ model Event {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   
-  @@index([date])
+  @@index([startDate])
   @@index([trackId])
   @@map("events")
 }

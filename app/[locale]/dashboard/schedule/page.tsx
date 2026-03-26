@@ -15,7 +15,7 @@ interface ScheduleEvent {
   id: string;
   title: string;
   titleEn: string;
-  date: string;
+  startDate: string;
   time: string;
   venue: string;
   venueEn: string;
@@ -54,7 +54,7 @@ export default function SchedulePage() {
           registrationId: reg.id,
           title: reg.event.title,
           titleEn: reg.event.titleEn || reg.event.title,
-          date: reg.event.date,
+          startDate: reg.event.startDate,
           time: `${reg.event.startTime} - ${reg.event.endTime}`,
           venue: reg.event.venue,
           venueEn: reg.event.venue,
@@ -71,7 +71,7 @@ export default function SchedulePage() {
           wishlistId: item.id,
           title: item.event.title,
           titleEn: item.event.titleEn || item.event.title,
-          date: item.event.date,
+          startDate: item.event.startDate,
           time: `${item.event.startTime} - ${item.event.endTime}`,
           venue: item.event.venue,
           venueEn: item.event.venue,
@@ -229,7 +229,7 @@ interface EventCardProps {
 }
 
 function EventCard({ event, isRegistered, locale, t, onRemove }: EventCardProps) {
-  const eventDate = new Date(event.date);
+  const eventDate = new Date(event.startDate);
   const monthLabel = locale === "en"
     ? eventDate.toLocaleString("en-US", { month: "short" })
     : `${eventDate.getMonth() + 1}月`;

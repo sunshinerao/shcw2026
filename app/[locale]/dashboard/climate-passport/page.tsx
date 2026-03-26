@@ -25,7 +25,7 @@ interface ProfileResponse {
 interface RegistrationItem {
   checkedInAt?: string | null;
   event: {
-    date: string;
+    startDate: string;
     startTime: string;
     endTime: string;
   };
@@ -96,7 +96,7 @@ export default function ClimatePassportPage() {
         .filter((registration) => Boolean(registration.checkedInAt))
         .reduce(
           (total, registration) =>
-            total + getEventDurationMinutes(registration.event.date, registration.event.startTime, registration.event.endTime),
+            total + getEventDurationMinutes(registration.event.startDate, registration.event.startTime, registration.event.endTime),
           0
         ),
     [registrations]

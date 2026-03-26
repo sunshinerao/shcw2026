@@ -114,7 +114,7 @@ async function main() {
 
   const publishedEvent = await prisma.event.findFirst({
     where: { isPublished: true },
-    orderBy: [{ date: "asc" }, { startTime: "asc" }],
+    orderBy: [{ startDate: "asc" }, { startTime: "asc" }],
     select: { id: true, title: true, titleEn: true },
   });
 
