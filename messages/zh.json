@@ -1586,6 +1586,9 @@
       "speaker": "演讲者：",
       "types": {
         "keynote": "主题演讲",
+        "panel": "圆桌讨论",
+        "workshop": "工作坊",
+        "break": "休息",
         "ceremony": "仪式",
         "networking": "交流",
         "registration": "签到"

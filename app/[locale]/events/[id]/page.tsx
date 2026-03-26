@@ -9,6 +9,7 @@ import {
   Calendar,
   Clock,
   MapPin,
+  Mic,
   Users,
   ArrowLeft,
   Share2,
@@ -21,12 +22,36 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
+
+type AgendaSpeaker = {
+  id: string;
+  name: string;
+  nameEn?: string | null;
+  avatar?: string | null;
+  title: string;
+  titleEn?: string | null;
+  organization: string;
+  organizationEn?: string | null;
+  isKeynote: boolean;
+};
+
+type AgendaItem = {
+  id: string;
+  title: string;
+  description?: string | null;
+  startTime: string;
+  endTime: string;
+  type: string;
+  venue?: string | null;
+  order: number;
+  speakers: AgendaSpeaker[];
+};
 
 type PublicEvent = {
   id: string;
@@ -47,6 +72,7 @@ type PublicEvent = {
   hostType?: string | null;
   maxAttendees?: number | null;
   isFeatured: boolean;
+  agendaItems?: AgendaItem[];
 };
 
 function formatEventDateLabel(dateValue: string, locale: string) {
@@ -364,19 +390,52 @@ export default function EventDetailPage() {
                   <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
                     <h2 className="text-2xl font-bold text-slate-900 mb-6">{t("agenda.title")}</h2>
                     <div className="space-y-4">
-                      <div className="flex gap-4 p-4 rounded-xl bg-slate-50">
-                        <div className="w-32 shrink-0 text-sm font-medium text-slate-500">
-                          {event.startTime} - {event.endTime}
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-slate-900">{localizedTitle}</h4>
-                          <p className="text-sm text-slate-500 mt-1">{event.venue}</p>
-                        </div>
-                        <Badge variant="outline" className="shrink-0">
-                          {getEventTypeLabel(event.type, locale)}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-slate-500">{t("agenda.empty")}</p>
+                      {event.agendaItems && event.agendaItems.length > 0 ? (
+                        event.agendaItems.map((item) => (
+                          <div key={item.id} className="flex gap-4 p-4 rounded-xl bg-slate-50">
+                            <div className="w-32 shrink-0 text-sm font-medium text-slate-500">
+                              {item.startTime} - {item.endTime}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
+                                <h4 className="font-semibold text-slate-900">{item.title}</h4>
+                                <Badge variant="outline" className="shrink-0 text-xs">
+                                  {t.has(`agenda.types.${item.type}`) ? t(`agenda.types.${item.type}` as Parameters<typeof t>[0]) : item.type}
+                                </Badge>
+                              </div>
+                              {item.description && (
+                                <p className="text-sm text-slate-600 mb-2">{item.description}</p>
+                              )}
+                              {item.venue && (
+                                <p className="text-xs text-slate-400 mb-2">
+                                  <MapPin className="inline w-3 h-3 mr-1" />
+                                  {item.venue}
+                                </p>
+                              )}
+                              {item.speakers.length > 0 && (
+                                <div className="flex flex-wrap items-center gap-2 mt-2">
+                                  <Mic className="h-3.5 w-3.5 text-slate-400" />
+                                  {item.speakers.map((speaker) => (
+                                    <div key={speaker.id} className="flex items-center gap-1.5 rounded-full bg-white pl-1 pr-2.5 py-0.5 border border-slate-200">
+                                      <Avatar className="h-5 w-5">
+                                        <AvatarImage src={speaker.avatar || undefined} />
+                                        <AvatarFallback className="text-[10px]">
+                                          {(locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name).charAt(0)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className="text-xs font-medium text-slate-700">
+                                        {locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-sm text-slate-500 text-center py-8">{t("agenda.empty")}</p>
+                      )}
                     </div>
                   </div>
                 </TabsContent>
@@ -384,17 +443,50 @@ export default function EventDetailPage() {
                 <TabsContent value="speakers" className="mt-0">
                   <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
                     <h2 className="text-2xl font-bold text-slate-900 mb-6">{t("speakersTitle")}</h2>
-                    <div className="flex items-center gap-4 p-6 rounded-xl border border-dashed border-slate-200 bg-slate-50">
-                      <Avatar className="w-16 h-16">
-                        <AvatarFallback className="bg-emerald-100 text-emerald-700 text-lg">
-                          {localizedTitle.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h4 className="font-semibold text-slate-900">{localizedTitle}</h4>
-                        <p className="text-sm text-slate-500">{t("speakersEmpty")}</p>
-                      </div>
-                    </div>
+                    {(() => {
+                      const allSpeakers = new Map<string, AgendaSpeaker>();
+                      event.agendaItems?.forEach((item) =>
+                        item.speakers.forEach((s) => allSpeakers.set(s.id, s))
+                      );
+                      const speakers = Array.from(allSpeakers.values());
+
+                      if (speakers.length === 0) {
+                        return (
+                          <p className="text-sm text-slate-500 text-center py-8">{t("speakersEmpty")}</p>
+                        );
+                      }
+
+                      return (
+                        <div className="grid sm:grid-cols-2 gap-4">
+                          {speakers.map((speaker) => {
+                            const name = locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name;
+                            const title = locale === "en" && speaker.titleEn ? speaker.titleEn : speaker.title;
+                            const org = locale === "en" && speaker.organizationEn ? speaker.organizationEn : speaker.organization;
+
+                            return (
+                              <div key={speaker.id} className="flex items-center gap-4 p-4 rounded-xl border border-slate-100 hover:border-emerald-200 transition-colors">
+                                <Avatar className="w-14 h-14 shrink-0">
+                                  <AvatarImage src={speaker.avatar || undefined} />
+                                  <AvatarFallback className="bg-emerald-100 text-emerald-700 text-lg font-semibold">
+                                    {name.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-2">
+                                    <h4 className="font-semibold text-slate-900 truncate">{name}</h4>
+                                    {speaker.isKeynote && (
+                                      <Badge className="bg-purple-100 text-purple-700 text-[10px] px-1.5 py-0">Keynote</Badge>
+                                    )}
+                                  </div>
+                                  <p className="text-sm text-slate-600 truncate">{title}</p>
+                                  <p className="text-xs text-slate-400 truncate">{org}</p>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    })()}
                   </div>
                 </TabsContent>
               </Tabs>

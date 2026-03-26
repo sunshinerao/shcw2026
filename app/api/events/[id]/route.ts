@@ -57,6 +57,24 @@ export async function GET(
             order: true,
           },
         },
+        agendaItems: {
+          include: {
+            speakers: {
+              select: {
+                id: true,
+                name: true,
+                nameEn: true,
+                avatar: true,
+                title: true,
+                titleEn: true,
+                organization: true,
+                organizationEn: true,
+                isKeynote: true,
+              },
+            },
+          },
+          orderBy: [{ order: "asc" }, { startTime: "asc" }],
+        },
         _count: {
           select: {
             registrations: true,

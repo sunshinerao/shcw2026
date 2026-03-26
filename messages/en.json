@@ -1587,6 +1587,9 @@
       "types": {
         "keynote": "Keynote",
         "ceremony": "Ceremony",
+        "panel": "Panel",
+        "workshop": "Workshop",
+        "break": "Break",
         "networking": "Networking",
         "registration": "Registration"
       }
