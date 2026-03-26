@@ -155,6 +155,8 @@ export function TracksSection() {
 
   const filteredTracks = activeCategory === "all" ? tracks : tracks.filter((track) => track.category === activeCategory);
 
+  if (!isLoading && tracks.length === 0) return null;
+
   return (
     <section id="tracks" className="py-20 sm:py-28 bg-slate-50" ref={ref}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
