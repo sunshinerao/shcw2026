@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mic,
@@ -266,8 +267,11 @@ export default function AdminSpeakersPage() {
       }
 
       setFormData((prev) => ({ ...prev, avatar: data.data.url }));
+      toast.success(t("avatarUploadSuccess") || "头像上传成功");
     } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : "Upload failed");
+      const msg = error instanceof Error ? error.message : "Upload failed";
+      setStatusMessage(msg);
+      toast.error(msg);
     } finally {
       setIsUploading(false);
       if (avatarInputRef.current) {

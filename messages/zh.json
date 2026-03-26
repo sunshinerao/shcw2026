@@ -778,6 +778,7 @@
     "adminPartnersPage": {
       "title": "合作伙伴",
       "subtitle": "管理赞助商和合作伙伴信息。",
+      "logoUploadSuccess": "Logo 上传成功",
       "add": "添加合作伙伴",
       "searchPlaceholder": "搜索公司名称...",
       "filters": {
@@ -852,6 +853,7 @@
       "subtitle": "管理平台所有嘉宾信息。",
       "loading": "正在加载嘉宾...",
       "loadError": "加载嘉宾失败。",
+      "avatarUploadSuccess": "头像上传成功",
       "add": "添加嘉宾",
       "searchPlaceholder": "搜索嘉宾姓名、英文名或机构...",
       "filters": {

@@ -778,6 +778,7 @@
     "adminPartnersPage": {
       "title": "Partners",
       "subtitle": "Manage sponsors and partner information.",
+      "logoUploadSuccess": "Logo uploaded successfully",
       "add": "Add partner",
       "searchPlaceholder": "Search by company name...",
       "filters": {
@@ -852,6 +853,7 @@
       "subtitle": "Manage all speaker records on the platform.",
       "loading": "Loading speakers...",
       "loadError": "Failed to load speakers.",
+      "avatarUploadSuccess": "Avatar uploaded successfully",
       "add": "Add speaker",
       "searchPlaceholder": "Search by speaker name, English name, or organization...",
       "filters": {

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Building2,
@@ -464,8 +465,11 @@ export default function AdminPartnersPage() {
       }
 
       setFormData((prev) => ({ ...prev, logo: data.data.url }));
+      toast.success(t("logoUploadSuccess") || "Logo上传成功");
     } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : genericLoadError);
+      const msg = error instanceof Error ? error.message : genericLoadError;
+      setStatusMessage(msg);
+      toast.error(msg);
     } finally {
       setIsUploadingLogo(false);
       if (logoInputRef.current) {
