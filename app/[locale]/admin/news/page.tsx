@@ -85,16 +85,25 @@ export default function AdminNewsPage() {
   const [form, setForm] = useState<NewsForm>({ ...emptyForm });
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"success" | "error">("success");
+  const [seeding, setSeeding] = useState(false);
+
+  const [loadError, setLoadError] = useState(false);
 
   const loadNews = useCallback(async () => {
     try {
       setLoading(true);
+      setLoadError(false);
       const res = await fetch("/api/news?pageSize=50");
       const data = await res.json();
       if (data.success) {
-        setNews(data.data.news || []);
+        setNews(data.data?.news || []);
+      } else {
+        setLoadError(true);
+        setStatusTone("error");
+        setStatusMessage(data.error || t("loadError"));
       }
     } catch {
+      setLoadError(true);
       setStatusTone("error");
       setStatusMessage(t("loadError"));
     } finally {
@@ -212,6 +221,27 @@ export default function AdminNewsPage() {
     }
   }
 
+  async function handleSeedNews() {
+    setSeeding(true);
+    try {
+      const res = await fetch("/api/news/seed", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setStatusTone("success");
+        setStatusMessage(`${t("seedSuccess")}: ${data.data.created} ${t("seedCreated")}, ${data.data.skipped} ${t("seedSkipped")}`);
+        loadNews();
+      } else {
+        setStatusTone("error");
+        setStatusMessage(data.error || t("loadError"));
+      }
+    } catch {
+      setStatusTone("error");
+      setStatusMessage(t("loadError"));
+    } finally {
+      setSeeding(false);
+    }
+  }
+
   return (
     <AdminSectionGuard section="news">
       <div className="space-y-6">
@@ -250,7 +280,18 @@ export default function AdminNewsPage() {
           <Card>
             <CardContent className="py-20 text-center text-slate-500">
               <Newspaper className="w-12 h-12 mx-auto mb-4 text-slate-300" />
-              <p>{t("loadError")}</p>
+              <p>{loadError ? t("loadError") : t("empty")}</p>
+              {!loadError && (
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={handleSeedNews}
+                  disabled={seeding}
+                >
+                  {seeding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+                  {t("seedButton")}
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
