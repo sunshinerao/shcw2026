@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { randomUUID } from "crypto";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canManageEvents } from "@/lib/permissions";
@@ -19,6 +16,7 @@ const ALLOWED_CATEGORIES = new Set(["speakers", "sponsors"]);
 /**
  * POST /api/upload/image
  * Upload an image for speakers (avatar) or sponsors (logo).
+ * Returns a base64 data URL (compatible with Vercel's read-only filesystem).
  * Form data: file (the image), category ("speakers" | "sponsors")
  */
 export async function POST(req: NextRequest) {
@@ -77,23 +75,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate safe filename
-    const ext = path.extname(file.name) || ".png";
-    const safeName = `${randomUUID()}${ext}`;
-
-    // Save to public/uploads/<category>/
-    const uploadDir = path.join(process.cwd(), "public", "uploads", category);
-    await mkdir(uploadDir, { recursive: true });
-    const filePath = path.join(uploadDir, safeName);
-
+    // Convert to base64 data URL (works on Vercel's read-only filesystem)
     const bytes = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(bytes));
-
-    const fileUrl = `/uploads/${category}/${safeName}`;
+    const base64 = Buffer.from(bytes).toString("base64");
+    const dataUrl = `data:${file.type};base64,${base64}`;
 
     return NextResponse.json({
       success: true,
-      data: { url: fileUrl, filename: file.name },
+      data: { url: dataUrl, filename: file.name },
     });
   } catch (error) {
     console.error("Upload image error:", error);
