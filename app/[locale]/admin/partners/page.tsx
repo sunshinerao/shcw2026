@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -255,6 +255,9 @@ export default function AdminPartnersPage() {
   const [deletingSponsor, setDeletingSponsor] = useState<Sponsor | null>(null);
   const [formData, setFormData] = useState<SponsorFormData>(initialFormData);
 
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+
   const loadingLabel = locale === "en" ? "Loading partners..." : "正在加载合作伙伴...";
   const genericLoadError = locale === "en" ? "Failed to load partners." : "加载合作伙伴失败。";
 
@@ -440,17 +443,35 @@ export default function AdminPartnersPage() {
   };
 
   // 处理Logo上传
-  const handleLogoUpload = () => {
-    // 模拟上传功能
-    const mockLogos = [
-      "/images/sponsors/logo1.png",
-      "/images/sponsors/logo2.png",
-      "/images/sponsors/logo3.png",
-      "/images/sponsors/logo4.png",
-    ];
-    const randomLogo =
-      mockLogos[Math.floor(Math.random() * mockLogos.length)];
-    setFormData((prev) => ({ ...prev, logo: randomLogo }));
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("category", "sponsors");
+
+      const response = await fetch("/api/upload/image", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      setFormData((prev) => ({ ...prev, logo: data.data.url }));
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : genericLoadError);
+    } finally {
+      setIsUploadingLogo(false);
+      if (logoInputRef.current) {
+        logoInputRef.current.value = "";
+      }
+    }
   };
 
   return (
@@ -761,14 +782,22 @@ export default function AdminPartnersPage() {
                   )}
                 </div>
                 <div className="flex flex-col gap-2">
+                  <input
+                    ref={logoInputRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="hidden"
+                    onChange={(e) => void handleLogoUpload(e)}
+                  />
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={handleLogoUpload}
+                    disabled={isUploadingLogo}
+                    onClick={() => logoInputRef.current?.click()}
                     className="w-fit"
                   >
                     <Upload className="w-4 h-4 mr-2" />
-                    {t("form.uploadLogo")}
+                    {isUploadingLogo ? "..." : t("form.uploadLogo")}
                   </Button>
                   <p className="text-xs text-slate-500">
                     {t("form.logoHelp")}

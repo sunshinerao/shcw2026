@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -241,6 +241,40 @@ export default function AdminSpeakersPage() {
     isKeynote: false,
     order: 0,
   });
+
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("category", "speakers");
+
+      const response = await fetch("/api/upload/image", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Upload failed");
+      }
+
+      setFormData((prev) => ({ ...prev, avatar: data.data.url }));
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : "Upload failed");
+    } finally {
+      setIsUploading(false);
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = "";
+      }
+    }
+  };
 
   const loadingLabel = t("loading");
   const genericLoadError = t("loadError");
@@ -719,9 +753,22 @@ export default function AdminSpeakersPage() {
                 </AvatarFallback>
               </Avatar>
               <div>
-                <Button variant="outline" size="sm">
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  className="hidden"
+                  onChange={(e) => void handleAvatarUpload(e)}
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  disabled={isUploading}
+                  onClick={() => avatarInputRef.current?.click()}
+                >
                   <Upload className="w-4 h-4 mr-2" />
-                  {t("form.uploadAvatar")}
+                  {isUploading ? "..." : t("form.uploadAvatar")}
                 </Button>
                 <p className="text-xs text-slate-500 mt-1">
                   {t("form.avatarHelp")}

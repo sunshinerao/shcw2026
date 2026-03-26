@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
-import { Calendar, Edit2, Eye, Plus, Search, Star, Trash2, Users } from "lucide-react";
+import { Calendar, Edit2, Eye, Mic, Plus, Search, Star, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
@@ -501,6 +501,11 @@ export default function AdminEventsPage() {
                           <Link href={`/events/${event.id}`}>
                             <Button size="sm" variant="ghost">
                               <Eye className="h-4 w-4" />
+                            </Button>
+                          </Link>
+                          <Link href={`/admin/events/${event.id}`}>
+                            <Button size="sm" variant="outline" title={t("agenda.title")}>
+                              <Mic className="h-4 w-4" />
                             </Button>
                           </Link>
                           <Button size="sm" variant="outline" onClick={() => openEditDialog(event)}>
