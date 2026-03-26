@@ -38,9 +38,9 @@ export default function AdminDashboard() {
         const eventsData = await eventsRes.json();
         const checkinsData = await checkinsRes.json();
 
-        const totalUsers = usersData.pagination?.total ?? 0;
-        const events = eventsData.data ?? [];
-        const totalEvents = events.length;
+        const totalUsers = usersData.data?.pagination?.total ?? 0;
+        const events = eventsData.data?.events ?? [];
+        const totalEvents = eventsData.data?.pagination?.total ?? events.length;
         const totalRegistrations = events.reduce(
           (sum: number, e: any) => sum + (e._count?.registrations ?? 0),
           0
