@@ -70,7 +70,14 @@ export async function POST(req: NextRequest) {
     let existingCode = await prisma.user.findUnique({
       where: { passCode },
     });
+    let passCodeAttempts = 0;
     while (existingCode) {
+      if (++passCodeAttempts >= 10) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "registerFailed") },
+          { status: 500 }
+        );
+      }
       passCode = generatePassCode();
       existingCode = await prisma.user.findUnique({
         where: { passCode },
@@ -82,7 +89,14 @@ export async function POST(req: NextRequest) {
     let existingPassport = await prisma.user.findUnique({
       where: { climatePassportId },
     });
+    let passportAttempts = 0;
     while (existingPassport) {
+      if (++passportAttempts >= 10) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "registerFailed") },
+          { status: 500 }
+        );
+      }
       climatePassportId = generateClimatePassportId();
       existingPassport = await prisma.user.findUnique({
         where: { climatePassportId },

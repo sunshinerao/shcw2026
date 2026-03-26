@@ -1,35 +1,105 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
-import { Users, Calendar, Ticket, TrendingUp, ArrowRight, Activity } from "lucide-react";
+import { Users, Calendar, Ticket, TrendingUp, ArrowRight, Activity, Loader2 } from "lucide-react";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "@/i18n/routing";
 
-// Mock stats data
-const stats = [
-  { key: "users", value: "1,234", change: "+12%", icon: Users, color: "text-blue-600", bgColor: "bg-blue-50" },
-  { key: "events", value: "13", change: "+3", icon: Calendar, color: "text-emerald-600", bgColor: "bg-emerald-50" },
-  { key: "registrations", value: "856", change: "+28%", icon: Ticket, color: "text-amber-600", bgColor: "bg-amber-50" },
-  { key: "visits", value: "342", change: "+15%", icon: Activity, color: "text-rose-600", bgColor: "bg-rose-50" },
-];
-
-const recentRegistrations = [
-  { id: "1", user: "张三", userEn: "Alex Zhang", event: "开幕典礼", eventEn: "Opening ceremony", time: "2分钟前", timeEn: "2 min ago", status: "success" },
-  { id: "2", user: "李四", userEn: "Lina Li", event: "未来食物工作坊", eventEn: "Future food workshop", time: "5分钟前", timeEn: "5 min ago", status: "success" },
-  { id: "3", user: "王五", userEn: "William Wang", event: "可持续贸易论坛", eventEn: "Sustainable trade forum", time: "12分钟前", timeEn: "12 min ago", status: "pending" },
-];
-
-const upcomingEvents = [
-  { id: "1", title: "开幕典礼暨全球气候领导力峰会", titleEn: "Opening Ceremony and Global Climate Leadership Summit", startDate: "2026-04-20", registered: 234, capacity: 800 },
-  { id: "2", title: "未来食物系统工作坊", titleEn: "Future Food Systems Workshop", startDate: "2026-04-20", registered: 89, capacity: 120 },
+const statIcons = [
+  { key: "users", icon: Users, color: "text-blue-600", bgColor: "bg-blue-50" },
+  { key: "events", icon: Calendar, color: "text-emerald-600", bgColor: "bg-emerald-50" },
+  { key: "registrations", icon: Ticket, color: "text-amber-600", bgColor: "bg-amber-50" },
+  { key: "checkins", icon: Activity, color: "text-rose-600", bgColor: "bg-rose-50" },
 ];
 
 export default function AdminDashboard() {
   const t = useTranslations("adminDashboardPage");
   const locale = useLocale();
+
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<{ key: string; value: string }[]>([]);
+  const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
+  const [recentRegistrations, setRecentRegistrations] = useState<any[]>([]);
+
+  useEffect(() => {
+    async function fetchDashboardData() {
+      try {
+        const [usersRes, eventsRes, checkinsRes] = await Promise.all([
+          fetch("/api/users?pageSize=1"),
+          fetch("/api/events?limit=100"),
+          fetch("/api/checkin?limit=5"),
+        ]);
+
+        const usersData = await usersRes.json();
+        const eventsData = await eventsRes.json();
+        const checkinsData = await checkinsRes.json();
+
+        const totalUsers = usersData.pagination?.total ?? 0;
+        const events = eventsData.data ?? [];
+        const totalEvents = events.length;
+        const totalRegistrations = events.reduce(
+          (sum: number, e: any) => sum + (e._count?.registrations ?? 0),
+          0
+        );
+        const totalCheckins = events.reduce(
+          (sum: number, e: any) => sum + (e._count?.checkins ?? 0),
+          0
+        );
+
+        setStats([
+          { key: "users", value: totalUsers.toLocaleString() },
+          { key: "events", value: String(totalEvents) },
+          { key: "registrations", value: totalRegistrations.toLocaleString() },
+          { key: "checkins", value: totalCheckins.toLocaleString() },
+        ]);
+
+        // 即将举办的活动（按日期升序，取前3个未过期的）
+        const now = new Date().toISOString();
+        const upcoming = events
+          .filter((e: any) => e.startDate >= now && e.isPublished)
+          .sort((a: any, b: any) => a.startDate.localeCompare(b.startDate))
+          .slice(0, 3)
+          .map((e: any) => ({
+            id: e.id,
+            title: e.title,
+            titleEn: e.titleEn,
+            startDate: e.startDate?.slice(0, 10),
+            registered: e._count?.registrations ?? 0,
+            capacity: e.maxAttendees ?? 999,
+          }));
+        setUpcomingEvents(upcoming);
+
+        // 最近签到记录
+        const recent = (checkinsData.data ?? []).slice(0, 5).map((c: any) => ({
+          id: c.id,
+          user: c.user?.name ?? "-",
+          event: c.event?.title ?? "-",
+          time: c.scannedAt,
+        }));
+        setRecentRegistrations(recent);
+      } catch (error) {
+        console.error("Failed to load dashboard data", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <AdminSectionGuard section="dashboard">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+        </div>
+      </AdminSectionGuard>
+    );
+  }
+
   return (
     <AdminSectionGuard section="dashboard">
       <div className="space-y-6">
@@ -45,33 +115,31 @@ export default function AdminDashboard() {
 
       {/* Stats */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map((stat, index) => (
+        {statIcons.map((si, index) => {
+          const stat = stats.find((s) => s.key === si.key);
+          return (
           <motion.div
-            key={stat.key}
+            key={si.key}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 }}
           >
             <Card>
               <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <div className={`w-12 h-12 ${stat.bgColor} rounded-xl flex items-center justify-center mr-4`}>
-                      <stat.icon className={`w-6 h-6 ${stat.color}`} />
+                <div className="flex items-center">
+                    <div className={`w-12 h-12 ${si.bgColor} rounded-xl flex items-center justify-center mr-4`}>
+                      <si.icon className={`w-6 h-6 ${si.color}`} />
                     </div>
                     <div>
-                      <p className="text-sm text-slate-500">{t(`stats.${stat.key}`)}</p>
-                      <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+                      <p className="text-sm text-slate-500">{t(`stats.${si.key}`)}</p>
+                      <p className="text-2xl font-bold text-slate-900">{stat?.value ?? "-"}</p>
                     </div>
-                  </div>
-                  <span className="text-sm font-medium text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">
-                    {stat.change}
-                  </span>
                 </div>
               </CardContent>
             </Card>
           </motion.div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Charts Row */}
@@ -119,28 +187,21 @@ export default function AdminDashboard() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>{t("recentTitle")}</CardTitle>
-              <Link href="/admin/registrations">
-                <Button variant="ghost" size="sm">
-                  {t("viewAll")}
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Button>
-              </Link>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentRegistrations.map((reg) => (
+                {recentRegistrations.length === 0 ? (
+                  <p className="text-sm text-slate-500 text-center py-4">-</p>
+                ) : recentRegistrations.map((reg) => (
                   <div key={reg.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
                     <div>
-                      <p className="font-medium text-slate-900">{locale === "en" ? reg.userEn : reg.user}</p>
-                      <p className="text-sm text-slate-500">{locale === "en" ? reg.eventEn : reg.event}</p>
+                      <p className="font-medium text-slate-900">{reg.user}</p>
+                      <p className="text-sm text-slate-500">{reg.event}</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-slate-500">{locale === "en" ? reg.timeEn : reg.time}</p>
-                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                        reg.status === "success" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
-                      }`}>
-                        {reg.status === "success" ? t("statuses.success") : t("statuses.pending")}
-                      </span>
+                      <p className="text-sm text-slate-500">
+                        {reg.time ? new Date(reg.time).toLocaleString(locale === "en" ? "en-US" : "zh-CN", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) : ""}
+                      </p>
                     </div>
                   </div>
                 ))}

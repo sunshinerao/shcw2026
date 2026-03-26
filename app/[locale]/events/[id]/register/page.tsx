@@ -108,9 +108,6 @@ export default function EventRegisterPage() {
     try {
       const response = await fetch("/api/user/profile", {
         cache: "no-store",
-        headers: {
-          "x-dev-user-id": session.user.id,
-        },
       });
       const payload = await response.json();
 
@@ -220,7 +217,6 @@ export default function EventRegisterPage() {
           method: "PUT",
           headers: {
             "content-type": "application/json",
-            ...(session?.user?.id ? { "x-dev-user-id": session.user.id } : {}),
           },
           body: JSON.stringify({
             locale,
@@ -437,7 +433,7 @@ export default function EventRegisterPage() {
               <CardContent className="space-y-4">
                 <div>
                   <p className="text-sm text-slate-500 mb-2">{localizedTitle}</p>
-                  <p className="text-sm text-slate-600">{event.shortDesc || event.description}</p>
+                  <p className="text-sm text-slate-600">{locale === "en" ? (event.shortDescEn || event.descriptionEn || event.shortDesc || event.description) : (event.shortDesc || event.description)}</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <Calendar className="w-5 h-5 text-emerald-600 mt-0.5" />

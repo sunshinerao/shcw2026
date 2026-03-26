@@ -168,10 +168,31 @@ export async function PUT(
       hostType,
     } = body;
 
-    if (
-      title !== undefined &&
-      (!title || !description || !startDate || !startTime || !endTime || !venue || !type)
-    ) {
+    if (title !== undefined && !title) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "eventRequired") },
+        { status: 400 }
+      );
+    }
+    if (description !== undefined && !description) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "eventRequired") },
+        { status: 400 }
+      );
+    }
+    if (startDate !== undefined && !startDate) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "eventRequired") },
+        { status: 400 }
+      );
+    }
+    if (venue !== undefined && !venue) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "eventRequired") },
+        { status: 400 }
+      );
+    }
+    if (type !== undefined && !type) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "eventRequired") },
         { status: 400 }

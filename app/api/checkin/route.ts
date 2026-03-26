@@ -265,8 +265,18 @@ async function verifyAndCheckIn(
 
   const pointsToAward = eventTypePoints[registration.event.type] ?? 10;
 
-  // 执行签到和积分发放（事务）
+  // 执行签到和积分发放（事务，含竞态检查）
   const updatedRegistration = await prisma.$transaction(async (tx) => {
+    // 在事务内重新检查签到状态，防止并发双重签到
+    const freshReg = await tx.registration.findUnique({
+      where: { id: registrationId },
+      select: { checkedInAt: true },
+    });
+
+    if (freshReg?.checkedInAt) {
+      return null; // 已签到，跳过
+    }
+
     // 1. 更新报名记录为已入场
     const updated = await tx.registration.update({
       where: { id: registrationId },
@@ -318,6 +328,26 @@ async function verifyAndCheckIn(
     return updated;
   });
 
+  // 并发竞态：另一个请求已完成签到
+  if (!updatedRegistration) {
+    return {
+      success: true,
+      data: {
+        type: "EVENT",
+        alreadyCheckedIn: true,
+        registration: {
+          id: registration.id,
+          status: registration.status,
+          checkedInAt: registration.checkedInAt,
+          pointsEarned: registration.pointsEarned,
+        },
+        user: registration.user,
+        event: registration.event,
+        message: apiMessage(locale, "alreadyCheckedIn"),
+      },
+    };
+  }
+
   return {
     success: true,
     data: {
@@ -365,7 +395,7 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url);
     const eventId = searchParams.get("eventId");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = Math.min(100, parseInt(searchParams.get("limit") || "50"));
 
     const where: any = {};
     if (eventId) {

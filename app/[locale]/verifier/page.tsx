@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/routing";
+import { useTranslations, useLocale } from "next-intl";
 import { 
   Scan, 
   CheckCircle, 
@@ -83,6 +84,8 @@ interface CheckInRecord {
 export default function VerifierPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const t = useTranslations("verifierPage");
+  const locale = useLocale();
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState<CheckInResult | null>(null);
   const [recentCheckIns, setRecentCheckIns] = useState<CheckInRecord[]>([]);
@@ -100,7 +103,7 @@ export default function VerifierPage() {
 
     const allowedRoles = ["ADMIN", "STAFF", "VERIFIER"];
     if (!allowedRoles.includes(session.user?.role as string)) {
-      toast.error("您没有验证人员权限");
+      toast.error(t("noPermission"));
       router.push("/");
       return;
     }
@@ -142,10 +145,10 @@ export default function VerifierPage() {
         toast.success(data.data.message);
         fetchRecentCheckIns();
       } else {
-        toast.error(data.error || "验证失败");
+        toast.error(data.error || t("result.failed"));
       }
     } catch (error) {
-      toast.error("验码请求失败");
+      toast.error(t("result.requestFailed"));
     }
   }, [scanning]);
 
@@ -173,8 +176,8 @@ export default function VerifierPage() {
               <Scan className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-slate-900">现场验码</h1>
-              <p className="text-sm text-slate-500">扫描参与者二维码进行验证</p>
+              <h1 className="text-lg font-bold text-slate-900">{t("header.title")}</h1>
+              <p className="text-sm text-slate-500">{t("header.subtitle")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -184,7 +187,7 @@ export default function VerifierPage() {
               onClick={() => setShowHistory(!showHistory)}
             >
               <History className="w-4 h-4 mr-2" />
-              记录
+              {t("history")}
             </Button>
           </div>
         </div>
@@ -204,9 +207,9 @@ export default function VerifierPage() {
                 <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <QrCode className="w-10 h-10 text-emerald-600" />
                 </div>
-                <h2 className="text-xl font-bold text-slate-900 mb-2">准备扫描</h2>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">{t("ready.title")}</h2>
                 <p className="text-slate-500 mb-6">
-                  点击开始扫描按钮，将相机对准参与者的二维码进行验证
+                  {t("ready.description")}
                 </p>
                 <Button 
                   size="lg" 
@@ -214,7 +217,7 @@ export default function VerifierPage() {
                   onClick={() => setScanning(true)}
                 >
                   <Scan className="w-5 h-5 mr-2" />
-                  开始扫描
+                  {t("ready.start")}
                 </Button>
               </Card>
             </motion.div>
@@ -231,14 +234,14 @@ export default function VerifierPage() {
                   <div className="flex items-center justify-between">
                     <CardTitle className="flex items-center gap-2">
                       <Scan className="w-5 h-5 text-emerald-600" />
-                      扫描二维码
+                      {t("scanning.title")}
                     </CardTitle>
                     <Button 
                       variant="ghost" 
                       size="sm"
                       onClick={() => setScanning(false)}
                     >
-                      取消
+                      {t("scanning.cancel")}
                     </Button>
                   </div>
                 </CardHeader>
@@ -252,7 +255,7 @@ export default function VerifierPage() {
                     />
                   </div>
                   <p className="text-center text-sm text-slate-500 mt-4">
-                    将二维码放入框内即可自动扫描
+                    {t("scanning.hint")}
                   </p>
                 </CardContent>
               </Card>
@@ -277,7 +280,7 @@ export default function VerifierPage() {
                     )}
                     <div>
                       <h2 className={`text-xl font-bold ${result.success ? "text-green-900" : "text-red-900"}`}>
-                        {result.success ? "验证成功" : "验证失败"}
+                        {result.success ? t("result.success") : t("result.failed")}
                       </h2>
                       <p className={result.success ? "text-green-600" : "text-red-600"}>
                         {result.data?.message || result.error}
@@ -324,11 +327,11 @@ export default function VerifierPage() {
                       <div className="p-4 bg-slate-50 rounded-xl">
                         <div className="flex items-center gap-2 mb-2">
                           <Calendar className="w-4 h-4 text-slate-400" />
-                          <span className="text-sm text-slate-500">活动信息</span>
+                          <span className="text-sm text-slate-500">{t("result.eventInfo")}</span>
                         </div>
                         <h4 className="font-semibold text-slate-900">{result.data.event.title}</h4>
                         <p className="text-sm text-slate-500">
-                          {new Date(result.data.event.startDate).toLocaleDateString("zh-CN")} · {result.data.event.venue}
+                          {new Date(result.data.event.startDate).toLocaleDateString(locale === "en" ? "en-US" : "zh-CN")} · {result.data.event.venue}
                         </p>
                       </div>
                     )}
@@ -338,8 +341,8 @@ export default function VerifierPage() {
                       <div className="flex items-center gap-3 p-4 bg-amber-50 rounded-xl border border-amber-100">
                         <Award className="w-8 h-8 text-amber-500" />
                         <div>
-                          <p className="font-semibold text-amber-900">+{result.data.pointsAwarded} 积分</p>
-                          <p className="text-sm text-amber-600">用户已获得活动积分奖励</p>
+                          <p className="font-semibold text-amber-900">{t("result.pointsAwarded", { points: result.data.pointsAwarded })}</p>
+                          <p className="text-sm text-amber-600">{t("result.pointsDescription")}</p>
                         </div>
                       </div>
                     )}
@@ -349,10 +352,10 @@ export default function VerifierPage() {
                       <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-xl border border-blue-100">
                         <AlertTriangle className="w-6 h-6 text-blue-500" />
                         <div>
-                          <p className="font-semibold text-blue-900">该用户已完成签到</p>
+                          <p className="font-semibold text-blue-900">{t("result.alreadyCheckedIn")}</p>
                           <p className="text-sm text-blue-600">
-                            验码时间: {result.data.registration?.checkedInAt && 
-                              new Date(result.data.registration.checkedInAt).toLocaleString("zh-CN")
+                            {result.data.registration?.checkedInAt && 
+                              t("result.checkedInTime", { time: new Date(result.data.registration.checkedInAt).toLocaleString(locale === "en" ? "en-US" : "zh-CN") })
                             }
                           </p>
                         </div>
@@ -369,7 +372,7 @@ export default function VerifierPage() {
                   onClick={restartScan}
                 >
                   <RefreshCw className="w-4 h-4 mr-2" />
-                  继续扫描
+                  {t("result.continueScanning")}
                 </Button>
               </div>
             </motion.div>
@@ -387,12 +390,12 @@ export default function VerifierPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <History className="w-5 h-5" />
-                  最近验码记录
+                  {t("historyPanel.title")}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {recentCheckIns.length === 0 ? (
-                  <p className="text-center text-slate-500 py-4">暂无验码记录</p>
+                  <p className="text-center text-slate-500 py-4">{t("historyPanel.empty")}</p>
                 ) : (
                   <div className="space-y-3">
                     {recentCheckIns.map((record) => (
@@ -406,8 +409,8 @@ export default function VerifierPage() {
                         <div className="flex-1 min-w-0">
                           <p className="font-medium text-slate-900 truncate">{record.user.name}</p>
                           <p className="text-xs text-slate-500">
-                            {record.event?.title || "护照验证"} · 
-                            {new Date(record.scannedAt).toLocaleTimeString("zh-CN")}
+                            {record.event?.title || t("historyPanel.passportVerify")} · 
+                            {new Date(record.scannedAt).toLocaleTimeString(locale === "en" ? "en-US" : "zh-CN")}
                           </p>
                         </div>
                         <CheckCircle className="w-5 h-5 text-green-500 shrink-0" />

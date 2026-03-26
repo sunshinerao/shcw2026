@@ -53,25 +53,10 @@ export async function GET(req: NextRequest) {
       }
 
       const passportId = user.climatePassportId || "PENDING";
-      const orgLine = user.organization?.name
-        ? `\nOrganization / 机构: ${user.organization.name}`
-        : "";
       
-      qrData = [
-        "═══════════════════════════",
-        "Shanghai Climate Week 2026",
-        "上海气候周 2026",
-        "── Climate Passport 气候护照 ──",
-        "",
-        `Passport ID / 护照编号: ${passportId}`,
-        `Holder / 持有人: ${user.name}`,
-        orgLine,
-        "",
-        "Status / 状态: ✅ VALID / 有效",
-        "",
-        `Verify / 验证码: ${user.passCode.slice(0, 8)}`,
-        "═══════════════════════════",
-      ].filter(Boolean).join("\n");
+      // 格式: SCW2026://PASSPORT/{userId}/{passCode}
+      // 此格式与 checkin API 解析格式一致
+      qrData = `SCW2026://PASSPORT/${session.user.id}/${user.passCode}`;
     } else if (type === "event") {
       // 生成活动通行证二维码
       if (!eventId) {

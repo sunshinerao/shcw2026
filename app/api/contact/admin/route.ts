@@ -70,39 +70,47 @@ export async function PUT(req: NextRequest) {
   const { user, error } = await requireAdmin(locale);
   if (error) return error;
 
-  const body = await req.json();
-  const { id, adminReply, adminNotes, status } = body;
+  try {
+    const body = await req.json();
+    const { id, adminReply, adminNotes, status } = body;
 
-  if (!id) {
-    return NextResponse.json({ success: false, error: "Message ID required" }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ success: false, error: apiMessage(locale, "contactMissingId") }, { status: 400 });
+    }
+
+    const existing = await prisma.contactMessage.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ success: false, error: apiMessage(locale, "contactNotFound") }, { status: 404 });
+    }
+
+    const updateData: Record<string, unknown> = {};
+
+    if (adminReply !== undefined) {
+      updateData.adminReply = adminReply;
+      updateData.status = "REPLIED";
+      updateData.repliedAt = new Date();
+      updateData.repliedBy = user!.id;
+    }
+
+    if (adminNotes !== undefined) {
+      updateData.adminNotes = adminNotes;
+    }
+
+    if (status && ["PENDING", "REPLIED", "CLOSED"].includes(status)) {
+      updateData.status = status;
+    }
+
+    const updated = await prisma.contactMessage.update({
+      where: { id },
+      data: updateData,
+    });
+
+    return NextResponse.json({ success: true, data: updated });
+  } catch (err) {
+    console.error("Update contact message error:", err);
+    return NextResponse.json(
+      { success: false, error: apiMessage(locale, "contactFailed") },
+      { status: 500 }
+    );
   }
-
-  const existing = await prisma.contactMessage.findUnique({ where: { id } });
-  if (!existing) {
-    return NextResponse.json({ success: false, error: "Message not found" }, { status: 404 });
-  }
-
-  const updateData: Record<string, unknown> = {};
-
-  if (adminReply !== undefined) {
-    updateData.adminReply = adminReply;
-    updateData.status = "REPLIED";
-    updateData.repliedAt = new Date();
-    updateData.repliedBy = user!.id;
-  }
-
-  if (adminNotes !== undefined) {
-    updateData.adminNotes = adminNotes;
-  }
-
-  if (status && ["PENDING", "REPLIED", "CLOSED"].includes(status)) {
-    updateData.status = status;
-  }
-
-  const updated = await prisma.contactMessage.update({
-    where: { id },
-    data: updateData,
-  });
-
-  return NextResponse.json({ success: true, data: updated });
 }

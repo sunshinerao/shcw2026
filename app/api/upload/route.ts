@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
-import { writeFile, mkdir } from "fs/promises";
-import path from "path";
-import { randomUUID } from "crypto";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canManageEvents } from "@/lib/permissions";
@@ -70,20 +67,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Generate safe filename
-    const ext = path.extname(file.name) || ".pdf";
-    const safeName = `${randomUUID()}${ext}`;
-
-    // Save to public/uploads/invitations/
-    const uploadDir = path.join(process.cwd(), "public", "uploads", "invitations");
-    await mkdir(uploadDir, { recursive: true });
-    const filePath = path.join(uploadDir, safeName);
-
+    // Convert to base64 data URL (Vercel has read-only filesystem)
     const bytes = await file.arrayBuffer();
-    await writeFile(filePath, Buffer.from(bytes));
-
-    // Generate download URL (relative, served by Next.js static)
-    const fileUrl = `/uploads/invitations/${safeName}`;
+    const base64 = Buffer.from(bytes).toString("base64");
+    const fileUrl = `data:${file.type};base64,${base64}`;
 
     // If invitationId is provided, update the invitation with the file URL and mark as UPLOADED
     if (invitationId) {

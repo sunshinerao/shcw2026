@@ -376,7 +376,6 @@ export default function EventDetailPage() {
                     <h2 className="text-2xl font-bold text-slate-900 mb-6">{t("about.title")}</h2>
                     <div className="prose prose-slate max-w-none">
                       <p className="text-slate-600 leading-relaxed mb-4">{localizedDescription}</p>
-                      <p className="text-slate-600 leading-relaxed mb-4">{event.description}</p>
                       <h3 className="text-lg font-bold text-slate-900 mt-6 mb-3">{t("about.highlightsTitle")}</h3>
                       <ul className="space-y-2 text-slate-600">
                         {highlights.map((highlight) => (

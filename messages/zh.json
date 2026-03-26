@@ -268,7 +268,7 @@
         "users": "总用户数",
         "events": "活动数量",
         "registrations": "报名人次",
-        "visits": "今日访问"
+        "checkins": "签到人次"
       },
       "trendTitle": "报名趋势",
       "months": {
@@ -1910,5 +1910,39 @@
       "description": "如果您没有找到想要的答案，请随时联系我们的团队。",
       "button": "联系我们"
     }
+  },
+  "verifierPage": {
+    "header": {
+      "title": "现场验码",
+      "subtitle": "扫描参与者二维码进行验证"
+    },
+    "history": "记录",
+    "ready": {
+      "title": "准备扫描",
+      "description": "点击开始扫描按钮，将相机对准参与者的二维码进行验证",
+      "start": "开始扫描"
+    },
+    "scanning": {
+      "title": "扫描二维码",
+      "cancel": "取消",
+      "hint": "将二维码放入框内即可自动扫描"
+    },
+    "result": {
+      "success": "验证成功",
+      "failed": "验证失败",
+      "requestFailed": "验码请求失败",
+      "continueScanning": "继续扫描",
+      "eventInfo": "活动信息",
+      "pointsAwarded": "+{points} 积分",
+      "pointsDescription": "用户已获得活动积分奖励",
+      "alreadyCheckedIn": "该用户已完成签到",
+      "checkedInTime": "验码时间: {time}"
+    },
+    "historyPanel": {
+      "title": "最近验码记录",
+      "empty": "暂无验码记录",
+      "passportVerify": "护照验证"
+    },
+    "noPermission": "您没有验证人员权限"
   }
 }

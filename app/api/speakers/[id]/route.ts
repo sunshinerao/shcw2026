@@ -34,7 +34,19 @@ export async function GET(
     
     const speaker = await prisma.speaker.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        name: true,
+        nameEn: true,
+        title: true,
+        titleEn: true,
+        organization: true,
+        organizationEn: true,
+        bio: true,
+        bioEn: true,
+        avatar: true,
+        isKeynote: true,
+        order: true,
         agendaItems: {
           include: {
             event: {

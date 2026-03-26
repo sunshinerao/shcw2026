@@ -641,6 +641,14 @@ const apiMessages = {
     zh: "消息发送失败，请稍后重试",
     en: "Failed to send the message. Please try again later.",
   },
+  contactMissingId: {
+    zh: "缺少消息ID",
+    en: "Message ID is required.",
+  },
+  contactNotFound: {
+    zh: "消息不存在",
+    en: "Message not found.",
+  },
 } as const;
 
 type ApiMessageKey = keyof typeof apiMessages;

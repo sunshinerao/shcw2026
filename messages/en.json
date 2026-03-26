@@ -268,7 +268,7 @@
         "users": "Total users",
         "events": "Events",
         "registrations": "Registrations",
-        "visits": "Visits today"
+        "checkins": "Check-ins"
       },
       "trendTitle": "Registration trend",
       "months": {
@@ -1910,5 +1910,39 @@
       "description": "If you couldn't find the answer you're looking for, please feel free to contact our team.",
       "button": "Contact Us"
     }
+  },
+  "verifierPage": {
+    "header": {
+      "title": "On-site Check-in",
+      "subtitle": "Scan participant QR codes for verification"
+    },
+    "history": "History",
+    "ready": {
+      "title": "Ready to Scan",
+      "description": "Tap Start Scanning and point your camera at the participant's QR code",
+      "start": "Start Scanning"
+    },
+    "scanning": {
+      "title": "Scan QR Code",
+      "cancel": "Cancel",
+      "hint": "Place the QR code inside the frame to scan automatically"
+    },
+    "result": {
+      "success": "Verification Successful",
+      "failed": "Verification Failed",
+      "requestFailed": "Verification request failed",
+      "continueScanning": "Continue Scanning",
+      "eventInfo": "Event Info",
+      "pointsAwarded": "+{points} Points",
+      "pointsDescription": "Points awarded for event attendance",
+      "alreadyCheckedIn": "This user has already checked in",
+      "checkedInTime": "Checked in at: {time}"
+    },
+    "historyPanel": {
+      "title": "Recent Check-in Records",
+      "empty": "No check-in records yet",
+      "passportVerify": "Passport verification"
+    },
+    "noPermission": "You do not have verifier permissions"
   }
 }

@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
     
     // 分页参数
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const limit = Math.min(100, parseInt(searchParams.get("limit") || "10", 10));
     const skip = (page - 1) * limit;
     
     // 搜索参数
