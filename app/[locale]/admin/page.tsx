@@ -24,19 +24,22 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<{ key: string; value: string }[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
   const [recentRegistrations, setRecentRegistrations] = useState<any[]>([]);
+  const [trendData, setTrendData] = useState<{ month: string; count: number }[]>([]);
 
   useEffect(() => {
     async function fetchDashboardData() {
       try {
-        const [usersRes, eventsRes, checkinsRes] = await Promise.all([
+        const [usersRes, eventsRes, checkinsRes, trendRes] = await Promise.all([
           fetch("/api/users?pageSize=1"),
           fetch("/api/events?limit=100"),
           fetch("/api/checkin?limit=5"),
+          fetch("/api/stats/trend"),
         ]);
 
         const usersData = await usersRes.json();
         const eventsData = await eventsRes.json();
         const checkinsData = await checkinsRes.json();
+        const trendResult = await trendRes.json();
 
         const totalUsers = usersData.data?.pagination?.total ?? 0;
         const events = eventsData.data?.events ?? [];
@@ -81,6 +84,11 @@ export default function AdminDashboard() {
           time: c.scannedAt,
         }));
         setRecentRegistrations(recent);
+
+        // 注册趋势
+        if (trendResult.success) {
+          setTrendData(trendResult.data);
+        }
       } catch (error) {
         console.error("Failed to load dashboard data", error);
       } finally {
@@ -156,24 +164,39 @@ export default function AdminDashboard() {
               <TrendingUp className="w-5 h-5 text-slate-400" />
             </CardHeader>
             <CardContent>
-              <div className="h-48 flex items-end justify-between gap-2">
-                {[40, 65, 45, 80, 55, 90, 70, 85, 60, 95, 75, 100].map((height, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 bg-emerald-100 rounded-t-lg relative group"
-                    style={{ height: `${height}%` }}
-                  >
-                    <div className="absolute bottom-0 left-0 right-0 bg-emerald-500 rounded-t-lg transition-all group-hover:bg-emerald-600" style={{ height: `${height * 0.7}%` }} />
-                  </div>
-                ))}
-              </div>
-              <div className="flex justify-between mt-4 text-xs text-slate-500">
-                <span>{t("months.jan")}</span>
-                <span>{t("months.mar")}</span>
-                <span>{t("months.jun")}</span>
-                <span>{t("months.sep")}</span>
-                <span>{t("months.dec")}</span>
-              </div>
+              {(() => {
+                const maxCount = Math.max(...trendData.map((d) => d.count), 1);
+                return (
+                  <>
+                    <div className="h-48 flex items-end justify-between gap-2">
+                      {trendData.map((d, i) => {
+                        const height = (d.count / maxCount) * 100;
+                        return (
+                          <div
+                            key={i}
+                            className="flex-1 bg-emerald-100 rounded-t-lg relative group"
+                            style={{ height: `${Math.max(height, 2)}%` }}
+                            title={`${d.month}: ${d.count}`}
+                          >
+                            <div className="absolute bottom-0 left-0 right-0 bg-emerald-500 rounded-t-lg transition-all group-hover:bg-emerald-600" style={{ height: `${height * 0.7}%` }} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="flex justify-between mt-4 text-xs text-slate-500">
+                      {trendData.length > 0 && (
+                        <>
+                          <span>{trendData[0]?.month}</span>
+                          <span>{trendData[Math.floor(trendData.length / 4)]?.month}</span>
+                          <span>{trendData[Math.floor(trendData.length / 2)]?.month}</span>
+                          <span>{trendData[Math.floor(trendData.length * 3 / 4)]?.month}</span>
+                          <span>{trendData[trendData.length - 1]?.month}</span>
+                        </>
+                      )}
+                    </div>
+                  </>
+                );
+              })()}
             </CardContent>
           </Card>
         </motion.div>
