@@ -1974,6 +1974,8 @@
     "createSuccess": "新闻发布成功",
     "updateSuccess": "新闻更新成功",
     "deleteSuccess": "新闻已删除",
+    "uploadSuccess": "封面图片上传成功",
+    "uploadFailed": "封面图片上传失败",
     "form": {
       "title": "标题",
       "titleEn": "英文标题",

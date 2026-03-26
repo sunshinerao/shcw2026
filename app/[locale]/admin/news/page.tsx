@@ -210,14 +210,21 @@ export default function AdminNewsPage() {
     if (!file) return;
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("category", "news");
     try {
       const res = await fetch("/api/upload/image", { method: "POST", body: formData });
       const data = await res.json();
-      if (data.success && data.url) {
-        setForm((prev) => ({ ...prev, coverImage: data.url }));
+      if (data.success && data.data?.url) {
+        setForm((prev) => ({ ...prev, coverImage: data.data.url }));
+        setStatusTone("success");
+        setStatusMessage(t("uploadSuccess"));
+      } else {
+        setStatusTone("error");
+        setStatusMessage(data.error || t("uploadFailed"));
       }
     } catch {
-      // silent
+      setStatusTone("error");
+      setStatusMessage(t("uploadFailed"));
     }
   }
 

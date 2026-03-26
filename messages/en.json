@@ -1974,6 +1974,8 @@
     "createSuccess": "News published successfully",
     "updateSuccess": "News updated successfully",
     "deleteSuccess": "News deleted",
+    "uploadSuccess": "Cover image uploaded",
+    "uploadFailed": "Failed to upload cover image",
     "form": {
       "title": "Title",
       "titleEn": "English Title",
