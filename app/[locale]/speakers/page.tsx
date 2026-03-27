@@ -59,6 +59,7 @@ export default function SpeakersPage() {
 
   const keynoteSpeakers = filtered.filter((s) => s.isKeynote);
   const otherSpeakers = filtered.filter((s) => !s.isKeynote);
+  const heroTitle = locale.startsWith("zh") ? "嘉宾" : "Speakers";
 
   function localize(zh?: string | null, en?: string | null) {
     return locale === "en" ? en || zh || "" : zh || "";
@@ -70,7 +71,7 @@ export default function SpeakersPage() {
       <section className="bg-slate-900 py-20 sm:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">{locale === "zh" ? "嘉宾" : t("hero.title")}</h1>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">{heroTitle}</h1>
             <p className="text-lg text-slate-400 max-w-2xl mx-auto">{t("hero.description", { count: speakers.length })}</p>
           </motion.div>
         </div>
