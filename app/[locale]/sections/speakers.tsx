@@ -25,6 +25,7 @@ export function SpeakersSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [speakers, setSpeakers] = useState<Speaker[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadSpeakers() {
@@ -38,12 +39,14 @@ export function SpeakersSection() {
         }
       } catch {
         // silent
+      } finally {
+        setIsLoading(false);
       }
     }
     loadSpeakers();
   }, []);
 
-  if (speakers.length === 0) return null;
+  if (!isLoading && speakers.length === 0) return null;
 
   return (
     <section className="py-20 sm:py-28 bg-white" ref={ref}>

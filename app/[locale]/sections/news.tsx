@@ -25,6 +25,7 @@ export function NewsSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const [news, setNews] = useState<NewsItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadNews() {
@@ -38,12 +39,14 @@ export function NewsSection() {
         }
       } catch {
         // silent
+      } finally {
+        setIsLoading(false);
       }
     }
     loadNews();
   }, []);
 
-  if (news.length === 0) return null;
+  if (!isLoading && news.length === 0) return null;
 
   return (
     <section className="py-20 sm:py-28 bg-white" ref={ref}>
