@@ -1299,7 +1299,7 @@
   },
   "speakersPage": {
     "hero": {
-      "title": "重磅嘉宾",
+      "title": "嘉宾",
       "description": "汇聚全球气候领袖、专家学者和行业先锋，共 {count} 位重磅嘉宾。"
     },
     "searchPlaceholder": "搜索嘉宾姓名、机构或话题...",
