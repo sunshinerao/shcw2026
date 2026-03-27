@@ -4,13 +4,33 @@
 import { PrismaClient } from "@prisma/client";
 import speakers from "./data-speakers.json";
 
+type SpeakerSeedRecord = {
+  name: string;
+  nameEn?: string;
+  title: string;
+  titleEn?: string;
+  organization: string;
+  organizationEn?: string;
+  organizationLogo?: string;
+  bio?: string;
+  bioEn?: string;
+  email?: string;
+  linkedin?: string;
+  twitter?: string;
+  website?: string;
+  avatar?: string;
+  isKeynote?: boolean;
+  order?: number;
+};
+
 const prisma = new PrismaClient();
+const speakerSeedData = speakers as SpeakerSeedRecord[];
 
 async function main() {
   let created = 0;
   let skipped = 0;
 
-  for (const s of speakers) {
+  for (const s of speakerSeedData) {
     const existing = await prisma.speaker.findFirst({
       where: { name: s.name },
     });
