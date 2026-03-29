@@ -55,11 +55,20 @@ function StatItem({ value, label, delay }: StatItemProps) {
 
 export function StatsSection() {
   const t = useTranslations();
+  const [statsData, setStatsData] = useState({ eventDays: 0, forums: 0, keynoteSpeakers: 0, attendees: 200000 });
+
+  useEffect(() => {
+    fetch("/api/stats/homepage")
+      .then((res) => res.json())
+      .then((data) => setStatsData(data))
+      .catch(() => {});
+  }, []);
+
   const stats = [
-    { value: "13+", label: t("stats.days") },
-    { value: "15+", label: t("stats.forums") },
-    { value: "50+", label: t("stats.speakers") },
-    { value: "1000+", label: t("stats.attendees") },
+    { value: statsData.eventDays > 0 ? `${statsData.eventDays}+` : "0", label: t("stats.days") },
+    { value: statsData.forums > 0 ? `${statsData.forums}+` : "0", label: t("stats.forums") },
+    { value: statsData.keynoteSpeakers > 0 ? `${statsData.keynoteSpeakers}+` : "0", label: t("stats.speakers") },
+    { value: `${statsData.attendees}+`, label: t("stats.attendees") },
   ];
 
   return (

@@ -950,30 +950,30 @@
   "mission": {
     "title": "Our Mission",
     "subtitle": "Partnership and Profit for People and the Planet",
-    "description": "Shanghai Climate Week 2026 is positioned as a global climate action platform, serving as an Eastern Momentum Point connecting China and the world in climate governance. We believe that only through system reshaping, real action, Eastern momentum, and win-win cooperation can we achieve climate goals in the next decade.",
+    "description": "Shanghai Climate Week 2026 is positioned as a global platform of climate action, innovation and partnership. A city-named platform, SHCW convenes best expertise, resources and leadership in advancing transition that is clean, green, smart and resilient, from China, Asia and worldwide. Together we create and enhance natural capital, human capital, social capital and financial capital that benefit people and the planet.",
     "learnMore": "Learn More",
     "highlights": {
       "system": {
-        "title": "System Reshaping",
+        "title": "Reset Systems",
         "desc": "From commitment-driven to result-oriented"
       },
       "action": {
-        "title": "Real Action",
+        "title": "Take Actions",
         "desc": "Words matter, actions matter more"
       },
       "momentum": {
-        "title": "Eastern Momentum",
+        "title": "Build Momentum",
         "desc": "China's green power drives global transformation"
       },
       "winwin": {
-        "title": "Win-Win Cooperation",
+        "title": "Strengthen Cooperation",
         "desc": "No decoupling, build together, strengthen connectivity"
       }
     }
   },
   "tracks": {
     "title": "12+1 Thematic Track System",
-    "subtitle": "Top Level Defines Rules | Middle Level Generates Growth | Bottom Level Consolidates Foundation",
+    "subtitle": "Rules and Governance | Industry and Technology | Nature and Infrastructure",
     "tabs": {
       "all": "All",
       "institution": "Institution",
