@@ -92,6 +92,7 @@ export async function PUT(
       tier,
       order,
       isActive,
+      showOnHomepage,
     } = body;
     
     // 检查赞助商是否存在
@@ -128,6 +129,7 @@ export async function PUT(
     if (tier !== undefined) updateData.tier = tier;
     if (order !== undefined) updateData.order = order;
     if (isActive !== undefined) updateData.isActive = isActive;
+    if (showOnHomepage !== undefined) updateData.showOnHomepage = showOnHomepage;
     
     // 更新赞助商
     const sponsor = await prisma.sponsor.update({

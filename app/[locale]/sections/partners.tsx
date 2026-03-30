@@ -1,59 +1,96 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
+import Image from "next/image";
 
-const sponsorNameEn: Record<string, string> = {
-  "亚洲开发银行": "Asian Development Bank",
-  "UNESCO东亚办事处": "UNESCO East Asia Office",
-  "全球气候学院": "Global Climate Academy",
-  "新开发银行": "New Development Bank",
-  "查塔姆研究所": "Chatham House",
-  "盒马鲜生": "Hema Fresh",
-  "清华循环研究院": "Tsinghua Circular Economy Institute",
-  "宁远研究院": "Ningyuan Institute",
+interface Sponsor {
+  id: string;
+  name: string;
+  nameEn?: string;
+  logo: string;
+  website?: string;
+  tier: string;
+  order: number;
+}
+
+const tierConfig: Record<string, { color: string }> = {
+  platinum: { color: "from-purple-600 to-purple-800" },
+  gold: { color: "from-amber-500 to-amber-600" },
+  silver: { color: "from-slate-400 to-slate-500" },
+  bronze: { color: "from-orange-500 to-orange-600" },
+  partner: { color: "from-emerald-500 to-emerald-600" },
 };
 
-const sponsors = {
-  chief: [
-    { name: "亚洲开发银行", logo: "/images/sponsors/adb.svg" },
-    { name: "UNESCO东亚办事处", logo: "/images/sponsors/unesco.svg" },
-  ],
-  partner: [
-    { name: "全球气候学院", logo: "/images/sponsors/gcc.svg" },
-    { name: "新开发银行", logo: "/images/sponsors/ndb.svg" },
-    { name: "WWF China", logo: "/images/sponsors/wwf.svg" },
-    { name: "查塔姆研究所", logo: "/images/sponsors/chatham.svg" },
-  ],
-  ecosystem: [
-    { name: "盒马鲜生", logo: "/images/sponsors/hema.svg" },
-    { name: "Oatly", logo: "/images/sponsors/oatly.svg" },
-    { name: "IPE", logo: "/images/sponsors/ipe.svg" },
-    { name: "Chapter Zero", logo: "/images/sponsors/cz.svg" },
-    { name: "清华循环研究院", logo: "/images/sponsors/tsinghua.svg" },
-    { name: "宁远研究院", logo: "/images/sponsors/ningyuan.svg" },
-  ],
+// Map tier to i18n key
+const tierI18nKey: Record<string, string> = {
+  platinum: "partners.tiers.chief",
+  gold: "partners.tiers.partner",
+  silver: "partners.tiers.ecosystem",
+  bronze: "partners.tiers.ecosystem",
+  partner: "partners.tiers.ecosystem",
 };
 
-const tierConfig = {
-  chief: { color: "from-slate-700 to-slate-900" },
-  partner: { color: "from-amber-500 to-amber-600" },
-  ecosystem: { color: "from-slate-400 to-slate-500" },
+// Grid config per tier
+const tierGridClass: Record<string, string> = {
+  platinum: "grid-cols-2 md:grid-cols-4 max-w-3xl mx-auto gap-6",
+  gold: "grid-cols-2 md:grid-cols-4 max-w-4xl mx-auto gap-4",
+  silver: "grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3",
+  bronze: "grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3",
+  partner: "grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3",
 };
 
-function SponsorPlaceholder({ name }: { name: string }) {
-  return (
-    <div className="w-full h-16 bg-slate-100 rounded-lg flex items-center justify-center border border-slate-200">
-      <div className="flex items-center space-x-2 text-slate-400">
-        <Building2 className="w-5 h-5" />
-        <span className="text-sm font-medium">{name}</span>
+function isLocalImagePath(src: string) {
+  return src.startsWith("/");
+}
+
+function SponsorCard({ sponsor, locale, isSmallTier }: { sponsor: Sponsor; locale: string; isSmallTier: boolean }) {
+  const displayName = locale === "en" ? (sponsor.nameEn || sponsor.name) : sponsor.name;
+  const hasLogo = sponsor.logo && sponsor.logo !== "";
+
+  const content = (
+    <div className={`w-full ${isSmallTier ? "h-12" : "h-16"} bg-white rounded-lg flex items-center justify-center border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all overflow-hidden relative`}>
+      {hasLogo ? (
+        isLocalImagePath(sponsor.logo) ? (
+          <Image
+            src={sponsor.logo}
+            alt={displayName}
+            fill
+            sizes={isSmallTier ? "120px" : "200px"}
+            className="object-contain p-2"
+          />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={sponsor.logo}
+            alt={displayName}
+            className="w-full h-full object-contain p-2"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = "none";
+              (e.target as HTMLImageElement).nextElementSibling?.classList.remove("hidden");
+            }}
+          />
+        )
+      ) : null}
+      <div className={`flex items-center space-x-2 text-slate-400 ${hasLogo && !isLocalImagePath(sponsor.logo) ? "hidden" : hasLogo ? "hidden" : ""}`}>
+        <Building2 className="w-5 h-5 flex-shrink-0" />
+        <span className={`${isSmallTier ? "text-xs" : "text-sm"} font-medium text-center`}>{displayName}</span>
       </div>
     </div>
   );
+
+  if (sponsor.website) {
+    return (
+      <a href={sponsor.website} target="_blank" rel="noopener noreferrer">
+        {content}
+      </a>
+    );
+  }
+  return content;
 }
 
 export function PartnersSection() {
@@ -61,15 +98,41 @@ export function PartnersSection() {
   const locale = useLocale();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const [sponsorsByTier, setSponsorsByTier] = useState<Record<string, Sponsor[]>>({});
+  const [loading, setLoading] = useState(true);
 
-  const tierLabels = {
-    chief: t("partners.tiers.chief"),
-    partner: t("partners.tiers.partner"),
-    ecosystem: t("partners.tiers.ecosystem"),
+  useEffect(() => {
+    fetch("/api/sponsors?isActive=true&showOnHomepage=true")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          const grouped: Record<string, Sponsor[]> = {};
+          for (const s of data.data as Sponsor[]) {
+            if (!grouped[s.tier]) grouped[s.tier] = [];
+            grouped[s.tier].push(s);
+          }
+          setSponsorsByTier(grouped);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  // Tier display order
+  const tierOrder = ["platinum", "gold", "silver", "bronze", "partner"];
+  const activeTiers = tierOrder.filter((t) => sponsorsByTier[t]?.length);
+
+  const tierLabels: Record<string, string> = {
+    platinum: t("partners.tiers.chief"),
+    gold: t("partners.tiers.partner"),
+    silver: t("partners.tiers.ecosystem"),
+    bronze: t("partners.tiers.ecosystem"),
+    partner: t("partners.tiers.ecosystem"),
   };
 
-  const localizeSponsorName = (name: string) =>
-    locale === "en" ? sponsorNameEn[name] ?? name : name;
+  if (!loading && activeTiers.length === 0) {
+    return null;
+  }
 
   return (
     <section className="py-20 sm:py-28 bg-slate-50" ref={ref}>
@@ -91,65 +154,28 @@ export function PartnersSection() {
 
         {/* Sponsor Tiers */}
         <div className="space-y-12">
-          {/* Chief */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.1 }}
-          >
-            <div className="text-center mb-6">
-              <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r ${tierConfig.chief.color}`}>
-                {tierLabels.chief}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto">
-              {sponsors.chief.map((sponsor) => (
-                <SponsorPlaceholder key={sponsor.name} name={localizeSponsorName(sponsor.name)} />
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Partner */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <div className="text-center mb-6">
-              <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r ${tierConfig.partner.color}`}>
-                {tierLabels.partner}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
-              {sponsors.partner.map((sponsor) => (
-                <SponsorPlaceholder key={sponsor.name} name={localizeSponsorName(sponsor.name)} />
-              ))}
-            </div>
-          </motion.div>
-
-          {/* Ecosystem */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.3 }}
-          >
-            <div className="text-center mb-6">
-              <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r ${tierConfig.ecosystem.color}`}>
-                {tierLabels.ecosystem}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
-              {sponsors.ecosystem.map((sponsor) => (
-                <div key={sponsor.name} className="h-12">
-                  <div className="w-full h-full bg-slate-100 rounded border border-slate-200 flex items-center justify-center">
-                    <span className="text-xs text-slate-500 font-medium text-center px-2">
-                      {localizeSponsorName(sponsor.name)}
-                    </span>
-                  </div>
+          {activeTiers.map((tier, i) => {
+            const isSmallTier = tier === "silver" || tier === "bronze" || tier === "partner";
+            return (
+              <motion.div
+                key={tier}
+                initial={{ opacity: 0, y: 30 }}
+                animate={isInView ? { opacity: 1, y: 0 } : {}}
+                transition={{ duration: 0.6, delay: 0.1 * (i + 1) }}
+              >
+                <div className="text-center mb-6">
+                  <span className={`inline-block px-4 py-1.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r ${tierConfig[tier]?.color || tierConfig.partner.color}`}>
+                    {tierLabels[tier]}
+                  </span>
                 </div>
-              ))}
-            </div>
-          </motion.div>
+                <div className={`grid ${tierGridClass[tier] || tierGridClass.partner}`}>
+                  {sponsorsByTier[tier].map((sponsor) => (
+                    <SponsorCard key={sponsor.id} sponsor={sponsor} locale={locale} isSmallTier={isSmallTier} />
+                  ))}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
 
         {/* CTA */}

@@ -65,6 +65,7 @@ interface Sponsor {
   tier: SponsorTier;
   order: number;
   isActive: boolean;
+  showOnHomepage: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -109,6 +110,7 @@ const mockSponsors: Sponsor[] = [
     tier: "platinum",
     order: 1,
     isActive: true,
+    showOnHomepage: false,
     createdAt: new Date("2024-01-15"),
     updatedAt: new Date("2024-03-10"),
   },
@@ -123,6 +125,7 @@ const mockSponsors: Sponsor[] = [
     tier: "gold",
     order: 2,
     isActive: true,
+    showOnHomepage: false,
     createdAt: new Date("2024-01-20"),
     updatedAt: new Date("2024-03-15"),
   },
@@ -137,6 +140,7 @@ const mockSponsors: Sponsor[] = [
     tier: "gold",
     order: 3,
     isActive: true,
+    showOnHomepage: false,
     createdAt: new Date("2024-02-01"),
     updatedAt: new Date("2024-03-12"),
   },
@@ -151,6 +155,7 @@ const mockSponsors: Sponsor[] = [
     tier: "silver",
     order: 4,
     isActive: true,
+    showOnHomepage: false,
     createdAt: new Date("2024-02-10"),
     updatedAt: new Date("2024-03-08"),
   },
@@ -162,6 +167,7 @@ const mockSponsors: Sponsor[] = [
     tier: "silver",
     order: 5,
     isActive: false,
+    showOnHomepage: false,
     createdAt: new Date("2024-02-15"),
     updatedAt: new Date("2024-03-05"),
   },
@@ -176,6 +182,7 @@ const mockSponsors: Sponsor[] = [
     tier: "bronze",
     order: 6,
     isActive: true,
+    showOnHomepage: false,
     createdAt: new Date("2024-02-20"),
     updatedAt: new Date("2024-03-01"),
   },
@@ -187,6 +194,7 @@ const mockSponsors: Sponsor[] = [
     tier: "partner",
     order: 7,
     isActive: true,
+    showOnHomepage: false,
     createdAt: new Date("2024-03-01"),
     updatedAt: new Date("2024-03-18"),
   },
@@ -201,6 +209,7 @@ const mockSponsors: Sponsor[] = [
     tier: "partner",
     order: 8,
     isActive: true,
+    showOnHomepage: false,
     createdAt: new Date("2024-03-05"),
     updatedAt: new Date("2024-03-20"),
   },
@@ -217,6 +226,7 @@ interface SponsorFormData {
   tier: SponsorTier;
   order: number;
   isActive: boolean;
+  showOnHomepage: boolean;
 }
 
 const initialFormData: SponsorFormData = {
@@ -229,6 +239,7 @@ const initialFormData: SponsorFormData = {
   tier: "partner",
   order: 0,
   isActive: true,
+  showOnHomepage: false,
 };
 
 function isLocalImagePath(src: string) {
@@ -352,6 +363,7 @@ export default function AdminPartnersPage() {
       tier: sponsor.tier,
       order: sponsor.order,
       isActive: sponsor.isActive,
+      showOnHomepage: sponsor.showOnHomepage ?? false,
     });
     setIsEditDialogOpen(true);
   };
@@ -427,6 +439,32 @@ export default function AdminPartnersPage() {
         },
         body: JSON.stringify({
           isActive: !sponsor.isActive,
+          locale,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || genericLoadError);
+      }
+
+      setStatusMessage(data.message || "");
+      await loadSponsors();
+    } catch (error) {
+      setStatusMessage(error instanceof Error ? error.message : genericLoadError);
+    }
+  };
+
+  // 切换首页显示
+  const toggleShowOnHomepage = async (sponsor: Sponsor) => {
+    try {
+      const response = await fetch(`/api/sponsors/${sponsor.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          showOnHomepage: !sponsor.showOnHomepage,
           locale,
         }),
       });
@@ -594,6 +632,7 @@ export default function AdminPartnersPage() {
                     <TableHead>{t("table.order")}</TableHead>
                     <TableHead>{t("table.website")}</TableHead>
                     <TableHead>{t("table.status")}</TableHead>
+                    <TableHead>{t("table.homepage")}</TableHead>
                     <TableHead className="text-right">{t("table.actions")}</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -702,6 +741,15 @@ export default function AdminPartnersPage() {
                               {getStatusLabel(sponsor.isActive)}
                             </span>
                           </div>
+                        </TableCell>
+                        <TableCell>
+                          <Switch
+                            checked={sponsor.showOnHomepage}
+                            onCheckedChange={() =>
+                              toggleShowOnHomepage(sponsor)
+                            }
+                            className="data-[state=checked]:bg-blue-600"
+                          />
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end gap-2">
@@ -970,6 +1018,26 @@ export default function AdminPartnersPage() {
                   setFormData((prev) => ({ ...prev, isActive: checked }))
                 }
                 className="data-[state=checked]:bg-emerald-600"
+              />
+            </div>
+
+            {/* Show on Homepage */}
+            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+              <div>
+                <Label htmlFor="showOnHomepage" className="font-medium">
+                  {t("form.showOnHomepage")}
+                </Label>
+                <p className="text-sm text-slate-500">
+                  {t("form.showOnHomepageHelp")}
+                </p>
+              </div>
+              <Switch
+                id="showOnHomepage"
+                checked={formData.showOnHomepage}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, showOnHomepage: checked }))
+                }
+                className="data-[state=checked]:bg-blue-600"
               />
             </div>
           </div>

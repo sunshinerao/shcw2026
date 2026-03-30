@@ -32,6 +32,7 @@ export async function GET(req: NextRequest) {
     // 筛选参数
     const tier = searchParams.get("tier");
     const isActive = searchParams.get("isActive");
+    const showOnHomepage = searchParams.get("showOnHomepage");
     
     // 排序参数
     const sortBy = searchParams.get("sortBy") || "order"; // order | createdAt | name
@@ -46,6 +47,10 @@ export async function GET(req: NextRequest) {
     
     if (isActive !== null && isActive !== undefined) {
       where.isActive = isActive === "true";
+    }
+    
+    if (showOnHomepage !== null && showOnHomepage !== undefined) {
+      where.showOnHomepage = showOnHomepage === "true";
     }
     
     // 构建排序条件
@@ -113,6 +118,7 @@ export async function POST(req: NextRequest) {
       tier,
       order,
       isActive,
+      showOnHomepage,
     } = body;
     
     // 验证必填字段
@@ -144,6 +150,7 @@ export async function POST(req: NextRequest) {
         tier,
         order: order ?? 0,
         isActive: isActive ?? true,
+        showOnHomepage: showOnHomepage ?? false,
       },
     });
     

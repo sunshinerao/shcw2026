@@ -809,6 +809,7 @@
         "order": "Order",
         "website": "Website",
         "status": "Status",
+        "homepage": "Homepage",
         "actions": "Actions"
       },
       "visit": "Visit",
@@ -838,7 +839,9 @@
         "order": "Display order",
         "orderPlaceholder": "Lower numbers appear first",
         "status": "Active status",
-        "statusHelp": "Active partners are visible on the public site."
+        "statusHelp": "Active partners are visible on the public site.",
+        "showOnHomepage": "Show on homepage",
+        "showOnHomepageHelp": "Display this partner in the homepage partners section."
       },
       "delete": {
         "title": "Confirm deletion",

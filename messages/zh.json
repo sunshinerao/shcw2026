@@ -809,6 +809,7 @@
         "order": "排序",
         "website": "网站",
         "status": "状态",
+        "homepage": "首页显示",
         "actions": "操作"
       },
       "visit": "访问",
@@ -838,7 +839,9 @@
         "order": "排序权重",
         "orderPlaceholder": "数字越小越靠前",
         "status": "启用状态",
-        "statusHelp": "启用后将在网站前台显示。"
+        "statusHelp": "启用后将在网站前台显示。",
+        "showOnHomepage": "首页展示",
+        "showOnHomepageHelp": "开启后将在首页合作伙伴栏目中展示。"
       },
       "delete": {
         "title": "确认删除",

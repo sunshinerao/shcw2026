@@ -466,6 +466,7 @@ model Sponsor {
   
   order       Int      @default(0)
   isActive    Boolean  @default(true)
+  showOnHomepage Boolean @default(false)
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
