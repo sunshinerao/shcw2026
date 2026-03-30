@@ -99,6 +99,7 @@ type ManagedUser = {
   phone?: string | null;
   title?: string | null;
   bio?: string | null;
+  salutation?: string | null;
   role: UserRole;
   status: UserStatus;
   points: number;
@@ -107,9 +108,14 @@ type ManagedUser = {
   createdAt: string;
   organization?: {
     name: string;
+    logo?: string | null;
     industry?: string | null;
     website?: string | null;
     description?: string | null;
+    size?: string | null;
+    contactName?: string | null;
+    contactEmail?: string | null;
+    contactPhone?: string | null;
   } | null;
   registrations?: RegistrationSummary[];
   _count?: {
@@ -125,13 +131,19 @@ type UserFormState = {
   phone: string;
   title: string;
   bio: string;
+  salutation: string;
   role: UserRole;
   status: UserStatus;
   avatar: string;
   organizationName: string;
+  organizationLogo: string;
   organizationIndustry: string;
   organizationWebsite: string;
   organizationDescription: string;
+  organizationSize: string;
+  organizationContactName: string;
+  organizationContactEmail: string;
+  organizationContactPhone: string;
 };
 
 const ITEMS_PER_PAGE = 8;
@@ -175,13 +187,19 @@ const initialFormState: UserFormState = {
   phone: "",
   title: "",
   bio: "",
+  salutation: "",
   role: "ATTENDEE",
   status: "ACTIVE",
   avatar: "",
   organizationName: "",
+  organizationLogo: "",
   organizationIndustry: "",
   organizationWebsite: "",
   organizationDescription: "",
+  organizationSize: "",
+  organizationContactName: "",
+  organizationContactEmail: "",
+  organizationContactPhone: "",
 };
 
 export default function AdminUsersPage() {
@@ -336,15 +354,21 @@ export default function AdminUsersPage() {
           phone: formState.phone || null,
           title: formState.title || null,
           bio: formState.bio || null,
+          salutation: formState.salutation || null,
           role: formState.role,
           status: formState.status,
           avatar: formState.avatar || null,
           organization: formState.organizationName
             ? {
                 name: formState.organizationName,
+                logo: formState.organizationLogo || null,
                 industry: formState.organizationIndustry || null,
                 website: formState.organizationWebsite || null,
                 description: formState.organizationDescription || null,
+                size: formState.organizationSize || null,
+                contactName: formState.organizationContactName || null,
+                contactEmail: formState.organizationContactEmail || null,
+                contactPhone: formState.organizationContactPhone || null,
               }
             : undefined,
         }),
@@ -500,13 +524,19 @@ export default function AdminUsersPage() {
       phone: user.phone || "",
       title: user.title || "",
       bio: user.bio || "",
+      salutation: user.salutation || "",
       role: user.role,
       status: user.status,
       avatar: user.avatar || "",
       organizationName: user.organization?.name || "",
+      organizationLogo: user.organization?.logo || "",
       organizationIndustry: user.organization?.industry || "",
       organizationWebsite: user.organization?.website || "",
       organizationDescription: user.organization?.description || "",
+      organizationSize: user.organization?.size || "",
+      organizationContactName: user.organization?.contactName || "",
+      organizationContactEmail: user.organization?.contactEmail || "",
+      organizationContactPhone: user.organization?.contactPhone || "",
     });
     setIsFormDialogOpen(true);
   };
@@ -829,6 +859,7 @@ export default function AdminUsersPage() {
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader><DialogTitle>{editingUser ? t("form.editTitle") : t("form.createTitle")}</DialogTitle><DialogDescription>{editingUser ? t("form.editDescription") : t("form.createDescription")}</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="space-y-2"><Label>{t("form.salutation")}</Label><Select value={formState.salutation} onValueChange={(value) => setFormState((previous) => ({ ...previous, salutation: value }))}><SelectTrigger><SelectValue placeholder={t("form.salutationPlaceholder")} /></SelectTrigger><SelectContent>{["Dr.", "Mr.", "Ms.", "Mrs.", "Prof."].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label htmlFor="user-name">{t("form.name")}</Label><Input id="user-name" value={formState.name} onChange={(event) => setFormState((previous) => ({ ...previous, name: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="user-email">{t("form.email")}</Label><Input id="user-email" type="email" value={formState.email} onChange={(event) => setFormState((previous) => ({ ...previous, email: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="user-password">{editingUser ? t("form.passwordOptional") : t("form.password")}</Label><Input id="user-password" type="password" value={formState.password} onChange={(event) => setFormState((previous) => ({ ...previous, password: event.target.value }))} /></div>
@@ -836,11 +867,40 @@ export default function AdminUsersPage() {
             <div className="space-y-2"><Label htmlFor="user-title">{t("form.title")}</Label><Input id="user-title" value={formState.title} onChange={(event) => setFormState((previous) => ({ ...previous, title: event.target.value }))} /></div>
             <div className="space-y-2"><Label>{t("form.role")}</Label><Select value={formState.role} onValueChange={(value) => setFormState((previous) => ({ ...previous, role: value as UserRole }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ROLE_OPTIONS.map((role) => <SelectItem key={role} value={role}>{t(`roles.${role}`)}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>{t("form.status")}</Label><Select value={formState.status} onValueChange={(value) => setFormState((previous) => ({ ...previous, status: value as UserStatus }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map((status) => <SelectItem key={status} value={status}>{t(`statuses.${status}`)}</SelectItem>)}</SelectContent></Select></div>
-            <div className="space-y-2"><Label htmlFor="user-avatar">{t("form.avatar")}</Label><Input id="user-avatar" value={formState.avatar} onChange={(event) => setFormState((previous) => ({ ...previous, avatar: event.target.value }))} /></div>
+            <div className="space-y-2 md:col-span-2">
+              <Label>{t("form.avatar")}</Label>
+              <div className="flex items-center gap-4">
+                {formState.avatar && (
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={formState.avatar} />
+                    <AvatarFallback>{formState.name?.charAt(0) || "U"}</AvatarFallback>
+                  </Avatar>
+                )}
+                <Input
+                  type="file"
+                  accept="image/*"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    if (!file) return;
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                      setFormState((previous) => ({ ...previous, avatar: reader.result as string }));
+                    };
+                    reader.readAsDataURL(file);
+                  }}
+                />
+              </div>
+            </div>
             <div className="space-y-2 md:col-span-2"><Label htmlFor="user-bio">{t("form.bio")}</Label><Textarea id="user-bio" rows={3} value={formState.bio} onChange={(event) => setFormState((previous) => ({ ...previous, bio: event.target.value }))} /></div>
+            <div className="md:col-span-2 border-t pt-4 mt-2"><h4 className="font-semibold text-slate-700 mb-3">{t("form.organizationSection")}</h4></div>
             <div className="space-y-2"><Label htmlFor="org-name">{t("form.organizationName")}</Label><Input id="org-name" value={formState.organizationName} onChange={(event) => setFormState((previous) => ({ ...previous, organizationName: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="org-industry">{t("form.organizationIndustry")}</Label><Input id="org-industry" value={formState.organizationIndustry} onChange={(event) => setFormState((previous) => ({ ...previous, organizationIndustry: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="org-website">{t("form.organizationWebsite")}</Label><Input id="org-website" value={formState.organizationWebsite} onChange={(event) => setFormState((previous) => ({ ...previous, organizationWebsite: event.target.value }))} /></div>
+            <div className="space-y-2"><Label htmlFor="org-size">{t("form.organizationSize")}</Label><Input id="org-size" value={formState.organizationSize} onChange={(event) => setFormState((previous) => ({ ...previous, organizationSize: event.target.value }))} /></div>
+            <div className="space-y-2"><Label htmlFor="org-contact-name">{t("form.organizationContactName")}</Label><Input id="org-contact-name" value={formState.organizationContactName} onChange={(event) => setFormState((previous) => ({ ...previous, organizationContactName: event.target.value }))} /></div>
+            <div className="space-y-2"><Label htmlFor="org-contact-email">{t("form.organizationContactEmail")}</Label><Input id="org-contact-email" type="email" value={formState.organizationContactEmail} onChange={(event) => setFormState((previous) => ({ ...previous, organizationContactEmail: event.target.value }))} /></div>
+            <div className="space-y-2"><Label htmlFor="org-contact-phone">{t("form.organizationContactPhone")}</Label><Input id="org-contact-phone" value={formState.organizationContactPhone} onChange={(event) => setFormState((previous) => ({ ...previous, organizationContactPhone: event.target.value }))} /></div>
+            <div className="space-y-2"><Label htmlFor="org-logo">{t("form.organizationLogo")}</Label><Input id="org-logo" value={formState.organizationLogo} onChange={(event) => setFormState((previous) => ({ ...previous, organizationLogo: event.target.value }))} placeholder="https://..." /></div>
             <div className="space-y-2 md:col-span-2"><Label htmlFor="org-description">{t("form.organizationDescription")}</Label><Textarea id="org-description" rows={3} value={formState.organizationDescription} onChange={(event) => setFormState((previous) => ({ ...previous, organizationDescription: event.target.value }))} /></div>
           </div>
           <DialogFooter className="mt-6"><Button variant="outline" onClick={() => setIsFormDialogOpen(false)}>{t("common.cancel")}</Button><Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void saveUser()} disabled={isSubmitting}>{editingUser ? t("form.save") : t("form.create")}</Button></DialogFooter>

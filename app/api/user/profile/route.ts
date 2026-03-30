@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
         phone: true,
         title: true,
         bio: true,
+        salutation: true,
         role: true,
         status: true,
         passCode: true,
@@ -94,7 +95,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, phone, title, bio, avatar } = body;
+    const { name, phone, title, bio, avatar, salutation, organization } = body;
 
     const existingUser = await prisma.user.findUnique({
       where: { id: auth.userId },
@@ -114,15 +115,53 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const updatedUser = await prisma.user.update({
-      where: { id: auth.userId },
-      data: {
-        ...(name !== undefined && { name: name.trim() }),
-        ...(phone !== undefined && { phone: phone || null }),
-        ...(title !== undefined && { title: title || null }),
-        ...(bio !== undefined && { bio: bio || null }),
-        ...(avatar !== undefined && { avatar: avatar || null }),
-      },
+    const updatedUser = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.update({
+        where: { id: auth.userId },
+        data: {
+          ...(name !== undefined && { name: name.trim() }),
+          ...(phone !== undefined && { phone: phone || null }),
+          ...(title !== undefined && { title: title || null }),
+          ...(bio !== undefined && { bio: bio || null }),
+          ...(avatar !== undefined && { avatar: avatar || null }),
+          ...(salutation !== undefined && { salutation: salutation || null }),
+        },
+      });
+
+      // Update or create organization if provided
+      if (organization) {
+        const existingOrg = await tx.organization.findUnique({
+          where: { userId: auth.userId },
+        });
+
+        if (existingOrg) {
+          await tx.organization.update({
+            where: { userId: auth.userId },
+            data: {
+              ...(organization.name !== undefined && { name: organization.name }),
+              ...(organization.industry !== undefined && { industry: organization.industry || null }),
+              ...(organization.website !== undefined && { website: organization.website || null }),
+              ...(organization.description !== undefined && { description: organization.description || null }),
+            },
+          });
+        } else if (organization.name) {
+          await tx.organization.create({
+            data: {
+              name: organization.name,
+              industry: organization.industry || null,
+              website: organization.website || null,
+              description: organization.description || null,
+              userId: auth.userId,
+            },
+          });
+        }
+      }
+
+      return user;
+    });
+
+    const userWithOrg = await prisma.user.findUnique({
+      where: { id: updatedUser.id },
       select: {
         id: true,
         email: true,
@@ -131,6 +170,7 @@ export async function PUT(req: NextRequest) {
         phone: true,
         title: true,
         bio: true,
+        salutation: true,
         role: true,
         status: true,
         passCode: true,
@@ -159,7 +199,7 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: apiMessage(requestLocale, "profileUpdateSuccess"),
-      data: updatedUser,
+      data: userWithOrg,
     });
   } catch (error) {
     console.error("Update profile error:", error);

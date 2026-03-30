@@ -89,6 +89,7 @@ model User {
   email         String    @unique
   password      String    // bcrypt加密
   name          String
+  salutation    String?   // 称谓: Dr. / Mr. / Ms. / Prof. 等
   avatar        String?   // 头像URL
   phone         String?   // 手机号
   title         String?   // 职位

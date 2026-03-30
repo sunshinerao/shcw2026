@@ -5,7 +5,7 @@ import { Prisma, UserRole, UserStatus } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale, type ApiLocale } from "@/lib/api-i18n";
 import { prisma } from "@/lib/prisma";
-import { generatePassCode } from "@/lib/utils";
+import { generatePassCode, generateClimatePassportId } from "@/lib/utils";
 
 const ALLOWED_SORT_FIELDS = new Set([
   "createdAt",
@@ -53,6 +53,16 @@ async function generateUniquePassCode() {
   }
 
   return passCode;
+}
+
+async function generateUniqueClimatePassportId() {
+  let climatePassportId = generateClimatePassportId();
+
+  while (await prisma.user.findUnique({ where: { climatePassportId }, select: { id: true } })) {
+    climatePassportId = generateClimatePassportId();
+  }
+
+  return climatePassportId;
 }
 
 export async function GET(req: NextRequest) {
@@ -118,9 +128,11 @@ export async function GET(req: NextRequest) {
           phone: true,
           title: true,
           bio: true,
+          salutation: true,
           role: true,
           status: true,
           passCode: true,
+          climatePassportId: true,
           emailVerified: true,
           createdAt: true,
           updatedAt: true,
@@ -216,6 +228,7 @@ export async function POST(req: NextRequest) {
       phone,
       title,
       bio,
+      salutation,
       role = UserRole.ATTENDEE,
       status = UserStatus.ACTIVE,
       avatar,
@@ -272,6 +285,7 @@ export async function POST(req: NextRequest) {
 
     const hashedPassword = await bcrypt.hash(password, 12);
     const passCode = await generateUniquePassCode();
+    const climatePassportId = await generateUniqueClimatePassportId();
 
     const newUser = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
@@ -282,10 +296,12 @@ export async function POST(req: NextRequest) {
           phone: phone || null,
           title: title || null,
           bio: bio || null,
+          salutation: salutation || null,
           role,
           status,
           avatar: avatar || null,
           passCode,
+          climatePassportId,
         },
       });
 
@@ -319,9 +335,11 @@ export async function POST(req: NextRequest) {
         phone: true,
         title: true,
         bio: true,
+        salutation: true,
         role: true,
         status: true,
         passCode: true,
+        climatePassportId: true,
         emailVerified: true,
         createdAt: true,
         updatedAt: true,

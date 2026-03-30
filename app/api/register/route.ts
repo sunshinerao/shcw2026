@@ -13,6 +13,8 @@ export async function POST(req: NextRequest) {
       password,
       phone,
       title,
+      salutation,
+      bio,
       role = "ATTENDEE",
       organization,
       locale,
@@ -20,7 +22,7 @@ export async function POST(req: NextRequest) {
     const requestLocale = resolveRequestLocale(req, locale);
 
     // Validation
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !title) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "registerRequired") },
         { status: 400 }
@@ -110,8 +112,10 @@ export async function POST(req: NextRequest) {
           name,
           email,
           password: hashedPassword,
-          phone,
+          phone: phone || null,
           title,
+          salutation: salutation || null,
+          bio: bio || null,
           role,
           passCode,
           climatePassportId,
@@ -124,8 +128,9 @@ export async function POST(req: NextRequest) {
         await tx.organization.create({
           data: {
             name: organization.name,
-            industry: organization.industry,
-            website: organization.website,
+            industry: organization.industry || null,
+            website: organization.website || null,
+            description: organization.description || null,
             userId: newUser.id,
           },
         });

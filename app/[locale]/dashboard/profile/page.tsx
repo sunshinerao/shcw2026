@@ -20,6 +20,7 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,6 +31,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const SALUTATION_OPTIONS = ["Dr.", "Mr.", "Ms.", "Mrs.", "Prof."];
 
 interface UserProfile {
   id: string;
@@ -40,6 +44,8 @@ interface UserProfile {
   title?: string;
   bio?: string;
   role: string;
+  salutation?: string;
+  climatePassportId?: string;
 }
 
 interface Organization {
@@ -79,8 +85,15 @@ export default function ProfilePage() {
     title: "",
     bio: "",
     role: "ATTENDEE",
+    salutation: "",
+    climatePassportId: "",
   });
-  const [organization, setOrganization] = useState<Organization | null>(null);
+  const [organization, setOrganization] = useState<Organization>({
+    name: "",
+    industry: "",
+    website: "",
+    description: "",
+  });
   const [passwordForm, setPasswordForm] = useState<PasswordForm>({
     currentPassword: "",
     newPassword: "",
@@ -112,8 +125,15 @@ export default function ProfilePage() {
         title: data.data.title || "",
         bio: data.data.bio || "",
         role: data.data.role || "ATTENDEE",
+        salutation: data.data.salutation || "",
+        climatePassportId: data.data.climatePassportId || "",
       });
-      setOrganization(data.data.organization || null);
+      setOrganization(data.data.organization || {
+        name: "",
+        industry: "",
+        website: "",
+        description: "",
+      });
     } catch {
       setAlert({ type: "error", messageKey: "profileFailed" });
     } finally {
@@ -166,6 +186,15 @@ export default function ProfilePage() {
           title: profile.title,
           bio: profile.bio,
           avatar: profile.avatar,
+          salutation: profile.salutation,
+          organization: organization.name
+            ? {
+                name: organization.name,
+                industry: organization.industry || null,
+                website: organization.website || null,
+                description: organization.description || null,
+              }
+            : undefined,
         }),
       });
       const data = await response.json();
@@ -181,7 +210,14 @@ export default function ProfilePage() {
         phone: data.data.phone || "",
         title: data.data.title || "",
         bio: data.data.bio || "",
+        salutation: data.data.salutation || "",
       }));
+      setOrganization(data.data.organization || {
+        name: "",
+        industry: "",
+        website: "",
+        description: "",
+      });
 
       await update({
         name: data.data.name || "",
@@ -333,6 +369,25 @@ export default function ProfilePage() {
 
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
+                      <Label htmlFor="salutation">
+                        {t("fields.salutation")}
+                      </Label>
+                      <Select
+                        value={profile.salutation || ""}
+                        onValueChange={(value) => setProfile((previous) => ({ ...previous, salutation: value }))}
+                      >
+                        <SelectTrigger id="salutation">
+                          <SelectValue placeholder={t("placeholders.salutation")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SALUTATION_OPTIONS.map((s) => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
                       <Label htmlFor="name">
                         <User className="w-4 h-4 inline mr-1" />
                         {t("fields.name")}
@@ -346,6 +401,14 @@ export default function ProfilePage() {
                         {t("fields.email")}
                       </Label>
                       <Input id="email" type="email" value={profile.email} readOnly placeholder={t("placeholders.email")} className="bg-slate-50 text-slate-500" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="climatePassportId">
+                        <Award className="w-4 h-4 inline mr-1" />
+                        {t("fields.climatePassportId")}
+                      </Label>
+                      <Input id="climatePassportId" value={profile.climatePassportId || ""} readOnly className="bg-slate-50 text-slate-500" />
                     </div>
 
                     <div className="space-y-2">
@@ -475,60 +538,77 @@ export default function ProfilePage() {
                 <CardDescription>{t("organization.description")}</CardDescription>
               </CardHeader>
               <CardContent>
-                {organization ? (
-                  <div className="space-y-6">
-                    <div className="flex items-start gap-4">
-                      <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Building2 className="w-6 h-6 text-emerald-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-slate-900">{organization.name}</h3>
-                        <p className="text-sm text-slate-500">{organization.industry}</p>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <div className="space-y-1">
-                        <Label className="text-slate-500 text-xs uppercase tracking-wider">{t("organization.industry")}</Label>
-                        <p className="text-slate-900">{organization.industry || "-"}</p>
-                      </div>
-
-                      <div className="space-y-1">
-                        <Label className="text-slate-500 text-xs uppercase tracking-wider">{t("organization.website")}</Label>
-                        <div className="flex items-center gap-1">
-                          <Globe className="w-4 h-4 text-slate-400" />
-                          {organization.website ? (
-                            <a href={organization.website} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700 hover:underline">
-                              {organization.website}
-                            </a>
-                          ) : (
-                            "-"
-                          )}
-                        </div>
-                      </div>
+                <div className="space-y-6">
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div className="space-y-2">
+                      <Label htmlFor="orgName">
+                        <Building2 className="w-4 h-4 inline mr-1" />
+                        {t("organization.nameLabel")}
+                      </Label>
+                      <Input
+                        id="orgName"
+                        value={organization.name || ""}
+                        onChange={(event) => setOrganization((prev) => ({ ...prev, name: event.target.value }))}
+                        placeholder={t("organization.namePlaceholder")}
+                      />
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-slate-500 text-xs uppercase tracking-wider">{t("organization.about")}</Label>
-                      <p className="text-slate-700 leading-relaxed">{organization.description || t("organization.noDescription")}</p>
+                      <Label htmlFor="orgIndustry">
+                        {t("organization.industry")}
+                      </Label>
+                      <Input
+                        id="orgIndustry"
+                        value={organization.industry || ""}
+                        onChange={(event) => setOrganization((prev) => ({ ...prev, industry: event.target.value }))}
+                        placeholder={t("organization.industryPlaceholder")}
+                      />
                     </div>
+                  </div>
 
-                    <Alert className="bg-blue-50 border-blue-200">
-                      <AlertCircle className="h-4 w-4 text-blue-600" />
-                      <AlertTitle className="text-blue-800">{t("organization.noticeTitle")}</AlertTitle>
-                      <AlertDescription className="text-blue-700">{t("organization.notice")}</AlertDescription>
-                    </Alert>
+                  <div className="space-y-2">
+                    <Label htmlFor="orgWebsite">
+                      <Globe className="w-4 h-4 inline mr-1" />
+                      {t("organization.website")}
+                    </Label>
+                    <Input
+                      id="orgWebsite"
+                      type="url"
+                      value={organization.website || ""}
+                      onChange={(event) => setOrganization((prev) => ({ ...prev, website: event.target.value }))}
+                      placeholder={t("organization.websitePlaceholder")}
+                    />
                   </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Building2 className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-slate-900 mb-2">{t("organization.emptyTitle")}</h3>
-                    <p className="text-slate-500 max-w-sm mx-auto mb-6">{t("organization.emptyDescription")}</p>
-                    <Button variant="outline">{t("organization.contactAdmin")}</Button>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="orgDescription">
+                      {t("organization.about")}
+                    </Label>
+                    <Textarea
+                      id="orgDescription"
+                      value={organization.description || ""}
+                      onChange={(event) => setOrganization((prev) => ({ ...prev, description: event.target.value }))}
+                      placeholder={t("organization.descriptionPlaceholder")}
+                      rows={4}
+                    />
                   </div>
-                )}
+
+                  <div className="flex justify-end">
+                    <Button type="button" className="bg-emerald-600 hover:bg-emerald-700" disabled={isLoading} onClick={handleProfileSubmit}>
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          {t("actions.saving")}
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4 mr-2" />
+                          {t("actions.save")}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </motion.div>

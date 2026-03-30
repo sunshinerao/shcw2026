@@ -5,12 +5,16 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { Loader2, Mail, Lock, User, ArrowRight, CheckCircle } from "lucide-react";
+import { Loader2, Mail, Lock, User, ArrowRight, CheckCircle, Phone, Briefcase, Building2, ChevronDown, ChevronUp } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "@/i18n/routing";
+
+const SALUTATION_OPTIONS = ["Dr.", "Mr.", "Ms.", "Mrs.", "Prof."];
 
 export default function RegisterPage() {
   const t = useTranslations("auth.register");
@@ -21,11 +25,20 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showOrgSection, setShowOrgSection] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
+    salutation: "",
+    phone: "",
+    title: "",
+    bio: "",
+    organizationName: "",
+    organizationIndustry: "",
+    organizationWebsite: "",
+    organizationDescription: "",
   });
 
   useEffect(() => {
@@ -57,6 +70,12 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!formData.title.trim()) {
+      setError(t("errors.titleRequired"));
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/register", {
         method: "POST",
@@ -65,6 +84,18 @@ export default function RegisterPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
+          salutation: formData.salutation || undefined,
+          phone: formData.phone || undefined,
+          title: formData.title,
+          bio: formData.bio || undefined,
+          organization: formData.organizationName
+            ? {
+                name: formData.organizationName,
+                industry: formData.organizationIndustry || undefined,
+                website: formData.organizationWebsite || undefined,
+                description: formData.organizationDescription || undefined,
+              }
+            : undefined,
           locale,
         }),
       });
@@ -117,7 +148,7 @@ export default function RegisterPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="max-w-md w-full"
+        className="max-w-lg w-full"
       >
         <div className="text-center mb-8">
           <Link href="/">
@@ -146,24 +177,43 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <Label htmlFor="name">{t("nameLabel")}</Label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder={t("namePlaceholder")}
-                  value={formData.name}
-                  onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
-                  className="pl-10"
-                  required
-                />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="salutation">{t("salutationLabel")}</Label>
+                <Select
+                  value={formData.salutation}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, salutation: value }))}
+                >
+                  <SelectTrigger id="salutation">
+                    <SelectValue placeholder={t("salutationPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {SALUTATION_OPTIONS.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">{t("nameLabel")} *</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    id="name"
+                    type="text"
+                    placeholder={t("namePlaceholder")}
+                    value={formData.name}
+                    onChange={(event) => setFormData((prev) => ({ ...prev, name: event.target.value }))}
+                    className="pl-10"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="email">{t("emailLabel")}</Label>
+              <Label htmlFor="email">{t("emailLabel")} *</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
@@ -178,8 +228,52 @@ export default function RegisterPage() {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">{t("titleLabel")} *</Label>
+                <div className="relative">
+                  <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    id="title"
+                    type="text"
+                    placeholder={t("titlePlaceholder")}
+                    value={formData.title}
+                    onChange={(event) => setFormData((prev) => ({ ...prev, title: event.target.value }))}
+                    className="pl-10"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="phone">{t("phoneLabel")}</Label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder={t("phonePlaceholder")}
+                    value={formData.phone}
+                    onChange={(event) => setFormData((prev) => ({ ...prev, phone: event.target.value }))}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+            </div>
+
             <div className="space-y-2">
-              <Label htmlFor="password">{t("passwordLabel")}</Label>
+              <Label htmlFor="bio">{t("bioLabel")}</Label>
+              <Textarea
+                id="bio"
+                placeholder={t("bioPlaceholder")}
+                value={formData.bio}
+                onChange={(event) => setFormData((prev) => ({ ...prev, bio: event.target.value }))}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">{t("passwordLabel")} *</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
@@ -196,7 +290,7 @@ export default function RegisterPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">{t("confirmPasswordLabel")}</Label>
+              <Label htmlFor="confirmPassword">{t("confirmPasswordLabel")} *</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <Input
@@ -209,6 +303,70 @@ export default function RegisterPage() {
                   required
                 />
               </div>
+            </div>
+
+            {/* Organization section (collapsible) */}
+            <div className="border border-slate-200 rounded-lg">
+              <button
+                type="button"
+                onClick={() => setShowOrgSection(!showOrgSection)}
+                className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 transition-colors rounded-lg"
+              >
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-slate-500" />
+                  <span className="font-medium text-slate-700">{t("organizationSection")}</span>
+                  <span className="text-xs text-slate-400">{t("organizationOptional")}</span>
+                </div>
+                {showOrgSection ? (
+                  <ChevronUp className="w-5 h-5 text-slate-400" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-slate-400" />
+                )}
+              </button>
+              {showOrgSection && (
+                <div className="px-4 pb-4 space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="orgName">{t("orgNameLabel")}</Label>
+                      <Input
+                        id="orgName"
+                        placeholder={t("orgNamePlaceholder")}
+                        value={formData.organizationName}
+                        onChange={(event) => setFormData((prev) => ({ ...prev, organizationName: event.target.value }))}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="orgIndustry">{t("orgIndustryLabel")}</Label>
+                      <Input
+                        id="orgIndustry"
+                        placeholder={t("orgIndustryPlaceholder")}
+                        value={formData.organizationIndustry}
+                        onChange={(event) => setFormData((prev) => ({ ...prev, organizationIndustry: event.target.value }))}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="orgWebsite">{t("orgWebsiteLabel")}</Label>
+                    <Input
+                      id="orgWebsite"
+                      type="url"
+                      placeholder={t("orgWebsitePlaceholder")}
+                      value={formData.organizationWebsite}
+                      onChange={(event) => setFormData((prev) => ({ ...prev, organizationWebsite: event.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="orgDescription">{t("orgDescriptionLabel")}</Label>
+                    <Textarea
+                      id="orgDescription"
+                      placeholder={t("orgDescriptionPlaceholder")}
+                      value={formData.organizationDescription}
+                      onChange={(event) => setFormData((prev) => ({ ...prev, organizationDescription: event.target.value }))}
+                      rows={3}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <Button
