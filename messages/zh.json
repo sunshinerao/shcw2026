@@ -89,7 +89,9 @@
         "checkedIn": "已验码",
         "upcoming": "未到检票时段",
         "active": "可入场",
-        "expired": "已失效"
+        "expired": "已失效",
+        "pendingApproval": "待审批",
+        "rejected": "已拒绝"
       },
       "status": {
         "title": "通行证有效",
@@ -99,7 +101,11 @@
         "upcomingTitle": "暂未开放入场",
         "upcomingDescription": "活动开始前 90 分钟内才会生成入场二维码。",
         "expiredTitle": "通行证已失效",
-        "expiredDescription": "活动已结束，活动通行证自动失效。"
+        "expiredDescription": "活动已结束，活动通行证自动失效。",
+        "pendingApprovalTitle": "等待审批",
+        "pendingApprovalDescription": "您的报名已提交，请等待管理员审批。",
+        "rejectedTitle": "报名已拒绝",
+        "rejectedDescription": "您的报名未获得批准，如有疑问请联系主办方。"
       },
       "actions": {
         "download": "下载通行证",
@@ -333,6 +339,7 @@
         "maxAttendees": "容量",
         "isPublished": "已发布",
         "isFeatured": "重磅推荐",
+        "requireApproval": "注册需审批",
         "eventLayer": "所属层级",
         "eventLayerPlaceholder": "未指定层级",
         "layers": {
@@ -414,6 +421,29 @@
         "save": "保存",
         "cancel": "取消",
         "backToList": "返回活动列表"
+      },
+      "registrations": {
+        "title": "报名管理",
+        "subtitle": "查看和管理活动报名，审批待审核的报名。",
+        "backToList": "返回活动列表",
+        "approved": "已通过",
+        "approvalRequired": "需要审批",
+        "searchPlaceholder": "搜索姓名、邮箱或护照ID...",
+        "filterAll": "全部状态",
+        "selectAll": "全选待审批",
+        "selected": "已选 {count} 项",
+        "approve": "批准",
+        "reject": "拒绝",
+        "actionFailed": "操作失败。",
+        "empty": "暂无报名记录。",
+        "statuses": {
+          "PENDING_APPROVAL": "待审批",
+          "REGISTERED": "已注册",
+          "ATTENDED": "已签到",
+          "CANCELLED": "已取消",
+          "REJECTED": "已拒绝",
+          "WAITLIST": "候补"
+        }
       }
     },
     "adminInvitationsPage": {

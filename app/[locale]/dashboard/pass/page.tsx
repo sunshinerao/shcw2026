@@ -41,6 +41,8 @@ const badgeClasses: Record<EventPassState, string> = {
   upcoming: "bg-amber-100 text-amber-700 border-0",
   checkedIn: "bg-green-500 text-white border-0",
   expired: "bg-slate-200 text-slate-700 border-0",
+  pendingApproval: "bg-orange-100 text-orange-700 border-0",
+  rejected: "bg-red-100 text-red-700 border-0",
 };
 
 export default function PassPage() {
@@ -80,12 +82,19 @@ export default function PassPage() {
           registrations.map(async (registration: any) => {
             const event = registration.event;
             const eventDate = new Date(event.startDate);
-            const passState = getEventPassState({
-              startDate: event.startDate,
-              startTime: event.startTime,
-              endTime: event.endTime,
-              checkedInAt: registration.checkedInAt,
-            });
+            let passState: EventPassState;
+            if (registration.status === "PENDING_APPROVAL") {
+              passState = "pendingApproval";
+            } else if (registration.status === "REJECTED") {
+              passState = "rejected";
+            } else {
+              passState = getEventPassState({
+                startDate: event.startDate,
+                startTime: event.startTime,
+                endTime: event.endTime,
+                checkedInAt: registration.checkedInAt,
+              });
+            }
 
             let qrCodeSvg = "";
             if (passState === "active") {
@@ -193,6 +202,8 @@ export default function PassPage() {
     if (passState === "checkedIn") return t("badges.checkedIn");
     if (passState === "upcoming") return t("badges.upcoming");
     if (passState === "expired") return t("badges.expired");
+    if (passState === "pendingApproval") return t("badges.pendingApproval");
+    if (passState === "rejected") return t("badges.rejected");
     return t("badges.active");
   };
 
@@ -216,6 +227,20 @@ export default function PassPage() {
         title: t("status.expiredTitle"),
         description: t("status.expiredDescription"),
         className: "bg-slate-100 text-slate-700 border-slate-200",
+      };
+    }
+    if (passState === "pendingApproval") {
+      return {
+        title: t("status.pendingApprovalTitle"),
+        description: t("status.pendingApprovalDescription"),
+        className: "bg-orange-50 text-orange-900 border-orange-200",
+      };
+    }
+    if (passState === "rejected") {
+      return {
+        title: t("status.rejectedTitle"),
+        description: t("status.rejectedDescription"),
+        className: "bg-red-50 text-red-900 border-red-200",
       };
     }
     return {

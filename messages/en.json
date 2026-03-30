@@ -89,7 +89,9 @@
         "checkedIn": "Checked in",
         "upcoming": "Not active yet",
         "active": "Ready for entry",
-        "expired": "Expired"
+        "expired": "Expired",
+        "pendingApproval": "Pending Approval",
+        "rejected": "Rejected"
       },
       "status": {
         "title": "Pass active",
@@ -99,7 +101,11 @@
         "upcomingTitle": "Entry not open yet",
         "upcomingDescription": "Your QR code will be issued automatically 90 minutes before the event starts.",
         "expiredTitle": "Pass expired",
-        "expiredDescription": "This event has ended, so the event pass is no longer valid."
+        "expiredDescription": "This event has ended, so the event pass is no longer valid.",
+        "pendingApprovalTitle": "Pending Approval",
+        "pendingApprovalDescription": "Your registration has been submitted. Please wait for administrator approval.",
+        "rejectedTitle": "Registration Rejected",
+        "rejectedDescription": "Your registration was not approved. Please contact the organizer if you have questions."
       },
       "actions": {
         "download": "Download pass",
@@ -333,6 +339,7 @@
         "maxAttendees": "Capacity",
         "isPublished": "Published",
         "isFeatured": "Featured",
+        "requireApproval": "Require Approval",
         "eventLayer": "Event layer",
         "eventLayerPlaceholder": "Unassigned layer",
         "layers": {
@@ -414,6 +421,29 @@
         "save": "Save",
         "cancel": "Cancel",
         "backToList": "Back to Events"
+      },
+      "registrations": {
+        "title": "Registrations",
+        "subtitle": "View and manage event registrations, approve pending registrations.",
+        "backToList": "Back to Events",
+        "approved": "Approved",
+        "approvalRequired": "Approval Required",
+        "searchPlaceholder": "Search name, email, or passport ID...",
+        "filterAll": "All statuses",
+        "selectAll": "Select all pending",
+        "selected": "{count} selected",
+        "approve": "Approve",
+        "reject": "Reject",
+        "actionFailed": "Action failed.",
+        "empty": "No registrations found.",
+        "statuses": {
+          "PENDING_APPROVAL": "Pending Approval",
+          "REGISTERED": "Registered",
+          "ATTENDED": "Attended",
+          "CANCELLED": "Cancelled",
+          "REJECTED": "Rejected",
+          "WAITLIST": "Waitlisted"
+        }
       }
     },
     "adminInvitationsPage": {

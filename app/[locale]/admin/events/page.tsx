@@ -54,6 +54,7 @@ type ManagedEvent = {
   maxAttendees?: number | null;
   isPublished: boolean;
   isFeatured: boolean;
+  requireApproval: boolean;
   _count?: {
     registrations: number;
     checkins: number;
@@ -89,6 +90,7 @@ type EventFormState = {
   maxAttendees: string;
   isPublished: boolean;
   isFeatured: boolean;
+  requireApproval: boolean;
 };
 
 const EVENT_TYPES: EventType[] = ["forum", "workshop", "ceremony", "conference", "networking"];
@@ -113,6 +115,7 @@ const initialFormState: EventFormState = {
   maxAttendees: "",
   isPublished: false,
   isFeatured: false,
+  requireApproval: false,
 };
 
 export default function AdminEventsPage() {
@@ -256,6 +259,7 @@ export default function AdminEventsPage() {
       maxAttendees: event.maxAttendees ? String(event.maxAttendees) : "",
       isPublished: event.isPublished,
       isFeatured: event.isFeatured,
+      requireApproval: event.requireApproval ?? false,
     });
     setIsFormDialogOpen(true);
   };
@@ -312,6 +316,7 @@ export default function AdminEventsPage() {
         maxAttendees: formState.maxAttendees ? Number(formState.maxAttendees) : null,
         isPublished: formState.isPublished,
         isFeatured: formState.isFeatured,
+        requireApproval: formState.requireApproval,
       };
 
       const response = await fetch(editingEvent ? `/api/events/${editingEvent.id}` : "/api/events", {
@@ -520,6 +525,11 @@ export default function AdminEventsPage() {
                               <Mic className="h-4 w-4" />
                             </Button>
                           </Link>
+                          <Link href={`/admin/events/${event.id}/registrations`}>
+                            <Button size="sm" variant="outline" title={t("registrations.title")}>
+                              <Users className="h-4 w-4" />
+                            </Button>
+                          </Link>
                           <Button size="sm" variant="outline" onClick={() => openEditDialog(event)}>
                             <Edit2 className="h-4 w-4" />
                           </Button>
@@ -657,6 +667,10 @@ export default function AdminEventsPage() {
               <div className="flex items-center justify-between rounded-lg border px-3 py-2">
                 <Label htmlFor="event-featured">{t("form.isFeatured")}</Label>
                 <Switch id="event-featured" checked={formState.isFeatured} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, isFeatured: checked }))} />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+                <Label htmlFor="event-require-approval">{t("form.requireApproval")}</Label>
+                <Switch id="event-require-approval" checked={formState.requireApproval} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, requireApproval: checked }))} />
               </div>
             </div>
             <div className="space-y-2 md:col-span-2">

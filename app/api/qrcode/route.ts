@@ -95,6 +95,20 @@ export async function GET(req: NextRequest) {
         );
       }
 
+      if (registration.status === "PENDING_APPROVAL") {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "qrRegistrationPendingApproval") },
+          { status: 403 }
+        );
+      }
+
+      if (registration.status === "REJECTED") {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "qrRegistrationRejected") },
+          { status: 403 }
+        );
+      }
+
       const passState = getEventPassState({
         startDate: registration.event.startDate,
         startTime: registration.event.startTime,

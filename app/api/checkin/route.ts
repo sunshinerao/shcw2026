@@ -213,6 +213,20 @@ async function verifyAndCheckIn(
     };
   }
 
+  if (registration.status === "PENDING_APPROVAL") {
+    return {
+      success: false,
+      error: apiMessage(locale, "qrRegistrationPendingApproval"),
+    };
+  }
+
+  if (registration.status === "REJECTED") {
+    return {
+      success: false,
+      error: apiMessage(locale, "qrRegistrationRejected"),
+    };
+  }
+
   const passState = getEventPassState({
     startDate: registration.event.startDate,
     startTime: registration.event.startTime,

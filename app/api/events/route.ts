@@ -203,6 +203,7 @@ export async function POST(req: NextRequest) {
       maxAttendees,
       isPublished = false,
       isFeatured = false,
+      requireApproval = false,
       eventLayer,
       hostType,
     } = body;
@@ -262,6 +263,7 @@ export async function POST(req: NextRequest) {
         maxAttendees: typeof maxAttendees === "number" ? maxAttendees : null,
         isPublished: Boolean(isPublished),
         isFeatured: Boolean(isFeatured),
+        requireApproval: Boolean(requireApproval),
         eventLayer: eventLayer && EVENT_LAYERS.has(eventLayer) ? (eventLayer as EventLayer) : null,
         hostType: hostType && EVENT_HOST_TYPES.has(hostType) ? (hostType as EventHostType) : null,
       },

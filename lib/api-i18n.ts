@@ -649,6 +649,43 @@ const apiMessages = {
     zh: "消息不存在",
     en: "Message not found.",
   },
+  // Registration approval messages
+  eventRegisterPendingApproval: {
+    zh: "报名申请已提交，等待管理员审批",
+    en: "Registration submitted. Waiting for admin approval.",
+  },
+  qrRegistrationPendingApproval: {
+    zh: "报名尚未审批通过，无法生成通行证",
+    en: "Registration is pending approval. Pass cannot be generated.",
+  },
+  qrRegistrationRejected: {
+    zh: "报名已被拒绝",
+    en: "Registration has been rejected.",
+  },
+  registrationListFetchFailed: {
+    zh: "获取报名列表失败",
+    en: "Failed to fetch registration list.",
+  },
+  registrationInvalidAction: {
+    zh: "无效的操作或缺少报名ID",
+    en: "Invalid action or missing registration IDs.",
+  },
+  registrationCapacityExceeded: {
+    zh: "无法批准：超出活动人数限制",
+    en: "Cannot approve: event capacity would be exceeded.",
+  },
+  registrationApproveSuccess: {
+    zh: "报名已批准",
+    en: "Registrations approved successfully.",
+  },
+  registrationRejectSuccess: {
+    zh: "报名已拒绝",
+    en: "Registrations rejected.",
+  },
+  registrationActionFailed: {
+    zh: "操作失败",
+    en: "Failed to process registration action.",
+  },
 } as const;
 
 type ApiMessageKey = keyof typeof apiMessages;

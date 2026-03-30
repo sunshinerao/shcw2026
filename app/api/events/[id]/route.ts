@@ -164,6 +164,7 @@ export async function PUT(
       maxAttendees,
       isPublished,
       isFeatured,
+      requireApproval,
       eventLayer,
       hostType,
     } = body;
@@ -258,6 +259,7 @@ export async function PUT(
         }),
         ...(isPublished !== undefined && { isPublished: Boolean(isPublished) }),
         ...(isFeatured !== undefined && { isFeatured: Boolean(isFeatured) }),
+        ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
         ...(eventLayer !== undefined && {
           eventLayer: eventLayer && EVENT_LAYERS.has(eventLayer) ? (eventLayer as EventLayer) : null,
         }),

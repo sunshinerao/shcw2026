@@ -30,10 +30,12 @@ enum UserStatus {
 
 // 报名表状态枚举
 enum RegistrationStatus {
-  REGISTERED   // 已报名
-  CANCELLED    // 已取消
-  ATTENDED     // 已入场
-  WAITLIST     // 候补名单
+  PENDING_APPROVAL // 待审批
+  REGISTERED       // 已批准/已报名
+  CANCELLED        // 已取消
+  ATTENDED         // 已入场
+  WAITLIST         // 候补名单
+  REJECTED         // 已拒绝
 }
 
 // 活动维度：层级分类
@@ -270,6 +272,7 @@ model Event {
   
   // 限制
   maxAttendees  Int?     // 人数限制
+  requireApproval Boolean @default(false) // 报名是否需要管理员审批
   
   // 状态
   isPublished   Boolean  @default(false)

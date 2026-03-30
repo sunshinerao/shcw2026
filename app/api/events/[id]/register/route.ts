@@ -32,6 +32,7 @@ export async function POST(
       select: {
         id: true,
         maxAttendees: true,
+        requireApproval: true,
       },
     });
 
@@ -55,14 +56,20 @@ export async function POST(
       },
     });
 
-    if (existingRegistration && existingRegistration.status !== RegistrationStatus.CANCELLED) {
+    if (existingRegistration && existingRegistration.status !== RegistrationStatus.CANCELLED && existingRegistration.status !== RegistrationStatus.REJECTED) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "eventAlreadyRegistered") },
         { status: 409 }
       );
     }
 
-    if (event.maxAttendees) {
+    // Determine initial status based on event's requireApproval setting
+    const initialStatus = event.requireApproval
+      ? RegistrationStatus.PENDING_APPROVAL
+      : RegistrationStatus.REGISTERED;
+
+    if (event.maxAttendees && !event.requireApproval) {
+      // For auto-approve events with capacity limit, check capacity in transaction
       const registration = await prisma.$transaction(async (tx) => {
         const activeRegistrationCount = await tx.registration.count({
           where: {
@@ -81,7 +88,7 @@ export async function POST(
           ? await tx.registration.update({
               where: { id: existingRegistration.id },
               data: {
-                status: RegistrationStatus.REGISTERED,
+                status: initialStatus,
                 notes: body.notes || null,
                 dietaryReq: body.dietaryReq || null,
                 checkedInAt: null,
@@ -107,7 +114,7 @@ export async function POST(
               data: {
                 userId: session.user.id,
                 eventId: params.id,
-                status: RegistrationStatus.REGISTERED,
+                status: initialStatus,
                 notes: body.notes || null,
                 dietaryReq: body.dietaryReq || null,
               },
@@ -142,17 +149,22 @@ export async function POST(
         },
       });
 
+      const successMessage = event.requireApproval
+        ? apiMessage(requestLocale, "eventRegisterPendingApproval")
+        : apiMessage(requestLocale, "eventRegisterSuccess");
+
       return NextResponse.json({
         success: true,
-        message: apiMessage(requestLocale, "eventRegisterSuccess"),
+        message: successMessage,
         data: registration,
       });
     } else {
+      // No capacity limit, or requireApproval (capacity checked at approval time)
       const registration = existingRegistration
         ? await prisma.registration.update({
             where: { id: existingRegistration.id },
             data: {
-              status: RegistrationStatus.REGISTERED,
+              status: initialStatus,
               notes: body.notes || null,
               dietaryReq: body.dietaryReq || null,
               checkedInAt: null,
@@ -178,7 +190,7 @@ export async function POST(
             data: {
               userId: session.user.id,
               eventId: params.id,
-              status: RegistrationStatus.REGISTERED,
+              status: initialStatus,
               notes: body.notes || null,
               dietaryReq: body.dietaryReq || null,
             },
@@ -205,9 +217,13 @@ export async function POST(
         },
       });
 
+      const successMessage = event.requireApproval
+        ? apiMessage(requestLocale, "eventRegisterPendingApproval")
+        : apiMessage(requestLocale, "eventRegisterSuccess");
+
       return NextResponse.json({
         success: true,
-        message: apiMessage(requestLocale, "eventRegisterSuccess"),
+        message: successMessage,
         data: registration,
       });
     }

@@ -53,7 +53,7 @@ function SponsorCard({ sponsor, locale, isSmallTier }: { sponsor: Sponsor; local
   const hasLogo = sponsor.logo && sponsor.logo !== "";
 
   const content = (
-    <div className={`w-full ${isSmallTier ? "h-12" : "h-16"} bg-white rounded-lg flex items-center justify-center border border-slate-200 hover:border-slate-300 hover:shadow-sm transition-all overflow-hidden relative`}>
+    <div className={`w-full ${isSmallTier ? "h-12" : "h-16"} flex items-center justify-center transition-all overflow-hidden relative`}>
       {hasLogo ? (
         isLocalImagePath(sponsor.logo) ? (
           <Image
