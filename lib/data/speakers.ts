@@ -1,5 +1,6 @@
 export interface Speaker {
   id: string;
+  salutation?: string;
   name: string;
   nameEn?: string;
   avatar?: string;

@@ -40,11 +40,15 @@ export function generatePassCode(): string {
 
 /**
  * 生成气候护照唯一ID
- * 格式: SCW2026-XXXXXX (6位字母数字组合)
+ * 格式: XXXXXXX-XXXXXX (7位随机字母数字-6位随机字母数字)
  */
 export function generateClimatePassportId(): string {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let result = "SCW2026-";
+  let result = "";
+  for (let i = 0; i < 7; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  result += "-";
   for (let i = 0; i < 6; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }

@@ -55,6 +55,7 @@ import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 // Speaker interface based on schema
 interface Speaker {
   id: string;
+  salutation?: string;
   name: string;
   nameEn?: string;
   avatar?: string;
@@ -227,6 +228,7 @@ export default function AdminSpeakersPage() {
 
   // Form state
   const [formData, setFormData] = useState<Partial<Speaker>>({
+    salutation: "",
     name: "",
     nameEn: "",
     title: "",
@@ -453,6 +455,7 @@ export default function AdminSpeakersPage() {
   // Reset form
   const resetForm = () => {
     setFormData({
+      salutation: "",
       name: "",
       nameEn: "",
       title: "",
@@ -626,7 +629,7 @@ export default function AdminSpeakersPage() {
                       <div className="min-w-0">
                         <div className="flex items-center gap-2 mb-1 flex-wrap">
                           <h3 className="font-semibold text-slate-900">
-                            {getPrimaryName(speaker)}
+                            {speaker.salutation ? `${speaker.salutation} ` : ""}{getPrimaryName(speaker)}
                           </h3>
                           {getSecondaryName(speaker) && (
                             <span className="text-sm text-slate-500">
@@ -778,6 +781,29 @@ export default function AdminSpeakersPage() {
                   {t("form.avatarHelp")}
                 </p>
               </div>
+            </div>
+
+            {/* Salutation */}
+            <div className="space-y-2">
+              <Label htmlFor="salutation">{t("form.salutation")}</Label>
+              <Select
+                value={formData.salutation || "none"}
+                onValueChange={(v) =>
+                  setFormData({ ...formData, salutation: v === "none" ? "" : v })
+                }
+              >
+                <SelectTrigger id="salutation">
+                  <SelectValue placeholder={t("form.salutationPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("form.salutationPlaceholder")}</SelectItem>
+                  <SelectItem value="Dr.">Dr.</SelectItem>
+                  <SelectItem value="Mr.">Mr.</SelectItem>
+                  <SelectItem value="Ms.">Ms.</SelectItem>
+                  <SelectItem value="Mrs.">Mrs.</SelectItem>
+                  <SelectItem value="Prof.">Prof.</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Name Fields */}

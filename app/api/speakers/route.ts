@@ -67,6 +67,7 @@ export async function GET(req: NextRequest) {
       take: limit,
       select: {
         id: true,
+        salutation: true,
         name: true,
         nameEn: true,
         avatar: true,
@@ -136,6 +137,7 @@ export async function POST(req: NextRequest) {
     const {
       name,
       nameEn,
+      salutation,
       title,
       titleEn,
       organization,
@@ -163,6 +165,7 @@ export async function POST(req: NextRequest) {
     // 创建嘉宾
     const speaker = await prisma.speaker.create({
       data: {
+        salutation: salutation || null,
         name,
         nameEn: nameEn || null,
         title,

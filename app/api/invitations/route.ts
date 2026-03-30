@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     requestLocale = resolveRequestLocale(req, body.locale);
 
-    const { guestName, guestTitle, guestOrg, guestEmail, language, eventId, purpose, notes } = body;
+    const { salutation, guestName, guestTitle, guestOrg, guestEmail, language, eventId, purpose, notes } = body;
 
     if (!guestName || typeof guestName !== "string" || !guestName.trim()) {
       return NextResponse.json(
@@ -123,6 +123,7 @@ export async function POST(req: NextRequest) {
     const invitation = await prisma.invitationRequest.create({
       data: {
         userId: currentUser.id,
+        salutation: salutation?.trim() || null,
         guestName: guestName.trim(),
         guestTitle: guestTitle?.trim() || null,
         guestOrg: guestOrg?.trim() || null,

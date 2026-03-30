@@ -889,6 +889,8 @@
       "form": {
         "uploadAvatar": "上传头像",
         "avatarHelp": "支持 JPG、PNG 格式，建议尺寸 400x400。",
+        "salutation": "称谓",
+        "salutationPlaceholder": "请选择称谓",
         "name": "姓名",
         "namePlaceholder": "请输入中文姓名",
         "nameEn": "英文名",
@@ -1007,6 +1009,7 @@
     "language": "语言",
     "rejectReason": "拒绝原因",
     "download": "下载邀请函",
+    "edit": "编辑",
     "status": {
       "pending": "待处理",
       "uploaded": "已上传",
@@ -1016,6 +1019,10 @@
     "form": {
       "title": "申请邀请函",
       "description": "填写嘉宾信息，提交邀请函申请。",
+      "editTitle": "编辑邀请函申请",
+      "editDescription": "修改嘉宾信息并重新提交申请。",
+      "salutation": "称谓",
+      "salutationPlaceholder": "请选择称谓",
       "applicantInfo": "申请人信息",
       "applicantName": "姓名",
       "applicantEmail": "邮箱",
@@ -1030,11 +1037,14 @@
       "purpose": "参会目的",
       "notes": "备注",
       "cancel": "取消",
-      "submit": "提交申请"
+      "submit": "提交申请",
+      "saveChanges": "保存修改"
     },
     "messages": {
       "createSuccess": "邀请函申请提交成功。",
-      "createFailed": "提交邀请函申请失败。"
+      "createFailed": "提交邀请函申请失败。",
+      "editSuccess": "邀请函申请已更新。",
+      "editFailed": "更新邀请函申请失败。"
     }
   },
   "eventsPage": {

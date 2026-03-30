@@ -9,6 +9,7 @@ import { Link } from "@/i18n/routing";
 
 type Speaker = {
   id: string;
+  salutation?: string | null;
   name: string;
   nameEn?: string | null;
   title?: string | null;
@@ -68,6 +69,7 @@ export function SpeakersSection() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {speakers.map((speaker, index) => {
             const name = locale === "en" ? (speaker.nameEn || speaker.name) : speaker.name;
+            const displayName = speaker.salutation ? `${speaker.salutation} ${name}` : name;
             const title = locale === "en" ? (speaker.titleEn || speaker.title) : speaker.title;
             const org = locale === "en" ? (speaker.organizationEn || speaker.organization) : speaker.organization;
             return (
@@ -91,7 +93,7 @@ export function SpeakersSection() {
                     </div>
                   )}
                 </div>
-                <h3 className="text-lg font-bold text-slate-900">{name}</h3>
+                <h3 className="text-lg font-bold text-slate-900">{displayName}</h3>
                 {title && <p className="text-sm text-emerald-600 font-medium">{title}</p>}
                 {org && <p className="text-sm text-slate-500 mt-1">{org}</p>}
               </motion.div>

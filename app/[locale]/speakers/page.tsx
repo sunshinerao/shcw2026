@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type Speaker = {
   id: string;
+  salutation?: string | null;
   name: string;
   nameEn?: string | null;
   avatar?: string | null;
@@ -141,6 +142,7 @@ function SpeakerCard({
   localize: (zh?: string | null, en?: string | null) => string;
 }) {
   const name = localize(speaker.name, speaker.nameEn);
+  const displayName = speaker.salutation ? `${speaker.salutation} ${name}` : name;
   const title = localize(speaker.title, speaker.titleEn);
   const org = localize(speaker.organization, speaker.organizationEn);
   const bio = localize(speaker.bio, speaker.bioEn);
@@ -161,7 +163,7 @@ function SpeakerCard({
           </Avatar>
         </div>
         <div className="mb-4">
-          <h3 className="text-xl font-bold text-slate-900">{name}</h3>
+          <h3 className="text-xl font-bold text-slate-900">{displayName}</h3>
           {title && <p className="text-emerald-600 font-medium">{title}</p>}
           {org && <p className="text-slate-500 text-sm">{org}</p>}
         </div>

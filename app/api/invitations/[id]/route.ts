@@ -109,31 +109,84 @@ export async function PUT(
       );
     }
 
-    const { status, letterFileUrl, rejectReason } = body;
+    const { status, letterFileUrl, rejectReason, salutation, guestName, guestTitle, guestOrg, guestEmail, language, eventId, purpose, notes } = body;
 
-    // Owner can only mark as DOWNLOADED
+    // Owner actions (non-admin)
     if (isOwner && !isManager) {
-      if (status !== InvitationStatus.DOWNLOADED || existing.status !== InvitationStatus.UPLOADED) {
-        return NextResponse.json(
-          { success: false, error: apiMessage(requestLocale, "invitationInvalidStatus") },
-          { status: 400 }
-        );
+      // Owner can mark UPLOADED as DOWNLOADED
+      if (status === InvitationStatus.DOWNLOADED && existing.status === InvitationStatus.UPLOADED) {
+        const updated = await prisma.invitationRequest.update({
+          where: { id: params.id },
+          data: { status: InvitationStatus.DOWNLOADED },
+          include: {
+            user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },
+            event: { select: { id: true, title: true, titleEn: true, startDate: true } },
+          },
+        });
+
+        return NextResponse.json({
+          success: true,
+          message: apiMessage(requestLocale, "invitationUpdateSuccess"),
+          data: updated,
+        });
       }
 
-      const updated = await prisma.invitationRequest.update({
-        where: { id: params.id },
-        data: { status: InvitationStatus.DOWNLOADED },
-        include: {
-          user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },
-          event: { select: { id: true, title: true, titleEn: true, startDate: true } },
-        },
-      });
+      // Owner can edit PENDING or REJECTED requests (resubmit)
+      if (existing.status === InvitationStatus.PENDING || existing.status === InvitationStatus.REJECTED) {
+        if (guestName !== undefined && (!guestName || typeof guestName !== "string" || !guestName.trim())) {
+          return NextResponse.json(
+            { success: false, error: apiMessage(requestLocale, "invitationGuestNameRequired") },
+            { status: 400 }
+          );
+        }
 
-      return NextResponse.json({
-        success: true,
-        message: apiMessage(requestLocale, "invitationUpdateSuccess"),
-        data: updated,
-      });
+        // Validate eventId if provided
+        if (eventId) {
+          const event = await prisma.event.findUnique({ where: { id: eventId }, select: { id: true } });
+          if (!event) {
+            return NextResponse.json(
+              { success: false, error: apiMessage(requestLocale, "eventNotFound") },
+              { status: 400 }
+            );
+          }
+        }
+
+        const editData: Record<string, unknown> = {};
+        if (salutation !== undefined) editData.salutation = salutation?.trim() || null;
+        if (guestName !== undefined) editData.guestName = guestName.trim();
+        if (guestTitle !== undefined) editData.guestTitle = guestTitle?.trim() || null;
+        if (guestOrg !== undefined) editData.guestOrg = guestOrg?.trim() || null;
+        if (guestEmail !== undefined) editData.guestEmail = guestEmail?.trim() || null;
+        if (language !== undefined) editData.language = language === "en" ? "en" : "zh";
+        if (eventId !== undefined) editData.eventId = eventId || null;
+        if (purpose !== undefined) editData.purpose = purpose?.trim() || null;
+        if (notes !== undefined) editData.notes = notes?.trim() || null;
+        // Reset status to PENDING on resubmit (in case it was REJECTED)
+        if (existing.status === InvitationStatus.REJECTED) {
+          editData.status = InvitationStatus.PENDING;
+          editData.rejectReason = null;
+        }
+
+        const updated = await prisma.invitationRequest.update({
+          where: { id: params.id },
+          data: editData,
+          include: {
+            user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },
+            event: { select: { id: true, title: true, titleEn: true, startDate: true } },
+          },
+        });
+
+        return NextResponse.json({
+          success: true,
+          message: apiMessage(requestLocale, "invitationUpdateSuccess"),
+          data: updated,
+        });
+      }
+
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "invitationInvalidStatus") },
+        { status: 400 }
+      );
     }
 
     // Admin/EventManager can update status and upload letter

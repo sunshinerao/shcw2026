@@ -36,6 +36,7 @@ export async function GET(
       where: { id },
       select: {
         id: true,
+        salutation: true,
         name: true,
         nameEn: true,
         title: true,
@@ -115,6 +116,7 @@ export async function PUT(
     const {
       name,
       nameEn,
+      salutation,
       title,
       titleEn,
       organization,
@@ -155,6 +157,7 @@ export async function PUT(
     const updatedSpeaker = await prisma.speaker.update({
       where: { id },
       data: {
+        ...(salutation !== undefined && { salutation: salutation || null }),
         ...(name !== undefined && { name }),
         ...(nameEn !== undefined && { nameEn: nameEn || null }),
         ...(title !== undefined && { title }),

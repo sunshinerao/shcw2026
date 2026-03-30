@@ -889,6 +889,8 @@
       "form": {
         "uploadAvatar": "Upload avatar",
         "avatarHelp": "Supports JPG and PNG. Recommended size: 400x400.",
+        "salutation": "Salutation",
+        "salutationPlaceholder": "Select salutation",
         "name": "Name",
         "namePlaceholder": "Enter the speaker's Chinese name",
         "nameEn": "English name",
@@ -1007,6 +1009,7 @@
     "language": "Language",
     "rejectReason": "Rejection reason",
     "download": "Download Letter",
+    "edit": "Edit",
     "status": {
       "pending": "Pending",
       "uploaded": "Uploaded",
@@ -1016,6 +1019,10 @@
     "form": {
       "title": "Request Invitation Letter",
       "description": "Fill in the guest information and submit your request.",
+      "editTitle": "Edit Invitation Request",
+      "editDescription": "Modify the guest information and resubmit your request.",
+      "salutation": "Salutation",
+      "salutationPlaceholder": "Select salutation",
       "applicantInfo": "Applicant Information",
       "applicantName": "Name",
       "applicantEmail": "Email",
@@ -1030,11 +1037,14 @@
       "purpose": "Purpose of attendance",
       "notes": "Notes",
       "cancel": "Cancel",
-      "submit": "Submit Request"
+      "submit": "Submit Request",
+      "saveChanges": "Save Changes"
     },
     "messages": {
       "createSuccess": "Invitation request submitted successfully.",
-      "createFailed": "Failed to submit the invitation request."
+      "createFailed": "Failed to submit the invitation request.",
+      "editSuccess": "Invitation request updated successfully.",
+      "editFailed": "Failed to update the invitation request."
     }
   },
   "eventsPage": {
@@ -1949,11 +1959,11 @@
   },
   "speakersSection": {
     "title": "Featured Speakers",
-    "subtitle": "Industry leaders and experts from around the world",
+    "subtitle": "Industry leaders, experts and policy makers from around the world",
     "viewAll": "View All Speakers"
   },
   "newsSection": {
-    "title": "Latest News",
+    "title": "News and Media",
     "subtitle": "Stay updated with Shanghai Climate Week",
     "readMore": "Read More",
     "viewAll": "View All News"

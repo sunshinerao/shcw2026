@@ -398,6 +398,7 @@ model AgendaItem {
 // 嘉宾表
 model Speaker {
   id              String   @id @default(uuid())
+  salutation      String?  // 称谓: Dr. / Mr. / Ms. / Prof. 等
   name            String
   nameEn          String?
   avatar          String?
@@ -522,6 +523,7 @@ model InvitationRequest {
   userId          String
   
   // 受邀嘉宾信息
+  salutation      String?          // 称谓: Dr. / Mr. / Ms. / Prof. 等
   guestName       String           // 嘉宾姓名
   guestTitle      String?          // 嘉宾职位
   guestOrg        String?          // 嘉宾机构

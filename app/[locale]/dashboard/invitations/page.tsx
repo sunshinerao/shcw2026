@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { motion } from "framer-motion";
-import { FileText, Plus, Download, Clock, CheckCircle, XCircle, Loader2, User } from "lucide-react";
+import { FileText, Plus, Download, Clock, CheckCircle, XCircle, Loader2, User, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 type InvitationRequest = {
   id: string;
+  salutation?: string | null;
   guestName: string;
   guestTitle?: string | null;
   guestOrg?: string | null;
@@ -65,8 +66,10 @@ export default function DashboardInvitationsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"success" | "error">("success");
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const [form, setForm] = useState({
+    salutation: "",
     guestName: "",
     guestTitle: "",
     guestOrg: "",
@@ -121,15 +124,17 @@ export default function DashboardInvitationsPage() {
 
   const resetForm = () => {
     setForm({
+      salutation: "",
       guestName: "",
       guestTitle: "",
       guestOrg: "",
-      guestEmail: "",
+      guestEmail: session?.user?.email || "",
       language: "zh",
       eventId: "",
       purpose: "",
       notes: "",
     });
+    setEditingId(null);
   };
 
   const submitRequest = async () => {
@@ -141,27 +146,38 @@ export default function DashboardInvitationsPage() {
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/invitations", {
-        method: "POST",
+      const payload = {
+        locale,
+        salutation: form.salutation || null,
+        guestName: form.guestName,
+        guestTitle: form.guestTitle || null,
+        guestOrg: form.guestOrg || null,
+        guestEmail: form.guestEmail || null,
+        language: form.language,
+        eventId: form.eventId || null,
+        purpose: form.purpose || null,
+        notes: form.notes || null,
+      };
+
+      const isEditing = !!editingId;
+      const url = isEditing ? `/api/invitations/${editingId}` : "/api/invitations";
+      const method = isEditing ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          locale,
-          guestName: form.guestName,
-          guestTitle: form.guestTitle || null,
-          guestOrg: form.guestOrg || null,
-          guestEmail: form.guestEmail || null,
-          language: form.language,
-          eventId: form.eventId || null,
-          purpose: form.purpose || null,
-          notes: form.notes || null,
-        }),
+        body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || t("messages.createFailed"));
+      if (!res.ok) throw new Error(data.error || t(isEditing ? "messages.editFailed" : "messages.createFailed"));
 
-      setRequests((prev) => [data.data, ...prev]);
+      if (isEditing) {
+        setRequests((prev) => prev.map((r) => (r.id === editingId ? data.data : r)));
+      } else {
+        setRequests((prev) => [data.data, ...prev]);
+      }
       setStatusTone("success");
-      setStatusMessage(data.message || t("messages.createSuccess"));
+      setStatusMessage(data.message || t(isEditing ? "messages.editSuccess" : "messages.createSuccess"));
       setIsDialogOpen(false);
       resetForm();
     } catch (err) {
@@ -170,6 +186,22 @@ export default function DashboardInvitationsPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const openEditDialog = (req: InvitationRequest) => {
+    setEditingId(req.id);
+    setForm({
+      salutation: req.salutation || "",
+      guestName: req.guestName,
+      guestTitle: req.guestTitle || "",
+      guestOrg: req.guestOrg || "",
+      guestEmail: req.guestEmail || "",
+      language: req.language,
+      eventId: req.eventId || "",
+      purpose: req.purpose || "",
+      notes: req.notes || "",
+    });
+    setIsDialogOpen(true);
   };
 
   const markDownloaded = async (id: string) => {
@@ -266,7 +298,7 @@ export default function DashboardInvitationsPage() {
                       </div>
                       <div>
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <span className="font-semibold text-slate-900">{req.guestName}</span>
+                          <span className="font-semibold text-slate-900">{req.salutation ? `${req.salutation} ` : ""}{req.guestName}</span>
                           {req.guestTitle ? <span className="text-sm text-slate-500">{req.guestTitle}</span> : null}
                           <Badge className={cfg.color}>
                             <StatusIcon className="mr-1 h-3 w-3" />
@@ -286,6 +318,12 @@ export default function DashboardInvitationsPage() {
                     </div>
 
                     <div className="flex items-center gap-2">
+                      {(req.status === "PENDING" || req.status === "REJECTED") ? (
+                        <Button size="sm" variant="outline" onClick={() => openEditDialog(req)}>
+                          <Pencil className="mr-1 h-4 w-4" />
+                          {t("edit")}
+                        </Button>
+                      ) : null}
                       {(req.status === "UPLOADED" || req.status === "DOWNLOADED") && req.letterFileUrl ? (
                         <a
                           href={req.letterFileUrl}
@@ -312,8 +350,8 @@ export default function DashboardInvitationsPage() {
       <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
         <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t("form.title")}</DialogTitle>
-            <DialogDescription>{t("form.description")}</DialogDescription>
+            <DialogTitle>{editingId ? t("form.editTitle") : t("form.title")}</DialogTitle>
+            <DialogDescription>{editingId ? t("form.editDescription") : t("form.description")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             {/* Applicant info (auto-filled from session) */}
@@ -327,6 +365,20 @@ export default function DashboardInvitationsPage() {
                 <p className="text-sm text-slate-600">{t("form.applicantEmail")}: {session.user.email}</p>
               </div>
             ) : null}
+            <div className="space-y-2">
+              <Label htmlFor="salutation">{t("form.salutation")}</Label>
+              <Select value={form.salutation || "none"} onValueChange={(v) => setForm((p) => ({ ...p, salutation: v === "none" ? "" : v }))}>
+                <SelectTrigger id="salutation"><SelectValue placeholder={t("form.salutationPlaceholder")} /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("form.salutationPlaceholder")}</SelectItem>
+                  <SelectItem value="Dr.">Dr.</SelectItem>
+                  <SelectItem value="Mr.">Mr.</SelectItem>
+                  <SelectItem value="Ms.">Ms.</SelectItem>
+                  <SelectItem value="Mrs.">Mrs.</SelectItem>
+                  <SelectItem value="Prof.">Prof.</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className="space-y-2">
               <Label htmlFor="guest-name">{t("form.guestName")} *</Label>
               <Input id="guest-name" value={form.guestName} onChange={(e) => setForm((p) => ({ ...p, guestName: e.target.value }))} />
@@ -379,7 +431,7 @@ export default function DashboardInvitationsPage() {
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t("form.cancel")}</Button>
             <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void submitRequest()} disabled={isSubmitting}>
-              {t("form.submit")}
+              {editingId ? t("form.saveChanges") : t("form.submit")}
             </Button>
           </DialogFooter>
         </DialogContent>
