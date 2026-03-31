@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
@@ -25,6 +25,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
+import { normalizeAgendaDateKey } from "@/lib/agenda";
 import { toast } from "sonner";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
@@ -45,6 +46,7 @@ type AgendaItem = {
   id: string;
   title: string;
   description?: string | null;
+  agendaDate: string;
   startTime: string;
   endTime: string;
   type: string;
@@ -82,6 +84,15 @@ function formatEventDateLabel(dateValue: string, locale: string) {
     day: "numeric",
     weekday: "long",
   }).format(new Date(dateValue));
+}
+
+function formatAgendaDateLabel(dateValue: string, locale: string) {
+  const normalized = normalizeAgendaDateKey(dateValue);
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "zh-CN", {
+    month: "long",
+    day: "numeric",
+    weekday: "long",
+  }).format(new Date(`${normalized}T12:00:00`));
 }
 
 function getLocalizedTitle(event: PublicEvent, locale: string) {
@@ -197,6 +208,20 @@ export default function EventDetailPage() {
       cancelled = true;
     };
   }, [eventId, locale, status]);
+
+  const groupedAgendaItems = useMemo(() => {
+    if (!event?.agendaItems?.length) {
+      return [] as Array<{ date: string; items: AgendaItem[] }>;
+    }
+
+    const groups = new Map<string, AgendaItem[]>();
+    event.agendaItems.forEach((item) => {
+      const key = normalizeAgendaDateKey(item.agendaDate);
+      groups.set(key, [...(groups.get(key) || []), item]);
+    });
+
+    return Array.from(groups.entries()).map(([date, items]) => ({ date, items }));
+  }, [event]);
 
   const handleSave = async () => {
     if (!event || isSaving || isRegistered) {
@@ -393,47 +418,54 @@ export default function EventDetailPage() {
                   <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
                     <h2 className="text-2xl font-bold text-slate-900 mb-6">{t("agenda.title")}</h2>
                     <div className="space-y-4">
-                      {event.agendaItems && event.agendaItems.length > 0 ? (
-                        event.agendaItems.map((item) => (
-                          <div key={item.id} className="flex gap-4 p-4 rounded-xl bg-slate-50">
-                            <div className="w-32 shrink-0 text-sm font-medium text-slate-500">
-                              {item.startTime} - {item.endTime}
+                      {groupedAgendaItems.length > 0 ? (
+                        groupedAgendaItems.map((group) => (
+                          <div key={group.date} className="space-y-3">
+                            <div className="sticky top-20 z-10 rounded-lg bg-emerald-50 px-4 py-2 text-sm font-semibold text-emerald-800">
+                              {formatAgendaDateLabel(group.date, locale)}
                             </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center gap-2 mb-1">
-                                <h4 className="font-semibold text-slate-900">{item.title}</h4>
-                                <Badge variant="outline" className="shrink-0 text-xs">
-                                  {t.has(`agenda.types.${item.type}`) ? t(`agenda.types.${item.type}` as Parameters<typeof t>[0]) : item.type}
-                                </Badge>
-                              </div>
-                              {item.description && (
-                                <p className="text-sm text-slate-600 mb-2">{item.description}</p>
-                              )}
-                              {item.venue && (
-                                <p className="text-xs text-slate-400 mb-2">
-                                  <MapPin className="inline w-3 h-3 mr-1" />
-                                  {item.venue}
-                                </p>
-                              )}
-                              {item.speakers.length > 0 && (
-                                <div className="flex flex-wrap items-center gap-2 mt-2">
-                                  <Mic className="h-3.5 w-3.5 text-slate-400" />
-                                  {item.speakers.map((speaker) => (
-                                    <div key={speaker.id} className="flex items-center gap-1.5 rounded-full bg-white pl-1 pr-2.5 py-0.5 border border-slate-200">
-                                      <Avatar className="h-5 w-5">
-                                        <AvatarImage src={speaker.avatar || undefined} />
-                                        <AvatarFallback className="text-[10px]">
-                                          {(locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name).charAt(0)}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <span className="text-xs font-medium text-slate-700">
-                                        {locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name}
-                                      </span>
-                                    </div>
-                                  ))}
+                            {group.items.map((item) => (
+                              <div key={item.id} className="flex gap-4 p-4 rounded-xl bg-slate-50">
+                                <div className="w-32 shrink-0 text-sm font-medium text-slate-500">
+                                  {item.startTime} - {item.endTime}
                                 </div>
-                              )}
-                            </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                                    <h4 className="font-semibold text-slate-900">{item.title}</h4>
+                                    <Badge variant="outline" className="shrink-0 text-xs">
+                                      {t.has(`agenda.types.${item.type}`) ? t(`agenda.types.${item.type}` as Parameters<typeof t>[0]) : item.type}
+                                    </Badge>
+                                  </div>
+                                  {item.description && (
+                                    <p className="text-sm text-slate-600 mb-2">{item.description}</p>
+                                  )}
+                                  {item.venue && (
+                                    <p className="text-xs text-slate-400 mb-2">
+                                      <MapPin className="inline w-3 h-3 mr-1" />
+                                      {item.venue}
+                                    </p>
+                                  )}
+                                  {item.speakers.length > 0 && (
+                                    <div className="flex flex-wrap items-center gap-2 mt-2">
+                                      <Mic className="h-3.5 w-3.5 text-slate-400" />
+                                      {item.speakers.map((speaker) => (
+                                        <div key={speaker.id} className="flex items-center gap-1.5 rounded-full bg-white pl-1 pr-2.5 py-0.5 border border-slate-200">
+                                          <Avatar className="h-5 w-5">
+                                            <AvatarImage src={speaker.avatar || undefined} />
+                                            <AvatarFallback className="text-[10px]">
+                                              {(locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name).charAt(0)}
+                                            </AvatarFallback>
+                                          </Avatar>
+                                          <span className="text-xs font-medium text-slate-700">
+                                            {locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name}
+                                          </span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            ))}
                           </div>
                         ))
                       ) : (

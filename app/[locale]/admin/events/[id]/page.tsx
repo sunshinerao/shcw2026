@@ -41,6 +41,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Link } from "@/i18n/routing";
+import {
+  doAgendaSlotsOverlap,
+  isAgendaDateWithinEventRange,
+  isAgendaTimeRangeValid,
+  normalizeAgendaDateKey,
+} from "@/lib/agenda";
 
 type AgendaSpeaker = {
   id: string;
@@ -57,6 +63,7 @@ type AgendaSpeaker = {
 type AgendaItem = {
   id: string;
   eventId: string;
+  agendaDate: string;
   title: string;
   description?: string | null;
   startTime: string;
@@ -83,6 +90,7 @@ const AGENDA_TYPES = ["keynote", "panel", "workshop", "break", "networking"] as 
 type AgendaFormState = {
   title: string;
   description: string;
+  agendaDate: string;
   startTime: string;
   endTime: string;
   type: string;
@@ -94,6 +102,7 @@ type AgendaFormState = {
 const initialAgendaForm: AgendaFormState = {
   title: "",
   description: "",
+  agendaDate: "",
   startTime: "09:00",
   endTime: "09:30",
   type: "keynote",
@@ -122,6 +131,15 @@ const initialNewSpeakerForm: NewSpeakerForm = {
   organizationEn: "",
   isKeynote: false,
 };
+
+function formatAgendaDateLabel(dateValue: string, locale: string) {
+  const normalized = normalizeAgendaDateKey(dateValue);
+  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "zh-CN", {
+    month: "short",
+    day: "numeric",
+    weekday: "short",
+  }).format(new Date(`${normalized}T12:00:00`));
+}
 
 export default function EventAgendaPage({
   params,
@@ -263,7 +281,11 @@ export default function EventAgendaPage({
 
   const openCreateDialog = () => {
     setEditingItem(null);
-    setForm({ ...initialAgendaForm, order: agendaItems.length });
+    setForm({
+      ...initialAgendaForm,
+      agendaDate: event ? normalizeAgendaDateKey(event.startDate) : "",
+      order: agendaItems.length,
+    });
     setIsAgendaDialogOpen(true);
   };
 
@@ -272,6 +294,7 @@ export default function EventAgendaPage({
     setForm({
       title: item.title,
       description: item.description || "",
+      agendaDate: normalizeAgendaDateKey(item.agendaDate),
       startTime: item.startTime,
       endTime: item.endTime,
       type: item.type,
@@ -300,8 +323,50 @@ export default function EventAgendaPage({
 
   // Submit agenda item (create or update)
   const submitAgendaItem = async () => {
-    if (!form.title || !form.startTime || !form.endTime) {
-      setMessage("error", locale === "zh" ? "请填写必填字段" : "Please fill required fields");
+    if (!form.title || !form.agendaDate || !form.startTime || !form.endTime) {
+      setMessage("error", t("requiredFields"));
+      return;
+    }
+
+    if (!isAgendaTimeRangeValid(form.startTime, form.endTime)) {
+      setMessage("error", t("timeOrderInvalid"));
+      return;
+    }
+
+    if (
+      event &&
+      !isAgendaDateWithinEventRange(form.agendaDate, event.startDate, event.endDate)
+    ) {
+      setMessage("error", t("dateOutOfRange"));
+      return;
+    }
+
+    const overlapItem = agendaItems.find(
+      (item) =>
+        item.id !== editingItem?.id &&
+        normalizeAgendaDateKey(item.agendaDate) === form.agendaDate &&
+        doAgendaSlotsOverlap(
+          {
+            agendaDate: form.agendaDate,
+            startTime: form.startTime,
+            endTime: form.endTime,
+          },
+          {
+            agendaDate: normalizeAgendaDateKey(item.agendaDate),
+            startTime: item.startTime,
+            endTime: item.endTime,
+          }
+        )
+    );
+
+    if (overlapItem) {
+      setMessage(
+        "error",
+        t("timeOverlap", {
+          title: overlapItem.title,
+          time: `${overlapItem.startTime}-${overlapItem.endTime}`,
+        })
+      );
       return;
     }
 
@@ -310,6 +375,7 @@ export default function EventAgendaPage({
       const payload = {
         title: form.title,
         description: form.description || null,
+        agendaDate: form.agendaDate,
         startTime: form.startTime,
         endTime: form.endTime,
         type: form.type,
@@ -543,6 +609,9 @@ export default function EventAgendaPage({
                             </Badge>
                           </div>
                           <div className="flex items-center gap-2 text-sm text-slate-500 mb-2">
+                            <Calendar className="h-3.5 w-3.5" />
+                            <span>{formatAgendaDateLabel(item.agendaDate, locale)}</span>
+                            <span>·</span>
                             <Clock className="h-3.5 w-3.5" />
                             <span>
                               {item.startTime} - {item.endTime}
@@ -670,8 +739,26 @@ export default function EventAgendaPage({
                 />
               </div>
 
-              {/* Time fields */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Date and time fields */}
+              <div className="grid gap-4 md:grid-cols-3">
+                <div className="space-y-2">
+                  <Label htmlFor="agenda-date">
+                    {t("date")} <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="agenda-date"
+                    type="date"
+                    min={event ? normalizeAgendaDateKey(event.startDate) : undefined}
+                    max={event ? normalizeAgendaDateKey(event.endDate || event.startDate) : undefined}
+                    value={form.agendaDate}
+                    onChange={(e) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        agendaDate: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="agenda-start">
                     {t("startTime")} <span className="text-red-500">*</span>
@@ -705,6 +792,12 @@ export default function EventAgendaPage({
                   />
                 </div>
               </div>
+
+              {event ? (
+                <p className="text-xs text-slate-500">
+                  {formatAgendaDateLabel(event.startDate, locale)} - {formatAgendaDateLabel(event.endDate || event.startDate, locale)}
+                </p>
+              ) : null}
 
               {/* Type & Order */}
               <div className="grid grid-cols-2 gap-4">

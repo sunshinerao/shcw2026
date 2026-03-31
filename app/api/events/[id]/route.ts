@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { EventHostType, EventLayer, UserRole } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
+import { normalizeAgendaDateKey } from "@/lib/agenda";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canManageEvents } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -73,7 +74,7 @@ export async function GET(
               },
             },
           },
-          orderBy: [{ order: "asc" }, { startTime: "asc" }],
+          orderBy: [{ agendaDate: "asc" }, { order: "asc" }, { startTime: "asc" }],
         },
         _count: {
           select: {
@@ -92,7 +93,16 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ success: true, data: event });
+    return NextResponse.json({
+      success: true,
+      data: {
+        ...event,
+        agendaItems: event.agendaItems.map((item) => ({
+          ...item,
+          agendaDate: normalizeAgendaDateKey(item.agendaDate),
+        })),
+      },
+    });
   } catch (error) {
     console.error("Get event error:", error);
     return NextResponse.json(

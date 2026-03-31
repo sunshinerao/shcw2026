@@ -375,6 +375,7 @@ model AgendaItem {
   eventId     String
   
   // 时间
+  agendaDate  DateTime
   startTime   String
   endTime     String
   
@@ -396,6 +397,7 @@ model AgendaItem {
   updatedAt   DateTime @updatedAt
   
   @@index([eventId])
+  @@index([eventId, agendaDate])
   @@map("agenda_items")
 }
 

@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
+import {
+  agendaDateToUtcDate,
+  doAgendaSlotsOverlap,
+  isAgendaDateWithinEventRange,
+  isAgendaTimeRangeValid,
+  isValidAgendaDate,
+  normalizeAgendaDateKey,
+} from "@/lib/agenda";
 import { canManageEvents } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
@@ -21,6 +29,44 @@ async function requireAdmin(requestLocale: "zh" | "en") {
   }
 
   return { ok: true };
+}
+
+async function findAgendaConflict(input: {
+  eventId: string;
+  agendaDate: string;
+  startTime: string;
+  endTime: string;
+  excludeId: string;
+}) {
+  const agendaDate = agendaDateToUtcDate(input.agendaDate);
+  if (!agendaDate) {
+    return null;
+  }
+
+  const sameDayItems = await prisma.agendaItem.findMany({
+    where: {
+      eventId: input.eventId,
+      agendaDate,
+      id: { not: input.excludeId },
+    },
+    select: {
+      id: true,
+      title: true,
+      agendaDate: true,
+      startTime: true,
+      endTime: true,
+    },
+  });
+
+  return (
+    sameDayItems.find((item) =>
+      doAgendaSlotsOverlap(input, {
+        agendaDate: normalizeAgendaDateKey(item.agendaDate),
+        startTime: item.startTime,
+        endTime: item.endTime,
+      })
+    ) || null
+  );
 }
 
 /**
@@ -44,6 +90,13 @@ export async function PUT(
 
     const existing = await prisma.agendaItem.findFirst({
       where: { id: params.agendaId, eventId: params.id },
+      select: {
+        id: true,
+        eventId: true,
+        agendaDate: true,
+        startTime: true,
+        endTime: true,
+      },
     });
 
     if (!existing) {
@@ -54,11 +107,77 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { title, description, startTime, endTime, type, venue, order, speakerIds } = body;
+    const { agendaDate, title, description, startTime, endTime, type, venue, order, speakerIds } = body;
+
+    if (title !== undefined && !title) {
+      return NextResponse.json(
+        { success: false, error: requestLocale === "zh" ? "标题不能为空" : "Title is required" },
+        { status: 400 }
+      );
+    }
+
+    const nextAgendaDate = agendaDate ?? normalizeAgendaDateKey(existing.agendaDate);
+    const nextStartTime = startTime ?? existing.startTime;
+    const nextEndTime = endTime ?? existing.endTime;
+
+    if (!isValidAgendaDate(nextAgendaDate)) {
+      return NextResponse.json(
+        { success: false, error: requestLocale === "zh" ? "议程日期格式无效" : "Agenda date is invalid" },
+        { status: 400 }
+      );
+    }
+
+    if (!isAgendaTimeRangeValid(nextStartTime, nextEndTime)) {
+      return NextResponse.json(
+        { success: false, error: requestLocale === "zh" ? "结束时间必须晚于开始时间" : "End time must be later than start time" },
+        { status: 400 }
+      );
+    }
+
+    const event = await prisma.event.findUnique({
+      where: { id: params.id },
+      select: { startDate: true, endDate: true },
+    });
+
+    if (!event) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "eventNotFound") },
+        { status: 404 }
+      );
+    }
+
+    if (!isAgendaDateWithinEventRange(nextAgendaDate, event.startDate, event.endDate)) {
+      return NextResponse.json(
+        { success: false, error: requestLocale === "zh" ? "议程日期必须落在活动日期范围内" : "Agenda date must fall within the event date range" },
+        { status: 400 }
+      );
+    }
+
+    const conflict = await findAgendaConflict({
+      eventId: params.id,
+      agendaDate: nextAgendaDate,
+      startTime: nextStartTime,
+      endTime: nextEndTime,
+      excludeId: params.agendaId,
+    });
+
+    if (conflict) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            requestLocale === "zh"
+              ? `议程时间与现有日程冲突：${conflict.title}（${conflict.startTime}-${conflict.endTime}）`
+              : `Agenda time overlaps with existing item: ${conflict.title} (${conflict.startTime}-${conflict.endTime})`,
+        },
+        { status: 409 }
+      );
+    }
 
     const agendaItem = await prisma.agendaItem.update({
       where: { id: params.agendaId },
       data: {
+        ...(agendaDate !== undefined && { agendaDate: agendaDateToUtcDate(nextAgendaDate)! }),
         ...(title !== undefined && { title }),
         ...(description !== undefined && { description: description || null }),
         ...(startTime !== undefined && { startTime }),
