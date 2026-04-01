@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
 
     if (!canManageTracks(currentUser.role)) {
       return NextResponse.json(
-        { success: false, error: apiMessage(requestLocale, "adminOrEventManagerOnly") },
+        { success: false, error: apiMessage(requestLocale, "adminOnly") },
         { status: 403 }
       );
     }

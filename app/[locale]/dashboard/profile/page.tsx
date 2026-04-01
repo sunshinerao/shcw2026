@@ -32,6 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { COUNTRIES } from "@/data/countries";
 
 const SALUTATION_OPTIONS = ["Dr.", "Mr.", "Ms.", "Mrs.", "Prof."];
 
@@ -46,6 +47,7 @@ interface UserProfile {
   role: string;
   salutation?: string;
   climatePassportId?: string;
+  country?: string;
 }
 
 interface Organization {
@@ -71,6 +73,7 @@ export default function ProfilePage() {
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isPasswordLoading, setIsPasswordLoading] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
   const [alert, setAlert] = useState<{
     type: "success" | "error";
     messageKey: string;
@@ -87,6 +90,7 @@ export default function ProfilePage() {
     role: "ATTENDEE",
     salutation: "",
     climatePassportId: "",
+    country: "",
   });
   const [organization, setOrganization] = useState<Organization>({
     name: "",
@@ -127,6 +131,7 @@ export default function ProfilePage() {
         role: data.data.role || "ATTENDEE",
         salutation: data.data.salutation || "",
         climatePassportId: data.data.climatePassportId || "",
+        country: data.data.country || "",
       });
       setOrganization(data.data.organization || {
         name: "",
@@ -187,6 +192,7 @@ export default function ProfilePage() {
           bio: profile.bio,
           avatar: profile.avatar,
           salutation: profile.salutation,
+          country: profile.country,
           organization: organization.name
             ? {
                 name: organization.name,
@@ -211,6 +217,7 @@ export default function ProfilePage() {
         title: data.data.title || "",
         bio: data.data.bio || "",
         salutation: data.data.salutation || "",
+        country: data.data.country || "",
       }));
       setOrganization(data.data.organization || {
         name: "",
@@ -417,6 +424,46 @@ export default function ProfilePage() {
                         {t("fields.phone")}
                       </Label>
                       <Input id="phone" value={profile.phone} onChange={(event) => setProfile((previous) => ({ ...previous, phone: event.target.value }))} placeholder={t("placeholders.phone")} />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="country">
+                        <Globe className="w-4 h-4 inline mr-1" />
+                        {t("fields.country")}
+                      </Label>
+                      <Select
+                        value={profile.country || ""}
+                        onValueChange={(value) => {
+                          setProfile((previous) => ({ ...previous, country: value }));
+                          setCountrySearch("");
+                        }}
+                      >
+                        <SelectTrigger id="country">
+                          <SelectValue placeholder={t("placeholders.country")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <div className="px-2 pb-2">
+                            <Input
+                              placeholder={locale === "zh" ? "输入搜索..." : "Search..."}
+                              value={countrySearch}
+                              onChange={(e) => setCountrySearch(e.target.value)}
+                              className="h-8"
+                              onKeyDown={(e) => e.stopPropagation()}
+                            />
+                          </div>
+                          {COUNTRIES
+                            .filter((c) => {
+                              if (!countrySearch) return true;
+                              const q = countrySearch.toLowerCase();
+                              return c.zh.includes(q) || c.en.toLowerCase().includes(q) || c.code.toLowerCase().includes(q);
+                            })
+                            .map((c) => (
+                              <SelectItem key={c.code} value={c.code}>
+                                {locale === "zh" ? `${c.zh} [${c.en}]` : `${c.en} [${c.zh}]`}
+                              </SelectItem>
+                            ))}
+                        </SelectContent>
+                      </Select>
                     </div>
 
                     <div className="space-y-2">

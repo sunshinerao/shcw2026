@@ -54,7 +54,14 @@ type ManagedEvent = {
   maxAttendees?: number | null;
   isPublished: boolean;
   isFeatured: boolean;
+  isPinned?: boolean;
   requireApproval: boolean;
+  managerUserId?: string | null;
+  manager?: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
   _count?: {
     registrations: number;
     checkins: number;
@@ -90,7 +97,15 @@ type EventFormState = {
   maxAttendees: string;
   isPublished: boolean;
   isFeatured: boolean;
+  isPinned: boolean;
   requireApproval: boolean;
+  managerUserId: string;
+};
+
+type ManagerOption = {
+  id: string;
+  name: string;
+  email: string;
 };
 
 const EVENT_TYPES: EventType[] = ["forum", "workshop", "ceremony", "conference", "networking"];
@@ -115,7 +130,9 @@ const initialFormState: EventFormState = {
   maxAttendees: "",
   isPublished: false,
   isFeatured: false,
+  isPinned: false,
   requireApproval: false,
+  managerUserId: "",
 };
 
 export default function AdminEventsPage() {
@@ -134,6 +151,9 @@ export default function AdminEventsPage() {
   const [deletingEvent, setDeletingEvent] = useState<ManagedEvent | null>(null);
   const [formState, setFormState] = useState<EventFormState>(initialFormState);
   const [generatingHighlightsId, setGeneratingHighlightsId] = useState<string | null>(null);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [managerOptions, setManagerOptions] = useState<ManagerOption[]>([]);
+  const [managerSearch, setManagerSearch] = useState("");
 
   const loadingLabel = t("loading");
   const genericLoadError = t("loadError");
@@ -200,6 +220,58 @@ export default function AdminEventsPage() {
     };
   }, [genericLoadError, locale]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadManagerOptions() {
+      try {
+        const sessionResponse = await fetch("/api/auth/session", { cache: "no-store" });
+        const sessionPayload = await sessionResponse.json();
+        const role = sessionPayload?.user?.role || null;
+        if (!cancelled) {
+          setCurrentUserRole(role);
+        }
+
+        if (role !== "ADMIN") {
+          if (!cancelled) {
+            setManagerOptions([]);
+          }
+          return;
+        }
+
+        const response = await fetch("/api/users?page=1&pageSize=100", {
+          cache: "no-store",
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || "Failed to load manager options");
+        }
+
+        const users = Array.isArray(payload?.data?.users) ? payload.data.users : [];
+        if (!cancelled) {
+          setManagerOptions(
+            users.map((user: { id: string; name: string; email: string }) => ({
+              id: user.id,
+              name: user.name,
+              email: user.email,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Load manager options failed:", error);
+        if (!cancelled) {
+          setManagerOptions([]);
+        }
+      }
+    }
+
+    void loadManagerOptions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const filteredEvents = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -231,6 +303,7 @@ export default function AdminEventsPage() {
   const resetForm = () => {
     setEditingEvent(null);
     setFormState(initialFormState);
+    setManagerSearch("");
   };
 
   const openCreateDialog = () => {
@@ -260,7 +333,9 @@ export default function AdminEventsPage() {
       maxAttendees: event.maxAttendees ? String(event.maxAttendees) : "",
       isPublished: event.isPublished,
       isFeatured: event.isFeatured,
+      isPinned: event.isPinned ?? false,
       requireApproval: event.requireApproval ?? false,
+      managerUserId: event.managerUserId || "",
     });
     setIsFormDialogOpen(true);
   };
@@ -322,8 +397,8 @@ export default function AdminEventsPage() {
       } else if (payload.skipped) {
         setMessage("success", t("messages.highlightsSkipped"));
       } else {
-        setMessage("success", t("messages.highlightsSuccess"));
         await loadEvents();
+        setMessage("success", t("messages.highlightsSuccess"));
       }
     } catch (err) {
       console.error("[retry-highlights] fetch error:", err);
@@ -370,7 +445,11 @@ export default function AdminEventsPage() {
         maxAttendees: formState.maxAttendees ? Number(formState.maxAttendees) : null,
         isPublished: formState.isPublished,
         isFeatured: formState.isFeatured,
+        isPinned: formState.isPinned,
         requireApproval: formState.requireApproval,
+        ...(currentUserRole === "ADMIN"
+          ? { managerUserId: formState.managerUserId || null }
+          : {}),
       };
 
       const response = await fetch(editingEvent ? `/api/events/${editingEvent.id}` : "/api/events", {
@@ -547,6 +626,9 @@ export default function AdminEventsPage() {
                             <Badge className={event.isPublished ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-600"}>
                               {event.isPublished ? t("published") : t("draft")}
                             </Badge>
+                            {event.isPinned ? (
+                              <Badge className="bg-rose-100 text-rose-700">{locale === "en" ? "Pinned" : "置顶"}</Badge>
+                            ) : null}
                             {event.isFeatured ? <Badge className="bg-amber-100 text-amber-700">{t("featured")}</Badge> : null}
                           </div>
                           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
@@ -736,10 +818,57 @@ export default function AdminEventsPage() {
                 <Switch id="event-featured" checked={formState.isFeatured} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, isFeatured: checked }))} />
               </div>
               <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+                <Label htmlFor="event-pinned">{locale === "en" ? "Pin event" : "活动置顶"}</Label>
+                <Switch id="event-pinned" checked={formState.isPinned} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, isPinned: checked }))} />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border px-3 py-2">
                 <Label htmlFor="event-require-approval">{t("form.requireApproval")}</Label>
                 <Switch id="event-require-approval" checked={formState.requireApproval} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, requireApproval: checked }))} />
               </div>
             </div>
+            {currentUserRole === "ADMIN" ? (
+              <div className="space-y-2 md:col-span-2">
+                <Label htmlFor="event-manager-select">{locale === "en" ? "Event manager" : "活动管理员"}</Label>
+                <Input
+                  placeholder={locale === "en" ? "Search by name or email..." : "按姓名或邮箱搜索..."}
+                  value={managerSearch}
+                  onChange={(e) => setManagerSearch(e.target.value)}
+                  className="mb-1"
+                />
+                <Select
+                  value={formState.managerUserId || "none"}
+                  onValueChange={(value) => {
+                    setFormState((previous) => ({
+                      ...previous,
+                      managerUserId: value === "none" ? "" : value,
+                    }));
+                    setManagerSearch("");
+                  }}
+                >
+                  <SelectTrigger id="event-manager-select">
+                    <SelectValue placeholder={locale === "en" ? "Unassigned" : "未指定"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{locale === "en" ? "Unassigned" : "未指定"}</SelectItem>
+                    {managerOptions
+                      .filter((manager) => {
+                        if (manager.id === formState.managerUserId) return true;
+                        if (!managerSearch.trim()) return true;
+                        const q = managerSearch.toLowerCase();
+                        return (
+                          (manager.name || "").toLowerCase().includes(q) ||
+                          manager.email.toLowerCase().includes(q)
+                        );
+                      })
+                      .map((manager) => (
+                        <SelectItem key={manager.id} value={manager.id}>
+                          {manager.name} ({manager.email})
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : null}
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="event-type-select">{t("form.type")}</Label>
               <div className="grid grid-cols-2 gap-2 md:grid-cols-5">

@@ -10,10 +10,9 @@ import {
   isValidAgendaDate,
   normalizeAgendaDateKey,
 } from "@/lib/agenda";
-import { canManageEvents } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
-async function requireAdmin(requestLocale: "zh" | "en") {
+async function requireEventManager(requestLocale: "zh" | "en", eventId: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     return { error: apiMessage(requestLocale, "unauthorized"), status: 401 };
@@ -21,14 +20,33 @@ async function requireAdmin(requestLocale: "zh" | "en") {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { id: true, role: true },
   });
 
-  if (!user || !canManageEvents(user.role)) {
+  if (!user) {
     return { error: apiMessage(requestLocale, "forbidden"), status: 403 };
   }
 
-  return { ok: true };
+  if (user.role === "ADMIN") {
+    return { ok: true, role: user.role };
+  }
+
+  if (user.role === "EVENT_MANAGER") {
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      select: { managerUserId: true },
+    });
+    if (event?.managerUserId === user.id) {
+      return { ok: true, role: user.role };
+    }
+    return {
+      error:
+        requestLocale === "zh" ? "你仅可管理被指派活动的议程" : "You can only manage agenda for assigned events",
+      status: 403,
+    };
+  }
+
+  return { error: apiMessage(requestLocale, "forbidden"), status: 403 };
 }
 
 async function findAgendaConflict(input: {
@@ -80,7 +98,7 @@ export async function PUT(
   const requestLocale = resolveRequestLocale(req);
 
   try {
-    const auth = await requireAdmin(requestLocale);
+    const auth = await requireEventManager(requestLocale, params.id);
     if ("error" in auth) {
       return NextResponse.json(
         { success: false, error: auth.error },
@@ -108,6 +126,19 @@ export async function PUT(
 
     const body = await req.json();
     const { agendaDate, title, description, startTime, endTime, type, venue, order, speakerIds } = body;
+
+    if (auth.role === "EVENT_MANAGER" && speakerIds !== undefined) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            requestLocale === "zh"
+              ? "活动管理员无权设置议程嘉宾"
+              : "Event managers are not allowed to assign agenda speakers",
+        },
+        { status: 403 }
+      );
+    }
 
     if (title !== undefined && !title) {
       return NextResponse.json(
@@ -185,7 +216,7 @@ export async function PUT(
         ...(type !== undefined && { type }),
         ...(venue !== undefined && { venue: venue || null }),
         ...(typeof order === "number" && { order }),
-        ...(speakerIds !== undefined && {
+        ...(auth.role === "ADMIN" && speakerIds !== undefined && {
           speakers: {
             set: speakerIds.map((id: string) => ({ id })),
           },
@@ -233,7 +264,7 @@ export async function DELETE(
   const requestLocale = resolveRequestLocale(req);
 
   try {
-    const auth = await requireAdmin(requestLocale);
+    const auth = await requireEventManager(requestLocale, params.id);
     if ("error" in auth) {
       return NextResponse.json(
         { success: false, error: auth.error },

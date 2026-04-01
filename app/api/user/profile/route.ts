@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         title: true,
         bio: true,
         salutation: true,
+        country: true,
         role: true,
         status: true,
         passCode: true,
@@ -95,7 +96,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, phone, title, bio, avatar, salutation, organization } = body;
+    const { name, phone, title, bio, avatar, salutation, country, organization } = body;
 
     const existingUser = await prisma.user.findUnique({
       where: { id: auth.userId },
@@ -125,6 +126,7 @@ export async function PUT(req: NextRequest) {
           ...(bio !== undefined && { bio: bio || null }),
           ...(avatar !== undefined && { avatar: avatar || null }),
           ...(salutation !== undefined && { salutation: salutation || null }),
+          ...(country !== undefined && { country: country || null }),
         },
       });
 
@@ -171,6 +173,7 @@ export async function PUT(req: NextRequest) {
         title: true,
         bio: true,
         salutation: true,
+        country: true,
         role: true,
         status: true,
         passCode: true,

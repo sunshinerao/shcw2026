@@ -94,6 +94,7 @@ model User {
   phone         String?   // 手机号
   title         String?   // 职位
   bio           String?   @db.Text // 个人简介
+  country       String?   // 国家/地区
   
   role          UserRole  @default(ATTENDEE)
   status        UserStatus @default(ACTIVE)
@@ -120,6 +121,8 @@ model User {
   pointTransactions PointTransaction[] // 积分记录
   invitationRequests InvitationRequest[] // 邀请函申请
   contactMessages ContactMessage[]     // 联系留言
+  managedEvents  Event[]   @relation("EventManager")
+  specialPasses  SpecialPass[]         // 特别通行证申请
   
   // 密码重置
   resetToken    String?   @unique
@@ -266,6 +269,8 @@ model Event {
   // 关联
   trackId      String?
   track        Track?   @relation(fields: [trackId], references: [id])
+  managerUserId String?
+  manager       User?    @relation("EventManager", fields: [managerUserId], references: [id])
   
   registrations Registration[]
   agendaItems   AgendaItem[]
@@ -281,12 +286,15 @@ model Event {
   // 状态
   isPublished   Boolean  @default(false)
   isFeatured    Boolean  @default(false)
+  isPinned      Boolean  @default(false)
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   
   @@index([startDate])
   @@index([trackId])
+  @@index([managerUserId])
+  @@index([isPinned, startDate, startTime])
   @@map("events")
 }
 
@@ -598,4 +606,64 @@ model ContactMessage {
   @@index([userId])
   @@index([createdAt])
   @@map("contact_messages")
+}
+
+// 特别通行证申请状态
+enum SpecialPassStatus {
+  PENDING   // 待审核
+  APPROVED  // 已批准
+  REJECTED  // 已拒绝
+}
+
+// 特别通行证入境方式
+enum SpecialPassEntryType {
+  DOMESTIC       // 从上海市区进入
+  INTERNATIONAL  // 从国际航班（浦东机场）直接进入
+}
+
+// 特别通行证申请表
+model SpecialPass {
+  id            String              @id @default(uuid())
+  userId        String
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  entryType     SpecialPassEntryType // 入境方式
+  status        SpecialPassStatus    @default(PENDING)
+  
+  // 通用字段
+  country       String              // 国家/地区
+  name          String              // 姓名
+  birthDate     String              // 出生日期
+  gender        String              // 性别: M / F
+  docNumber     String              // 证件号码
+  docValidFrom  String              // 证件有效期开始
+  docValidTo    String              // 证件有效期结束
+  docPhoto      String?  @db.Text   // 证件照片 (base64)
+  docPhotoBack  String?  @db.Text   // 证件反面照片 (base64)
+  photo         String?  @db.Text   // 近期免冠照片 (base64)
+  organization  String?             // 工作单位
+  jobTitle      String?             // 职务
+  
+  // 境外人士额外字段
+  docType       String?             // 证件类型（外交护照/公务护照/普通护照等）
+  email         String?             // 电子邮箱
+  phoneArea     String?             // 联系电话区号
+  phone         String?             // 联系电话
+  
+  // 境内人士额外字段
+  contactMethod String?             // 联系方式类型（手机/邮箱等）
+  contactValue  String?             // 联系方式值
+  
+  // 管理
+  adminNotes    String?  @db.Text
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  
+  @@index([userId])
+  @@index([status])
+  @@index([entryType])
+  @@map("special_passes")
 }

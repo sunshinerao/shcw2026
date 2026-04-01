@@ -70,7 +70,7 @@ export async function PUT(
 
     if (!canManageTracks(currentUser.role)) {
       return NextResponse.json(
-        { success: false, error: apiMessage(requestLocale, "adminOrEventManagerOnly") },
+        { success: false, error: apiMessage(requestLocale, "adminOnly") },
         { status: 403 }
       );
     }
@@ -253,7 +253,7 @@ export async function DELETE(
 
     if (!canManageTracks(currentUser.role)) {
       return NextResponse.json(
-        { success: false, error: apiMessage(requestLocale, "adminOrEventManagerOnly") },
+        { success: false, error: apiMessage(requestLocale, "adminOnly") },
         { status: 403 }
       );
     }

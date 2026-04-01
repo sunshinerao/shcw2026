@@ -1,2133 +1,2244 @@
 {
-  "errorPage": {
-    "title": "出错了",
-    "description": "页面加载时发生了错误，请刷新重试。",
-    "retry": "重试",
-    "home": "返回首页"
-  },
-  "notFoundPage": {
-    "title": "页面未找到",
-    "description": "您访问的页面不存在或已被移动。",
-    "home": "返回首页",
-    "events": "浏览活动"
-  },
-  "metadata": {
-    "title": "上海气候周 2026 - 东方推力新启航",
-    "description": "共塑未来十年的气候行动 (2026-2035)"
-  },
-  "nav": {
-    "home": "首页",
-    "events": "活动",
-    "speakers": "嘉宾",
-    "news": "新闻",
-    "partners": "合作伙伴",
-    "about": "关于",
-    "contact": "联系我们",
-    "login": "登录",
-    "register": "注册",
-    "dashboard": "个人中心",
-    "admin": "管理后台"
-  },
-    "dashboardLayout": {
-      "nav": {
+    "errorPage": {
+        "title": "出错了",
+        "description": "页面加载时发生了错误，请刷新重试。",
+        "retry": "重试",
+        "home": "返回首页"
+    },
+    "notFoundPage": {
+        "title": "页面未找到",
+        "description": "您访问的页面不存在或已被移动。",
         "home": "返回首页",
+        "events": "浏览活动"
+    },
+    "metadata": {
+        "title": "上海气候周 2026 - 东方推力新启航",
+        "description": "共塑未来十年的气候行动 (2026-2035)"
+    },
+    "nav": {
+        "home": "首页",
+        "events": "活动",
+        "speakers": "嘉宾",
+        "news": "新闻",
+        "partners": "合作伙伴",
+        "about": "关于",
+        "contact": "联系我们",
+        "login": "登录",
+        "register": "注册",
+        "dashboard": "个人中心",
+        "admin": "管理后台"
+    },
+    "dashboardLayout": {
+        "nav": {
+            "home": "返回首页",
+            "overview": "概览",
+            "schedule": "我的日程",
+            "pass": "活动通行证",
+            "climatePassport": "气候护照",
+            "invitations": "邀请函申请",
+            "messages": "我的留言",
+            "profile": "个人资料",
+            "notifications": "通知设置",
+            "specialPass": "特别通行证申请"
+        },
+        "fallbackUser": "用户",
+        "roles": {
+            "VISITOR": "访客",
+            "ATTENDEE": "参会观众",
+            "ORGANIZATION": "机构代表",
+            "SPEAKER": "演讲嘉宾",
+            "MEDIA": "媒体",
+            "SPONSOR": "合作伙伴",
+            "ADMIN": "管理员",
+            "STAFF": "工作人员",
+            "EVENT_MANAGER": "活动管理员",
+            "VERIFIER": "验证员"
+        },
+        "logout": "退出登录"
+    },
+    "dashboardPassPage": {
+        "title": "活动通行证",
+        "subtitle": "出示二维码即可入场参加活动。",
+        "selectEvent": "选择活动",
+        "brand": "上海气候周 2026",
+        "passport": {
+            "label": "气候护照 Climate Passport",
+            "points": "当前积分"
+        },
+        "passportQr": {
+            "title": "气候护照二维码（通用身份验证）",
+            "badge": "全场通用",
+            "description": "此二维码可用于现场身份验证，5分钟内有效"
+        },
+        "passTypes": {
+            "vip": "VIP 通行证",
+            "standard": "标准通行证"
+        },
+        "showQr": "请在入场时出示此二维码。",
+        "share": {
+            "title": "上海气候周2026 活动通行证",
+            "text": "我报名了 {eventTitle}！"
+        },
+        "fields": {
+            "date": "日期",
+            "time": "时间",
+            "venue": "地点",
+            "ticket": "票号",
+            "pointsEarned": "获得积分"
+        },
+        "badges": {
+            "checkedIn": "已验码",
+            "upcoming": "未到检票时段",
+            "active": "可入场",
+            "expired": "已失效",
+            "pendingApproval": "待审批",
+            "rejected": "已拒绝"
+        },
+        "status": {
+            "title": "通行证有效",
+            "description": "请准时参加活动。",
+            "checkedInTitle": "已入场",
+            "checkedInDescription": "您已成功入场，欢迎参加活动！",
+            "upcomingTitle": "暂未开放入场",
+            "upcomingDescription": "活动开始前 90 分钟内才会生成入场二维码。",
+            "expiredTitle": "通行证已失效",
+            "expiredDescription": "活动已结束，活动通行证自动失效。",
+            "pendingApprovalTitle": "等待审批",
+            "pendingApprovalDescription": "您的报名已提交，请等待管理员审批。",
+            "rejectedTitle": "报名已拒绝",
+            "rejectedDescription": "您的报名未获得批准，如有疑问请联系主办方。"
+        },
+        "actions": {
+            "download": "下载通行证",
+            "share": "分享"
+        },
+        "empty": {
+            "title": "暂无活动通行证",
+            "description": "您还没有报名任何活动",
+            "action": "浏览活动"
+        },
+        "messages": {
+            "loadError": "获取通行证失败",
+            "passportQrError": "获取护照二维码失败",
+            "qrRefreshed": "二维码已刷新",
+            "passDownloaded": "通行证已下载",
+            "shareUnavailable": "分享功能在此设备上不可用",
+            "qrRefreshWindow": "活动入场二维码在激活状态下每 60 秒自动刷新",
+            "inactiveQr": "二维码只有在活动开放入场时段内才会签发；验码成功或活动结束后自动失效。",
+            "antiShare": "一人一报名一人一码。现场验证人员可同时核对姓名、身份与头像，降低二维码转借风险。"
+        },
+        "instructions": {
+            "title": "使用说明",
+            "items": [
+                {
+                    "title": "提前准备",
+                    "description": "建议提前15分钟到达会场。"
+                },
+                {
+                    "title": "出示二维码",
+                    "description": "在签到处出示此二维码。"
+                },
+                {
+                    "title": "领取资料",
+                    "description": "签到后领取会议资料包。"
+                }
+            ]
+        }
+    },
+    "dashboardSchedulePage": {
+        "title": "我的日程",
+        "subtitle": "管理您报名和收藏的活动。",
+        "registered": "已报名 ({count})",
+        "wishlist": "收藏夹 ({count})",
+        "emptyRegistered": "您还没有报名任何活动。",
+        "emptyWishlist": "暂无收藏活动。",
+        "browseEvents": "去浏览活动",
+        "viewPass": "查看通行证",
+        "registerNow": "立即报名",
+        "badges": {
+            "checkedIn": "已入场",
+            "pointsEarned": "+{points} 积分"
+        },
+        "messages": {
+            "loadError": "获取日程失败",
+            "removeSuccess": "已取消收藏",
+            "actionError": "操作失败"
+        }
+    },
+    "dashboardNotificationsPage": {
+        "title": "通知设置",
+        "subtitle": "自定义您希望接收的通知类型。",
+        "success": {
+            "title": "保存成功",
+            "description": "您的通知设置已更新并保存。"
+        },
+        "tip": {
+            "title": "提示",
+            "description": "您可以通过下方的开关自定义接收的通知类型。建议保持开启重要通知，以免错过关键信息。"
+        },
+        "save": "保存设置",
+        "saving": "保存中...",
+        "groups": {
+            "email": {
+                "title": "邮件通知",
+                "description": "接收与活动相关的邮件通知",
+                "options": {
+                    "eventReminder": {
+                        "label": "活动提醒",
+                        "description": "活动开始前24小时发送提醒"
+                    },
+                    "registrationConfirm": {
+                        "label": "报名确认通知",
+                        "description": "成功报名后发送确认邮件"
+                    },
+                    "eventChange": {
+                        "label": "活动变更通知",
+                        "description": "活动时间、地点等变更时通知"
+                    },
+                    "newsletter": {
+                        "label": "新闻通讯订阅",
+                        "description": "定期接收气候周最新动态"
+                    },
+                    "marketing": {
+                        "label": "营销邮件",
+                        "description": "接收合作伙伴推广信息"
+                    }
+                }
+            },
+            "inApp": {
+                "title": "站内消息",
+                "description": "在网站内接收的消息通知",
+                "options": {
+                    "systemAnnouncement": {
+                        "label": "系统公告",
+                        "description": "重要系统更新和公告"
+                    },
+                    "eventUpdate": {
+                        "label": "活动更新",
+                        "description": "关注活动的最新动态"
+                    },
+                    "securityAlert": {
+                        "label": "账户安全提醒",
+                        "description": "登录、密码修改等安全提醒"
+                    }
+                }
+            },
+            "sms": {
+                "title": "短信通知",
+                "description": "接收重要事项的短信提醒",
+                "options": {
+                    "urgentEventChange": {
+                        "label": "紧急活动变更",
+                        "description": "活动临时取消或重大变更"
+                    },
+                    "entryReminder": {
+                        "label": "入场提醒",
+                        "description": "活动开始前1小时发送提醒"
+                    }
+                }
+            }
+        }
+    },
+    "adminLayout": {
+        "logoAlt": "上海气候周",
+        "title": "管理后台",
+        "backToSite": "返回前台",
+        "nav": {
+            "dashboard": "仪表盘",
+            "events": "活动管理",
+            "tracks": "赛道管理",
+            "speakers": "嘉宾管理",
+            "invitations": "邀请函管理",
+            "users": "用户管理",
+            "partners": "合作伙伴",
+            "news": "新闻管理",
+            "content": "内容管理",
+            "messages": "留言管理",
+            "settings": "系统设置"
+        }
+    },
+    "adminMessagesPage": {
+        "title": "联系留言",
+        "subtitle": "管理访客咨询并回复留言。",
+        "filters": {
+            "all": "全部",
+            "pending": "待处理",
+            "replied": "已回复",
+            "closed": "已关闭"
+        },
+        "table": {
+            "name": "姓名",
+            "email": "邮箱",
+            "category": "类型",
+            "subject": "主题",
+            "status": "状态",
+            "date": "日期",
+            "actions": "操作"
+        },
+        "detail": {
+            "title": "留言详情",
+            "from": "发送者",
+            "category": "类别",
+            "organization": "机构",
+            "metadata": "附加信息",
+            "message": "留言内容",
+            "reply": "管理员回复",
+            "replyPlaceholder": "输入回复内容...",
+            "notes": "内部备注",
+            "notesPlaceholder": "内部备注（用户不可见）...",
+            "sendReply": "发送回复",
+            "close": "关闭留言",
+            "reopen": "重新打开",
+            "repliedBy": "回复人",
+            "repliedAt": "回复时间"
+        },
+        "empty": "暂无留言。",
+        "statusLabels": {
+            "PENDING": "待处理",
+            "REPLIED": "已回复",
+            "CLOSED": "已关闭"
+        },
+        "categoryLabels": {
+            "GENERAL": "一般咨询",
+            "ORGANIZATION": "机构代表",
+            "PARTNERSHIP": "合作伙伴",
+            "SPEAKER": "嘉宾申请",
+            "MEDIA": "媒体合作",
+            "SPONSOR": "赞助咨询",
+            "VOLUNTEER": "志愿者",
+            "OTHER": "其他"
+        }
+    },
+    "adminDashboardPage": {
+        "title": "仪表盘",
+        "subtitle": "欢迎回来，管理员。",
+        "stats": {
+            "users": "总用户数",
+            "events": "活动数量",
+            "registrations": "报名人次",
+            "checkins": "签到人次"
+        },
+        "trendTitle": "报名趋势",
+        "months": {
+            "jan": "1月",
+            "mar": "3月",
+            "jun": "6月",
+            "sep": "9月",
+            "dec": "12月"
+        },
+        "recentTitle": "最新报名",
+        "viewAll": "查看全部",
+        "statuses": {
+            "success": "成功",
+            "pending": "待确认"
+        },
+        "upcomingTitle": "即将开始的活动",
+        "manageEvents": "管理活动",
+        "registeredCapacity": "已报名 / 容量",
+        "manage": "管理"
+    },
+    "adminEventsPage": {
+        "title": "活动管理",
+        "subtitle": "管理平台所有活动。",
+        "loading": "正在加载活动...",
+        "loadError": "加载活动失败。",
+        "create": "创建活动",
+        "searchPlaceholder": "搜索活动名称或地点...",
+        "listTitle": "活动列表 ({count})",
+        "featured": "重磅",
+        "published": "已发布",
+        "draft": "草稿",
+        "capacity": "{count} / {max}",
+        "empty": "当前搜索条件下暂无活动。",
+        "actions": {
+            "publish": "发布",
+            "unpublish": "撤回发布",
+            "feature": "设为重磅",
+            "unfeature": "取消重磅",
+            "regenerateHighlights": "重新生成 AI 亮点"
+        },
+        "form": {
+            "createTitle": "创建活动",
+            "editTitle": "编辑活动",
+            "createDescription": "为议程创建一个新活动。",
+            "editDescription": "更新所选活动内容。",
+            "title": "标题",
+            "titleEn": "英文标题",
+            "description": "描述",
+            "shortDesc": "简短描述",
+            "startDate": "开始日期",
+            "endDate": "结束日期",
+            "startTime": "开始时间",
+            "endTime": "结束时间",
+            "venue": "地点",
+            "city": "城市",
+            "track": "所属赛道",
+            "trackPlaceholder": "未分配赛道",
+            "address": "地址",
+            "image": "图片 URL",
+            "type": "类型",
+            "maxAttendees": "容量",
+            "isPublished": "已发布",
+            "isFeatured": "重磅推荐",
+            "requireApproval": "注册需审批",
+            "eventLayer": "所属层级",
+            "eventLayerPlaceholder": "未指定层级",
+            "layers": {
+                "institution": "制度层",
+                "economy": "经济层",
+                "root": "根源层",
+                "accelerator": "加速器",
+                "comprehensive": "综合"
+            },
+            "hostType": "主办类型",
+            "hostTypePlaceholder": "未指定类型",
+            "hostTypes": {
+                "official": "官方活动",
+                "coHosted": "联合主办",
+                "registered": "注册活动",
+                "sideEvent": "边会活动",
+                "community": "社区活动"
+            },
+            "create": "创建活动",
+            "save": "保存更改"
+        },
+        "delete": {
+            "title": "删除活动",
+            "description": "确定删除 {name} 吗？此操作不可恢复。",
+            "confirm": "删除活动"
+        },
+        "common": {
+            "cancel": "取消"
+        },
+        "messages": {
+            "requiredFields": "请完整填写活动必填字段。",
+            "createSuccess": "活动创建成功。",
+            "createFailed": "创建活动失败。",
+            "updateSuccess": "活动更新成功。",
+            "updateFailed": "更新活动失败。",
+            "deleteSuccess": "活动删除成功。",
+            "deleteFailed": "删除活动失败。",
+            "statusUpdateSuccess": "活动状态更新成功。",
+            "statusUpdateFailed": "更新活动状态失败。",
+            "saveSuccessWithHighlightWarning": " 活动已保存，但 AI 亮点生成失败，可稍后重试。",
+            "highlightsSuccess": "AI 亮点生成成功。",
+            "highlightsSkipped": "AI 亮点生成已跳过（功能未启用）。",
+            "highlightsRetryFailed": "AI 亮点生成失败，请检查 API 密钥配置。"
+        },
+        "agenda": {
+            "title": "议程管理",
+            "subtitle": "管理活动的议程安排和嘉宾分配。",
+            "addItem": "添加议程",
+            "editItem": "编辑议程",
+            "deleteItem": "删除议程",
+            "empty": "暂无议程项，点击上方按钮添加。",
+            "itemTitle": "议程标题",
+            "itemTitlePlaceholder": "请输入议程标题",
+            "date": "议程日期",
+            "description": "描述",
+            "descriptionPlaceholder": "请输入议程描述...",
+            "startTime": "开始时间",
+            "endTime": "结束时间",
+            "type": "类型",
+            "types": {
+                "keynote": "主旨演讲",
+                "panel": "圆桌讨论",
+                "workshop": "工作坊",
+                "break": "休息",
+                "networking": "社交"
+            },
+            "venue": "议程地点",
+            "venuePlaceholder": "默认使用活动地点",
+            "order": "排序",
+            "speakers": "嘉宾",
+            "assignSpeakers": "分配嘉宾",
+            "selectFromLibrary": "从嘉宾库选择",
+            "createNewSpeaker": "创建新嘉宾",
+            "searchSpeakers": "搜索嘉宾姓名...",
+            "selectedSpeakers": "已选嘉宾",
+            "noSpeakers": "无嘉宾",
+            "removeSpeaker": "移除",
+            "confirmDelete": "确定删除该议程项吗？此操作不可恢复。",
+            "requiredFields": "请填写所有必填字段。",
+            "timeOrderInvalid": "结束时间必须晚于开始时间。",
+            "dateOutOfRange": "议程日期必须落在活动日期范围内。",
+            "timeOverlap": "议程时间与现有日程冲突：{title}（{time}）",
+            "createSuccess": "议程项创建成功。",
+            "updateSuccess": "议程项更新成功。",
+            "deleteSuccess": "议程项删除成功。",
+            "saveFailed": "保存议程项失败。",
+            "deleteFailed": "删除议程项失败。",
+            "save": "保存",
+            "cancel": "取消",
+            "backToList": "返回活动列表"
+        },
+        "registrations": {
+            "title": "报名管理",
+            "subtitle": "查看和管理活动报名，审批待审核的报名。",
+            "backToList": "返回活动列表",
+            "approved": "已通过",
+            "approvalRequired": "需要审批",
+            "searchPlaceholder": "搜索姓名、邮箱或护照ID...",
+            "filterAll": "全部状态",
+            "selectAll": "全选待审批",
+            "selected": "已选 {count} 项",
+            "approve": "批准",
+            "reject": "拒绝",
+            "actionFailed": "操作失败。",
+            "empty": "暂无报名记录。",
+            "statuses": {
+                "PENDING_APPROVAL": "待审批",
+                "REGISTERED": "已注册",
+                "ATTENDED": "已签到",
+                "CANCELLED": "已取消",
+                "REJECTED": "已拒绝",
+                "WAITLIST": "候补"
+            }
+        }
+    },
+    "adminInvitationsPage": {
+        "title": "邀请函管理",
+        "subtitle": "查看和处理用户的邀请函申请。",
+        "loading": "加载中...",
+        "loadError": "加载邀请函失败。",
+        "searchPlaceholder": "搜索嘉宾姓名或邮箱...",
+        "listTitle": "邀请函列表 ({count})",
+        "empty": "当前筛选条件下无邀请函申请。",
+        "filters": {
+            "all": "全部状态"
+        },
+        "applicant": "申请人",
+        "applicantOrg": "申请人机构",
+        "org": "机构",
+        "email": "邮箱",
+        "event": "活动",
+        "purpose": "目的",
+        "lang": "语言",
+        "status": {
+            "pending": "待处理",
+            "uploaded": "已上传",
+            "downloaded": "已下载",
+            "rejected": "已拒绝"
+        },
+        "actions": {
+            "process": "处理",
+            "edit": "编辑"
+        },
+        "editDialog": {
+            "title": "处理邀请函",
+            "description": "处理 {name} 的邀请函申请。",
+            "status": "状态",
+            "uploadFile": "上传邀请函文件",
+            "selectFile": "点击选择文件（PDF/图片）",
+            "uploading": "上传中...",
+            "fileUploaded": "文件已上传",
+            "preview": "预览",
+            "letterFileUrl": "邀请函文件 URL",
+            "letterFileUrlPlaceholder": "输入文件下载链接",
+            "rejectReason": "拒绝原因",
+            "cancel": "取消",
+            "save": "保存"
+        },
+        "messages": {
+            "updateSuccess": "邀请函更新成功。",
+            "updateFailed": "更新邀请函失败。",
+            "uploadSuccess": "文件上传成功。",
+            "uploadFailed": "文件上传失败。"
+        }
+    },
+    "adminUsersPage": {
+        "title": "用户管理",
+        "subtitle": "管理平台所有用户账号。",
+        "addUser": "添加用户",
+        "stats": {
+            "total": "总用户数",
+            "active": "已激活",
+            "pending": "待审核",
+            "speakers": "演讲嘉宾",
+            "verifiers": "验证人员"
+        },
+        "searchPlaceholder": "搜索姓名或邮箱...",
+        "filters": {
+            "allRoles": "所有角色",
+            "allStatuses": "所有状态"
+        },
+        "empty": "当前筛选条件下暂无用户。",
+        "roles": {
+            "VISITOR": "访客",
+            "ATTENDEE": "参会观众",
+            "ORGANIZATION": "机构代表",
+            "SPEAKER": "演讲嘉宾",
+            "MEDIA": "媒体",
+            "SPONSOR": "赞助商",
+            "ADMIN": "管理员",
+            "EVENT_MANAGER": "活动管理员",
+            "STAFF": "工作人员",
+            "VERIFIER": "验证人员"
+        },
+        "statuses": {
+            "ACTIVE": "已激活",
+            "PENDING": "待审核",
+            "SUSPENDED": "已禁用"
+        },
+        "selected": "已选择 {count} 位用户",
+        "batch": {
+            "activate": "批量启用",
+            "suspend": "批量禁用",
+            "delete": "批量删除"
+        },
+        "listTitle": "用户列表 ({count})",
+        "table": {
+            "userInfo": "用户信息",
+            "role": "角色",
+            "status": "状态",
+            "registeredAt": "注册时间",
+            "actions": "操作"
+        },
+        "actions": {
+            "activate": "启用账号",
+            "suspend": "禁用账号",
+            "delete": "删除用户",
+            "viewPoints": "查看积分",
+            "setVerifier": "设为验证人员"
+        },
+        "pagination": "第 {current} 页，共 {total} 页",
+        "detail": {
+            "title": "用户详情",
+            "description": "查看用户完整信息和报名记录。",
+            "email": "邮箱",
+            "phone": "电话",
+            "registeredAt": "注册时间",
+            "organization": "所属机构",
+            "currentPoints": "当前积分",
+            "registrationCount": "报名活动数",
+            "pointsValue": "{count} 分",
+            "eventCount": "{count} 场",
+            "organizationInfo": "机构信息",
+            "organizationName": "机构名称",
+            "titleLabel": "职位",
+            "industry": "行业",
+            "bio": "个人简介",
+            "events": "报名活动",
+            "noEvents": "暂无报名活动。",
+            "notProvided": "未填写",
+            "close": "关闭",
+            "edit": "编辑用户"
+        },
+        "delete": {
+            "title": "确认删除",
+            "description": "确定要删除用户 {name} 吗？此操作不可恢复。",
+            "confirm": "确认删除"
+        },
+        "common": {
+            "cancel": "取消"
+        },
+        "form": {
+            "createTitle": "创建用户",
+            "createDescription": "创建新的用户账号，并可选填写机构资料。",
+            "editTitle": "编辑用户",
+            "editDescription": "更新所选用户账号和机构资料。",
+            "name": "姓名",
+            "email": "邮箱",
+            "password": "密码",
+            "passwordOptional": "密码（留空则保持当前密码）",
+            "phone": "电话",
+            "title": "职位",
+            "salutation": "称谓",
+            "salutationPlaceholder": "请选择称谓",
+            "role": "角色",
+            "status": "状态",
+            "avatar": "头像",
+            "bio": "个人简介",
+            "organizationSection": "机构信息",
+            "organizationName": "机构名称",
+            "organizationLogo": "机构Logo URL",
+            "organizationIndustry": "机构行业",
+            "organizationWebsite": "机构网站",
+            "organizationDescription": "机构简介",
+            "organizationSize": "机构规模",
+            "organizationContactName": "联系人姓名",
+            "organizationContactEmail": "联系人邮箱",
+            "organizationContactPhone": "联系人电话",
+            "create": "创建用户",
+            "save": "保存更改"
+        },
+        "messages": {
+            "requiredFields": "新建用户时请填写姓名、邮箱和密码。",
+            "createSuccess": "用户创建成功。",
+            "createFailed": "创建用户失败。",
+            "updateSuccess": "用户更新成功。",
+            "updateFailed": "更新用户失败。",
+            "deleteSuccess": "用户删除成功。",
+            "deleteFailed": "删除用户失败。",
+            "statusUpdateSuccess": "用户状态更新成功。",
+            "statusUpdateFailed": "更新用户状态失败。",
+            "verifierAssigned": "已将 {name} 设置为验证人员。",
+            "verifierAssignFailed": "设置验证人员失败。",
+            "batchSuccess": "批量操作已完成。",
+            "batchFailed": "批量操作失败。"
+        },
+        "pointsDialog": {
+            "title": "积分管理",
+            "description": "查看积分详情。",
+            "descriptionWithName": "管理 {name} 的积分。",
+            "loading": "加载中...",
+            "currentPoints": "当前积分",
+            "attendedEvents": "已参加活动",
+            "eventCount": "{count} 场",
+            "recordsTitle": "积分记录",
+            "noRecords": "暂无积分记录",
+            "adjust": {
+                "title": "调整积分",
+                "pointsLabel": "积分变化",
+                "pointsPlaceholder": "正数增加，负数减少",
+                "reasonLabel": "调整原因",
+                "reasonPlaceholder": "输入调整原因",
+                "confirm": "确认调整",
+                "submitting": "处理中...",
+                "added": "成功增加 {points} 积分",
+                "deducted": "成功扣除 {points} 积分",
+                "failed": "调整积分失败"
+            }
+        },
+        "batchDialog": {
+            "activateTitle": "批量启用用户",
+            "suspendTitle": "批量禁用用户",
+            "deleteTitle": "批量删除用户",
+            "description": "确定要对选中的 {count} 位用户执行{action}操作吗？",
+            "irreversible": "此操作不可恢复。",
+            "confirm": "确认操作",
+            "actions": {
+                "activate": "启用",
+                "suspend": "禁用",
+                "delete": "删除"
+            }
+        }
+    },
+    "adminTracksPage": {
+        "title": "赛道管理",
+        "subtitle": "维护赛道编号、分类、内容与关联信息。",
+        "loading": "正在加载赛道...",
+        "loadError": "加载赛道失败。",
+        "create": "创建赛道",
+        "searchPlaceholder": "搜索赛道编号、名称或描述...",
+        "listTitle": "赛道列表 ({count})",
+        "empty": "当前搜索条件下暂无赛道。",
+        "eventCount": "关联活动 {count} 场",
+        "order": "排序 {value}",
+        "categories": {
+            "institution": "制度层",
+            "economy": "经济层",
+            "foundation": "根源层",
+            "accelerator": "加速器"
+        },
+        "actions": {
+            "edit": "编辑",
+            "delete": "删除"
+        },
+        "form": {
+            "createTitle": "创建赛道",
+            "editTitle": "编辑赛道",
+            "createDescription": "新增一个赛道并维护其中英文内容。",
+            "editDescription": "更新赛道基础信息、分类与合作伙伴内容。",
+            "code": "赛道编号",
+            "name": "中文名称",
+            "nameEn": "英文名称",
+            "description": "中文描述",
+            "descriptionEn": "英文描述",
+            "category": "赛道分类",
+            "color": "主题颜色",
+            "icon": "图标名称",
+            "order": "排序值",
+            "partners": "合作伙伴（中文）",
+            "partnersEn": "合作伙伴（英文）",
+            "partnersPlaceholder": "每行一个合作伙伴，也支持逗号分隔",
+            "create": "创建赛道",
+            "save": "保存更改"
+        },
+        "delete": {
+            "title": "删除赛道",
+            "description": "确定删除 {name} 吗？如果赛道仍关联活动，系统会阻止删除。",
+            "confirm": "删除赛道"
+        },
+        "common": {
+            "cancel": "取消"
+        },
+        "messages": {
+            "requiredFields": "请填写赛道编号、名称、描述、分类、颜色和图标。",
+            "createSuccess": "赛道创建成功。",
+            "createFailed": "创建赛道失败。",
+            "updateSuccess": "赛道更新成功。",
+            "updateFailed": "更新赛道失败。",
+            "deleteSuccess": "赛道删除成功。",
+            "deleteFailed": "删除赛道失败。"
+        }
+    },
+    "dashboardProfilePage": {
+        "title": "个人资料",
+        "subtitle": "管理您的个人信息和账户设置。",
+        "alerts": {
+            "success": "成功",
+            "error": "错误"
+        },
+        "messages": {
+            "avatarUpdated": "头像已更新。",
+            "profileUpdated": "个人资料更新成功。",
+            "profileFailed": "更新失败，请稍后重试。",
+            "passwordUpdated": "密码修改成功。",
+            "passwordFailed": "密码修改失败，请检查当前密码。"
+        },
+        "tabs": {
+            "profile": "基本信息",
+            "security": "安全设置",
+            "organization": "所属机构"
+        },
+        "fields": {
+            "name": "姓名",
+            "email": "邮箱",
+            "phone": "电话",
+            "title": "职位",
+            "bio": "个人简介",
+            "salutation": "称谓",
+            "climatePassportId": "气候护照ID",
+            "country": "国别/地区"
+        },
+        "placeholders": {
+            "name": "请输入姓名",
+            "email": "请输入邮箱",
+            "phone": "请输入电话",
+            "title": "请输入职位",
+            "bio": "介绍一下自己...",
+            "salutation": "请选择称谓",
+            "country": "请选择国别/地区"
+        },
+        "actions": {
+            "save": "保存更改",
+            "saving": "保存中..."
+        },
+        "profileSection": {
+            "title": "个人资料",
+            "description": "更新您的个人信息，这些信息将显示在您的公开资料中。",
+            "avatarTitle": "头像",
+            "avatarHelp": "支持 JPG、PNG 格式，文件大小不超过 2MB。",
+            "currentRole": "当前身份:"
+        },
+        "password": {
+            "title": "修改密码",
+            "description": "定期更换密码可以保护您的账户安全。",
+            "fields": {
+                "current": "当前密码",
+                "new": "新密码",
+                "confirm": "确认新密码"
+            },
+            "placeholders": {
+                "current": "请输入当前密码",
+                "new": "请输入新密码",
+                "confirm": "请再次输入新密码"
+            },
+            "hint": "密码至少需要8个字符，包含字母和数字。",
+            "submit": "修改密码",
+            "submitting": "修改中...",
+            "errors": {
+                "currentRequired": "请输入当前密码",
+                "newRequired": "请输入新密码",
+                "minLength": "密码至少需要8个字符",
+                "confirmRequired": "请确认新密码",
+                "mismatch": "两次输入的密码不一致"
+            }
+        },
+        "organization": {
+            "title": "所属机构",
+            "description": "管理您关联的机构信息。",
+            "nameLabel": "机构名称",
+            "namePlaceholder": "请输入机构名称",
+            "industry": "行业领域",
+            "industryPlaceholder": "请输入行业领域",
+            "website": "官方网站",
+            "websitePlaceholder": "https://",
+            "about": "机构简介",
+            "descriptionPlaceholder": "请输入机构简介...",
+            "noDescription": "暂无简介"
+        }
+    },
+    "adminPartnersPage": {
+        "title": "合作伙伴",
+        "subtitle": "管理赞助商和合作伙伴信息。",
+        "logoUploadSuccess": "Logo 上传成功",
+        "add": "添加合作伙伴",
+        "searchPlaceholder": "搜索公司名称...",
+        "filters": {
+            "tierPlaceholder": "赞助级别",
+            "allTiers": "全部级别",
+            "statusPlaceholder": "状态",
+            "allStatuses": "全部状态"
+        },
+        "tiers": {
+            "platinum": "铂金",
+            "gold": "金牌",
+            "silver": "银牌",
+            "bronze": "铜牌",
+            "partner": "合作伙伴"
+        },
+        "status": {
+            "active": "启用",
+            "inactive": "禁用"
+        },
+        "listTitle": "合作伙伴列表 ({count})",
+        "table": {
+            "logo": "Logo",
+            "company": "公司名称",
+            "tier": "赞助级别",
+            "order": "排序",
+            "website": "网站",
+            "status": "状态",
+            "homepage": "首页显示",
+            "actions": "操作"
+        },
+        "visit": "访问",
+        "emptyTitle": "暂无合作伙伴",
+        "emptyDescription": "点击右上角按钮添加新的合作伙伴。",
+        "dialog": {
+            "editTitle": "编辑合作伙伴",
+            "createTitle": "添加合作伙伴",
+            "editDescription": "修改合作伙伴的详细信息。",
+            "createDescription": "填写以下信息添加新的合作伙伴。"
+        },
+        "form": {
+            "logo": "公司 Logo",
+            "uploadLogo": "上传 Logo",
+            "logoHelp": "建议尺寸：400x400px，支持 PNG、JPG、SVG 格式。",
+            "companyName": "公司名称",
+            "companyNamePlaceholder": "请输入公司名称",
+            "companyNameEn": "英文公司名称",
+            "companyNameEnPlaceholder": "请输入英文公司名称",
+            "website": "网站链接",
+            "websitePlaceholder": "https://example.com",
+            "description": "公司简介",
+            "descriptionPlaceholder": "请输入公司简介...",
+            "descriptionEn": "英文公司简介",
+            "descriptionEnPlaceholder": "请输入英文公司简介...",
+            "tier": "赞助级别",
+            "order": "排序权重",
+            "orderPlaceholder": "数字越小越靠前",
+            "status": "启用状态",
+            "statusHelp": "启用后将在网站前台显示。",
+            "showOnHomepage": "首页展示",
+            "showOnHomepageHelp": "开启后将在首页合作伙伴栏目中展示。"
+        },
+        "delete": {
+            "title": "确认删除",
+            "description": "您确定要删除合作伙伴“{name}”吗？此操作无法撤销。",
+            "confirm": "确认删除"
+        },
+        "common": {
+            "cancel": "取消",
+            "save": "保存修改",
+            "create": "创建合作伙伴"
+        }
+    },
+    "adminSpeakersPage": {
+        "title": "嘉宾管理",
+        "subtitle": "管理平台所有嘉宾信息。",
+        "loading": "正在加载嘉宾...",
+        "loadError": "加载嘉宾失败。",
+        "avatarUploadSuccess": "头像上传成功",
+        "add": "添加嘉宾",
+        "searchPlaceholder": "搜索嘉宾姓名、英文名或机构...",
+        "filters": {
+            "organizationPlaceholder": "筛选机构",
+            "allOrganizations": "全部机构",
+            "typePlaceholder": "筛选类型",
+            "allTypes": "全部类型",
+            "keynote": "Keynote 嘉宾",
+            "regular": "普通嘉宾"
+        },
+        "listTitle": "嘉宾列表 ({count})",
+        "summary": "Keynote: {keynote} / 总计: {total}",
+        "badges": {
+            "keynote": "Keynote"
+        },
+        "links": {
+            "linkedin": "LinkedIn",
+            "twitter": "Twitter"
+        },
+        "eventCount": "场活动",
+        "order": "排序: {count}",
+        "emptyTitle": "暂无嘉宾",
+        "emptyDescription": "点击上方按钮添加新嘉宾，或调整筛选条件。",
+        "dialog": {
+            "editTitle": "编辑嘉宾",
+            "createTitle": "添加嘉宾",
+            "editDescription": "修改嘉宾的详细信息。",
+            "createDescription": "填写信息创建新嘉宾。"
+        },
+        "form": {
+            "uploadAvatar": "上传头像",
+            "avatarHelp": "支持 JPG、PNG 格式，建议尺寸 400x400。",
+            "salutation": "称谓",
+            "salutationPlaceholder": "请选择称谓",
+            "name": "姓名",
+            "namePlaceholder": "请输入中文姓名",
+            "nameEn": "英文名",
+            "nameEnPlaceholder": "请输入英文姓名",
+            "title": "职位",
+            "titlePlaceholder": "如：院长、CEO、教授",
+            "titleEn": "英文职位",
+            "titleEnPlaceholder": "请输入英文职位",
+            "organization": "机构",
+            "organizationPlaceholder": "请输入所属机构",
+            "organizationEn": "英文机构名",
+            "organizationEnPlaceholder": "请输入英文机构名称",
+            "bio": "个人简介",
+            "bioPlaceholder": "请输入嘉宾的个人简介...",
+            "bioEn": "英文简介",
+            "bioEnPlaceholder": "请输入嘉宾的英文简介...",
+            "contact": "联系方式",
+            "emailPlaceholder": "邮箱地址",
+            "linkedinPlaceholder": "LinkedIn 链接",
+            "twitterPlaceholder": "Twitter 账号",
+            "websitePlaceholder": "个人网站",
+            "order": "排序权重",
+            "orderPlaceholder": "数字越小排序越靠前",
+            "keynote": "设为 Keynote 嘉宾"
+        },
+        "delete": {
+            "title": "确认删除",
+            "description": "您确定要删除嘉宾 {name} 吗？此操作不可撤销。",
+            "confirm": "确认删除"
+        },
+        "common": {
+            "cancel": "取消",
+            "save": "保存修改",
+            "create": "创建嘉宾"
+        }
+    },
+    "language": {
+        "zh": "中文",
+        "en": "English",
+        "switch": "切换语言"
+    },
+    "hero": {
+        "badge": "2026年4月20-28日 · 中国上海",
+        "title": "东方推力新启航",
+        "subtitle": "共塑未来十年的气候行动 (2026-2035)",
+        "description": "The Eastern Momentum for the Decisive Decade",
+        "location": "上海 · 东方推力点",
+        "cta": {
+            "explore": "探索核心议程",
+            "video": "观看宣传片"
+        }
+    },
+    "stats": {
+        "days": "活动天数",
+        "forums": "主题论坛",
+        "speakers": "演讲嘉宾",
+        "attendees": "参会人数"
+    },
+    "mission": {
+        "title": "我们的使命",
+        "subtitle": "Partnership and Profit for People and the Planet",
+        "description": "上海气候周2026定位为一个全球性气候行动平台，作为东方推力点连接中国与世界的气候治理。我们相信，只有通过系统重塑、真实行动、东方推力和共荣共赢，才能在未来十年实现气候目标。",
+        "learnMore": "了解更多",
+        "highlights": {
+            "system": {
+                "title": "系统重塑",
+                "desc": "从承诺驱动到结果导向"
+            },
+            "action": {
+                "title": "真实行动",
+                "desc": "言而有信、行而有果"
+            },
+            "momentum": {
+                "title": "东方推力",
+                "desc": "中国绿色力量成为全球转型动力"
+            },
+            "winwin": {
+                "title": "共荣共赢",
+                "desc": "不脱钩、推共建、强联通"
+            }
+        }
+    },
+    "tracks": {
+        "title": "12+1 主题赛道体系",
+        "subtitle": "上层定义规则｜中层生成增长｜底层夯实根基",
+        "tabs": {
+            "all": "全部",
+            "institution": "制度层",
+            "economy": "经济层",
+            "foundation": "根源层",
+            "accelerator": "加速器"
+        },
+        "card": {
+            "eventCount": "{count} 场活动",
+            "exploreMore": "探索更多"
+        },
+        "viewAll": "查看完整赛道体系"
+    },
+    "events": {
+        "title": "活动日历",
+        "subtitle": "2026年4月20日 - 4月28日",
+        "viewAll": "查看完整日程",
+        "register": "立即报名",
+        "details": "了解详情",
+        "partners": "合作伙伴",
+        "capacity": "限额 {count} 人"
+    },
+    "dashboardInvitations": {
+        "title": "邀请函申请",
+        "subtitle": "申请和管理您的活动邀请函。",
+        "create": "新建申请",
+        "loading": "加载中...",
+        "empty": "暂无邀请函申请。",
+        "listTitle": "申请记录 ({count})",
+        "forEvent": "关联活动",
+        "language": "语言",
+        "rejectReason": "拒绝原因",
+        "download": "下载邀请函",
+        "edit": "编辑",
+        "status": {
+            "pending": "待处理",
+            "uploaded": "已上传",
+            "downloaded": "已下载",
+            "rejected": "已拒绝"
+        },
+        "form": {
+            "title": "申请邀请函",
+            "description": "填写嘉宾信息，提交邀请函申请。",
+            "editTitle": "编辑邀请函申请",
+            "editDescription": "修改嘉宾信息并重新提交申请。",
+            "salutation": "称谓",
+            "salutationPlaceholder": "请选择称谓",
+            "applicantInfo": "申请人信息",
+            "applicantName": "姓名",
+            "applicantEmail": "邮箱",
+            "guestName": "嘉宾姓名",
+            "guestNameRequired": "请填写嘉宾姓名",
+            "guestTitle": "嘉宾职位",
+            "guestOrg": "嘉宾机构",
+            "guestEmail": "嘉宾邮箱",
+            "language": "邀请函语言",
+            "event": "关联活动",
+            "eventPlaceholder": "不关联具体活动",
+            "purpose": "参会目的",
+            "notes": "备注",
+            "cancel": "取消",
+            "submit": "提交申请",
+            "saveChanges": "保存修改"
+        },
+        "messages": {
+            "createSuccess": "邀请函申请提交成功。",
+            "createFailed": "提交邀请函申请失败。",
+            "editSuccess": "邀请函申请已更新。",
+            "editFailed": "更新邀请函申请失败。"
+        }
+    },
+    "eventsPage": {
+        "hero": {
+            "title": "活动日程",
+            "subtitle": "2026年4月20日 - 4月28日，探索 13 场精彩活动"
+        },
+        "loading": "正在加载活动...",
+        "loadError": "暂时无法加载活动列表。",
+        "retry": "重试",
+        "filters": {
+            "all": "全部活动",
+            "ceremony": "仪式活动",
+            "forum": "主题论坛",
+            "conference": "大型会议",
+            "workshop": "工作坊",
+            "networking": "交流酒会"
+        },
+        "layerFilter": {
+            "label": "所属层级",
+            "all": "全部层级",
+            "INSTITUTION": "制度层",
+            "ECONOMY": "经济层",
+            "ROOT": "根源层",
+            "ACCELERATOR": "加速器",
+            "COMPREHENSIVE": "综合"
+        },
+        "hostTypeFilter": {
+            "label": "主办类型",
+            "all": "全部类型",
+            "OFFICIAL": "官方活动",
+            "CO_HOSTED": "联合主办",
+            "REGISTERED": "注册活动",
+            "SIDE_EVENT": "边会活动",
+            "COMMUNITY": "社区活动"
+        },
+        "emptyState": "暂无该类型的活动",
+        "eventCount": "{count} 场活动",
+        "capacity": "限额 {count} 人",
+        "partners": "合作伙伴",
+        "details": "了解详情",
+        "register": "立即报名"
+    },
+    "partners": {
+        "title": "合作伙伴",
+        "subtitle": "感谢以下机构对上海气候周2026的大力支持",
+        "tiers": {
+            "chief": "首席合作伙伴",
+            "partner": "合作伙伴",
+            "ecosystem": "生态伙伴"
+        },
+        "ctaText": "想要成为我们的合作伙伴？",
+        "cta": "了解合作方案"
+    },
+    "cta": {
+        "title": "共同塑造未来十年的气候行动",
+        "subtitle": "加入我们，成为改变的一部分。与全球气候领袖、创新者和行动者一起，为实现2030气候目标贡献力量。",
+        "register": "立即注册参会",
+        "contact": "联系我们",
+        "stats": {
+            "countries": "国家/地区代表",
+            "speakers": "重磅演讲嘉宾",
+            "events": "主题边会活动",
+            "moment": "历史性时刻"
+        }
+    },
+    "footer": {
+        "brand": {
+            "title": "致力于成为未来十年全球气候行动的东方推力点。",
+            "subtitle": "为人与地球创造伙伴关系与共同收益。",
+            "address": "上海市徐汇区衡山路8号",
+            "email": "info@shanghaiclimateweek.org.cn"
+        },
+        "links": {
+            "explore": "探索",
+            "participate": "参与",
+            "support": "支持"
+        },
+        "nav": {
+            "home": "首页",
+            "events": "活动日历",
+            "tracks": "主题赛道",
+            "speakers": "嘉宾阵容",
+            "partners": "合作伙伴",
+            "attendeeRegister": "参会注册",
+            "organization": "机构代表",
+            "sponsor": "合作伙伴申请",
+            "speaker": "嘉宾申请",
+            "media": "媒体注册",
+            "about": "关于我们",
+            "news": "新闻资讯",
+            "faq": "常见问题",
+            "contact": "联系我们"
+        },
+        "copyright": "© 2026 Shanghai Climate Week. All rights reserved.",
+        "privacy": "隐私政策",
+        "terms": "使用条款"
+    },
+    "common": {
+        "backHome": "← 返回首页",
+        "backToLogin": "返回登录页面"
+    },
+    "userMenu": {
+        "pass": "活动通行证",
+        "climatePassport": "气候护照",
+        "profile": "个人资料"
+    },
+    "roles": {
+        "attendee": "参会观众",
+        "organization": "机构代表",
+        "sponsor": "合作伙伴",
+        "speaker": "演讲嘉宾",
+        "media": "媒体",
+        "admin": "管理员",
+        "staff": "工作人员",
+        "event_manager": "活动管理员",
+        "verifier": "验证员",
+        "visitor": "访客"
+    },
+    "auth": {
+        "login": {
+            "title": "欢迎回来",
+            "subtitle": "登录您的上海气候周账户",
+            "pageTitle": "欢迎回来",
+            "pageSubtitle": "登录您的账户继续浏览上海气候周 2026",
+            "email": "邮箱",
+            "emailLabel": "邮箱地址",
+            "emailPlaceholder": "your@email.com",
+            "password": "密码",
+            "passwordLabel": "密码",
+            "passwordPlaceholder": "请输入您的密码",
+            "remember": "记住我",
+            "forgotPassword": "忘记密码？",
+            "submit": "登录",
+            "submitting": "登录中...",
+            "or": "或使用以下方式登录",
+            "noAccount": "还没有账号？",
+            "register": "立即注册",
+            "errors": {
+                "invalidCredentials": "邮箱或密码错误",
+                "failed": "登录失败，请稍后重试"
+            }
+        },
+        "register": {
+            "title": "职位",
+            "subtitle": "共塑未来十年的气候行动",
+            "pageTitle": "创建账户",
+            "pageSubtitle": "加入上海气候周 2026 社群",
+            "name": "姓名",
+            "nameLabel": "姓名",
+            "namePlaceholder": "请输入您的姓名",
+            "email": "邮箱",
+            "emailLabel": "邮箱地址",
+            "emailPlaceholder": "your@email.com",
+            "password": "密码",
+            "passwordLabel": "密码",
+            "passwordPlaceholder": "至少 8 个字符",
+            "confirmPassword": "确认密码",
+            "confirmPasswordLabel": "确认密码",
+            "confirmPasswordPlaceholder": "请再次输入密码",
+            "salutationLabel": "称谓",
+            "salutationPlaceholder": "请选择称谓",
+            "titleLabel": "职位",
+            "titlePlaceholder": "请输入您的职位",
+            "phoneLabel": "电话",
+            "phonePlaceholder": "请输入您的电话号码",
+            "bioLabel": "个人简介",
+            "bioPlaceholder": "简单介绍一下自己...",
+            "organizationSection": "机构信息",
+            "organizationOptional": "（选填）",
+            "orgNameLabel": "机构名称",
+            "orgNamePlaceholder": "请输入机构名称",
+            "orgIndustryLabel": "机构行业",
+            "orgIndustryPlaceholder": "请输入机构行业",
+            "orgWebsiteLabel": "机构网站",
+            "orgWebsitePlaceholder": "https://",
+            "orgDescriptionLabel": "机构简介",
+            "orgDescriptionPlaceholder": "请简要介绍机构...",
+            "organization": "机构",
+            "phone": "电话",
+            "role": {
+                "label": "选择角色",
+                "attendee": "观众参会",
+                "speaker": "演讲嘉宾",
+                "media": "媒体注册",
+                "sponsor": "合作伙伴"
+            },
+            "submit": "注册",
+            "submitting": "注册中...",
+            "or": "或使用以下方式注册",
+            "hasAccount": "已有账号？",
+            "login": "立即登录",
+            "successTitle": "注册成功！",
+            "successSubtitle": "正在跳转到登录页面...",
+            "errors": {
+                "passwordMismatch": "两次输入的密码不一致",
+                "passwordTooShort": "密码至少需要 8 个字符",
+                "emailTaken": "该邮箱已注册，请直接登录",
+                "titleRequired": "请输入您的职位",
+                "failed": "注册失败，请稍后重试"
+            }
+        },
+        "forgotPassword": {
+            "pageTitle": "忘记密码",
+            "pageSubtitle": "输入您的邮箱地址，我们将发送密码重置链接",
+            "sentTitle": "重置链接已发送",
+            "sentSubtitle": "请检查您的邮箱并点击链接重置密码",
+            "emailLabel": "邮箱地址",
+            "emailPlaceholder": "your@email.com",
+            "submit": "发送重置链接",
+            "submitting": "发送中...",
+            "sentDescription": "我们已向 <strong>{email}</strong> 发送了密码重置链接",
+            "resendHint": "如果您没有收到邮件，请检查垃圾邮件文件夹，或等待 60 秒后重新发送",
+            "useAnotherEmail": "使用其他邮箱",
+            "errors": {
+                "required": "请输入邮箱地址",
+                "invalidEmail": "请输入有效的邮箱地址",
+                "emailNotFound": "该邮箱尚未注册，请检查邮箱地址或先注册账户",
+                "failed": "发送失败，请稍后重试",
+                "network": "网络错误，请稍后重试"
+            }
+        },
+        "resetPassword": {
+            "validating": "正在验证链接...",
+            "invalidTitle": "链接无效",
+            "requestAgain": "重新申请重置",
+            "successTitle": "密码重置成功",
+            "successSubtitle": "您的密码已成功更新，请使用新密码登录",
+            "goToLogin": "前往登录",
+            "pageTitle": "设置新密码",
+            "pageSubtitle": "请输入您的新密码",
+            "passwordLabel": "新密码",
+            "passwordPlaceholder": "至少 8 个字符，包含大小写字母和数字",
+            "confirmPasswordLabel": "确认密码",
+            "confirmPasswordPlaceholder": "再次输入新密码",
+            "requirementsTitle": "密码要求：",
+            "requirements": {
+                "minLength": "至少 {min} 个字符",
+                "upperAndLower": "包含大小写字母",
+                "number": "包含数字"
+            },
+            "submit": "重置密码",
+            "submitting": "重置中...",
+            "errors": {
+                "invalidLink": "无效的重置链接，请重新申请密码重置",
+                "invalidLinkShort": "无效的重置链接",
+                "expiredLink": "该重置链接已过期，请重新申请密码重置",
+                "validationFailed": "链接验证失败",
+                "passwordRequired": "请输入新密码",
+                "passwordTooShort": "密码至少需要 {min} 个字符",
+                "passwordWeak": "密码需包含大小写字母和数字",
+                "confirmPasswordRequired": "请再次输入密码",
+                "passwordMismatch": "两次输入的密码不一致",
+                "failed": "密码重置失败",
+                "network": "网络错误，请稍后重试"
+            }
+        },
+        "error": {
+            "title": "登录失败",
+            "messages": {
+                "CredentialsSignin": "邮箱或密码错误，请重新输入。",
+                "AccessDenied": "您当前没有权限访问该页面。",
+                "SessionRequired": "请先登录后再继续。",
+                "Default": "登录过程中发生错误，请稍后重试。"
+            },
+            "actions": {
+                "backToLogin": "返回登录",
+                "backHome": "返回首页"
+            }
+        }
+    },
+    "dashboard": {
         "overview": "概览",
         "schedule": "我的日程",
         "pass": "活动通行证",
-        "climatePassport": "气候护照",
-        "invitations": "邀请函申请",
-        "messages": "我的留言",
         "profile": "个人资料",
-        "notifications": "通知设置"
-      },
-      "fallbackUser": "用户",
-      "roles": {
-        "VISITOR": "访客",
-        "ATTENDEE": "参会观众",
-        "ORGANIZATION": "机构代表",
-        "SPEAKER": "演讲嘉宾",
-        "MEDIA": "媒体",
-        "SPONSOR": "合作伙伴",
-        "ADMIN": "管理员",
-        "STAFF": "工作人员",
-        "EVENT_MANAGER": "活动管理员",
-        "VERIFIER": "验证员"
-      },
-      "logout": "退出登录"
+        "notifications": "通知设置",
+        "welcome": "欢迎回来",
+        "logout": "退出登录"
     },
-    "dashboardPassPage": {
-      "title": "活动通行证",
-      "subtitle": "出示二维码即可入场参加活动。",
-      "selectEvent": "选择活动",
-      "brand": "上海气候周 2026",
-      "passport": {
-        "label": "气候护照 Climate Passport",
-        "points": "当前积分"
-      },
-      "passportQr": {
-        "title": "气候护照二维码（通用身份验证）",
-        "badge": "全场通用",
-        "description": "此二维码可用于现场身份验证，5分钟内有效"
-      },
-      "passTypes": {
-        "vip": "VIP 通行证",
-        "standard": "标准通行证"
-      },
-      "showQr": "请在入场时出示此二维码。",
-      "share": {
-        "title": "上海气候周2026 活动通行证",
-        "text": "我报名了 {eventTitle}！"
-      },
-      "fields": {
-        "date": "日期",
-        "time": "时间",
-        "venue": "地点",
-        "ticket": "票号",
-        "pointsEarned": "获得积分"
-      },
-      "badges": {
-        "checkedIn": "已验码",
-        "upcoming": "未到检票时段",
-        "active": "可入场",
-        "expired": "已失效",
-        "pendingApproval": "待审批",
-        "rejected": "已拒绝"
-      },
-      "status": {
-        "title": "通行证有效",
-        "description": "请准时参加活动。",
-        "checkedInTitle": "已入场",
-        "checkedInDescription": "您已成功入场，欢迎参加活动！",
-        "upcomingTitle": "暂未开放入场",
-        "upcomingDescription": "活动开始前 90 分钟内才会生成入场二维码。",
-        "expiredTitle": "通行证已失效",
-        "expiredDescription": "活动已结束，活动通行证自动失效。",
-        "pendingApprovalTitle": "等待审批",
-        "pendingApprovalDescription": "您的报名已提交，请等待管理员审批。",
-        "rejectedTitle": "报名已拒绝",
-        "rejectedDescription": "您的报名未获得批准，如有疑问请联系主办方。"
-      },
-      "actions": {
-        "download": "下载通行证",
-        "share": "分享"
-      },
-      "empty": {
-        "title": "暂无活动通行证",
-        "description": "您还没有报名任何活动",
-        "action": "浏览活动"
-      },
-      "messages": {
-        "loadError": "获取通行证失败",
-        "passportQrError": "获取护照二维码失败",
-        "qrRefreshed": "二维码已刷新",
-        "passDownloaded": "通行证已下载",
-        "shareUnavailable": "分享功能在此设备上不可用",
-        "qrRefreshWindow": "活动入场二维码在激活状态下每 60 秒自动刷新",
-        "inactiveQr": "二维码只有在活动开放入场时段内才会签发；验码成功或活动结束后自动失效。",
-        "antiShare": "一人一报名一人一码。现场验证人员可同时核对姓名、身份与头像，降低二维码转借风险。"
-      },
-      "instructions": {
-        "title": "使用说明",
-        "items": [
-          {"title": "提前准备", "description": "建议提前15分钟到达会场。"},
-          {"title": "出示二维码", "description": "在签到处出示此二维码。"},
-          {"title": "领取资料", "description": "签到后领取会议资料包。"}
-        ]
-      }
-    },
-    "dashboardSchedulePage": {
-      "title": "我的日程",
-      "subtitle": "管理您报名和收藏的活动。",
-      "registered": "已报名 ({count})",
-      "wishlist": "收藏夹 ({count})",
-      "emptyRegistered": "您还没有报名任何活动。",
-      "emptyWishlist": "暂无收藏活动。",
-      "browseEvents": "去浏览活动",
-      "viewPass": "查看通行证",
-      "registerNow": "立即报名",
-      "badges": {
-        "checkedIn": "已入场",
-        "pointsEarned": "+{points} 积分"
-      },
-      "messages": {
-        "loadError": "获取日程失败",
-        "removeSuccess": "已取消收藏",
-        "actionError": "操作失败"
-      }
-    },
-    "dashboardNotificationsPage": {
-      "title": "通知设置",
-      "subtitle": "自定义您希望接收的通知类型。",
-      "success": {
-        "title": "保存成功",
-        "description": "您的通知设置已更新并保存。"
-      },
-      "tip": {
-        "title": "提示",
-        "description": "您可以通过下方的开关自定义接收的通知类型。建议保持开启重要通知，以免错过关键信息。"
-      },
-      "save": "保存设置",
-      "saving": "保存中...",
-      "groups": {
-        "email": {
-          "title": "邮件通知",
-          "description": "接收与活动相关的邮件通知",
-          "options": {
-            "eventReminder": {"label": "活动提醒", "description": "活动开始前24小时发送提醒"},
-            "registrationConfirm": {"label": "报名确认通知", "description": "成功报名后发送确认邮件"},
-            "eventChange": {"label": "活动变更通知", "description": "活动时间、地点等变更时通知"},
-            "newsletter": {"label": "新闻通讯订阅", "description": "定期接收气候周最新动态"},
-            "marketing": {"label": "营销邮件", "description": "接收合作伙伴推广信息"}
-          }
+    "speakersPage": {
+        "hero": {
+            "title": "嘉宾",
+            "description": "汇聚全球气候领袖、专家学者和行业先锋，共 {count} 位重磅嘉宾。"
         },
-        "inApp": {
-          "title": "站内消息",
-          "description": "在网站内接收的消息通知",
-          "options": {
-            "systemAnnouncement": {"label": "系统公告", "description": "重要系统更新和公告"},
-            "eventUpdate": {"label": "活动更新", "description": "关注活动的最新动态"},
-            "securityAlert": {"label": "账户安全提醒", "description": "登录、密码修改等安全提醒"}
-          }
+        "searchPlaceholder": "搜索嘉宾姓名、机构或话题...",
+        "keynoteTitle": "主旨演讲嘉宾",
+        "allTitle": "全部嘉宾 ({count})",
+        "emptyState": "未找到符合条件的嘉宾",
+        "eventCount": "参与 {count} 场活动"
+    },
+    "contactPage": {
+        "hero": {
+            "title": "联系我们",
+            "description": "如有任何问题、合作意向或媒体需求，欢迎与上海气候周团队联系。"
         },
-        "sms": {
-          "title": "短信通知",
-          "description": "接收重要事项的短信提醒",
-          "options": {
-            "urgentEventChange": {"label": "紧急活动变更", "description": "活动临时取消或重大变更"},
-            "entryReminder": {"label": "入场提醒", "description": "活动开始前1小时发送提醒"}
-          }
+        "info": {
+            "email": {
+                "title": "电子邮件",
+                "description": "一般咨询"
+            },
+            "phone": {
+                "title": "联系电话",
+                "description": "工作日 9:00-18:00"
+            },
+            "address": {
+                "title": "办公地址",
+                "content": "上海市浦东新区世博大道1500号",
+                "description": "上海世博中心"
+            }
+        },
+        "inquiryTypes": {
+            "label": "咨询类型",
+            "placeholder": "请选择咨询类型",
+            "types": {
+                "general": "一般咨询",
+                "partnership": "合作伙伴申请",
+                "speaker": "嘉宾申请",
+                "media": "媒体注册",
+                "sponsor": "赞助咨询",
+                "volunteer": "志愿者申请",
+                "other": "其他"
+            }
+        },
+        "quickLinks": {
+            "title": "直接申请或注册",
+            "subtitle": "选择最符合您需求的选项",
+            "links": {
+                "partnership": {
+                    "title": "合作伙伴申请",
+                    "description": "探索赞助与合作机会",
+                    "cta": "立即申请"
+                },
+                "speaker": {
+                    "title": "嘉宾申请",
+                    "description": "在上海气候周2026分享您的专业见解",
+                    "cta": "立即申请"
+                },
+                "media": {
+                    "title": "媒体注册",
+                    "description": "注册媒体代表，获取采访许可",
+                    "cta": "立即注册"
+                },
+                "volunteer": {
+                    "title": "志愿者",
+                    "description": "加入志愿者团队，共同支持活动",
+                    "cta": "了解更多"
+                }
+            }
+        },
+        "partnershipForm": {
+            "organizationName": "机构名称",
+            "organizationNamePlaceholder": "请输入机构名称",
+            "organizationType": "机构类型",
+            "organizationTypePlaceholder": "如：非政府组织、企业、科研机构",
+            "partnershipTier": "意向合作级别",
+            "partnershipTierPlaceholder": "请选择合作级别",
+            "tiers": {
+                "chief": "首席合作伙伴",
+                "presenting": "联合主办伙伴",
+                "ecosystem": "生态合作伙伴",
+                "media": "媒体/机构合作伙伴",
+                "forum": "论坛合作伙伴",
+                "knowledge": "知识合作伙伴",
+                "community": "社区合作伙伴",
+                "showcase": "展示合作伙伴"
+            },
+            "website": "机构官网",
+            "websitePlaceholder": "https://example.com"
+        },
+        "speakerForm": {
+            "speakerTitle": "职务/头衔",
+            "speakerTitlePlaceholder": "如：首席可持续发展官",
+            "organization": "所在机构",
+            "organizationPlaceholder": "请输入机构名称",
+            "topic": "拟议演讲主题",
+            "topicPlaceholder": "请简述您希望分享的主题",
+            "experience": "演讲经历",
+            "experiencePlaceholder": "请简述您的演讲经历"
+        },
+        "mediaForm": {
+            "outlet": "媒体机构",
+            "outletPlaceholder": "请输入媒体机构名称",
+            "mediaType": "媒体类型",
+            "mediaTypePlaceholder": "请选择媒体类型",
+            "mediaTypes": {
+                "print": "纸媒/网媒",
+                "broadcast": "广播电视",
+                "podcast": "播客",
+                "blog": "博客/独立记者",
+                "agency": "通讯社",
+                "other": "其他"
+            },
+            "role": "您的职务",
+            "rolePlaceholder": "如：记者、编辑、摄影师",
+            "pressCard": "记者证/证件编号",
+            "pressCardPlaceholder": "选填"
+        },
+        "registerPrompt": {
+            "title": "想要追踪您的咨询？",
+            "description": "创建免费账户，即可在个人中心查看消息状态并接收管理员回复。",
+            "register": "创建账户",
+            "login": "我已有账户",
+            "skip": "暂不需要"
+        },
+        "form": {
+            "title": "发送消息",
+            "successTitle": "发送成功！",
+            "successDescription": "我们会尽快回复您的消息。",
+            "submit": "发送消息",
+            "submitting": "发送中...",
+            "fields": {
+                "name": {
+                    "label": "姓名",
+                    "placeholder": "您的姓名"
+                },
+                "email": {
+                    "label": "邮箱"
+                },
+                "subject": {
+                    "label": "主题",
+                    "placeholder": "消息主题"
+                },
+                "message": {
+                    "label": "消息内容",
+                    "placeholder": "请输入您的消息..."
+                }
+            }
+        },
+        "faq": {
+            "title": "常见问题",
+            "items": {
+                "registration": {
+                    "question": "如何报名参加上海气候周2026？",
+                    "answer": "您可以通过官网注册账户，然后在活动页面选择感兴趣的活动进行报名。部分活动可能需要审核。"
+                },
+                "fees": {
+                    "question": "参加活动需要付费吗？",
+                    "answer": "大部分活动免费开放，部分闭门会议和晚宴可能需要付费或邀请制。具体信息请查看各活动详情页面。"
+                },
+                "partnership": {
+                    "question": "如何成为合作伙伴？",
+                    "answer": "请通过本页面联系我们，或发送邮件至 partners@shanghaiclimateweek.org.cn，我们的合作团队会尽快与您联系。"
+                },
+                "speaker": {
+                    "question": "可以申请成为演讲嘉宾吗？",
+                    "answer": "是的，我们欢迎各领域的专家申请演讲。请通过注册页面选择演讲嘉宾角色，并提交相关资料。"
+                },
+                "interpretation": {
+                    "question": "活动提供同声传译服务吗？",
+                    "answer": "主要活动提供中英文同声传译服务，部分专题活动可能只提供英文或中文服务，请在报名时确认。"
+                }
+            }
         }
-      }
     },
-    "adminLayout": {
-      "logoAlt": "上海气候周",
-      "title": "管理后台",
-      "backToSite": "返回前台",
-      "nav": {
-        "dashboard": "仪表盘",
-        "events": "活动管理",
-        "tracks": "赛道管理",
-        "speakers": "嘉宾管理",
-        "invitations": "邀请函管理",
-        "users": "用户管理",
-        "partners": "合作伙伴",
-        "news": "新闻管理",
-        "content": "内容管理",
-        "messages": "留言管理",
-        "settings": "系统设置"
-      }
-    },
-    "adminMessagesPage": {
-      "title": "联系留言",
-      "subtitle": "管理访客咨询并回复留言。",
-      "filters": {
-        "all": "全部",
-        "pending": "待处理",
-        "replied": "已回复",
-        "closed": "已关闭"
-      },
-      "table": {
-        "name": "姓名",
-        "email": "邮箱",
-        "category": "类型",
-        "subject": "主题",
-        "status": "状态",
-        "date": "日期",
-        "actions": "操作"
-      },
-      "detail": {
-        "title": "留言详情",
-        "from": "发送者",
-        "category": "类别",
-        "organization": "机构",
-        "metadata": "附加信息",
-        "message": "留言内容",
-        "reply": "管理员回复",
-        "replyPlaceholder": "输入回复内容...",
-        "notes": "内部备注",
-        "notesPlaceholder": "内部备注（用户不可见）...",
-        "sendReply": "发送回复",
-        "close": "关闭留言",
-        "reopen": "重新打开",
-        "repliedBy": "回复人",
-        "repliedAt": "回复时间"
-      },
-      "empty": "暂无留言。",
-      "statusLabels": {
-        "PENDING": "待处理",
-        "REPLIED": "已回复",
-        "CLOSED": "已关闭"
-      },
-      "categoryLabels": {
-        "GENERAL": "一般咨询",
-        "ORGANIZATION": "机构代表",
-        "PARTNERSHIP": "合作伙伴",
-        "SPEAKER": "嘉宾申请",
-        "MEDIA": "媒体合作",
-        "SPONSOR": "赞助咨询",
-        "VOLUNTEER": "志愿者",
-        "OTHER": "其他"
-      }
-    },
-    "adminDashboardPage": {
-      "title": "仪表盘",
-      "subtitle": "欢迎回来，管理员。",
-      "stats": {
-        "users": "总用户数",
-        "events": "活动数量",
-        "registrations": "报名人次",
-        "checkins": "签到人次"
-      },
-      "trendTitle": "报名趋势",
-      "months": {
-        "jan": "1月",
-        "mar": "3月",
-        "jun": "6月",
-        "sep": "9月",
-        "dec": "12月"
-      },
-      "recentTitle": "最新报名",
-      "viewAll": "查看全部",
-      "statuses": {
-        "success": "成功",
-        "pending": "待确认"
-      },
-      "upcomingTitle": "即将开始的活动",
-      "manageEvents": "管理活动",
-      "registeredCapacity": "已报名 / 容量",
-      "manage": "管理"
-    },
-    "adminEventsPage": {
-      "title": "活动管理",
-      "subtitle": "管理平台所有活动。",
-      "loading": "正在加载活动...",
-      "loadError": "加载活动失败。",
-      "create": "创建活动",
-      "searchPlaceholder": "搜索活动名称或地点...",
-      "listTitle": "活动列表 ({count})",
-      "featured": "重磅",
-      "published": "已发布",
-      "draft": "草稿",
-      "capacity": "{count} / {max}",
-      "empty": "当前搜索条件下暂无活动。",
-      "actions": {
-        "publish": "发布",
-        "unpublish": "撤回发布",
-        "feature": "设为重磅",
-          "unfeature": "取消重磅",
-          "regenerateHighlights": "重新生成 AI 亮点"
-      },
-      "form": {
-        "createTitle": "创建活动",
-        "editTitle": "编辑活动",
-        "createDescription": "为议程创建一个新活动。",
-        "editDescription": "更新所选活动内容。",
-        "title": "标题",
-        "titleEn": "英文标题",
-        "description": "描述",
-        "shortDesc": "简短描述",
-        "startDate": "开始日期",
-        "endDate": "结束日期",
-        "startTime": "开始时间",
-        "endTime": "结束时间",
-        "venue": "地点",
-        "city": "城市",
-        "track": "所属赛道",
-        "trackPlaceholder": "未分配赛道",
-        "address": "地址",
-        "image": "图片 URL",
-        "type": "类型",
-        "maxAttendees": "容量",
-        "isPublished": "已发布",
-        "isFeatured": "重磅推荐",
-        "requireApproval": "注册需审批",
-        "eventLayer": "所属层级",
-        "eventLayerPlaceholder": "未指定层级",
-        "layers": {
-          "institution": "制度层",
-          "economy": "经济层",
-          "root": "根源层",
-          "accelerator": "加速器",
-          "comprehensive": "综合"
+    "dashboardPage": {
+        "hero": {
+            "title": "欢迎回来! 👋",
+            "description": "这是您参加上海气候周2026的个人中心。"
         },
-        "hostType": "主办类型",
-        "hostTypePlaceholder": "未指定类型",
-        "hostTypes": {
-          "official": "官方活动",
-          "coHosted": "联合主办",
-          "registered": "注册活动",
-          "sideEvent": "边会活动",
-          "community": "社区活动"
+        "stats": {
+            "registered": "已报名活动",
+            "saved": "收藏活动",
+            "attended": "已签到活动",
+            "points": "气候积分"
         },
-        "create": "创建活动",
-        "save": "保存更改"
-      },
-      "delete": {
-        "title": "删除活动",
-        "description": "确定删除 {name} 吗？此操作不可恢复。",
-        "confirm": "删除活动"
-      },
-      "common": {
-        "cancel": "取消"
-      },
-      "messages": {
-        "requiredFields": "请完整填写活动必填字段。",
-        "createSuccess": "活动创建成功。",
-        "createFailed": "创建活动失败。",
-        "updateSuccess": "活动更新成功。",
-        "updateFailed": "更新活动失败。",
-        "deleteSuccess": "活动删除成功。",
-        "deleteFailed": "删除活动失败。",
-        "statusUpdateSuccess": "活动状态更新成功。",
-        "statusUpdateFailed": "更新活动状态失败。",
-          "saveSuccessWithHighlightWarning": " 活动已保存，但 AI 亮点生成失败，可稍后重试。",
-          "highlightsSuccess": "AI 亮点生成成功。",
-          "highlightsSkipped": "AI 亮点生成已跳过（功能未启用）。",
-          "highlightsRetryFailed": "AI 亮点生成失败，请检查 API 密钥配置。"
-      },
-      "agenda": {
-        "title": "议程管理",
-        "subtitle": "管理活动的议程安排和嘉宾分配。",
-        "addItem": "添加议程",
-        "editItem": "编辑议程",
-        "deleteItem": "删除议程",
-        "empty": "暂无议程项，点击上方按钮添加。",
-        "itemTitle": "议程标题",
-        "itemTitlePlaceholder": "请输入议程标题",
-        "date": "议程日期",
-        "description": "描述",
-        "descriptionPlaceholder": "请输入议程描述...",
-        "startTime": "开始时间",
-        "endTime": "结束时间",
-        "type": "类型",
-        "types": {
-          "keynote": "主旨演讲",
-          "panel": "圆桌讨论",
-          "workshop": "工作坊",
-          "break": "休息",
-          "networking": "社交"
+        "quickActions": {
+            "title": "快速操作",
+            "pass": "查看通行证",
+            "events": "浏览活动",
+            "schedule": "管理我的日程",
+            "passport": "打开气候护照"
         },
-        "venue": "议程地点",
-        "venuePlaceholder": "默认使用活动地点",
-        "order": "排序",
-        "speakers": "嘉宾",
-        "assignSpeakers": "分配嘉宾",
-        "selectFromLibrary": "从嘉宾库选择",
-        "createNewSpeaker": "创建新嘉宾",
-        "searchSpeakers": "搜索嘉宾姓名...",
-        "selectedSpeakers": "已选嘉宾",
-        "noSpeakers": "无嘉宾",
-        "removeSpeaker": "移除",
-        "confirmDelete": "确定删除该议程项吗？此操作不可恢复。",
-        "requiredFields": "请填写所有必填字段。",
-        "timeOrderInvalid": "结束时间必须晚于开始时间。",
-        "dateOutOfRange": "议程日期必须落在活动日期范围内。",
-        "timeOverlap": "议程时间与现有日程冲突：{title}（{time}）",
-        "createSuccess": "议程项创建成功。",
-        "updateSuccess": "议程项更新成功。",
-        "deleteSuccess": "议程项删除成功。",
-        "saveFailed": "保存议程项失败。",
-        "deleteFailed": "删除议程项失败。",
-        "save": "保存",
-        "cancel": "取消",
-        "backToList": "返回活动列表"
-      },
-      "registrations": {
-        "title": "报名管理",
-        "subtitle": "查看和管理活动报名，审批待审核的报名。",
-        "backToList": "返回活动列表",
-        "approved": "已通过",
-        "approvalRequired": "需要审批",
-        "searchPlaceholder": "搜索姓名、邮箱或护照ID...",
-        "filterAll": "全部状态",
-        "selectAll": "全选待审批",
-        "selected": "已选 {count} 项",
-        "approve": "批准",
-        "reject": "拒绝",
-        "actionFailed": "操作失败。",
-        "empty": "暂无报名记录。",
-        "statuses": {
-          "PENDING_APPROVAL": "待审批",
-          "REGISTERED": "已注册",
-          "ATTENDED": "已签到",
-          "CANCELLED": "已取消",
-          "REJECTED": "已拒绝",
-          "WAITLIST": "候补"
+        "upcoming": {
+            "title": "即将开始的活动",
+            "viewAll": "查看全部",
+            "empty": "您还没有报名任何活动",
+            "browse": "去浏览活动"
         }
-      }
     },
-    "adminInvitationsPage": {
-      "title": "邀请函管理",
-      "subtitle": "查看和处理用户的邀请函申请。",
-      "loading": "加载中...",
-      "loadError": "加载邀请函失败。",
-      "searchPlaceholder": "搜索嘉宾姓名或邮箱...",
-      "listTitle": "邀请函列表 ({count})",
-      "empty": "当前筛选条件下无邀请函申请。",
-      "filters": {
-        "all": "全部状态"
-      },
-      "applicant": "申请人",
-      "applicantOrg": "申请人机构",
-      "org": "机构",
-      "email": "邮箱",
-      "event": "活动",
-      "purpose": "目的",
-      "lang": "语言",
-      "status": {
-        "pending": "待处理",
-        "uploaded": "已上传",
-        "downloaded": "已下载",
-        "rejected": "已拒绝"
-      },
-      "actions": {
-        "process": "处理",
-        "edit": "编辑"
-      },
-      "editDialog": {
-        "title": "处理邀请函",
-        "description": "处理 {name} 的邀请函申请。",
-        "status": "状态",
-        "uploadFile": "上传邀请函文件",
-        "selectFile": "点击选择文件（PDF/图片）",
-        "uploading": "上传中...",
-        "fileUploaded": "文件已上传",
-        "preview": "预览",
-        "letterFileUrl": "邀请函文件 URL",
-        "letterFileUrlPlaceholder": "输入文件下载链接",
-        "rejectReason": "拒绝原因",
-        "cancel": "取消",
-        "save": "保存"
-      },
-      "messages": {
-        "updateSuccess": "邀请函更新成功。",
-        "updateFailed": "更新邀请函失败。",
-        "uploadSuccess": "文件上传成功。",
-        "uploadFailed": "文件上传失败。"
-      }
-    },
-    "adminUsersPage": {
-      "title": "用户管理",
-      "subtitle": "管理平台所有用户账号。",
-      "addUser": "添加用户",
-      "stats": {
-        "total": "总用户数",
-        "active": "已激活",
-        "pending": "待审核",
-        "speakers": "演讲嘉宾",
-        "verifiers": "验证人员"
-      },
-      "searchPlaceholder": "搜索姓名或邮箱...",
-      "filters": {
-        "allRoles": "所有角色",
-        "allStatuses": "所有状态"
-      },
-      "empty": "当前筛选条件下暂无用户。",
-      "roles": {
-        "VISITOR": "访客",
-        "ATTENDEE": "参会观众",
-        "ORGANIZATION": "机构代表",
-        "SPEAKER": "演讲嘉宾",
-        "MEDIA": "媒体",
-        "SPONSOR": "赞助商",
-        "ADMIN": "管理员",
-        "EVENT_MANAGER": "活动管理员",
-        "STAFF": "工作人员"
-      },
-      "statuses": {
-        "ACTIVE": "已激活",
-        "PENDING": "待审核",
-        "SUSPENDED": "已禁用"
-      },
-      "selected": "已选择 {count} 位用户",
-      "batch": {
-        "activate": "批量启用",
-        "suspend": "批量禁用",
-        "delete": "批量删除"
-      },
-      "listTitle": "用户列表 ({count})",
-      "table": {
-        "userInfo": "用户信息",
-        "role": "角色",
-        "status": "状态",
-        "registeredAt": "注册时间",
-        "actions": "操作"
-      },
-      "actions": {
-        "activate": "启用账号",
-        "suspend": "禁用账号",
-        "delete": "删除用户",
-        "viewPoints": "查看积分",
-        "setVerifier": "设为验证人员"
-      },
-      "pagination": "第 {current} 页，共 {total} 页",
-      "detail": {
-        "title": "用户详情",
-        "description": "查看用户完整信息和报名记录。",
-        "email": "邮箱",
-        "phone": "电话",
-        "registeredAt": "注册时间",
-        "organization": "所属机构",
-        "currentPoints": "当前积分",
-        "registrationCount": "报名活动数",
-        "pointsValue": "{count} 分",
-        "eventCount": "{count} 场",
-        "organizationInfo": "机构信息",
-        "organizationName": "机构名称",
-        "titleLabel": "职位",
-        "industry": "行业",
-        "bio": "个人简介",
-        "events": "报名活动",
-        "noEvents": "暂无报名活动。",
-        "notProvided": "未填写",
-        "close": "关闭",
-        "edit": "编辑用户"
-      },
-      "delete": {
-        "title": "确认删除",
-        "description": "确定要删除用户 {name} 吗？此操作不可恢复。",
-        "confirm": "确认删除"
-      },
-      "common": {
-        "cancel": "取消"
-      },
-      "form": {
-        "createTitle": "创建用户",
-        "createDescription": "创建新的用户账号，并可选填写机构资料。",
-        "editTitle": "编辑用户",
-        "editDescription": "更新所选用户账号和机构资料。",
-        "name": "姓名",
-        "email": "邮箱",
-        "password": "密码",
-        "passwordOptional": "密码（留空则保持当前密码）",
-        "phone": "电话",
-        "title": "职位",
-        "salutation": "称谓",
-        "salutationPlaceholder": "请选择称谓",
-        "role": "角色",
-        "status": "状态",
-        "avatar": "头像",
-        "bio": "个人简介",
-        "organizationSection": "机构信息",
-        "organizationName": "机构名称",
-        "organizationLogo": "机构Logo URL",
-        "organizationIndustry": "机构行业",
-        "organizationWebsite": "机构网站",
-        "organizationDescription": "机构简介",
-        "organizationSize": "机构规模",
-        "organizationContactName": "联系人姓名",
-        "organizationContactEmail": "联系人邮箱",
-        "organizationContactPhone": "联系人电话",
-        "create": "创建用户",
-        "save": "保存更改"
-      },
-      "messages": {
-        "requiredFields": "新建用户时请填写姓名、邮箱和密码。",
-        "createSuccess": "用户创建成功。",
-        "createFailed": "创建用户失败。",
-        "updateSuccess": "用户更新成功。",
-        "updateFailed": "更新用户失败。",
-        "deleteSuccess": "用户删除成功。",
-        "deleteFailed": "删除用户失败。",
-        "statusUpdateSuccess": "用户状态更新成功。",
-        "statusUpdateFailed": "更新用户状态失败。",
-        "verifierAssigned": "已将 {name} 设置为验证人员。",
-        "verifierAssignFailed": "设置验证人员失败。",
-        "batchSuccess": "批量操作已完成。",
-        "batchFailed": "批量操作失败。"
-      },
-      "pointsDialog": {
-        "title": "积分管理",
-        "description": "查看积分详情。",
-        "descriptionWithName": "管理 {name} 的积分。",
-        "loading": "加载中...",
-        "currentPoints": "当前积分",
-        "attendedEvents": "已参加活动",
-        "eventCount": "{count} 场",
-        "recordsTitle": "积分记录",
-        "noRecords": "暂无积分记录",
-        "adjust": {
-          "title": "调整积分",
-          "pointsLabel": "积分变化",
-          "pointsPlaceholder": "正数增加，负数减少",
-          "reasonLabel": "调整原因",
-          "reasonPlaceholder": "输入调整原因",
-          "confirm": "确认调整",
-          "submitting": "处理中...",
-          "added": "成功增加 {points} 积分",
-          "deducted": "成功扣除 {points} 积分",
-          "failed": "调整积分失败"
+    "dashboardMessagesPage": {
+        "title": "我的留言",
+        "subtitle": "查看您的咨询留言和组委会回复。",
+        "empty": "您还没有发送过留言。",
+        "sendNew": "发送留言",
+        "status": {
+            "PENDING": "待处理",
+            "REPLIED": "已回复",
+            "CLOSED": "已关闭"
+        },
+        "category": {
+            "GENERAL": "一般咨询",
+            "ORGANIZATION": "机构代表",
+            "PARTNERSHIP": "合作伙伴",
+            "SPEAKER": "嘉宾申请",
+            "MEDIA": "媒体合作",
+            "SPONSOR": "赞助咨询",
+            "VOLUNTEER": "志愿者",
+            "OTHER": "其他"
+        },
+        "detail": {
+            "yourMessage": "您的留言",
+            "adminReply": "组委会回复",
+            "sentAt": "发送时间",
+            "repliedAt": "回复时间",
+            "noReply": "等待回复中..."
         }
-      },
-      "batchDialog": {
-        "activateTitle": "批量启用用户",
-        "suspendTitle": "批量禁用用户",
-        "deleteTitle": "批量删除用户",
-        "description": "确定要对选中的 {count} 位用户执行{action}操作吗？",
-        "irreversible": "此操作不可恢复。",
-        "confirm": "确认操作",
-        "actions": {
-          "activate": "启用",
-          "suspend": "禁用",
-          "delete": "删除"
-        }
-      },
-      "roles": {
-        "VISITOR": "访客",
-        "ATTENDEE": "参会观众",
-        "ORGANIZATION": "机构代表",
-        "SPEAKER": "演讲嘉宾",
-        "MEDIA": "媒体",
-        "SPONSOR": "赞助商",
-        "ADMIN": "管理员",
-        "EVENT_MANAGER": "活动管理员",
-        "STAFF": "工作人员",
-        "VERIFIER": "验证人员"
-      }
     },
-    "adminTracksPage": {
-      "title": "赛道管理",
-      "subtitle": "维护赛道编号、分类、内容与关联信息。",
-      "loading": "正在加载赛道...",
-      "loadError": "加载赛道失败。",
-      "create": "创建赛道",
-      "searchPlaceholder": "搜索赛道编号、名称或描述...",
-      "listTitle": "赛道列表 ({count})",
-      "empty": "当前搜索条件下暂无赛道。",
-      "eventCount": "关联活动 {count} 场",
-      "order": "排序 {value}",
-      "categories": {
-        "institution": "制度层",
-        "economy": "经济层",
-        "foundation": "根源层",
-        "accelerator": "加速器"
-      },
-      "actions": {
+    "dashboardPassportPage": {
+        "title": "气候护照",
+        "subtitle": "集中展示您的气候身份、积分与参与成就。",
+        "card": {
+            "authority": "上海气候周 2026",
+            "name": "Climate Passport",
+            "description": "这张数字护照关联您的活动身份、现场核验与气候参与足迹。",
+            "active": "有效",
+            "pendingId": "护照编号待生成",
+            "issueDate": "签发日期 {date}",
+            "achievements": "已解锁 {count} 项成就"
+        },
+        "stats": {
+            "points": "积分",
+            "attended": "已参加",
+            "learning": "学习时长"
+        },
+        "qr": {
+            "label": "身份二维码",
+            "title": "护照核验码",
+            "badge": "全场通用",
+            "description": "该二维码用于现场身份核验；进入具体活动仍需使用该活动的专属通行证。"
+        },
+        "achievements": {
+            "title": "成就",
+            "unlocked": "已解锁",
+            "locked": "未解锁"
+        },
+        "summary": {
+            "title": "护照摘要",
+            "registered": "已报名活动",
+            "saved": "收藏活动",
+            "identity": "注册邮箱",
+            "viewEventPasses": "查看活动通行证"
+        }
+    },
+    "eventDetailPage": {
+        "notFound": {
+            "title": "活动未找到",
+            "description": "该活动可能已被删除或不存在。",
+            "back": "返回活动列表"
+        },
+        "backToEvents": "返回活动列表",
+        "featured": "重磅活动",
+        "tabs": {
+            "about": "活动介绍",
+            "agenda": "活动议程",
+            "speakers": "演讲嘉宾"
+        },
+        "about": {
+            "title": "关于本次活动",
+            "description": "本次活动将汇聚全球气候领域的领袖、专家和从业者，共同探讨气候行动的最新进展与未来方向。通过主题演讲、圆桌讨论和互动环节，参与者将深入了解气候治理的前沿议题。",
+            "highlightsTitle": "活动亮点",
+            "highlights": [
+                "与全球气候领袖面对面交流",
+                "获取最新的气候政策解读",
+                "拓展专业人脉网络",
+                "参与重要倡议与成果发布"
+            ]
+        },
+        "agenda": {
+            "title": "活动议程",
+            "empty": "详细议程将尽快公布。",
+            "speaker": "演讲者：",
+            "types": {
+                "keynote": "主题演讲",
+                "panel": "圆桌讨论",
+                "workshop": "工作坊",
+                "break": "休息",
+                "ceremony": "仪式",
+                "networking": "交流",
+                "registration": "签到"
+            }
+        },
+        "speakersTitle": "演讲嘉宾",
+        "speakersEmpty": "演讲嘉宾阵容将尽快公布。",
+        "loading": "正在加载活动详情...",
+        "loadError": "暂时无法加载该活动详情。",
+        "retry": "重试",
+        "register": {
+            "title": "报名参加",
+            "description": "名额有限，立即报名锁定席位。",
+            "save": "收藏",
+            "saved": "已收藏",
+            "registered": "已报名",
+            "share": "分享",
+            "saveSuccess": "活动已收藏",
+            "unsaveSuccess": "已取消收藏",
+            "shareSuccess": "链接已复制到剪贴板"
+        },
+        "locationTitle": "活动地点",
+        "viewMap": "查看地图"
+    },
+    "aboutPage": {
+        "hero": {
+            "title": "关于上海气候周",
+            "description": "上海气候周是一个全球性气候行动平台，定位为“东方推力点”，连接中国与世界的气候治理，共塑未来十年的气候行动 (2026-2035)。"
+        },
+        "mission": {
+            "title": "我们的使命",
+            "tagline": "Partnership and Profit for People and the Planet",
+            "description": "我们相信，只有通过系统重塑、真实行动、东方推力和共荣共赢，才能在未来十年实现气候目标。上海气候周致力于成为全球气候治理的“东方推力点”，连接中国与世界，推动从承诺到行动的转化。",
+            "exploreEvents": "探索活动",
+            "becomePartner": "成为合作伙伴"
+        },
+        "highlights": {
+            "system": {
+                "title": "系统重塑",
+                "description": "从承诺驱动到结果导向，推动真正的气候行动落地"
+            },
+            "action": {
+                "title": "真实行动",
+                "description": "言而有信、行而有果，用实际成果说话"
+            },
+            "momentum": {
+                "title": "东方推力",
+                "description": "中国绿色力量成为全球转型动力"
+            },
+            "winwin": {
+                "title": "共荣共赢",
+                "description": "不脱钩、推共建、强联通，构建人类命运共同体"
+            }
+        },
+        "timelineTitle": "发展历程",
+        "timelineSubtitle": "上海气候周的成长之路",
+        "timeline": {
+            "2024": {
+                "title": "上海气候周启动",
+                "description": "首届上海气候周成功举办，吸引超过5000名参与者"
+            },
+            "2025": {
+                "title": "国际化拓展",
+                "description": "与UNFCCC、COP主席团建立战略合作关系"
+            },
+            "2026": {
+                "title": "东方推力新启航",
+                "description": "主题升级，聚焦2026-2035关键十年"
+            }
+        },
+        "teamTitle": "核心团队",
+        "teamSubtitle": "致力于推动气候行动的领导力团队",
+        "team": {
+            "chair": {
+                "name": "李华",
+                "role": "主席",
+                "bio": "上海气候周创始人"
+            },
+            "viceChair": {
+                "name": "张明",
+                "role": "副主席",
+                "bio": "生态环境部前气候变化司司长"
+            },
+            "secretaryGeneral": {
+                "name": "王芳",
+                "role": "秘书长",
+                "bio": "资深气候政策专家"
+            }
+        },
+        "cta": {
+            "title": "加入我们的使命",
+            "description": "无论您是企业、机构还是个人，都可以为气候行动贡献力量",
+            "register": "注册参会",
+            "contact": "联系我们"
+        }
+    },
+    "partnersPage": {
+        "hero": {
+            "title": "成为合作伙伴",
+            "description": "加入上海气候周2026，与全球气候领袖共同塑造未来十年的气候行动。通过战略合作，提升品牌影响力，拓展商业机会。",
+            "download": "下载赞助方案",
+            "contact": "联系我们"
+        },
+        "tiersTitle": "赞助方案",
+        "tiersSubtitle": "选择适合您的合作层级，共同推动气候行动",
+        "currentPartners": "当前合作伙伴",
+        "tiers": {
+            "chief": {
+                "name": "首席合作伙伴",
+                "nameEn": "Chief Partner",
+                "features": [
+                    "全球气候周网络G20级活动联办机会",
+                    "与联合国、亚开行等国际机构共创边会",
+                    "旗舰活动联办资格（如Future Food未来食物系统）",
+                    "高管面向500+CEO圈层全球圆桌对话",
+                    "国际公关媒体报道、央视级媒体专访",
+                    "标准展位36㎡及优先选址权",
+                    "VIP通行证20张"
+                ],
+                "sponsors": [
+                    "亚洲开发银行",
+                    "UNESCO"
+                ]
+            },
+            "partner": {
+                "name": "合作伙伴",
+                "nameEn": "Presenting Partner",
+                "features": [
+                    "SDG Week合作机会",
+                    "品牌Logo在主视觉显著位置展示",
+                    "圆桌讨论或分论坛演讲机会",
+                    "标准展位18㎡",
+                    "VIP通行证10张",
+                    "品牌物料入袋权益",
+                    "媒体曝光及新闻稿提及"
+                ],
+                "sponsors": [
+                    "全球气候学院",
+                    "新开发银行",
+                    "WWF China",
+                    "查塔姆研究所"
+                ]
+            },
+            "ecosystem": {
+                "name": "生态伙伴",
+                "nameEn": "Ecosystem Partner",
+                "features": [
+                    "进入上海气候周生态网络",
+                    "品牌Logo在主视觉展示",
+                    "活动参与机会",
+                    "标准展位9㎡",
+                    "VIP通行证5张",
+                    "新闻稿提及"
+                ],
+                "sponsors": [
+                    "盒马鲜生",
+                    "Oatly",
+                    "公众环境研究中心",
+                    "Chapter Zero Alliance"
+                ]
+            },
+            "media": {
+                "name": "媒体/机构伙伴",
+                "nameEn": "Media/Institutional Partner",
+                "price": "定制方案",
+                "features": [
+                    "独家报道权及采访优先权",
+                    "品牌联合推广机会",
+                    "活动现场媒体位",
+                    "官方媒体合作伙伴标识",
+                    "内容共创机会"
+                ],
+                "sponsors": [
+                    "第一财经",
+                    "财新传媒",
+                    "澎湃新闻"
+                ]
+            }
+        },
+        "otherWaysTitle": "其他合作方式",
+        "otherWaysSubtitle": "除赞助外，我们还提供多种合作形式",
+        "partnerTypes": {
+            "forum": {
+                "title": "论坛合作伙伴",
+                "description": "联合举办专题论坛，分享行业洞察，建立思想领导力"
+            },
+            "knowledge": {
+                "title": "知识合作伙伴",
+                "description": "联合发布研究报告、白皮书，共同举办专题论坛"
+            },
+            "community": {
+                "title": "社区合作伙伴",
+                "description": "组织社区参与活动，推广气候行动理念"
+            },
+            "showcase": {
+                "title": "展示合作伙伴",
+                "description": "在展览区展示创新产品与解决方案，获得精准曝光"
+            }
+        },
+        "cta": {
+            "title": "准备好加入我们了吗？",
+            "description": "联系我们的合作团队，获取详细的合作方案和定制化建议"
+        }
+    },
+    "newsPage": {
+        "hero": {
+            "title": "新闻中心",
+            "subtitle": "了解上海气候周最新动态、嘉宾消息和活动资讯"
+        },
+        "searchPlaceholder": "搜索新闻...",
+        "latest": "最新资讯",
+        "readMore": "阅读全文",
+        "categories": {
+            "all": "全部",
+            "announcement": "活动公告",
+            "speaker": "嘉宾动态",
+            "partner": "合作伙伴",
+            "signing": "合作签约",
+            "exhibitor": "参展企业"
+        },
+        "items": {
+            "1": {
+                "title": "上海气候周2026正式启动报名，全球气候领袖将齐聚上海",
+                "excerpt": "本届气候周以东方推力新启航为主题，预计将吸引超过1000名来自全球的参会者，共同探讨未来十年的气候行动路线..."
+            },
+            "2": {
+                "title": "解振华特使确认出席开幕式并发表主旨演讲",
+                "excerpt": "中国气候变化事务特使解振华确认将出席上海气候周2026开幕典礼，并就中国气候政策与全球合作发表重要演讲..."
+            },
+            "3": {
+                "title": "绿色金融创新峰会合作伙伴名单公布",
+                "excerpt": "中国人民银行、绿金委、MSCI、高盛等机构将联合举办绿色金融创新峰会，探讨ESG投资与可持续金融发展..."
+            },
+            "4": {
+                "title": "上海气候周与联合国开发计划署签署战略合作协议",
+                "excerpt": "双方将在气候治理、能力建设、技术转移等领域开展深入合作，共同推动亚太地区气候行动..."
+            },
+            "5": {
+                "title": "青年气候领袖峰会开始接受申请",
+                "excerpt": "面向全球18-35岁青年气候领袖，峰会将提供与全球气候专家对话的机会，并资助优秀项目..."
+            },
+            "6": {
+                "title": "特斯拉、比亚迪确认参展可再生能源转型大会",
+                "excerpt": "两家新能源汽车巨头将展示最新的电动技术和可持续能源解决方案，推动交通领域脱碳化..."
+            }
+        }
+    },
+    "eventRegister": {
+        "title": "活动报名",
+        "subtitle": "填写以下信息完成活动报名",
+        "backToEvent": "返回活动详情",
+        "eventNotFound": "活动不存在",
+        "backToEvents": "返回活动列表",
+        "loading": "正在加载活动详情...",
+        "submitError": "报名失败，请稍后重试",
+        "loginRequired": {
+            "title": "请先登录",
+            "description": "报名活动需要登录账户。如果您还没有账户，可以免费注册。",
+            "login": "立即登录",
+            "register": "免费注册"
+        },
+        "form": {
+            "title": "职位",
+            "autoFilled": "已自动填充您的个人信息",
+            "name": "姓名",
+            "email": "邮箱",
+            "phone": "电话",
+            "organization": "机构/公司",
+            "titlePlaceholder": "请输入您的职位",
+            "dietary": "饮食要求",
+            "dietaryPlaceholder": "如素食、过敏等",
+            "notes": "备注",
+            "submit": "确认报名",
+            "submitting": "提交中..."
+        },
+        "eventInfo": {
+            "title": "活动信息",
+            "capacity": "限额 {count} 人"
+        },
+        "success": {
+            "title": "报名成功！",
+            "description": "您已成功报名此活动，请查看邮件确认信息。",
+            "viewEvent": "查看活动",
+            "goToDashboard": "前往个人中心"
+        }
+    },
+    "faqPage": {
+        "title": "常见问题",
+        "subtitle": "关于上海气候周2026的常见问题和解答",
+        "backToHome": "返回首页",
+        "categories": {
+            "registration": "注册与参会",
+            "events": "活动与日程",
+            "venue": "场馆与交通"
+        },
+        "items": {
+            "q1": {
+                "question": "如何注册参加上海气候周2026？",
+                "answer": "您可以通过我们的官方网站注册。点击右上角的\"立即注册\"按钮，填写基本信息后即可完成注册。注册成功后，您可以报名参加感兴趣的活动。"
+            },
+            "q2": {
+                "question": "参加活动需要付费吗？",
+                "answer": "上海气候周2026的大部分活动对公众免费开放。部分高端闭门会议或工作坊可能需要付费，具体信息请查看活动详情页面。"
+            },
+            "q3": {
+                "question": "如何成为演讲嘉宾或合作伙伴？",
+                "answer": "如果您希望成为演讲嘉宾，请在注册时选择\"演讲嘉宾\"角色，我们的团队会审核您的申请。有意成为合作伙伴的机构，请通过\"合作伙伴\"页面提交申请或直接联系我们的合作团队。"
+            },
+            "q4": {
+                "question": "活动日程在哪里查看？",
+                "answer": "您可以在网站的\"活动\"页面查看完整日程。所有活动按日期和主题分类，您可以根据自己的兴趣筛选和报名。"
+            },
+            "q5": {
+                "question": "可以取消已报名的活动吗？",
+                "answer": "是的，您可以在个人中心的\"我的日程\"页面取消已报名的活动。请在活动开始前至少24小时取消，以便我们将名额释放给其他参与者。"
+            },
+            "q6": {
+                "question": "活动是否提供线上参与方式？",
+                "answer": "部分重要论坛和峰会将提供线上直播，您可以在活动详情页面查看是否有直播选项。线上参与也需要提前注册。"
+            },
+            "q7": {
+                "question": "活动场馆在哪里？",
+                "answer": "上海气候周2026的主要活动场馆包括上海国际会议中心、上海中心大厦、张江科学城等。具体地址请查看各活动的详情页面。"
+            },
+            "q8": {
+                "question": "如何到达活动现场？",
+                "answer": "各场馆均位于上海市交通便利的区域，可通过地铁、公交或出租车到达。具体交通指南将在活动前发送给已注册的参与者。"
+            }
+        },
+        "contact": {
+            "title": "还有其他问题？",
+            "description": "如果您没有找到想要的答案，请随时联系我们的团队。",
+            "button": "联系我们"
+        }
+    },
+    "verifierPage": {
+        "header": {
+            "title": "现场验码",
+            "subtitle": "扫描参与者二维码进行验证"
+        },
+        "history": "记录",
+        "ready": {
+            "title": "准备扫描",
+            "description": "点击开始扫描按钮，将相机对准参与者的二维码进行验证",
+            "start": "开始扫描"
+        },
+        "scanning": {
+            "title": "扫描二维码",
+            "cancel": "取消",
+            "hint": "将二维码放入框内即可自动扫描"
+        },
+        "result": {
+            "success": "验证成功",
+            "failed": "验证失败",
+            "requestFailed": "验码请求失败",
+            "continueScanning": "继续扫描",
+            "eventInfo": "活动信息",
+            "pointsAwarded": "+{points} 积分",
+            "pointsDescription": "用户已获得活动积分奖励",
+            "alreadyCheckedIn": "该用户已完成签到",
+            "checkedInTime": "验码时间: {time}"
+        },
+        "historyPanel": {
+            "title": "最近验码记录",
+            "empty": "暂无验码记录",
+            "passportVerify": "护照验证"
+        },
+        "noPermission": "您没有验证人员权限"
+    },
+    "speakersSection": {
+        "title": "特邀嘉宾",
+        "subtitle": "来自全球的行业领袖与专家",
+        "viewAll": "查看所有嘉宾"
+    },
+    "newsSection": {
+        "title": "最新动态",
+        "subtitle": "了解上海气候周的最新资讯",
+        "readMore": "阅读更多",
+        "viewAll": "查看所有新闻"
+    },
+    "adminNews": {
+        "title": "新闻管理",
+        "subtitle": "管理网站新闻与动态",
+        "create": "发布新闻",
         "edit": "编辑",
-        "delete": "删除"
-      },
-      "form": {
-        "createTitle": "创建赛道",
-        "editTitle": "编辑赛道",
-        "createDescription": "新增一个赛道并维护其中英文内容。",
-        "editDescription": "更新赛道基础信息、分类与合作伙伴内容。",
-        "code": "赛道编号",
-        "name": "中文名称",
-        "nameEn": "英文名称",
-        "description": "中文描述",
-        "descriptionEn": "英文描述",
-        "category": "赛道分类",
-        "color": "主题颜色",
-        "icon": "图标名称",
-        "order": "排序值",
-        "partners": "合作伙伴（中文）",
-        "partnersEn": "合作伙伴（英文）",
-        "partnersPlaceholder": "每行一个合作伙伴，也支持逗号分隔",
-        "create": "创建赛道",
-        "save": "保存更改"
-      },
-      "delete": {
-        "title": "删除赛道",
-        "description": "确定删除 {name} 吗？如果赛道仍关联活动，系统会阻止删除。",
-        "confirm": "删除赛道"
-      },
-      "common": {
-        "cancel": "取消"
-      },
-      "messages": {
-        "requiredFields": "请填写赛道编号、名称、描述、分类、颜色和图标。",
-        "createSuccess": "赛道创建成功。",
-        "createFailed": "创建赛道失败。",
-        "updateSuccess": "赛道更新成功。",
-        "updateFailed": "更新赛道失败。",
-        "deleteSuccess": "赛道删除成功。",
-        "deleteFailed": "删除赛道失败。"
-      }
+        "delete": "删除",
+        "confirmDelete": "确定要删除这条新闻吗？",
+        "loadError": "获取新闻列表失败",
+        "empty": "暂无新闻，点击上方按钮发布第一条新闻",
+        "seedButton": "一键导入示例新闻",
+        "seedSuccess": "导入完成",
+        "seedCreated": "条新建",
+        "seedSkipped": "条已存在",
+        "createSuccess": "新闻发布成功",
+        "updateSuccess": "新闻更新成功",
+        "deleteSuccess": "新闻已删除",
+        "uploadSuccess": "封面图片上传成功",
+        "uploadFailed": "封面图片上传失败",
+        "form": {
+            "title": "标题",
+            "titleEn": "英文标题",
+            "excerpt": "摘要",
+            "excerptEn": "英文摘要",
+            "content": "内容",
+            "contentEn": "英文内容",
+            "coverImage": "封面图片",
+            "slug": "URL别名",
+            "isPublished": "发布",
+            "save": "保存",
+            "cancel": "取消"
+        },
+        "status": {
+            "published": "已发布",
+            "draft": "草稿"
+        }
     },
-    "dashboardProfilePage": {
-      "title": "个人资料",
-      "subtitle": "管理您的个人信息和账户设置。",
-      "alerts": {
-        "success": "成功",
-        "error": "错误"
-      },
-      "messages": {
-        "avatarUpdated": "头像已更新。",
-        "profileUpdated": "个人资料更新成功。",
-        "profileFailed": "更新失败，请稍后重试。",
-        "passwordUpdated": "密码修改成功。",
-        "passwordFailed": "密码修改失败，请检查当前密码。"
-      },
-      "tabs": {
-        "profile": "基本信息",
-        "security": "安全设置",
-        "organization": "所属机构"
-      },
-      "fields": {
-        "name": "姓名",
-        "email": "邮箱",
-        "phone": "电话",
-        "title": "职位",
-        "bio": "个人简介",
-        "salutation": "称谓",
-        "climatePassportId": "气候护照ID"
-      },
-      "placeholders": {
-        "name": "请输入姓名",
-        "email": "请输入邮箱",
-        "phone": "请输入电话",
-        "title": "请输入职位",
-        "bio": "介绍一下自己...",
-        "salutation": "请选择称谓"
-      },
-      "actions": {
-        "save": "保存更改",
-        "saving": "保存中..."
-      },
-      "profileSection": {
-        "title": "个人资料",
-        "description": "更新您的个人信息，这些信息将显示在您的公开资料中。",
-        "avatarTitle": "头像",
-        "avatarHelp": "支持 JPG、PNG 格式，文件大小不超过 2MB。",
-        "currentRole": "当前身份:"
-      },
-      "password": {
-        "title": "修改密码",
-        "description": "定期更换密码可以保护您的账户安全。",
+    "adminSettingsPage": {
+        "title": "系统设置",
+        "subtitle": "集中配置平台运行参数与 AI 生成功能。",
+        "loading": "正在加载设置...",
+        "save": "保存设置",
+        "reload": "重新加载",
+        "ai": {
+            "title": "AI 亮点生成",
+            "description": "配置 OpenAI 参数，用于根据活动信息自动生成活动亮点。",
+            "enabled": "启用 AI 亮点生成",
+            "enabledHint": "关闭后不会调用 OpenAI 生成活动亮点。",
+            "autoGenerate": "活动保存后自动生成",
+            "autoGenerateHint": "启用后，活动保存成功会自动尝试生成亮点。",
+            "model": "OpenAI 模型",
+            "highlightCount": "亮点条数（3-6）",
+            "apiKey": "OpenAI API Key",
+            "apiKeyPlaceholder": "输入新 Key 进行更新，留空则保持不变",
+            "apiKeyHint": "API Key 仅在服务端加密存储，不会下发到前端。",
+            "apiKeyStored": "当前已配置 Key：{masked}",
+            "clearApiKey": "清除已保存的 API Key"
+        },
+        "messages": {
+            "loadFailed": "加载系统设置失败。",
+            "saveSuccess": "系统设置已保存。",
+            "saveFailed": "保存系统设置失败。"
+        }
+    },
+    "adminSiteContent": {
+        "title": "内容管理",
+        "subtitle": "管理首页「关于我们」等内容",
+        "aboutUs": "关于我们",
+        "mission": "使命愿景",
+        "highlights": "四个标签",
+        "timeline": "发展历程",
+        "team": "核心团队",
+        "saveSuccess": "内容已保存",
+        "saveFailed": "保存失败",
+        "form": {
+            "sectionTitle": "标题",
+            "sectionTitleEn": "英文标题",
+            "sectionSubtitle": "副标题",
+            "sectionSubtitleEn": "英文副标题",
+            "sectionDescription": "描述",
+            "sectionDescriptionEn": "英文描述",
+            "name": "姓名",
+            "nameEn": "英文姓名",
+            "role": "职务",
+            "roleEn": "英文职务",
+            "bio": "简介",
+            "bioEn": "英文简介",
+            "save": "保存"
+        }
+    },
+    "specialPass": {
+        "title": "特别通行证申请",
+        "subtitle": "由于上海气候周开幕式地点位于上海东方枢纽国际商务合作区内，该区域需要申请特别通行证前往。所有信息均按照管理部门要求采集，由上海东方枢纽国际商务合作区审核。",
+        "alertSuccess": "操作成功",
+        "alertError": "操作失败",
+        "myApplications": "我的申请记录",
+        "applyNew": "申请特别通行证",
+        "pendingWarning": "您有一个待审核的申请，审核完成前无法提交新申请。",
+        "back": "返回",
+        "chooseEntryType": "选择入场方式",
+        "chooseEntryTypeDesc": "请根据您的实际情况选择入场方式。",
+        "domesticEntry": "从上海市区进入",
+        "domesticEntryDesc": "适用于已在中国境内的参会人员，从上海市区前往活动地点。",
+        "internationalEntry": "从国际航班（浦东机场）直接进入",
+        "internationalEntryDesc": "适用于从境外乘坐国际航班抵达上海浦东国际机场的参会人员。",
+        "domestic": "境内入场",
+        "international": "境外入场",
+        "domesticForm": "境内人员通行证申请",
+        "domesticFormDesc": "请填写以下信息，提交后将由工作人员审核。",
+        "internationalForm": "境外人员通行证申请",
+        "internationalFormDesc": "请填写以下信息，提交后将由工作人员审核。",
+        "status": {
+            "pending": "审核中",
+            "approved": "已通过",
+            "rejected": "未通过"
+        },
         "fields": {
-          "current": "当前密码",
-          "new": "新密码",
-          "confirm": "确认新密码"
+            "country": "国籍/地区",
+            "selectCountry": "请选择国籍/地区",
+            "docType": "证件类型",
+            "selectDocType": "请选择证件类型",
+            "docPortraitPhoto": "证件人像面照片",
+            "docPagePhoto": "证件资料页照片",
+            "recentPhoto": "近期免冠照片",
+            "recentPhotoDesc": "请上传白底2寸免冠照片",
+            "uploadDragDrop": "点击或拖拽上传",
+            "uploadFormat": "支持 JPG、PNG 格式，最大 5MB",
+            "name": "姓名",
+            "namePlaceholder": "请输入护照/证件上的姓名",
+            "birthDate": "出生日期",
+            "gender": "性别",
+            "male": "男",
+            "female": "女",
+            "idNumber": "身份证号",
+            "idNumberPlaceholder": "请输入18位身份证号码",
+            "travelDocNumber": "旅行证件号码",
+            "travelDocNumberPlaceholder": "请输入旅行证件号码",
+            "docValidity": "证件有效期",
+            "to": "至",
+            "email": "电子邮箱",
+            "emailPlaceholder": "example@email.com",
+            "phone": "联系电话",
+            "phonePlaceholder": "请输入电话号码",
+            "contactMethod": "联系方式",
+            "selectContactMethod": "请选择联系方式",
+            "contactValue": "联系方式详情",
+            "contactValuePlaceholder": "请输入联系方式",
+            "organization": "工作单位",
+            "organizationPlaceholder": "请输入工作单位全称",
+            "jobTitle": "职务",
+            "jobTitlePlaceholder": "请输入职务"
         },
-        "placeholders": {
-          "current": "请输入当前密码",
-          "new": "请输入新密码",
-          "confirm": "请再次输入新密码"
-        },
-        "hint": "密码至少需要8个字符，包含字母和数字。",
-        "submit": "修改密码",
-        "submitting": "修改中...",
-        "errors": {
-          "currentRequired": "请输入当前密码",
-          "newRequired": "请输入新密码",
-          "minLength": "密码至少需要8个字符",
-          "confirmRequired": "请确认新密码",
-          "mismatch": "两次输入的密码不一致"
-        }
-      },
-      "organization": {
-        "title": "所属机构",
-        "description": "管理您关联的机构信息。",
-        "nameLabel": "机构名称",
-        "namePlaceholder": "请输入机构名称",
-        "industry": "行业领域",
-        "industryPlaceholder": "请输入行业领域",
-        "website": "官方网站",
-        "websitePlaceholder": "https://",
-        "about": "机构简介",
-        "descriptionPlaceholder": "请输入机构简介...",
-        "noDescription": "暂无简介"
-      }
-    },
-    "adminPartnersPage": {
-      "title": "合作伙伴",
-      "subtitle": "管理赞助商和合作伙伴信息。",
-      "logoUploadSuccess": "Logo 上传成功",
-      "add": "添加合作伙伴",
-      "searchPlaceholder": "搜索公司名称...",
-      "filters": {
-        "tierPlaceholder": "赞助级别",
-        "allTiers": "全部级别",
-        "statusPlaceholder": "状态",
-        "allStatuses": "全部状态"
-      },
-      "tiers": {
-        "platinum": "铂金",
-        "gold": "金牌",
-        "silver": "银牌",
-        "bronze": "铜牌",
-        "partner": "合作伙伴"
-      },
-      "status": {
-        "active": "启用",
-        "inactive": "禁用"
-      },
-      "listTitle": "合作伙伴列表 ({count})",
-      "table": {
-        "logo": "Logo",
-        "company": "公司名称",
-        "tier": "赞助级别",
-        "order": "排序",
-        "website": "网站",
-        "status": "状态",
-        "homepage": "首页显示",
-        "actions": "操作"
-      },
-      "visit": "访问",
-      "emptyTitle": "暂无合作伙伴",
-      "emptyDescription": "点击右上角按钮添加新的合作伙伴。",
-      "dialog": {
-        "editTitle": "编辑合作伙伴",
-        "createTitle": "添加合作伙伴",
-        "editDescription": "修改合作伙伴的详细信息。",
-        "createDescription": "填写以下信息添加新的合作伙伴。"
-      },
-      "form": {
-        "logo": "公司 Logo",
-        "uploadLogo": "上传 Logo",
-        "logoHelp": "建议尺寸：400x400px，支持 PNG、JPG、SVG 格式。",
-        "companyName": "公司名称",
-        "companyNamePlaceholder": "请输入公司名称",
-        "companyNameEn": "英文公司名称",
-        "companyNameEnPlaceholder": "请输入英文公司名称",
-        "website": "网站链接",
-        "websitePlaceholder": "https://example.com",
-        "description": "公司简介",
-        "descriptionPlaceholder": "请输入公司简介...",
-        "descriptionEn": "英文公司简介",
-        "descriptionEnPlaceholder": "请输入英文公司简介...",
-        "tier": "赞助级别",
-        "order": "排序权重",
-        "orderPlaceholder": "数字越小越靠前",
-        "status": "启用状态",
-        "statusHelp": "启用后将在网站前台显示。",
-        "showOnHomepage": "首页展示",
-        "showOnHomepageHelp": "开启后将在首页合作伙伴栏目中展示。"
-      },
-      "delete": {
-        "title": "确认删除",
-        "description": "您确定要删除合作伙伴“{name}”吗？此操作无法撤销。",
-        "confirm": "确认删除"
-      },
-      "common": {
-        "cancel": "取消",
-        "save": "保存修改",
-        "create": "创建合作伙伴"
-      }
-    },
-    "adminSpeakersPage": {
-      "title": "嘉宾管理",
-      "subtitle": "管理平台所有嘉宾信息。",
-      "loading": "正在加载嘉宾...",
-      "loadError": "加载嘉宾失败。",
-      "avatarUploadSuccess": "头像上传成功",
-      "add": "添加嘉宾",
-      "searchPlaceholder": "搜索嘉宾姓名、英文名或机构...",
-      "filters": {
-        "organizationPlaceholder": "筛选机构",
-        "allOrganizations": "全部机构",
-        "typePlaceholder": "筛选类型",
-        "allTypes": "全部类型",
-        "keynote": "Keynote 嘉宾",
-        "regular": "普通嘉宾"
-      },
-      "listTitle": "嘉宾列表 ({count})",
-      "summary": "Keynote: {keynote} / 总计: {total}",
-      "badges": {
-        "keynote": "Keynote"
-      },
-      "links": {
-        "linkedin": "LinkedIn",
-        "twitter": "Twitter"
-      },
-      "eventCount": "场活动",
-      "order": "排序: {count}",
-      "emptyTitle": "暂无嘉宾",
-      "emptyDescription": "点击上方按钮添加新嘉宾，或调整筛选条件。",
-      "dialog": {
-        "editTitle": "编辑嘉宾",
-        "createTitle": "添加嘉宾",
-        "editDescription": "修改嘉宾的详细信息。",
-        "createDescription": "填写信息创建新嘉宾。"
-      },
-      "form": {
-        "uploadAvatar": "上传头像",
-        "avatarHelp": "支持 JPG、PNG 格式，建议尺寸 400x400。",
-        "salutation": "称谓",
-        "salutationPlaceholder": "请选择称谓",
-        "name": "姓名",
-        "namePlaceholder": "请输入中文姓名",
-        "nameEn": "英文名",
-        "nameEnPlaceholder": "请输入英文姓名",
-        "title": "职位",
-        "titlePlaceholder": "如：院长、CEO、教授",
-        "titleEn": "英文职位",
-        "titleEnPlaceholder": "请输入英文职位",
-        "organization": "机构",
-        "organizationPlaceholder": "请输入所属机构",
-        "organizationEn": "英文机构名",
-        "organizationEnPlaceholder": "请输入英文机构名称",
-        "bio": "个人简介",
-        "bioPlaceholder": "请输入嘉宾的个人简介...",
-        "bioEn": "英文简介",
-        "bioEnPlaceholder": "请输入嘉宾的英文简介...",
-        "contact": "联系方式",
-        "emailPlaceholder": "邮箱地址",
-        "linkedinPlaceholder": "LinkedIn 链接",
-        "twitterPlaceholder": "Twitter 账号",
-        "websitePlaceholder": "个人网站",
-        "order": "排序权重",
-        "orderPlaceholder": "数字越小排序越靠前",
-        "keynote": "设为 Keynote 嘉宾"
-      },
-      "delete": {
-        "title": "确认删除",
-        "description": "您确定要删除嘉宾 {name} 吗？此操作不可撤销。",
-        "confirm": "确认删除"
-      },
-      "common": {
-        "cancel": "取消",
-        "save": "保存修改",
-        "create": "创建嘉宾"
-      }
-    },
-  "language": {
-    "zh": "中文",
-    "en": "English",
-    "switch": "切换语言"
-  },
-  "hero": {
-    "badge": "2026年4月20-28日 · 中国上海",
-    "title": "东方推力新启航",
-    "subtitle": "共塑未来十年的气候行动 (2026-2035)",
-    "description": "The Eastern Momentum for the Decisive Decade",
-    "location": "上海 · 东方推力点",
-    "cta": {
-      "explore": "探索核心议程",
-      "video": "观看宣传片"
+        "submit": "提交申请",
+        "submitting": "提交中..."
     }
-  },
-  "stats": {
-    "days": "活动天数",
-    "forums": "主题论坛",
-    "speakers": "演讲嘉宾",
-    "attendees": "参会人数"
-  },
-  "mission": {
-    "title": "我们的使命",
-    "subtitle": "Partnership and Profit for People and the Planet",
-    "description": "上海气候周2026定位为一个全球性气候行动平台，作为东方推力点连接中国与世界的气候治理。我们相信，只有通过系统重塑、真实行动、东方推力和共荣共赢，才能在未来十年实现气候目标。",
-    "learnMore": "了解更多",
-    "highlights": {
-      "system": {
-        "title": "系统重塑",
-        "desc": "从承诺驱动到结果导向"
-      },
-      "action": {
-        "title": "真实行动",
-        "desc": "言而有信、行而有果"
-      },
-      "momentum": {
-        "title": "东方推力",
-        "desc": "中国绿色力量成为全球转型动力"
-      },
-      "winwin": {
-        "title": "共荣共赢",
-        "desc": "不脱钩、推共建、强联通"
-      }
-    }
-  },
-  "tracks": {
-    "title": "12+1 主题赛道体系",
-    "subtitle": "上层定义规则｜中层生成增长｜底层夯实根基",
-    "tabs": {
-      "all": "全部",
-      "institution": "制度层",
-      "economy": "经济层",
-      "foundation": "根源层",
-      "accelerator": "加速器"
-    },
-    "card": {
-      "eventCount": "{count} 场活动",
-      "exploreMore": "探索更多"
-    },
-    "viewAll": "查看完整赛道体系"
-  },
-  "events": {
-    "title": "活动日历",
-    "subtitle": "2026年4月20日 - 4月28日",
-    "viewAll": "查看完整日程",
-    "register": "立即报名",
-    "details": "了解详情",
-    "partners": "合作伙伴",
-    "capacity": "限额 {count} 人"
-  },
-"dashboardInvitations": {
-    "title": "邀请函申请",
-    "subtitle": "申请和管理您的活动邀请函。",
-    "create": "新建申请",
-    "loading": "加载中...",
-    "empty": "暂无邀请函申请。",
-    "listTitle": "申请记录 ({count})",
-    "forEvent": "关联活动",
-    "language": "语言",
-    "rejectReason": "拒绝原因",
-    "download": "下载邀请函",
-    "edit": "编辑",
-    "status": {
-      "pending": "待处理",
-      "uploaded": "已上传",
-      "downloaded": "已下载",
-      "rejected": "已拒绝"
-    },
-    "form": {
-      "title": "申请邀请函",
-      "description": "填写嘉宾信息，提交邀请函申请。",
-      "editTitle": "编辑邀请函申请",
-      "editDescription": "修改嘉宾信息并重新提交申请。",
-      "salutation": "称谓",
-      "salutationPlaceholder": "请选择称谓",
-      "applicantInfo": "申请人信息",
-      "applicantName": "姓名",
-      "applicantEmail": "邮箱",
-      "guestName": "嘉宾姓名",
-      "guestNameRequired": "请填写嘉宾姓名",
-      "guestTitle": "嘉宾职位",
-      "guestOrg": "嘉宾机构",
-      "guestEmail": "嘉宾邮箱",
-      "language": "邀请函语言",
-      "event": "关联活动",
-      "eventPlaceholder": "不关联具体活动",
-      "purpose": "参会目的",
-      "notes": "备注",
-      "cancel": "取消",
-      "submit": "提交申请",
-      "saveChanges": "保存修改"
-    },
-    "messages": {
-      "createSuccess": "邀请函申请提交成功。",
-      "createFailed": "提交邀请函申请失败。",
-      "editSuccess": "邀请函申请已更新。",
-      "editFailed": "更新邀请函申请失败。"
-    }
-  },
-  "eventsPage": {
-    "hero": {
-      "title": "活动日程",
-      "subtitle": "2026年4月20日 - 4月28日，探索 13 场精彩活动"
-    },
-    "loading": "正在加载活动...",
-    "loadError": "暂时无法加载活动列表。",
-    "retry": "重试",
-    "filters": {
-      "all": "全部活动",
-      "ceremony": "仪式活动",
-      "forum": "主题论坛",
-      "conference": "大型会议",
-      "workshop": "工作坊",
-      "networking": "交流酒会"
-    },
-    "layerFilter": {
-      "label": "所属层级",
-      "all": "全部层级",
-      "INSTITUTION": "制度层",
-      "ECONOMY": "经济层",
-      "ROOT": "根源层",
-      "ACCELERATOR": "加速器",
-      "COMPREHENSIVE": "综合"
-    },
-    "hostTypeFilter": {
-      "label": "主办类型",
-      "all": "全部类型",
-      "OFFICIAL": "官方活动",
-      "CO_HOSTED": "联合主办",
-      "REGISTERED": "注册活动",
-      "SIDE_EVENT": "边会活动",
-      "COMMUNITY": "社区活动"
-    },
-    "emptyState": "暂无该类型的活动",
-    "eventCount": "{count} 场活动",
-    "capacity": "限额 {count} 人",
-    "partners": "合作伙伴",
-    "details": "了解详情",
-    "register": "立即报名"
-  },
-  "partners": {
-    "title": "合作伙伴",
-    "subtitle": "感谢以下机构对上海气候周2026的大力支持",
-    "tiers": {
-      "chief": "首席合作伙伴",
-      "partner": "合作伙伴",
-      "ecosystem": "生态伙伴"
-    },
-    "ctaText": "想要成为我们的合作伙伴？",
-    "cta": "了解合作方案"
-  },
-  "cta": {
-    "title": "共同塑造未来十年的气候行动",
-    "subtitle": "加入我们，成为改变的一部分。与全球气候领袖、创新者和行动者一起，为实现2030气候目标贡献力量。",
-    "register": "立即注册参会",
-    "contact": "联系我们",
-    "stats": {
-      "countries": "国家/地区代表",
-      "speakers": "重磅演讲嘉宾",
-      "events": "主题边会活动",
-      "moment": "历史性时刻"
-    }
-  },
-  "footer": {
-    "brand": {
-      "title": "致力于成为未来十年全球气候行动的东方推力点。",
-      "subtitle": "为人与地球创造伙伴关系与共同收益。",
-      "address": "上海市徐汇区衡山路8号",
-      "email": "info@shanghaiclimateweek.org.cn"
-    },
-    "links": {
-      "explore": "探索",
-      "participate": "参与",
-      "support": "支持"
-    },
-    "nav": {
-      "home": "首页",
-      "events": "活动日历",
-      "tracks": "主题赛道",
-      "speakers": "嘉宾阵容",
-      "partners": "合作伙伴",
-      "attendeeRegister": "参会注册",
-      "organization": "机构代表",
-      "sponsor": "合作伙伴申请",
-      "speaker": "嘉宾申请",
-      "media": "媒体注册",
-      "about": "关于我们",
-      "news": "新闻资讯",
-      "faq": "常见问题",
-      "contact": "联系我们"
-    },
-    "copyright": "© 2026 Shanghai Climate Week. All rights reserved.",
-    "privacy": "隐私政策",
-    "terms": "使用条款"
-  },
-  "common": {
-    "backHome": "← 返回首页",
-    "backToLogin": "返回登录页面"
-  },
-  "userMenu": {
-    "pass": "活动通行证",
-    "climatePassport": "气候护照",
-    "profile": "个人资料"
-  },
-  "roles": {
-    "attendee": "参会观众",
-    "organization": "机构代表",
-    "sponsor": "合作伙伴",
-    "speaker": "演讲嘉宾",
-    "media": "媒体",
-    "admin": "管理员",
-    "staff": "工作人员",
-    "event_manager": "活动管理员",
-    "verifier": "验证员",
-    "visitor": "访客"
-  },
-  "auth": {
-    "login": {
-      "title": "欢迎回来",
-      "subtitle": "登录您的上海气候周账户",
-      "pageTitle": "欢迎回来",
-      "pageSubtitle": "登录您的账户继续浏览上海气候周 2026",
-      "email": "邮箱",
-      "emailLabel": "邮箱地址",
-      "emailPlaceholder": "your@email.com",
-      "password": "密码",
-      "passwordLabel": "密码",
-      "passwordPlaceholder": "请输入您的密码",
-      "remember": "记住我",
-      "forgotPassword": "忘记密码？",
-      "submit": "登录",
-      "submitting": "登录中...",
-      "or": "或使用以下方式登录",
-      "noAccount": "还没有账号？",
-      "register": "立即注册",
-      "errors": {
-        "invalidCredentials": "邮箱或密码错误",
-        "failed": "登录失败，请稍后重试"
-      }
-    },
-    "register": {
-      "title": "加入上海气候周2026",
-      "subtitle": "共塑未来十年的气候行动",
-      "pageTitle": "创建账户",
-      "pageSubtitle": "加入上海气候周 2026 社群",
-      "name": "姓名",
-      "nameLabel": "姓名",
-      "namePlaceholder": "请输入您的姓名",
-      "email": "邮箱",
-      "emailLabel": "邮箱地址",
-      "emailPlaceholder": "your@email.com",
-      "password": "密码",
-      "passwordLabel": "密码",
-      "passwordPlaceholder": "至少 8 个字符",
-      "confirmPassword": "确认密码",
-      "confirmPasswordLabel": "确认密码",
-      "confirmPasswordPlaceholder": "请再次输入密码",
-      "salutationLabel": "称谓",
-      "salutationPlaceholder": "请选择称谓",
-      "titleLabel": "职位",
-      "titlePlaceholder": "请输入您的职位",
-      "phoneLabel": "电话",
-      "phonePlaceholder": "请输入您的电话号码",
-      "bioLabel": "个人简介",
-      "bioPlaceholder": "简单介绍一下自己...",
-      "organizationSection": "机构信息",
-      "organizationOptional": "（选填）",
-      "orgNameLabel": "机构名称",
-      "orgNamePlaceholder": "请输入机构名称",
-      "orgIndustryLabel": "机构行业",
-      "orgIndustryPlaceholder": "请输入机构行业",
-      "orgWebsiteLabel": "机构网站",
-      "orgWebsitePlaceholder": "https://",
-      "orgDescriptionLabel": "机构简介",
-      "orgDescriptionPlaceholder": "请简要介绍机构...",
-      "organization": "机构",
-      "title": "职位",
-      "phone": "电话",
-      "role": {
-        "label": "选择角色",
-        "attendee": "观众参会",
-        "speaker": "演讲嘉宾",
-        "media": "媒体注册",
-        "sponsor": "合作伙伴"
-      },
-      "submit": "注册",
-      "submitting": "注册中...",
-      "or": "或使用以下方式注册",
-      "hasAccount": "已有账号？",
-      "login": "立即登录",
-      "successTitle": "注册成功！",
-      "successSubtitle": "正在跳转到登录页面...",
-      "errors": {
-        "passwordMismatch": "两次输入的密码不一致",
-        "passwordTooShort": "密码至少需要 8 个字符",
-        "emailTaken": "该邮箱已注册，请直接登录",
-        "titleRequired": "请输入您的职位",
-        "failed": "注册失败，请稍后重试"
-      }
-    },
-    "forgotPassword": {
-      "pageTitle": "忘记密码",
-      "pageSubtitle": "输入您的邮箱地址，我们将发送密码重置链接",
-      "sentTitle": "重置链接已发送",
-      "sentSubtitle": "请检查您的邮箱并点击链接重置密码",
-      "emailLabel": "邮箱地址",
-      "emailPlaceholder": "your@email.com",
-      "submit": "发送重置链接",
-      "submitting": "发送中...",
-      "sentDescription": "我们已向 <strong>{email}</strong> 发送了密码重置链接",
-      "resendHint": "如果您没有收到邮件，请检查垃圾邮件文件夹，或等待 60 秒后重新发送",
-      "useAnotherEmail": "使用其他邮箱",
-      "errors": {
-        "required": "请输入邮箱地址",
-        "invalidEmail": "请输入有效的邮箱地址",
-        "emailNotFound": "该邮箱尚未注册，请检查邮箱地址或先注册账户",
-        "failed": "发送失败，请稍后重试",
-        "network": "网络错误，请稍后重试"
-      }
-    },
-    "resetPassword": {
-      "validating": "正在验证链接...",
-      "invalidTitle": "链接无效",
-      "requestAgain": "重新申请重置",
-      "successTitle": "密码重置成功",
-      "successSubtitle": "您的密码已成功更新，请使用新密码登录",
-      "goToLogin": "前往登录",
-      "pageTitle": "设置新密码",
-      "pageSubtitle": "请输入您的新密码",
-      "passwordLabel": "新密码",
-      "passwordPlaceholder": "至少 8 个字符，包含大小写字母和数字",
-      "confirmPasswordLabel": "确认密码",
-      "confirmPasswordPlaceholder": "再次输入新密码",
-      "requirementsTitle": "密码要求：",
-      "requirements": {
-        "minLength": "至少 {min} 个字符",
-        "upperAndLower": "包含大小写字母",
-        "number": "包含数字"
-      },
-      "submit": "重置密码",
-      "submitting": "重置中...",
-      "errors": {
-        "invalidLink": "无效的重置链接，请重新申请密码重置",
-        "invalidLinkShort": "无效的重置链接",
-        "expiredLink": "该重置链接已过期，请重新申请密码重置",
-        "validationFailed": "链接验证失败",
-        "passwordRequired": "请输入新密码",
-        "passwordTooShort": "密码至少需要 {min} 个字符",
-        "passwordWeak": "密码需包含大小写字母和数字",
-        "confirmPasswordRequired": "请再次输入密码",
-        "passwordMismatch": "两次输入的密码不一致",
-        "failed": "密码重置失败",
-        "network": "网络错误，请稍后重试"
-      }
-    },
-    "error": {
-      "title": "登录失败",
-      "messages": {
-        "CredentialsSignin": "邮箱或密码错误，请重新输入。",
-        "AccessDenied": "您当前没有权限访问该页面。",
-        "SessionRequired": "请先登录后再继续。",
-        "Default": "登录过程中发生错误，请稍后重试。"
-      },
-      "actions": {
-        "backToLogin": "返回登录",
-        "backHome": "返回首页"
-      }
-    }
-  },
-  "dashboard": {
-    "overview": "概览",
-    "schedule": "我的日程",
-    "pass": "活动通行证",
-    "profile": "个人资料",
-    "notifications": "通知设置",
-    "welcome": "欢迎回来",
-    "logout": "退出登录"
-  },
-  "speakersPage": {
-    "hero": {
-      "title": "嘉宾",
-      "description": "汇聚全球气候领袖、专家学者和行业先锋，共 {count} 位重磅嘉宾。"
-    },
-    "searchPlaceholder": "搜索嘉宾姓名、机构或话题...",
-    "keynoteTitle": "主旨演讲嘉宾",
-    "allTitle": "全部嘉宾 ({count})",
-    "emptyState": "未找到符合条件的嘉宾",
-    "eventCount": "参与 {count} 场活动"
-  },
-  "contactPage": {
-    "hero": {
-      "title": "联系我们",
-      "description": "如有任何问题、合作意向或媒体需求，欢迎与上海气候周团队联系。"
-    },
-    "info": {
-      "email": {
-        "title": "电子邮件",
-        "description": "一般咨询"
-      },
-      "phone": {
-        "title": "联系电话",
-        "description": "工作日 9:00-18:00"
-      },
-      "address": {
-        "title": "办公地址",
-        "content": "上海市浦东新区世博大道1500号",
-        "description": "上海世博中心"
-      }
-    },
-    "inquiryTypes": {
-      "label": "咨询类型",
-      "placeholder": "请选择咨询类型",
-      "types": {
-        "general": "一般咨询",
-        "partnership": "合作伙伴申请",
-        "speaker": "嘉宾申请",
-        "media": "媒体注册",
-        "sponsor": "赞助咨询",
-        "volunteer": "志愿者申请",
-        "other": "其他"
-      }
-    },
-    "quickLinks": {
-      "title": "直接申请或注册",
-      "subtitle": "选择最符合您需求的选项",
-      "links": {
-        "partnership": {
-          "title": "合作伙伴申请",
-          "description": "探索赞助与合作机会",
-          "cta": "立即申请"
-        },
-        "speaker": {
-          "title": "嘉宾申请",
-          "description": "在上海气候周2026分享您的专业见解",
-          "cta": "立即申请"
-        },
-        "media": {
-          "title": "媒体注册",
-          "description": "注册媒体代表，获取采访许可",
-          "cta": "立即注册"
-        },
-        "volunteer": {
-          "title": "志愿者",
-          "description": "加入志愿者团队，共同支持活动",
-          "cta": "了解更多"
-        }
-      }
-    },
-    "partnershipForm": {
-      "organizationName": "机构名称",
-      "organizationNamePlaceholder": "请输入机构名称",
-      "organizationType": "机构类型",
-      "organizationTypePlaceholder": "如：非政府组织、企业、科研机构",
-      "partnershipTier": "意向合作级别",
-      "partnershipTierPlaceholder": "请选择合作级别",
-      "tiers": {
-        "chief": "首席合作伙伴",
-        "presenting": "联合主办伙伴",
-        "ecosystem": "生态合作伙伴",
-        "media": "媒体/机构合作伙伴",
-        "forum": "论坛合作伙伴",
-        "knowledge": "知识合作伙伴",
-        "community": "社区合作伙伴",
-        "showcase": "展示合作伙伴"
-      },
-      "website": "机构官网",
-      "websitePlaceholder": "https://example.com"
-    },
-    "speakerForm": {
-      "speakerTitle": "职务/头衔",
-      "speakerTitlePlaceholder": "如：首席可持续发展官",
-      "organization": "所在机构",
-      "organizationPlaceholder": "请输入机构名称",
-      "topic": "拟议演讲主题",
-      "topicPlaceholder": "请简述您希望分享的主题",
-      "experience": "演讲经历",
-      "experiencePlaceholder": "请简述您的演讲经历"
-    },
-    "mediaForm": {
-      "outlet": "媒体机构",
-      "outletPlaceholder": "请输入媒体机构名称",
-      "mediaType": "媒体类型",
-      "mediaTypePlaceholder": "请选择媒体类型",
-      "mediaTypes": {
-        "print": "纸媒/网媒",
-        "broadcast": "广播电视",
-        "podcast": "播客",
-        "blog": "博客/独立记者",
-        "agency": "通讯社",
-        "other": "其他"
-      },
-      "role": "您的职务",
-      "rolePlaceholder": "如：记者、编辑、摄影师",
-      "pressCard": "记者证/证件编号",
-      "pressCardPlaceholder": "选填"
-    },
-    "registerPrompt": {
-      "title": "想要追踪您的咨询？",
-      "description": "创建免费账户，即可在个人中心查看消息状态并接收管理员回复。",
-      "register": "创建账户",
-      "login": "我已有账户",
-      "skip": "暂不需要"
-    },
-    "form": {
-      "title": "发送消息",
-      "successTitle": "发送成功！",
-      "successDescription": "我们会尽快回复您的消息。",
-      "submit": "发送消息",
-      "submitting": "发送中...",
-      "fields": {
-        "name": {
-          "label": "姓名",
-          "placeholder": "您的姓名"
-        },
-        "email": {
-          "label": "邮箱"
-        },
-        "subject": {
-          "label": "主题",
-          "placeholder": "消息主题"
-        },
-        "message": {
-          "label": "消息内容",
-          "placeholder": "请输入您的消息..."
-        }
-      }
-    },
-    "faq": {
-      "title": "常见问题",
-      "items": {
-        "registration": {
-          "question": "如何报名参加上海气候周2026？",
-          "answer": "您可以通过官网注册账户，然后在活动页面选择感兴趣的活动进行报名。部分活动可能需要审核。"
-        },
-        "fees": {
-          "question": "参加活动需要付费吗？",
-          "answer": "大部分活动免费开放，部分闭门会议和晚宴可能需要付费或邀请制。具体信息请查看各活动详情页面。"
-        },
-        "partnership": {
-          "question": "如何成为合作伙伴？",
-          "answer": "请通过本页面联系我们，或发送邮件至 partners@shanghaiclimateweek.org.cn，我们的合作团队会尽快与您联系。"
-        },
-        "speaker": {
-          "question": "可以申请成为演讲嘉宾吗？",
-          "answer": "是的，我们欢迎各领域的专家申请演讲。请通过注册页面选择演讲嘉宾角色，并提交相关资料。"
-        },
-        "interpretation": {
-          "question": "活动提供同声传译服务吗？",
-          "answer": "主要活动提供中英文同声传译服务，部分专题活动可能只提供英文或中文服务，请在报名时确认。"
-        }
-      }
-    }
-  },
-  "dashboardPage": {
-    "hero": {
-      "title": "欢迎回来! 👋",
-      "description": "这是您参加上海气候周2026的个人中心。"
-    },
-    "stats": {
-      "registered": "已报名活动",
-      "saved": "收藏活动",
-      "attended": "已签到活动",
-      "points": "气候积分"
-    },
-    "quickActions": {
-      "title": "快速操作",
-      "pass": "查看通行证",
-      "events": "浏览活动",
-      "schedule": "管理我的日程",
-      "passport": "打开气候护照"
-    },
-    "upcoming": {
-      "title": "即将开始的活动",
-      "viewAll": "查看全部",
-      "empty": "您还没有报名任何活动",
-      "browse": "去浏览活动"
-    }
-  },
-  "dashboardMessagesPage": {
-    "title": "我的留言",
-    "subtitle": "查看您的咨询留言和组委会回复。",
-    "empty": "您还没有发送过留言。",
-    "sendNew": "发送留言",
-    "status": {
-      "PENDING": "待处理",
-      "REPLIED": "已回复",
-      "CLOSED": "已关闭"
-    },
-    "category": {
-      "GENERAL": "一般咨询",
-      "ORGANIZATION": "机构代表",
-      "PARTNERSHIP": "合作伙伴",
-      "SPEAKER": "嘉宾申请",
-      "MEDIA": "媒体合作",
-      "SPONSOR": "赞助咨询",
-      "VOLUNTEER": "志愿者",
-      "OTHER": "其他"
-    },
-    "detail": {
-      "yourMessage": "您的留言",
-      "adminReply": "组委会回复",
-      "sentAt": "发送时间",
-      "repliedAt": "回复时间",
-      "noReply": "等待回复中..."
-    }
-  },
-  "dashboardPassportPage": {
-    "title": "气候护照",
-    "subtitle": "集中展示您的气候身份、积分与参与成就。",
-    "card": {
-      "authority": "上海气候周 2026",
-      "name": "Climate Passport",
-      "description": "这张数字护照关联您的活动身份、现场核验与气候参与足迹。",
-      "active": "有效",
-      "pendingId": "护照编号待生成",
-      "issueDate": "签发日期 {date}",
-      "achievements": "已解锁 {count} 项成就"
-    },
-    "stats": {
-      "points": "积分",
-      "attended": "已参加",
-      "learning": "学习时长"
-    },
-    "qr": {
-      "label": "身份二维码",
-      "title": "护照核验码",
-      "badge": "全场通用",
-      "description": "该二维码用于现场身份核验；进入具体活动仍需使用该活动的专属通行证。"
-    },
-    "achievements": {
-      "title": "成就",
-      "unlocked": "已解锁",
-      "locked": "未解锁"
-    },
-    "summary": {
-      "title": "护照摘要",
-      "registered": "已报名活动",
-      "saved": "收藏活动",
-      "identity": "注册邮箱",
-      "viewEventPasses": "查看活动通行证"
-    }
-  },
-  "eventDetailPage": {
-    "notFound": {
-      "title": "活动未找到",
-      "description": "该活动可能已被删除或不存在。",
-      "back": "返回活动列表"
-    },
-    "backToEvents": "返回活动列表",
-    "featured": "重磅活动",
-    "tabs": {
-      "about": "活动介绍",
-      "agenda": "活动议程",
-      "speakers": "演讲嘉宾"
-    },
-    "about": {
-      "title": "关于本次活动",
-      "description": "本次活动将汇聚全球气候领域的领袖、专家和从业者，共同探讨气候行动的最新进展与未来方向。通过主题演讲、圆桌讨论和互动环节，参与者将深入了解气候治理的前沿议题。",
-      "highlightsTitle": "活动亮点",
-      "highlights": [
-        "与全球气候领袖面对面交流",
-        "获取最新的气候政策解读",
-        "拓展专业人脉网络",
-        "参与重要倡议与成果发布"
-      ]
-    },
-    "agenda": {
-      "title": "活动议程",
-      "empty": "详细议程将尽快公布。",
-      "speaker": "演讲者：",
-      "types": {
-        "keynote": "主题演讲",
-        "panel": "圆桌讨论",
-        "workshop": "工作坊",
-        "break": "休息",
-        "ceremony": "仪式",
-        "networking": "交流",
-        "registration": "签到"
-      }
-    },
-    "speakersTitle": "演讲嘉宾",
-    "speakersEmpty": "演讲嘉宾阵容将尽快公布。",
-    "loading": "正在加载活动详情...",
-    "loadError": "暂时无法加载该活动详情。",
-    "retry": "重试",
-    "register": {
-      "title": "报名参加",
-      "description": "名额有限，立即报名锁定席位。",
-      "save": "收藏",
-      "saved": "已收藏",
-      "registered": "已报名",
-      "share": "分享",
-      "saveSuccess": "活动已收藏",
-      "unsaveSuccess": "已取消收藏",
-      "shareSuccess": "链接已复制到剪贴板"
-    },
-    "locationTitle": "活动地点",
-    "viewMap": "查看地图"
-  },
-  "aboutPage": {
-    "hero": {
-      "title": "关于上海气候周",
-      "description": "上海气候周是一个全球性气候行动平台，定位为“东方推力点”，连接中国与世界的气候治理，共塑未来十年的气候行动 (2026-2035)。"
-    },
-    "mission": {
-      "title": "我们的使命",
-      "tagline": "Partnership and Profit for People and the Planet",
-      "description": "我们相信，只有通过系统重塑、真实行动、东方推力和共荣共赢，才能在未来十年实现气候目标。上海气候周致力于成为全球气候治理的“东方推力点”，连接中国与世界，推动从承诺到行动的转化。",
-      "exploreEvents": "探索活动",
-      "becomePartner": "成为合作伙伴"
-    },
-    "highlights": {
-      "system": {
-        "title": "系统重塑",
-        "description": "从承诺驱动到结果导向，推动真正的气候行动落地"
-      },
-      "action": {
-        "title": "真实行动",
-        "description": "言而有信、行而有果，用实际成果说话"
-      },
-      "momentum": {
-        "title": "东方推力",
-        "description": "中国绿色力量成为全球转型动力"
-      },
-      "winwin": {
-        "title": "共荣共赢",
-        "description": "不脱钩、推共建、强联通，构建人类命运共同体"
-      }
-    },
-    "timelineTitle": "发展历程",
-    "timelineSubtitle": "上海气候周的成长之路",
-    "timeline": {
-      "2024": {
-        "title": "上海气候周启动",
-        "description": "首届上海气候周成功举办，吸引超过5000名参与者"
-      },
-      "2025": {
-        "title": "国际化拓展",
-        "description": "与UNFCCC、COP主席团建立战略合作关系"
-      },
-      "2026": {
-        "title": "东方推力新启航",
-        "description": "主题升级，聚焦2026-2035关键十年"
-      }
-    },
-    "teamTitle": "核心团队",
-    "teamSubtitle": "致力于推动气候行动的领导力团队",
-    "team": {
-      "chair": {
-        "name": "李华",
-        "role": "主席",
-        "bio": "上海气候周创始人"
-      },
-      "viceChair": {
-        "name": "张明",
-        "role": "副主席",
-        "bio": "生态环境部前气候变化司司长"
-      },
-      "secretaryGeneral": {
-        "name": "王芳",
-        "role": "秘书长",
-        "bio": "资深气候政策专家"
-      }
-    },
-    "cta": {
-      "title": "加入我们的使命",
-      "description": "无论您是企业、机构还是个人，都可以为气候行动贡献力量",
-      "register": "注册参会",
-      "contact": "联系我们"
-    }
-  },
-  "partnersPage": {
-    "hero": {
-      "title": "成为合作伙伴",
-      "description": "加入上海气候周2026，与全球气候领袖共同塑造未来十年的气候行动。通过战略合作，提升品牌影响力，拓展商业机会。",
-      "download": "下载赞助方案",
-      "contact": "联系我们"
-    },
-    "tiersTitle": "赞助方案",
-    "tiersSubtitle": "选择适合您的合作层级，共同推动气候行动",
-    "currentPartners": "当前合作伙伴",
-    "tiers": {
-      "chief": {
-        "name": "首席合作伙伴",
-        "nameEn": "Chief Partner",
-        "features": [
-          "全球气候周网络G20级活动联办机会",
-          "与联合国、亚开行等国际机构共创边会",
-          "旗舰活动联办资格（如Future Food未来食物系统）",
-          "高管面向500+CEO圈层全球圆桌对话",
-          "国际公关媒体报道、央视级媒体专访",
-          "标准展位36㎡及优先选址权",
-          "VIP通行证20张"
-        ],
-        "sponsors": ["亚洲开发银行", "UNESCO"]
-      },
-      "partner": {
-        "name": "合作伙伴",
-        "nameEn": "Presenting Partner",
-        "features": [
-          "SDG Week合作机会",
-          "品牌Logo在主视觉显著位置展示",
-          "圆桌讨论或分论坛演讲机会",
-          "标准展位18㎡",
-          "VIP通行证10张",
-          "品牌物料入袋权益",
-          "媒体曝光及新闻稿提及"
-        ],
-        "sponsors": ["全球气候学院", "新开发银行", "WWF China", "查塔姆研究所"]
-      },
-      "ecosystem": {
-        "name": "生态伙伴",
-        "nameEn": "Ecosystem Partner",
-        "features": [
-          "进入上海气候周生态网络",
-          "品牌Logo在主视觉展示",
-          "活动参与机会",
-          "标准展位9㎡",
-          "VIP通行证5张",
-          "新闻稿提及"
-        ],
-        "sponsors": ["盒马鲜生", "Oatly", "公众环境研究中心", "Chapter Zero Alliance"]
-      },
-      "media": {
-        "name": "媒体/机构伙伴",
-        "nameEn": "Media/Institutional Partner",
-        "price": "定制方案",
-        "features": [
-          "独家报道权及采访优先权",
-          "品牌联合推广机会",
-          "活动现场媒体位",
-          "官方媒体合作伙伴标识",
-          "内容共创机会"
-        ],
-        "sponsors": ["第一财经", "财新传媒", "澎湃新闻"]
-      }
-    },
-    "otherWaysTitle": "其他合作方式",
-    "otherWaysSubtitle": "除赞助外，我们还提供多种合作形式",
-    "partnerTypes": {
-      "forum": {
-        "title": "论坛合作伙伴",
-        "description": "联合举办专题论坛，分享行业洞察，建立思想领导力"
-      },
-      "knowledge": {
-        "title": "知识合作伙伴",
-        "description": "联合发布研究报告、白皮书，共同举办专题论坛"
-      },
-      "community": {
-        "title": "社区合作伙伴",
-        "description": "组织社区参与活动，推广气候行动理念"
-      },
-      "showcase": {
-        "title": "展示合作伙伴",
-        "description": "在展览区展示创新产品与解决方案，获得精准曝光"
-      }
-    },
-    "cta": {
-      "title": "准备好加入我们了吗？",
-      "description": "联系我们的合作团队，获取详细的合作方案和定制化建议"
-    }
-  },
-  "newsPage": {
-    "hero": {
-      "title": "新闻中心",
-      "subtitle": "了解上海气候周最新动态、嘉宾消息和活动资讯"
-    },
-    "searchPlaceholder": "搜索新闻...",
-    "latest": "最新资讯",
-    "readMore": "阅读全文",
-    "categories": {
-      "all": "全部",
-      "announcement": "活动公告",
-      "speaker": "嘉宾动态",
-      "partner": "合作伙伴",
-      "signing": "合作签约",
-      "exhibitor": "参展企业"
-    },
-    "items": {
-      "1": {
-        "title": "上海气候周2026正式启动报名，全球气候领袖将齐聚上海",
-        "excerpt": "本届气候周以东方推力新启航为主题，预计将吸引超过1000名来自全球的参会者，共同探讨未来十年的气候行动路线..."
-      },
-      "2": {
-        "title": "解振华特使确认出席开幕式并发表主旨演讲",
-        "excerpt": "中国气候变化事务特使解振华确认将出席上海气候周2026开幕典礼，并就中国气候政策与全球合作发表重要演讲..."
-      },
-      "3": {
-        "title": "绿色金融创新峰会合作伙伴名单公布",
-        "excerpt": "中国人民银行、绿金委、MSCI、高盛等机构将联合举办绿色金融创新峰会，探讨ESG投资与可持续金融发展..."
-      },
-      "4": {
-        "title": "上海气候周与联合国开发计划署签署战略合作协议",
-        "excerpt": "双方将在气候治理、能力建设、技术转移等领域开展深入合作，共同推动亚太地区气候行动..."
-      },
-      "5": {
-        "title": "青年气候领袖峰会开始接受申请",
-        "excerpt": "面向全球18-35岁青年气候领袖，峰会将提供与全球气候专家对话的机会，并资助优秀项目..."
-      },
-      "6": {
-        "title": "特斯拉、比亚迪确认参展可再生能源转型大会",
-        "excerpt": "两家新能源汽车巨头将展示最新的电动技术和可持续能源解决方案，推动交通领域脱碳化..."
-      }
-    }
-  },
-  "eventRegister": {
-    "title": "活动报名",
-    "subtitle": "填写以下信息完成活动报名",
-    "backToEvent": "返回活动详情",
-    "eventNotFound": "活动不存在",
-    "backToEvents": "返回活动列表",
-    "loading": "正在加载活动详情...",
-    "submitError": "报名失败，请稍后重试",
-    "loginRequired": {
-      "title": "请先登录",
-      "description": "报名活动需要登录账户。如果您还没有账户，可以免费注册。",
-      "login": "立即登录",
-      "register": "免费注册"
-    },
-    "form": {
-      "title": "报名信息",
-      "autoFilled": "已自动填充您的个人信息",
-      "name": "姓名",
-      "email": "邮箱",
-      "phone": "电话",
-      "organization": "机构/公司",
-      "title": "职位",
-      "titlePlaceholder": "请输入您的职位",
-      "dietary": "饮食要求",
-      "dietaryPlaceholder": "如素食、过敏等",
-      "notes": "备注",
-      "submit": "确认报名",
-      "submitting": "提交中..."
-    },
-    "eventInfo": {
-      "title": "活动信息",
-      "capacity": "限额 {count} 人"
-    },
-    "success": {
-      "title": "报名成功！",
-      "description": "您已成功报名此活动，请查看邮件确认信息。",
-      "viewEvent": "查看活动",
-      "goToDashboard": "前往个人中心"
-    }
-  },
-  "faqPage": {
-    "title": "常见问题",
-    "subtitle": "关于上海气候周2026的常见问题和解答",
-    "backToHome": "返回首页",
-    "categories": {
-      "registration": "注册与参会",
-      "events": "活动与日程",
-      "venue": "场馆与交通"
-    },
-    "items": {
-      "q1": {
-        "question": "如何注册参加上海气候周2026？",
-        "answer": "您可以通过我们的官方网站注册。点击右上角的\"立即注册\"按钮，填写基本信息后即可完成注册。注册成功后，您可以报名参加感兴趣的活动。"
-      },
-      "q2": {
-        "question": "参加活动需要付费吗？",
-        "answer": "上海气候周2026的大部分活动对公众免费开放。部分高端闭门会议或工作坊可能需要付费，具体信息请查看活动详情页面。"
-      },
-      "q3": {
-        "question": "如何成为演讲嘉宾或合作伙伴？",
-        "answer": "如果您希望成为演讲嘉宾，请在注册时选择\"演讲嘉宾\"角色，我们的团队会审核您的申请。有意成为合作伙伴的机构，请通过\"合作伙伴\"页面提交申请或直接联系我们的合作团队。"
-      },
-      "q4": {
-        "question": "活动日程在哪里查看？",
-        "answer": "您可以在网站的\"活动\"页面查看完整日程。所有活动按日期和主题分类，您可以根据自己的兴趣筛选和报名。"
-      },
-      "q5": {
-        "question": "可以取消已报名的活动吗？",
-        "answer": "是的，您可以在个人中心的\"我的日程\"页面取消已报名的活动。请在活动开始前至少24小时取消，以便我们将名额释放给其他参与者。"
-      },
-      "q6": {
-        "question": "活动是否提供线上参与方式？",
-        "answer": "部分重要论坛和峰会将提供线上直播，您可以在活动详情页面查看是否有直播选项。线上参与也需要提前注册。"
-      },
-      "q7": {
-        "question": "活动场馆在哪里？",
-        "answer": "上海气候周2026的主要活动场馆包括上海国际会议中心、上海中心大厦、张江科学城等。具体地址请查看各活动的详情页面。"
-      },
-      "q8": {
-        "question": "如何到达活动现场？",
-        "answer": "各场馆均位于上海市交通便利的区域，可通过地铁、公交或出租车到达。具体交通指南将在活动前发送给已注册的参与者。"
-      }
-    },
-    "contact": {
-      "title": "还有其他问题？",
-      "description": "如果您没有找到想要的答案，请随时联系我们的团队。",
-      "button": "联系我们"
-    }
-  },
-  "verifierPage": {
-    "header": {
-      "title": "现场验码",
-      "subtitle": "扫描参与者二维码进行验证"
-    },
-    "history": "记录",
-    "ready": {
-      "title": "准备扫描",
-      "description": "点击开始扫描按钮，将相机对准参与者的二维码进行验证",
-      "start": "开始扫描"
-    },
-    "scanning": {
-      "title": "扫描二维码",
-      "cancel": "取消",
-      "hint": "将二维码放入框内即可自动扫描"
-    },
-    "result": {
-      "success": "验证成功",
-      "failed": "验证失败",
-      "requestFailed": "验码请求失败",
-      "continueScanning": "继续扫描",
-      "eventInfo": "活动信息",
-      "pointsAwarded": "+{points} 积分",
-      "pointsDescription": "用户已获得活动积分奖励",
-      "alreadyCheckedIn": "该用户已完成签到",
-      "checkedInTime": "验码时间: {time}"
-    },
-    "historyPanel": {
-      "title": "最近验码记录",
-      "empty": "暂无验码记录",
-      "passportVerify": "护照验证"
-    },
-    "noPermission": "您没有验证人员权限"
-  },
-  "speakersSection": {
-    "title": "特邀嘉宾",
-    "subtitle": "来自全球的行业领袖与专家",
-    "viewAll": "查看所有嘉宾"
-  },
-  "newsSection": {
-    "title": "最新动态",
-    "subtitle": "了解上海气候周的最新资讯",
-    "readMore": "阅读更多",
-    "viewAll": "查看所有新闻"
-  },
-  "adminNews": {
-    "title": "新闻管理",
-    "subtitle": "管理网站新闻与动态",
-    "create": "发布新闻",
-    "edit": "编辑",
-    "delete": "删除",
-    "confirmDelete": "确定要删除这条新闻吗？",
-    "loadError": "获取新闻列表失败",
-    "empty": "暂无新闻，点击上方按钮发布第一条新闻",
-    "seedButton": "一键导入示例新闻",
-    "seedSuccess": "导入完成",
-    "seedCreated": "条新建",
-    "seedSkipped": "条已存在",
-    "createSuccess": "新闻发布成功",
-    "updateSuccess": "新闻更新成功",
-    "deleteSuccess": "新闻已删除",
-    "uploadSuccess": "封面图片上传成功",
-    "uploadFailed": "封面图片上传失败",
-    "form": {
-      "title": "标题",
-      "titleEn": "英文标题",
-      "excerpt": "摘要",
-      "excerptEn": "英文摘要",
-      "content": "内容",
-      "contentEn": "英文内容",
-      "coverImage": "封面图片",
-      "slug": "URL别名",
-      "isPublished": "发布",
-      "save": "保存",
-      "cancel": "取消"
-    },
-    "status": {
-      "published": "已发布",
-      "draft": "草稿"
-    }
-  },
-  "adminSettingsPage": {
-    "title": "系统设置",
-    "subtitle": "集中配置平台运行参数与 AI 生成功能。",
-    "loading": "正在加载设置...",
-    "save": "保存设置",
-    "reload": "重新加载",
-    "ai": {
-      "title": "AI 亮点生成",
-      "description": "配置 OpenAI 参数，用于根据活动信息自动生成活动亮点。",
-      "enabled": "启用 AI 亮点生成",
-      "enabledHint": "关闭后不会调用 OpenAI 生成活动亮点。",
-      "autoGenerate": "活动保存后自动生成",
-      "autoGenerateHint": "启用后，活动保存成功会自动尝试生成亮点。",
-      "model": "OpenAI 模型",
-      "highlightCount": "亮点条数（3-6）",
-      "apiKey": "OpenAI API Key",
-      "apiKeyPlaceholder": "输入新 Key 进行更新，留空则保持不变",
-      "apiKeyHint": "API Key 仅在服务端加密存储，不会下发到前端。",
-      "apiKeyStored": "当前已配置 Key：{masked}",
-      "clearApiKey": "清除已保存的 API Key"
-    },
-    "messages": {
-      "loadFailed": "加载系统设置失败。",
-      "saveSuccess": "系统设置已保存。",
-      "saveFailed": "保存系统设置失败。"
-    }
-  },
-  "adminSiteContent": {
-    "title": "内容管理",
-    "subtitle": "管理首页「关于我们」等内容",
-    "aboutUs": "关于我们",
-    "mission": "使命愿景",
-    "highlights": "四个标签",
-    "timeline": "发展历程",
-    "team": "核心团队",
-    "saveSuccess": "内容已保存",
-    "saveFailed": "保存失败",
-    "form": {
-      "sectionTitle": "标题",
-      "sectionTitleEn": "英文标题",
-      "sectionSubtitle": "副标题",
-      "sectionSubtitleEn": "英文副标题",
-      "sectionDescription": "描述",
-      "sectionDescriptionEn": "英文描述",
-      "name": "姓名",
-      "nameEn": "英文姓名",
-      "role": "职务",
-      "roleEn": "英文职务",
-      "bio": "简介",
-      "bioEn": "英文简介",
-      "save": "保存"
-    }
-  }
 }

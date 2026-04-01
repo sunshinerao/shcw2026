@@ -33,7 +33,7 @@ const ADMIN_ONLY_SECTIONS: AdminSectionKey[] = [
   "settings",
 ];
 
-const EVENT_MANAGER_SECTIONS: AdminSectionKey[] = ["events", "tracks", "speakers", "invitations"];
+const EVENT_MANAGER_SECTIONS: AdminSectionKey[] = ["events", "invitations"];
 
 export function isAdminRole(role?: string | null): role is AppUserRole {
   return role === "ADMIN";
@@ -52,11 +52,11 @@ export function canManageEvents(role?: string | null): boolean {
 }
 
 export function canManageTracks(role?: string | null): boolean {
-  return isAdminRole(role) || isEventManagerRole(role);
+  return isAdminRole(role);
 }
 
 export function canManageSpeakers(role?: string | null): boolean {
-  return isAdminRole(role) || isEventManagerRole(role);
+  return isAdminRole(role);
 }
 
 export function canAccessAdminSection(

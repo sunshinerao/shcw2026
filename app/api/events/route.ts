@@ -33,8 +33,10 @@ export async function GET(req: NextRequest) {
 
   try {
     const currentUser = await requireSessionUser();
-    const canViewAllEvents =
-      canManageEvents(currentUser?.role) || currentUser?.role === UserRole.STAFF;
+    const isAdmin = currentUser?.role === UserRole.ADMIN;
+    const isStaff = currentUser?.role === UserRole.STAFF;
+    const isEventManager = currentUser?.role === UserRole.EVENT_MANAGER;
+    const canViewAllEvents = isAdmin || isStaff;
 
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10));
@@ -102,12 +104,24 @@ export async function GET(req: NextRequest) {
       where.isPublished = true;
     }
 
+    // Event managers should only see events assigned to them in admin contexts.
+    if (isEventManager && published !== "true" && currentUser?.id) {
+      where.managerUserId = currentUser.id;
+    }
+
     const skip = (page - 1) * pageSize;
 
     const [events, total] = await Promise.all([
       prisma.event.findMany({
         where,
         include: {
+          manager: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
           track: {
             select: {
               id: true,
@@ -128,7 +142,7 @@ export async function GET(req: NextRequest) {
             },
           },
         },
-        orderBy: [{ startDate: "asc" }, { startTime: "asc" }],
+        orderBy: [{ isPinned: "desc" }, { startDate: "asc" }, { startTime: "asc" }],
         skip,
         take: pageSize,
       }),
@@ -206,6 +220,8 @@ export async function POST(req: NextRequest) {
       requireApproval = false,
       eventLayer,
       hostType,
+      isPinned = false,
+      managerUserId,
     } = body;
 
     if (!title || !description || !startDate || !startTime || !endTime || !venue || !type) {
@@ -220,6 +236,41 @@ export async function POST(req: NextRequest) {
         { success: false, error: apiMessage(requestLocale, "invalidEventType") },
         { status: 400 }
       );
+    }
+
+    let resolvedManagerUserId: string | null = null;
+    if (managerUserId !== undefined && managerUserId !== null && managerUserId !== "") {
+      if (currentUser.role !== UserRole.ADMIN) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "forbidden") },
+          { status: 403 }
+        );
+      }
+
+      const managerUser = await prisma.user.findUnique({
+        where: { id: managerUserId },
+        select: { id: true, role: true },
+      });
+
+      if (
+        !managerUser ||
+        (managerUser.role !== UserRole.ADMIN && managerUser.role !== UserRole.EVENT_MANAGER)
+      ) {
+        return NextResponse.json(
+          {
+            success: false,
+            error:
+              requestLocale === "zh"
+                ? "活动管理员必须是管理员或活动管理员角色"
+                : "Event manager must have ADMIN or EVENT_MANAGER role",
+          },
+          { status: 400 }
+        );
+      }
+
+      resolvedManagerUserId = managerUser.id;
+    } else if (currentUser.role === UserRole.EVENT_MANAGER) {
+      resolvedManagerUserId = currentUser.id;
     }
 
     const parsedStartDate = parseEventDate(startDate);
@@ -264,10 +315,19 @@ export async function POST(req: NextRequest) {
         isPublished: Boolean(isPublished),
         isFeatured: Boolean(isFeatured),
         requireApproval: Boolean(requireApproval),
+        isPinned: Boolean(isPinned),
+        managerUserId: resolvedManagerUserId,
         eventLayer: eventLayer && EVENT_LAYERS.has(eventLayer) ? (eventLayer as EventLayer) : null,
         hostType: hostType && EVENT_HOST_TYPES.has(hostType) ? (hostType as EventHostType) : null,
       },
       include: {
+        manager: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         track: {
           select: {
             id: true,

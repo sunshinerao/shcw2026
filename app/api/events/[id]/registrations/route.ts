@@ -3,8 +3,24 @@ import { RegistrationStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
-import { canManageEvents } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+
+async function canManageTargetEvent(userId: string, role: string | null | undefined, eventId: string) {
+  if (role === "ADMIN") {
+    return true;
+  }
+
+  if (role !== "EVENT_MANAGER") {
+    return false;
+  }
+
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { managerUserId: true },
+  });
+
+  return event?.managerUserId === userId;
+}
 
 /**
  * GET /api/events/[id]/registrations
@@ -28,10 +44,12 @@ export async function GET(
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { id: true, role: true },
     });
 
-    if (!canManageEvents(user?.role)) {
+    const allowed = user ? await canManageTargetEvent(user.id, user.role, params.id) : false;
+
+    if (!allowed) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "adminOrEventManagerOnly") },
         { status: 403 }
@@ -131,10 +149,12 @@ export async function PATCH(
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { id: true, role: true },
     });
 
-    if (!canManageEvents(user?.role)) {
+    const allowed = user ? await canManageTargetEvent(user.id, user.role, params.id) : false;
+
+    if (!allowed) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "adminOrEventManagerOnly") },
         { status: 403 }

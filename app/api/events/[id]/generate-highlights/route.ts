@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
-import { canManageEvents } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { getSystemSettingsForServer } from "@/lib/system-settings";
 
@@ -153,12 +152,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { id: true, role: true },
     });
-
-    if (!canManageEvents(user?.role)) {
-      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
-    }
 
     const body = await req.json().catch(() => ({}));
     const reason = body?.reason === "save" ? "save" : "manual";
@@ -213,6 +208,14 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     if (!event) {
       return NextResponse.json({ success: false, error: "Event not found" }, { status: 404 });
+    }
+
+    const canManageEvent =
+      user?.role === "ADMIN" ||
+      (user?.role === "EVENT_MANAGER" && event.managerUserId === user.id);
+
+    if (!canManageEvent) {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
     const agendaLinesZh = event.agendaItems.map(

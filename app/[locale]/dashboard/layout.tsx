@@ -16,6 +16,7 @@ import {
   Home,
   FileText,
   MessageSquare,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -38,6 +39,7 @@ export default function DashboardLayout({
     { name: t("nav.pass"), href: "/dashboard/pass", icon: Ticket },
     { name: t("nav.climatePassport"), href: "/dashboard/climate-passport", icon: BadgeCheck },
     { name: t("nav.invitations"), href: "/dashboard/invitations", icon: FileText },
+    { name: t("nav.specialPass"), href: "/dashboard/special-pass", icon: Shield },
     { name: t("nav.profile"), href: "/dashboard/profile", icon: User },
     { name: t("nav.messages"), href: "/dashboard/messages", icon: MessageSquare },
     { name: t("nav.notifications"), href: "/dashboard/notifications", icon: Bell },

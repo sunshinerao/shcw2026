@@ -17,7 +17,7 @@ async function checkSpeakerPermission(sessionUserId: string, locale: "zh" | "en"
   }
 
   if (!canManageSpeakers(currentUser.role)) {
-    return { allowed: false, status: 403, error: apiMessage(locale, "adminOrEventManagerOnly") };
+    return { allowed: false, status: 403, error: apiMessage(locale, "adminOnly") };
   }
 
   return { allowed: true, userRole: currentUser.role };

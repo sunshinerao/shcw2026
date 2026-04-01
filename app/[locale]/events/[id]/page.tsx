@@ -119,6 +119,14 @@ function getLocalizedDescription(event: PublicEvent, locale: string) {
   return event.shortDesc || event.description;
 }
 
+function getFullDescription(event: PublicEvent, locale: string) {
+  if (locale === "en") {
+    return event.descriptionEn || event.description;
+  }
+
+  return event.description;
+}
+
 export default function EventDetailPage() {
   const t = useTranslations("eventDetailPage");
   const eventListT = useTranslations("eventsPage");
@@ -339,6 +347,7 @@ export default function EventDetailPage() {
 
   const localizedTitle = getLocalizedTitle(event, locale);
   const localizedDescription = getLocalizedDescription(event, locale);
+  const fullDescription = getFullDescription(event, locale);
 
   return (
     <div className="min-h-screen bg-slate-50 pt-16 lg:pt-20">
@@ -423,7 +432,7 @@ export default function EventDetailPage() {
                   <div className="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
                     <h2 className="text-2xl font-bold text-slate-900 mb-6">{t("about.title")}</h2>
                     <div className="prose prose-slate max-w-none">
-                      <p className="text-slate-600 leading-relaxed mb-4">{localizedDescription}</p>
+                      <p className="text-slate-600 leading-relaxed mb-4">{fullDescription}</p>
                       <h3 className="text-lg font-bold text-slate-900 mt-6 mb-3">{t("about.highlightsTitle")}</h3>
                       <ul className="space-y-2 text-slate-600">
                         {highlights.map((highlight) => (

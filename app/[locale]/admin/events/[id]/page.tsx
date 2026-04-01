@@ -156,6 +156,7 @@ export default function EventAgendaPage({
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"success" | "error">("success");
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
 
   // Dialog state
   const [isAgendaDialogOpen, setIsAgendaDialogOpen] = useState(false);
@@ -169,6 +170,7 @@ export default function EventAgendaPage({
   const [form, setForm] = useState<AgendaFormState>(initialAgendaForm);
   const [speakerSearch, setSpeakerSearch] = useState("");
   const [newSpeakerForm, setNewSpeakerForm] = useState<NewSpeakerForm>(initialNewSpeakerForm);
+  const canManageSpeakers = currentUserRole === "ADMIN";
 
   const setMessage = (tone: "success" | "error", msg: string) => {
     setStatusTone(tone);
@@ -232,6 +234,30 @@ export default function EventAgendaPage({
       setIsLoading(false)
     );
   }, [loadEvent, loadAgenda, loadSpeakers]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCurrentUserRole() {
+      try {
+        const res = await fetch("/api/auth/session", { cache: "no-store" });
+        const data = await res.json();
+        if (!cancelled) {
+          setCurrentUserRole(data?.user?.role || null);
+        }
+      } catch {
+        if (!cancelled) {
+          setCurrentUserRole(null);
+        }
+      }
+    }
+
+    void loadCurrentUserRole();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const getSpeakerName = (s: AgendaSpeaker) =>
     locale === "en" && s.nameEn ? s.nameEn : s.name;
@@ -381,7 +407,7 @@ export default function EventAgendaPage({
         type: form.type,
         venue: form.venue || null,
         order: form.order,
-        speakerIds: form.speakerIds,
+        ...(canManageSpeakers ? { speakerIds: form.speakerIds } : {}),
       };
 
       const url = editingItem
@@ -857,6 +883,7 @@ export default function EventAgendaPage({
                   <Label className="text-base font-medium">
                     {t("speakers")}
                   </Label>
+                  {canManageSpeakers ? (
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -883,7 +910,14 @@ export default function EventAgendaPage({
                       {t("createNewSpeaker")}
                     </Button>
                   </div>
+                  ) : null}
                 </div>
+
+                {!canManageSpeakers ? (
+                  <p className="text-sm text-slate-500">
+                    {locale === "zh" ? "活动管理员仅可查看议程嘉宾，不能设置或新增嘉宾。" : "Event managers can view agenda speakers but cannot assign or create speakers."}
+                  </p>
+                ) : null}
 
                 {/* Selected speakers chips */}
                 {selectedSpeakers.length > 0 ? (
@@ -905,6 +939,7 @@ export default function EventAgendaPage({
                         <span className="text-xs text-slate-400">
                           {getSpeakerOrg(s)}
                         </span>
+                        {canManageSpeakers ? (
                         <button
                           type="button"
                           className="ml-1 rounded-full p-0.5 hover:bg-red-50 text-slate-400 hover:text-red-500"
@@ -912,6 +947,7 @@ export default function EventAgendaPage({
                         >
                           <X className="h-3.5 w-3.5" />
                         </button>
+                        ) : null}
                       </div>
                     ))}
                   </div>

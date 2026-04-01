@@ -34,6 +34,7 @@ type PublicEvent = {
   trackId?: string | null;
   maxAttendees?: number | null;
   isFeatured: boolean;
+  isPinned?: boolean;
 };
 
 function formatEventDateLabel(dateValue: string, locale: string) {
@@ -149,7 +150,23 @@ export default function EventsPage() {
     return true;
   });
 
-  const groupedEvents = filteredEvents.reduce<Record<string, PublicEvent[]>>((acc, event) => {
+  const pinnedEvents = filteredEvents
+    .filter((event) => Boolean(event.isPinned))
+    .sort((a, b) => {
+      const byDate = a.startDate.localeCompare(b.startDate);
+      if (byDate !== 0) return byDate;
+      return a.startTime.localeCompare(b.startTime);
+    });
+
+  const nonPinnedEvents = filteredEvents
+    .filter((event) => !event.isPinned)
+    .sort((a, b) => {
+      const byDate = a.startDate.localeCompare(b.startDate);
+      if (byDate !== 0) return byDate;
+      return a.startTime.localeCompare(b.startTime);
+    });
+
+  const groupedEvents = nonPinnedEvents.reduce<Record<string, PublicEvent[]>>((acc, event) => {
     const dateKey = event.startDate.slice(0, 10);
 
     if (!acc[dateKey]) {
@@ -255,12 +272,107 @@ export default function EventsPage() {
                 {t("retry")}
               </Button>
             </div>
-          ) : sortedDates.length === 0 ? (
+          ) : sortedDates.length === 0 && pinnedEvents.length === 0 ? (
             <div className="text-center py-20">
               <p className="text-slate-500">{t("emptyState")}</p>
             </div>
           ) : (
             <div className="space-y-12">
+              {pinnedEvents.length > 0 ? (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                >
+                  <div className="flex items-center space-x-4 mb-6">
+                    <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center">
+                      <Calendar className="w-6 h-6 text-rose-600" />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900">
+                        {locale === "en" ? "Pinned Events" : "置顶活动"}
+                      </h2>
+                      <p className="text-sm text-slate-500">
+                        {locale === "en" ? `${pinnedEvents.length} pinned` : `${pinnedEvents.length} 个置顶`}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4">
+                    {pinnedEvents.map((event, eventIndex) => {
+                      const hostTypeBorderColor: Record<string, string> = {
+                        OFFICIAL: "border-l-red-500",
+                        CO_HOSTED: "border-l-sky-500",
+                        REGISTERED: "border-l-lime-500",
+                        SIDE_EVENT: "border-l-fuchsia-500",
+                        COMMUNITY: "border-l-yellow-500",
+                      };
+                      const borderClass = event.hostType
+                        ? hostTypeBorderColor[event.hostType] || "border-l-slate-300"
+                        : "border-l-transparent";
+
+                      return (
+                        <motion.div
+                          key={event.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          transition={{ duration: 0.4, delay: eventIndex * 0.05 }}
+                          className={`bg-white rounded-2xl p-6 shadow-sm border border-rose-200 hover:shadow-md transition-shadow border-l-4 ${borderClass}`}
+                        >
+                          <div className="mb-2">
+                            <span className="inline-flex items-center px-3 py-1 rounded-md text-sm font-semibold bg-rose-100 text-rose-700">
+                              {locale === "en" ? "Pinned" : "置顶"}
+                            </span>
+                          </div>
+                          <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                            <div className="lg:w-48 shrink-0">
+                              <div className="flex items-center text-slate-600 mb-2">
+                                <Clock className="w-4 h-4 mr-2 text-slate-400" />
+                                <span className="font-medium">
+                                  {event.startTime} - {event.endTime}
+                                </span>
+                              </div>
+                              <div className="flex flex-wrap gap-1.5">
+                                <Badge className={typeColors[event.type]}>
+                                  {getEventTypeLabel(event.type, locale)}
+                                </Badge>
+                              </div>
+                            </div>
+
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-xl font-bold text-slate-900 mb-2 hover:text-emerald-600 transition-colors">
+                                <Link href={`/events/${event.id}`}>{getLocalizedTitle(event, locale)}</Link>
+                              </h3>
+                              <p className="text-slate-600 mb-3">{getLocalizedSummary(event, locale)}</p>
+                              <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
+                                <span className="flex items-center">
+                                  <MapPin className="w-4 h-4 mr-1" />
+                                  {event.venue}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-3 lg:shrink-0">
+                              <Link href={`/events/${event.id}`}>
+                                <Button variant="ghost" size="sm">
+                                  {t("details")}
+                                </Button>
+                              </Link>
+                              <Link href={`/events/${event.id}/register`}>
+                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                                  {t("register")}
+                                  <ArrowRight className="w-4 h-4 ml-1" />
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        </motion.div>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              ) : null}
+
               {sortedDates.map((date, dateIndex) => (
                 <motion.div
                   key={date}

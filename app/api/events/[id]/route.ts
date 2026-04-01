@@ -37,15 +37,27 @@ export async function GET(
 
   try {
     const currentUser = await requireSessionUser();
-    const canViewAllEvents =
-      canManageEvents(currentUser?.role) || currentUser?.role === UserRole.STAFF;
+    const isAdmin = currentUser?.role === UserRole.ADMIN;
+    const isStaff = currentUser?.role === UserRole.STAFF;
+    const canViewUnpublished = isAdmin || isStaff;
 
     const event = await prisma.event.findFirst({
       where: {
         id: params.id,
-        ...(canViewAllEvents ? {} : { isPublished: true }),
+        ...(canViewUnpublished
+          ? {}
+          : currentUser?.role === UserRole.EVENT_MANAGER && currentUser?.id
+            ? { OR: [{ isPublished: true }, { managerUserId: currentUser.id }] }
+            : { isPublished: true }),
       },
       include: {
+        manager: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         track: {
           select: {
             id: true,
@@ -140,13 +152,30 @@ export async function PUT(
 
     const existingEvent = await prisma.event.findUnique({
       where: { id: params.id },
-      select: { id: true },
+      select: { id: true, managerUserId: true },
     });
 
     if (!existingEvent) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "eventNotFound") },
         { status: 404 }
+      );
+    }
+
+    const canManageThisEvent =
+      currentUser.role === UserRole.ADMIN ||
+      (currentUser.role === UserRole.EVENT_MANAGER && existingEvent.managerUserId === currentUser.id);
+
+    if (!canManageThisEvent) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            requestLocale === "zh"
+              ? "你仅可管理被指派的活动"
+              : "You can only manage events assigned to you",
+        },
+        { status: 403 }
       );
     }
 
@@ -177,6 +206,8 @@ export async function PUT(
       requireApproval,
       eventLayer,
       hostType,
+      isPinned,
+      managerUserId,
     } = body;
 
     if (title !== undefined && !title) {
@@ -215,6 +246,43 @@ export async function PUT(
         { success: false, error: apiMessage(requestLocale, "invalidEventType") },
         { status: 400 }
       );
+    }
+
+    let resolvedManagerUserId: string | null | undefined;
+    if (managerUserId !== undefined) {
+      if (currentUser.role !== UserRole.ADMIN) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "forbidden") },
+          { status: 403 }
+        );
+      }
+
+      if (!managerUserId) {
+        resolvedManagerUserId = null;
+      } else {
+        const managerUser = await prisma.user.findUnique({
+          where: { id: managerUserId },
+          select: { id: true, role: true },
+        });
+
+        if (
+          !managerUser ||
+          (managerUser.role !== UserRole.ADMIN && managerUser.role !== UserRole.EVENT_MANAGER)
+        ) {
+          return NextResponse.json(
+            {
+              success: false,
+              error:
+                requestLocale === "zh"
+                  ? "活动管理员必须是管理员或活动管理员角色"
+                  : "Event manager must have ADMIN or EVENT_MANAGER role",
+            },
+            { status: 400 }
+          );
+        }
+
+        resolvedManagerUserId = managerUser.id;
+      }
     }
 
     let parsedStartDate: Date | undefined;
@@ -269,7 +337,9 @@ export async function PUT(
         }),
         ...(isPublished !== undefined && { isPublished: Boolean(isPublished) }),
         ...(isFeatured !== undefined && { isFeatured: Boolean(isFeatured) }),
+        ...(isPinned !== undefined && { isPinned: Boolean(isPinned) }),
         ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
+        ...(resolvedManagerUserId !== undefined && { managerUserId: resolvedManagerUserId }),
         ...(eventLayer !== undefined && {
           eventLayer: eventLayer && EVENT_LAYERS.has(eventLayer) ? (eventLayer as EventLayer) : null,
         }),
@@ -278,6 +348,13 @@ export async function PUT(
         }),
       },
       include: {
+        manager: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
         track: {
           select: {
             id: true,
@@ -339,13 +416,30 @@ export async function DELETE(
 
     const existingEvent = await prisma.event.findUnique({
       where: { id: params.id },
-      select: { id: true },
+      select: { id: true, managerUserId: true },
     });
 
     if (!existingEvent) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "eventNotFound") },
         { status: 404 }
+      );
+    }
+
+    const canManageThisEvent =
+      currentUser.role === UserRole.ADMIN ||
+      (currentUser.role === UserRole.EVENT_MANAGER && existingEvent.managerUserId === currentUser.id);
+
+    if (!canManageThisEvent) {
+      return NextResponse.json(
+        {
+          success: false,
+          error:
+            requestLocale === "zh"
+              ? "你仅可删除被指派的活动"
+              : "You can only delete events assigned to you",
+        },
+        { status: 403 }
       );
     }
 

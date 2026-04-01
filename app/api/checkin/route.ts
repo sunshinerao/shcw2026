@@ -30,18 +30,39 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 检查权限
-    const allowedRoles = ["ADMIN", "STAFF", "VERIFIER"];
-    if (!allowedRoles.includes(session.user.role as string)) {
+    const body = await req.json();
+    requestLocale = resolveRequestLocale(req, body.locale);
+    const { qrData, eventId: targetEventId } = body;
+
+    const operator = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, role: true },
+    });
+
+    if (!operator) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "checkinForbidden") },
         { status: 403 }
       );
     }
 
-    const body = await req.json();
-    requestLocale = resolveRequestLocale(req, body.locale);
-    const { qrData, eventId: targetEventId } = body;
+    const allowedRoles = ["ADMIN", "STAFF", "VERIFIER"];
+    let hasPermission = allowedRoles.includes(operator.role as string);
+
+    if (!hasPermission && operator.role === "EVENT_MANAGER" && targetEventId) {
+      const targetEvent = await prisma.event.findUnique({
+        where: { id: targetEventId },
+        select: { managerUserId: true },
+      });
+      hasPermission = targetEvent?.managerUserId === operator.id;
+    }
+
+    if (!hasPermission && operator.role !== "EVENT_MANAGER") {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "checkinForbidden") },
+        { status: 403 }
+      );
+    }
 
     if (!qrData) {
       return NextResponse.json(
@@ -60,12 +81,34 @@ export async function POST(req: NextRequest) {
     let result;
     
     if (passportMatch) {
+      if (!hasPermission) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "checkinForbidden") },
+          { status: 403 }
+        );
+      }
       // 气候护照二维码 - 只验证身份
       const [, userId, passCode] = passportMatch;
       result = await verifyPassport(userId, passCode);
     } else if (eventMatch) {
       // 活动通行证二维码 - 验证并签到
       const [, eventId, userId, registrationId, timestamp] = eventMatch;
+
+      if (!hasPermission && operator.role === "EVENT_MANAGER") {
+        const targetEvent = await prisma.event.findUnique({
+          where: { id: eventId },
+          select: { managerUserId: true },
+        });
+        hasPermission = targetEvent?.managerUserId === operator.id;
+      }
+
+      if (!hasPermission) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "checkinForbidden") },
+          { status: 403 }
+        );
+      }
+
       result = await verifyAndCheckIn(
         eventId,
         userId,
