@@ -330,7 +330,7 @@ export default function EventDetailPage() {
 
   const loadImageElement = async (src: string) =>
     new Promise<HTMLImageElement>((resolve, reject) => {
-      const image = new Image();
+      const image = document.createElement("img");
       image.onload = () => resolve(image);
       image.onerror = () => reject(new Error("Image loading failed"));
       image.src = src;
