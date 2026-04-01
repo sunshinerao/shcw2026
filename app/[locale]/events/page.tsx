@@ -192,7 +192,7 @@ export default function EventsPage() {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
               {t("hero.title")}
             </h1>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto">{t("hero.subtitle")}</p>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">{t("hero.subtitle", { count: events.length })}</p>
           </motion.div>
         </div>
       </section>

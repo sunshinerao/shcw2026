@@ -1135,7 +1135,7 @@
     "eventsPage": {
         "hero": {
             "title": "Event Schedule",
-            "subtitle": "April 20-28, 2026. Explore 13 featured programs."
+            "subtitle": "April 20-28, 2026. Explore {count} featured programs."
         },
         "loading": "Loading events...",
         "loadError": "Unable to load events right now.",
