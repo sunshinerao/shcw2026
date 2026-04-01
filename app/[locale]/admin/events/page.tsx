@@ -169,6 +169,7 @@ export default function AdminEventsPage() {
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [managerOptions, setManagerOptions] = useState<ManagerOption[]>([]);
   const [managerSearch, setManagerSearch] = useState("");
+  const canEditRestrictedEventFields = currentUserRole === "ADMIN";
 
   const loadingLabel = t("loading");
   const genericLoadError = t("loadError");
@@ -463,14 +464,14 @@ export default function AdminEventsPage() {
         address: formState.address || null,
         addressEn: formState.addressEn || null,
         image: formState.image || null,
-        type: formState.type,
-        eventLayer: formState.eventLayer || null,
-        hostType: formState.hostType || null,
+        ...(canEditRestrictedEventFields ? { type: formState.type } : {}),
+        ...(canEditRestrictedEventFields ? { eventLayer: formState.eventLayer || null } : {}),
+        ...(canEditRestrictedEventFields ? { hostType: formState.hostType || null } : {}),
         trackId: formState.trackId || null,
         maxAttendees: formState.maxAttendees ? Number(formState.maxAttendees) : null,
         isPublished: formState.isPublished,
-        isFeatured: formState.isFeatured,
-        isPinned: formState.isPinned,
+        ...(canEditRestrictedEventFields ? { isFeatured: formState.isFeatured } : {}),
+        ...(canEditRestrictedEventFields ? { isPinned: formState.isPinned } : {}),
         requireApproval: formState.requireApproval,
         ...(currentUserRole === "ADMIN"
           ? { managerUserId: formState.managerUserId || null }
@@ -707,15 +708,17 @@ export default function AdminEventsPage() {
                           >
                             {event.isPublished ? t("actions.unpublish") : t("actions.publish")}
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() =>
-                              void updateEventFlags(event, { isFeatured: !event.isFeatured })
-                            }
-                          >
-                            <Star className={`h-4 w-4 ${event.isFeatured ? "fill-current text-amber-500" : ""}`} />
-                          </Button>
+                          {canEditRestrictedEventFields ? (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() =>
+                                void updateEventFlags(event, { isFeatured: !event.isFeatured })
+                              }
+                            >
+                              <Star className={`h-4 w-4 ${event.isFeatured ? "fill-current text-amber-500" : ""}`} />
+                            </Button>
+                          ) : null}
                           <Button
                             size="sm"
                             variant="ghost"
@@ -854,14 +857,18 @@ export default function AdminEventsPage() {
                 <Label htmlFor="event-published">{t("form.isPublished")}</Label>
                 <Switch id="event-published" checked={formState.isPublished} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, isPublished: checked }))} />
               </div>
-              <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-                <Label htmlFor="event-featured">{t("form.isFeatured")}</Label>
-                <Switch id="event-featured" checked={formState.isFeatured} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, isFeatured: checked }))} />
-              </div>
-              <div className="flex items-center justify-between rounded-lg border px-3 py-2">
-                <Label htmlFor="event-pinned">{locale === "en" ? "Pin event" : "活动置顶"}</Label>
-                <Switch id="event-pinned" checked={formState.isPinned} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, isPinned: checked }))} />
-              </div>
+              {canEditRestrictedEventFields ? (
+                <>
+                  <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+                    <Label htmlFor="event-featured">{t("form.isFeatured")}</Label>
+                    <Switch id="event-featured" checked={formState.isFeatured} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, isFeatured: checked }))} />
+                  </div>
+                  <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+                    <Label htmlFor="event-pinned">{locale === "en" ? "Pin event" : "活动置顶"}</Label>
+                    <Switch id="event-pinned" checked={formState.isPinned} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, isPinned: checked }))} />
+                  </div>
+                </>
+              ) : null}
               <div className="flex items-center justify-between rounded-lg border px-3 py-2">
                 <Label htmlFor="event-require-approval">{t("form.requireApproval")}</Label>
                 <Switch id="event-require-approval" checked={formState.requireApproval} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, requireApproval: checked }))} />
@@ -910,54 +917,58 @@ export default function AdminEventsPage() {
                 </Select>
               </div>
             ) : null}
-            <div className="space-y-2 md:col-span-2">
-              <Label htmlFor="event-type-select">{t("form.type")}</Label>
-              <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
-                {EVENT_TYPES.map((type) => (
-                  <Button
-                    key={type}
-                    type="button"
-                    variant={formState.type === type ? "default" : "outline"}
-                    className={formState.type === type ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-                    onClick={() => setFormState((previous) => ({ ...previous, type }))}
-                  >
-                    {getEventTypeLabel(type, locale)}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-layer">{t("form.eventLayer")}</Label>
-              <Select value={formState.eventLayer || "none"} onValueChange={(value) => setFormState((previous) => ({ ...previous, eventLayer: value === "none" ? "" : value }))}>
-                <SelectTrigger id="event-layer">
-                  <SelectValue placeholder={t("form.eventLayerPlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("form.eventLayerPlaceholder")}</SelectItem>
-                  <SelectItem value="INSTITUTION">{t("form.layers.institution")}</SelectItem>
-                  <SelectItem value="ECONOMY">{t("form.layers.economy")}</SelectItem>
-                  <SelectItem value="ROOT">{t("form.layers.root")}</SelectItem>
-                  <SelectItem value="ACCELERATOR">{t("form.layers.accelerator")}</SelectItem>
-                  <SelectItem value="COMPREHENSIVE">{t("form.layers.comprehensive")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-host-type">{t("form.hostType")}</Label>
-              <Select value={formState.hostType || "none"} onValueChange={(value) => setFormState((previous) => ({ ...previous, hostType: value === "none" ? "" : value }))}>
-                <SelectTrigger id="event-host-type">
-                  <SelectValue placeholder={t("form.hostTypePlaceholder")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("form.hostTypePlaceholder")}</SelectItem>
-                  <SelectItem value="OFFICIAL">{t("form.hostTypes.official")}</SelectItem>
-                  <SelectItem value="CO_HOSTED">{t("form.hostTypes.coHosted")}</SelectItem>
-                  <SelectItem value="REGISTERED">{t("form.hostTypes.registered")}</SelectItem>
-                  <SelectItem value="SIDE_EVENT">{t("form.hostTypes.sideEvent")}</SelectItem>
-                  <SelectItem value="COMMUNITY">{t("form.hostTypes.community")}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {canEditRestrictedEventFields ? (
+              <>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="event-type-select">{t("form.type")}</Label>
+                  <div className="grid grid-cols-2 gap-2 md:grid-cols-5">
+                    {EVENT_TYPES.map((type) => (
+                      <Button
+                        key={type}
+                        type="button"
+                        variant={formState.type === type ? "default" : "outline"}
+                        className={formState.type === type ? "bg-emerald-600 hover:bg-emerald-700" : ""}
+                        onClick={() => setFormState((previous) => ({ ...previous, type }))}
+                      >
+                        {getEventTypeLabel(type, locale)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="event-layer">{t("form.eventLayer")}</Label>
+                  <Select value={formState.eventLayer || "none"} onValueChange={(value) => setFormState((previous) => ({ ...previous, eventLayer: value === "none" ? "" : value }))}>
+                    <SelectTrigger id="event-layer">
+                      <SelectValue placeholder={t("form.eventLayerPlaceholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("form.eventLayerPlaceholder")}</SelectItem>
+                      <SelectItem value="INSTITUTION">{t("form.layers.institution")}</SelectItem>
+                      <SelectItem value="ECONOMY">{t("form.layers.economy")}</SelectItem>
+                      <SelectItem value="ROOT">{t("form.layers.root")}</SelectItem>
+                      <SelectItem value="ACCELERATOR">{t("form.layers.accelerator")}</SelectItem>
+                      <SelectItem value="COMPREHENSIVE">{t("form.layers.comprehensive")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="event-host-type">{t("form.hostType")}</Label>
+                  <Select value={formState.hostType || "none"} onValueChange={(value) => setFormState((previous) => ({ ...previous, hostType: value === "none" ? "" : value }))}>
+                    <SelectTrigger id="event-host-type">
+                      <SelectValue placeholder={t("form.hostTypePlaceholder")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("form.hostTypePlaceholder")}</SelectItem>
+                      <SelectItem value="OFFICIAL">{t("form.hostTypes.official")}</SelectItem>
+                      <SelectItem value="CO_HOSTED">{t("form.hostTypes.coHosted")}</SelectItem>
+                      <SelectItem value="REGISTERED">{t("form.hostTypes.registered")}</SelectItem>
+                      <SelectItem value="SIDE_EVENT">{t("form.hostTypes.sideEvent")}</SelectItem>
+                      <SelectItem value="COMMUNITY">{t("form.hostTypes.community")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </>
+            ) : null}
           </div>
           <DialogFooter className="mt-6">
             <Button variant="outline" onClick={() => setIsFormDialogOpen(false)}>{t("common.cancel")}</Button>

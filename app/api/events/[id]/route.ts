@@ -190,6 +190,7 @@ export async function PUT(
     const canManageThisEvent =
       currentUser.role === UserRole.ADMIN ||
       (currentUser.role === UserRole.EVENT_MANAGER && existingEvent.managerUserId === currentUser.id);
+    const canEditRestrictedEventFields = currentUser.role === UserRole.ADMIN;
 
     if (!canManageThisEvent) {
       return NextResponse.json(
@@ -405,7 +406,7 @@ export async function PUT(
           cityEn: finalCityEn,
         }),
         ...(image !== undefined && { image: image || null }),
-        ...(type !== undefined && { type }),
+        ...(canEditRestrictedEventFields && type !== undefined && { type }),
         ...(trackId !== undefined && { trackId: trackId || null }),
         ...(partners !== undefined && { partners: Array.isArray(partners) ? partners : [] }),
         ...(partnersEn !== undefined && { partnersEn: Array.isArray(partnersEn) ? partnersEn : [] }),
@@ -413,14 +414,14 @@ export async function PUT(
           maxAttendees: typeof maxAttendees === "number" ? maxAttendees : null,
         }),
         ...(isPublished !== undefined && { isPublished: Boolean(isPublished) }),
-        ...(isFeatured !== undefined && { isFeatured: Boolean(isFeatured) }),
-        ...(isPinned !== undefined && { isPinned: Boolean(isPinned) }),
+        ...(canEditRestrictedEventFields && isFeatured !== undefined && { isFeatured: Boolean(isFeatured) }),
+        ...(canEditRestrictedEventFields && isPinned !== undefined && { isPinned: Boolean(isPinned) }),
         ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
         ...(resolvedManagerUserId !== undefined && { managerUserId: resolvedManagerUserId }),
-        ...(eventLayer !== undefined && {
+        ...(canEditRestrictedEventFields && eventLayer !== undefined && {
           eventLayer: eventLayer && EVENT_LAYERS.has(eventLayer) ? (eventLayer as EventLayer) : null,
         }),
-        ...(hostType !== undefined && {
+        ...(canEditRestrictedEventFields && hostType !== undefined && {
           hostType: hostType && EVENT_HOST_TYPES.has(hostType) ? (hostType as EventHostType) : null,
         }),
       },

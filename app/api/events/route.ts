@@ -200,6 +200,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const canEditRestrictedEventFields = currentUser.role === UserRole.ADMIN;
+
     const body = await req.json();
     requestLocale = resolveRequestLocale(req, body.locale);
 
@@ -349,12 +351,18 @@ export async function POST(req: NextRequest) {
         partnersEn: Array.isArray(partnersEn) ? partnersEn : [],
         maxAttendees: typeof maxAttendees === "number" ? maxAttendees : null,
         isPublished: Boolean(isPublished),
-        isFeatured: Boolean(isFeatured),
+        isFeatured: canEditRestrictedEventFields ? Boolean(isFeatured) : false,
         requireApproval: Boolean(requireApproval),
-        isPinned: Boolean(isPinned),
+        isPinned: canEditRestrictedEventFields ? Boolean(isPinned) : false,
         managerUserId: resolvedManagerUserId,
-        eventLayer: eventLayer && EVENT_LAYERS.has(eventLayer) ? (eventLayer as EventLayer) : null,
-        hostType: hostType && EVENT_HOST_TYPES.has(hostType) ? (hostType as EventHostType) : null,
+        eventLayer:
+          canEditRestrictedEventFields && eventLayer && EVENT_LAYERS.has(eventLayer)
+            ? (eventLayer as EventLayer)
+            : null,
+        hostType:
+          canEditRestrictedEventFields && hostType && EVENT_HOST_TYPES.has(hostType)
+            ? (hostType as EventHostType)
+            : null,
       },
       include: {
         manager: {

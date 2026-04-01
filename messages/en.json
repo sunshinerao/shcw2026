@@ -2218,7 +2218,7 @@
             "recentPhoto": "Recent Photo",
             "recentPhotoDesc": "Please upload a recent passport-style photo",
             "uploadDragDrop": "Click to upload",
-            "uploadFormat": "JPG, PNG format, max 5MB",
+            "uploadFormat": "JPG, PNG, WEBP format, max 5MB",
             "name": "Full Name",
             "namePlaceholder": "Enter name as shown on passport/ID",
             "birthDate": "Date of Birth",

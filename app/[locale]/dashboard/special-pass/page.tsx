@@ -78,6 +78,15 @@ const PHONE_AREAS = [
   { value: "+55", label: "+55 (巴西/Brazil)" },
 ];
 
+const IMAGE_MIME_WHITELIST = new Set([
+  "image/jpeg",
+  "image/jpg",
+  "image/pjpeg",
+  "image/png",
+  "image/x-png",
+  "image/webp",
+]);
+
 // 需要上传正反面的境内证件类型
 const DOMESTIC_NEED_BACK = new Set(["id_card", "hk_macao_permit", "taiwan_permit"]);
 
@@ -267,8 +276,15 @@ export default function SpecialPassPage() {
     };
   }, [mapCountryToCode]);
 
-  const recognizeDocAndFill = useCallback(async (imageDataUrl: string, side: "front" | "back") => {
-    if (!form.entryType || !form.docType) {
+  const recognizeDocAndFill = useCallback(async (params: {
+    imageDataUrl: string;
+    side: "front" | "back";
+    entryType: "DOMESTIC" | "INTERNATIONAL" | "";
+    docType: string;
+  }) => {
+    const { imageDataUrl, side, entryType, docType } = params;
+
+    if (!entryType || !docType) {
       return;
     }
 
@@ -279,8 +295,8 @@ export default function SpecialPassPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           locale,
-          entryType: form.entryType,
-          docType: form.docType,
+          entryType,
+          docType,
           side,
           imageDataUrl,
         }),
@@ -315,20 +331,26 @@ export default function SpecialPassPage() {
     } finally {
       setIsRecognizingDoc(false);
     }
-  }, [form.docType, form.entryType, locale, mergeExtractedFields]);
+  }, [locale, mergeExtractedFields]);
 
   const handleFileUpload = (
     field: "docPhoto" | "docPhotoBack" | "photo",
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
+    const input = event.target;
     const file = event.target.files?.[0];
     if (!file) return;
 
-    if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
+    const mimeType = (file.type || "").toLowerCase();
+    if (!mimeType || !IMAGE_MIME_WHITELIST.has(mimeType)) {
       setAlert({
         type: "error",
-        message: locale === "zh" ? "仅支持 JPG、JPEG、PNG 图片" : "Only JPG, JPEG, and PNG images are supported",
+        message:
+          locale === "zh"
+            ? "仅支持 JPG、PNG、WEBP 图片"
+            : "Only JPG, PNG, and WEBP images are supported",
       });
+      input.value = "";
       return;
     }
 
@@ -337,17 +359,52 @@ export default function SpecialPassPage() {
         type: "error",
         message: locale === "zh" ? "文件大小不能超过5MB" : "File size must be less than 5MB",
       });
+      input.value = "";
       return;
     }
+
+    const currentEntryType = form.entryType;
+    const currentDocType = form.docType;
+
     const reader = new FileReader();
+    reader.onerror = () => {
+      setAlert({
+        type: "error",
+        message: locale === "zh" ? "图片读取失败，请重试" : "Failed to read image. Please try again.",
+      });
+      input.value = "";
+    };
+
+    reader.onabort = () => {
+      input.value = "";
+    };
+
     reader.onloadend = async () => {
-      const imageDataUrl = reader.result as string;
+      const imageDataUrl = typeof reader.result === "string" ? reader.result : "";
+      if (!imageDataUrl.startsWith("data:image/")) {
+        setAlert({
+          type: "error",
+          message: locale === "zh" ? "图片处理失败，请更换图片重试" : "Image processing failed. Please try another image.",
+        });
+        input.value = "";
+        return;
+      }
+
       setForm((prev) => ({ ...prev, [field]: imageDataUrl }));
 
       if (field === "docPhoto" || field === "docPhotoBack") {
-        await recognizeDocAndFill(imageDataUrl, field === "docPhoto" ? "front" : "back");
+        await recognizeDocAndFill({
+          imageDataUrl,
+          side: field === "docPhoto" ? "front" : "back",
+          entryType: currentEntryType,
+          docType: currentDocType,
+        });
       }
+
+      // Allow selecting the same file again to trigger onChange.
+      input.value = "";
     };
+
     reader.readAsDataURL(file);
   };
 

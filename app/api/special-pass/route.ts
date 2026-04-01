@@ -6,7 +6,7 @@ import { resolveRequestLocale } from "@/lib/api-i18n";
 export const dynamic = "force-dynamic";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
-const IMAGE_MIME_WHITELIST = new Set(["image/jpeg", "image/jpg", "image/png"]);
+const IMAGE_MIME_WHITELIST = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
 
 function normalizeText(value: unknown): string {
   return typeof value === "string" ? value.trim() : "";

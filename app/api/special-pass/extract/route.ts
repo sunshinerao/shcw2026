@@ -4,7 +4,7 @@ import { resolveRequestLocale } from "@/lib/api-i18n";
 import { getSystemSettingsForServer } from "@/lib/system-settings";
 
 const MAX_IMAGE_SIZE = 5 * 1024 * 1024;
-const IMAGE_MIME_WHITELIST = new Set(["image/jpeg", "image/jpg", "image/png"]);
+const IMAGE_MIME_WHITELIST = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
 
 type ExtractResult = {
   name?: string;
