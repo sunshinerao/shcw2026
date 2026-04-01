@@ -31,13 +31,17 @@ type ManagedEvent = {
   title: string;
   titleEn?: string | null;
   description: string;
+  descriptionEn?: string | null;
   shortDesc?: string | null;
+  shortDescEn?: string | null;
   startDate: string;
   endDate: string;
   startTime: string;
   endTime: string;
   venue: string;
+  venueEn?: string | null;
   city?: string | null;
+  cityEn?: string | null;
   address?: string | null;
   image?: string | null;
   type: EventType;
@@ -81,13 +85,17 @@ type EventFormState = {
   title: string;
   titleEn: string;
   description: string;
+  descriptionEn: string;
   shortDesc: string;
+  shortDescEn: string;
   startDate: string;
   endDate: string;
   startTime: string;
   endTime: string;
   venue: string;
+  venueEn: string;
   city: string;
+  cityEn: string;
   address: string;
   image: string;
   type: EventType;
@@ -114,13 +122,17 @@ const initialFormState: EventFormState = {
   title: "",
   titleEn: "",
   description: "",
+  descriptionEn: "",
   shortDesc: "",
+  shortDescEn: "",
   startDate: "",
   endDate: "",
   startTime: "09:00",
   endTime: "17:00",
   venue: "",
+  venueEn: "",
   city: "Shanghai",
+  cityEn: "",
   address: "",
   image: "",
   type: "forum",
@@ -317,13 +329,17 @@ export default function AdminEventsPage() {
       title: event.title,
       titleEn: event.titleEn || "",
       description: event.description,
+      descriptionEn: (event as Record<string, unknown>).descriptionEn as string || "",
       shortDesc: event.shortDesc || "",
+      shortDescEn: (event as Record<string, unknown>).shortDescEn as string || "",
       startDate: new Date(event.startDate).toISOString().slice(0, 10),
       endDate: new Date(event.endDate).toISOString().slice(0, 10),
       startTime: event.startTime,
       endTime: event.endTime,
       venue: event.venue,
+      venueEn: (event as Record<string, unknown>).venueEn as string || "",
       city: event.city || "Shanghai",
+      cityEn: (event as Record<string, unknown>).cityEn as string || "",
       address: event.address || "",
       image: event.image || "",
       type: event.type,
@@ -429,13 +445,17 @@ export default function AdminEventsPage() {
         title: formState.title,
         titleEn: formState.titleEn || null,
         description: formState.description,
+        descriptionEn: formState.descriptionEn || null,
         shortDesc: formState.shortDesc || null,
+        shortDescEn: formState.shortDescEn || null,
         startDate: formState.startDate,
         endDate: formState.endDate || formState.startDate,
         startTime: formState.startTime,
         endTime: formState.endTime,
         venue: formState.venue,
+        venueEn: formState.venueEn || null,
         city: formState.city,
+        cityEn: formState.cityEn || null,
         address: formState.address || null,
         image: formState.image || null,
         type: formState.type,
@@ -749,8 +769,16 @@ export default function AdminEventsPage() {
               <Textarea id="event-description" rows={4} value={formState.description} onChange={(event) => setFormState((previous) => ({ ...previous, description: event.target.value }))} />
             </div>
             <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="event-description-en">{t("form.descriptionEn")}</Label>
+              <Textarea id="event-description-en" rows={4} placeholder={locale === "zh" ? "留空则使用系统自动翻译" : "Leave empty to use auto-translation"} value={formState.descriptionEn} onChange={(event) => setFormState((previous) => ({ ...previous, descriptionEn: event.target.value }))} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
               <Label htmlFor="event-short-desc">{t("form.shortDesc")}</Label>
               <Textarea id="event-short-desc" rows={2} value={formState.shortDesc} onChange={(event) => setFormState((previous) => ({ ...previous, shortDesc: event.target.value }))} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="event-short-desc-en">{t("form.shortDescEn")}</Label>
+              <Textarea id="event-short-desc-en" rows={2} placeholder={locale === "zh" ? "留空则使用系统自动翻译" : "Leave empty to use auto-translation"} value={formState.shortDescEn} onChange={(event) => setFormState((previous) => ({ ...previous, shortDescEn: event.target.value }))} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="event-start-date">{t("form.startDate")}</Label>
@@ -772,13 +800,21 @@ export default function AdminEventsPage() {
               <Label htmlFor="event-end">{t("form.endTime")}</Label>
               <Input id="event-end" type="time" value={formState.endTime} onChange={(event) => setFormState((previous) => ({ ...previous, endTime: event.target.value }))} />
             </div>
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2">
               <Label htmlFor="event-venue">{t("form.venue")}</Label>
               <Input id="event-venue" value={formState.venue} onChange={(event) => setFormState((previous) => ({ ...previous, venue: event.target.value }))} />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="event-venue-en">{t("form.venueEn")}</Label>
+              <Input id="event-venue-en" placeholder={locale === "zh" ? "留空则使用系统自动翻译" : "Leave empty to use auto-translation"} value={formState.venueEn} onChange={(event) => setFormState((previous) => ({ ...previous, venueEn: event.target.value }))} />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="event-city">{t("form.city")}</Label>
               <Input id="event-city" value={formState.city} onChange={(event) => setFormState((previous) => ({ ...previous, city: event.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="event-city-en">{t("form.cityEn")}</Label>
+              <Input id="event-city-en" placeholder={locale === "zh" ? "留空则使用系统自动翻译" : "Leave empty to use auto-translation"} value={formState.cityEn} onChange={(event) => setFormState((previous) => ({ ...previous, cityEn: event.target.value }))} />
             </div>
             <div className="space-y-2">
               <Label htmlFor="event-track">{t("form.track")}</Label>
