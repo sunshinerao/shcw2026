@@ -217,6 +217,7 @@ export async function POST(req: NextRequest) {
       venue,
       venueEn,
       address,
+      addressEn,
       city,
       cityEn,
       image,
@@ -304,6 +305,7 @@ export async function POST(req: NextRequest) {
     const providedDescriptionEn = normalizeOptionalText(descriptionEn);
     const providedShortDescEn = normalizeOptionalText(shortDescEn);
     const providedVenueEn = normalizeOptionalText(venueEn);
+    const providedAddressEn = normalizeOptionalText(addressEn);
     const providedCityEn = normalizeOptionalText(cityEn);
 
     const translated = await translateMissingEventFieldsToEnglish({
@@ -311,6 +313,7 @@ export async function POST(req: NextRequest) {
       description: !providedDescriptionEn ? description : null,
       shortDesc: !providedShortDescEn ? shortDesc : null,
       venue: !providedVenueEn ? venue : null,
+      address: !providedAddressEn ? (address || null) : null,
       city: !providedCityEn ? cityValue : null,
     });
 
@@ -318,6 +321,7 @@ export async function POST(req: NextRequest) {
     const finalDescriptionEn = providedDescriptionEn || translated.descriptionEn || null;
     const finalShortDescEn = providedShortDescEn || translated.shortDescEn || null;
     const finalVenueEn = providedVenueEn || translated.venueEn || null;
+    const finalAddressEn = providedAddressEn || translated.addressEn || null;
     const finalCityEn = providedCityEn || translated.cityEn || null;
 
     const event = await prisma.event.create({
@@ -335,6 +339,7 @@ export async function POST(req: NextRequest) {
         venue,
         venueEn: finalVenueEn,
         address: address || null,
+        addressEn: finalAddressEn,
         city: cityValue,
         cityEn: finalCityEn,
         image: image || null,

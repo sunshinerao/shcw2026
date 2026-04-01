@@ -70,6 +70,9 @@ type PublicEvent = {
   venue: string;
   venueEn?: string | null;
   address?: string | null;
+  addressEn?: string | null;
+  city?: string | null;
+  cityEn?: string | null;
   type: EventType;
   eventLayer?: string | null;
   hostType?: string | null;
@@ -349,7 +352,20 @@ export default function EventDetailPage() {
   const localizedDescription = getLocalizedDescription(event, locale);
   const fullDescription = getFullDescription(event, locale);
   const localizedVenue = locale === "en" ? event.venueEn || event.venue : event.venue;
-  const localizedAddress = event.address || "";
+  const localizedAddress = locale === "en" ? event.addressEn || event.address || "" : event.address || "";
+  const localizedCity = locale === "en"
+    ? (event.cityEn || event.city || "Shanghai")
+    : (event.city || "上海");
+  const mapsQuery = encodeURIComponent(
+    [localizedVenue, localizedAddress, localizedCity].filter(Boolean).join(", ")
+  );
+  const googleMapsEmbed = `https://maps.google.com/maps?q=${mapsQuery}&output=embed&hl=${locale === "zh" ? "zh-CN" : "en"}`;
+  const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+  const gaodeQuery = encodeURIComponent(
+    [event.venue, event.address, event.city || "上海"].filter(Boolean).join(" ")
+  );
+  const gaodeLink = `https://www.amap.com/search?query=${gaodeQuery}`;
+  const baiduLink = `https://map.baidu.com/?wd=${encodeURIComponent([event.venue, event.address].filter(Boolean).join(" "))}`;
 
   return (
     <div className="min-h-screen bg-slate-50 pt-16 lg:pt-20">
@@ -596,31 +612,72 @@ export default function EventDetailPage() {
 
                 <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
                   <h3 className="text-lg font-bold text-slate-900 mb-4">{t("locationTitle")}</h3>
-                  <div className="aspect-video bg-gradient-to-br from-emerald-50 to-blue-50 rounded-xl mb-4 flex flex-col items-center justify-center border border-slate-200 relative overflow-hidden">
-                    <div className="absolute inset-0 opacity-10">
-                      <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                        <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
-                          <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5" />
-                        </pattern>
-                        <rect width="100" height="100" fill="url(#grid)" />
-                      </svg>
-                    </div>
-                    <MapPin className="w-10 h-10 text-emerald-500 mb-2" />
-                    <p className="text-sm text-slate-500 text-center px-4">{localizedVenue}</p>
+                  <div className="rounded-xl mb-4 overflow-hidden border border-slate-200" style={{ aspectRatio: "16/9" }}>
+                    {locale === "en" ? (
+                      <iframe
+                        src={googleMapsEmbed}
+                        className="w-full h-full"
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="Event location map"
+                      />
+                    ) : (
+                      <a
+                        href={gaodeLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full h-full bg-gradient-to-br from-emerald-50 to-blue-50 flex flex-col items-center justify-center relative overflow-hidden"
+                        style={{ minHeight: "160px" }}
+                      >
+                        <div className="absolute inset-0 opacity-10">
+                          <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                            <pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse">
+                              <path d="M 10 0 L 0 0 0 10" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                            </pattern>
+                            <rect width="100" height="100" fill="url(#grid)" />
+                          </svg>
+                        </div>
+                        <MapPin className="w-10 h-10 text-emerald-500 mb-2" />
+                        <p className="text-sm text-slate-500 text-center px-4">{localizedVenue}</p>
+                        <p className="text-xs text-emerald-600 mt-1">{t("clickToViewMap")}</p>
+                      </a>
+                    )}
                   </div>
                   <p className="font-medium text-slate-900 mb-1">{localizedVenue}</p>
                   {localizedAddress ? <p className="text-sm text-slate-500 mb-3">{localizedAddress}</p> : null}
-                  <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${localizedVenue} ${localizedAddress}`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block"
-                  >
-                    <Button variant="outline" className="w-full" size="sm">
-                      <ExternalLink className="w-4 h-4 mr-2" />
-                      {t("viewMap")}
-                    </Button>
-                  </a>
+                  <div className="flex gap-2">
+                    {locale === "en" ? (
+                      <>
+                        <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                          <Button variant="outline" className="w-full" size="sm">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Google Maps
+                          </Button>
+                        </a>
+                        <a href={gaodeLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                          <Button variant="outline" className="w-full" size="sm">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            Gaode Maps
+                          </Button>
+                        </a>
+                      </>
+                    ) : (
+                      <>
+                        <a href={gaodeLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                          <Button variant="outline" className="w-full" size="sm">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            高德地图
+                          </Button>
+                        </a>
+                        <a href={baiduLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                          <Button variant="outline" className="w-full" size="sm">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            百度地图
+                          </Button>
+                        </a>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

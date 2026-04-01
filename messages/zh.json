@@ -379,6 +379,7 @@
             "track": "所属赛道",
             "trackPlaceholder": "未分配赛道",
             "address": "地址",
+            "addressEn": "英文地址",
             "image": "图片 URL",
             "type": "类型",
             "maxAttendees": "容量",
@@ -1733,7 +1734,8 @@
             "shareSuccess": "链接已复制到剪贴板"
         },
         "locationTitle": "活动地点",
-        "viewMap": "查看地图"
+        "viewMap": "查看地图",
+        "clickToViewMap": "点击查看地图"
     },
     "aboutPage": {
         "hero": {

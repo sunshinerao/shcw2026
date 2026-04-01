@@ -5,6 +5,7 @@ type EventTranslationInput = {
   description?: string | null;
   shortDesc?: string | null;
   venue?: string | null;
+  address?: string | null;
   city?: string | null;
 };
 
@@ -13,6 +14,7 @@ type EventTranslationOutput = {
   descriptionEn?: string;
   shortDescEn?: string;
   venueEn?: string;
+  addressEn?: string;
   cityEn?: string;
 };
 
@@ -60,12 +62,14 @@ export async function translateMissingEventFieldsToEnglish(
   const description = normalizeText(input.description);
   const shortDesc = normalizeText(input.shortDesc);
   const venue = normalizeText(input.venue);
+  const address = normalizeText(input.address);
   const city = normalizeText(input.city);
 
   if (title) payload.title = title;
   if (description) payload.description = description;
   if (shortDesc) payload.shortDesc = shortDesc;
   if (venue) payload.venue = venue;
+  if (address) payload.address = address;
   if (city) payload.city = city;
 
   if (Object.keys(payload).length === 0) {
@@ -130,12 +134,14 @@ export async function translateMissingEventFieldsToEnglish(
   const descriptionEn = normalizeText(typeof parsed.description === "string" ? parsed.description : null);
   const shortDescEn = normalizeText(typeof parsed.shortDesc === "string" ? parsed.shortDesc : null);
   const venueEn = normalizeText(typeof parsed.venue === "string" ? parsed.venue : null);
+  const addressEn = normalizeText(typeof parsed.address === "string" ? parsed.address : null);
   const cityEn = normalizeText(typeof parsed.city === "string" ? parsed.city : null);
 
   if (titleEn) output.titleEn = titleEn;
   if (descriptionEn) output.descriptionEn = descriptionEn;
   if (shortDescEn) output.shortDescEn = shortDescEn;
   if (venueEn) output.venueEn = venueEn;
+  if (addressEn) output.addressEn = addressEn;
   if (cityEn) output.cityEn = cityEn;
 
   return output;

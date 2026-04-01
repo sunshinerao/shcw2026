@@ -379,6 +379,7 @@
             "track": "Track",
             "trackPlaceholder": "Unassigned track",
             "address": "Address",
+            "addressEn": "Address (English)",
             "image": "Image URL",
             "type": "Type",
             "maxAttendees": "Capacity",
@@ -1733,7 +1734,8 @@
             "shareSuccess": "Link copied to clipboard"
         },
         "locationTitle": "Location",
-        "viewMap": "View Map"
+        "viewMap": "View Map",
+        "clickToViewMap": "Click to view map"
     },
     "aboutPage": {
         "hero": {

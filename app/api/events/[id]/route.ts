@@ -175,6 +175,8 @@ export async function PUT(
         venueEn: true,
         city: true,
         cityEn: true,
+        address: true,
+        addressEn: true,
       },
     });
 
@@ -216,6 +218,7 @@ export async function PUT(
       venue,
       venueEn,
       address,
+      addressEn,
       city,
       cityEn,
       image,
@@ -342,6 +345,7 @@ export async function PUT(
     const manualDescriptionEn = descriptionEn !== undefined ? normalizeOptionalText(descriptionEn) : undefined;
     const manualShortDescEn = shortDescEn !== undefined ? normalizeOptionalText(shortDescEn) : undefined;
     const manualVenueEn = venueEn !== undefined ? normalizeOptionalText(venueEn) : undefined;
+    const manualAddressEn = addressEn !== undefined ? normalizeOptionalText(addressEn) : undefined;
     const manualCityEn = cityEn !== undefined ? normalizeOptionalText(cityEn) : undefined;
 
     const baseTitleEn = manualTitleEn !== undefined ? manualTitleEn : existingEvent.titleEn;
@@ -350,6 +354,7 @@ export async function PUT(
     const baseShortDescEn =
       manualShortDescEn !== undefined ? manualShortDescEn : existingEvent.shortDescEn;
     const baseVenueEn = manualVenueEn !== undefined ? manualVenueEn : existingEvent.venueEn;
+    const baseAddressEn = manualAddressEn !== undefined ? manualAddressEn : existingEvent.addressEn;
     const baseCityEn = manualCityEn !== undefined ? manualCityEn : existingEvent.cityEn;
 
     const translated = await translateMissingEventFieldsToEnglish({
@@ -357,6 +362,7 @@ export async function PUT(
       description: !baseDescriptionEn ? nextDescription : null,
       shortDesc: !baseShortDescEn ? nextShortDesc : null,
       venue: !baseVenueEn ? nextVenue : null,
+      address: !baseAddressEn ? (address !== undefined ? address || null : existingEvent.address) : null,
       city: !baseCityEn ? nextCity : null,
     });
 
@@ -364,6 +370,7 @@ export async function PUT(
     const finalDescriptionEn = baseDescriptionEn || translated.descriptionEn || null;
     const finalShortDescEn = baseShortDescEn || translated.shortDescEn || null;
     const finalVenueEn = baseVenueEn || translated.venueEn || null;
+    const finalAddressEn = baseAddressEn || translated.addressEn || null;
     const finalCityEn = baseCityEn || translated.cityEn || null;
 
     const event = await prisma.event.update({
@@ -390,6 +397,9 @@ export async function PUT(
           venueEn: finalVenueEn,
         }),
         ...(address !== undefined && { address: address || null }),
+        ...((address !== undefined || addressEn !== undefined || existingEvent.addressEn === null) && {
+          addressEn: finalAddressEn,
+        }),
         ...(city !== undefined && { city: city || null }),
         ...((city !== undefined || cityEn !== undefined || existingEvent.cityEn === null) && {
           cityEn: finalCityEn,

@@ -251,6 +251,7 @@ model Event {
   venue        String   // 场馆名称
   venueEn      String?
   address      String?  // 详细地址
+  addressEn    String?
   city         String?  // 城市归属，例如 Shanghai
   cityEn       String?
   

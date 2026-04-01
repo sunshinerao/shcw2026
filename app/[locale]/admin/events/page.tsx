@@ -43,6 +43,7 @@ type ManagedEvent = {
   city?: string | null;
   cityEn?: string | null;
   address?: string | null;
+  addressEn?: string | null;
   image?: string | null;
   type: EventType;
   eventLayer?: string | null;
@@ -97,6 +98,7 @@ type EventFormState = {
   city: string;
   cityEn: string;
   address: string;
+  addressEn: string;
   image: string;
   type: EventType;
   eventLayer: string;
@@ -134,6 +136,7 @@ const initialFormState: EventFormState = {
   city: "Shanghai",
   cityEn: "",
   address: "",
+  addressEn: "",
   image: "",
   type: "forum",
   eventLayer: "",
@@ -341,6 +344,7 @@ export default function AdminEventsPage() {
       city: event.city || "Shanghai",
       cityEn: event.cityEn || "",
       address: event.address || "",
+      addressEn: event.addressEn || "",
       image: event.image || "",
       type: event.type,
       eventLayer: event.eventLayer || "",
@@ -457,6 +461,7 @@ export default function AdminEventsPage() {
         city: formState.city,
         cityEn: formState.cityEn || null,
         address: formState.address || null,
+        addressEn: formState.addressEn || null,
         image: formState.image || null,
         type: formState.type,
         eventLayer: formState.eventLayer || null,
@@ -789,10 +794,6 @@ export default function AdminEventsPage() {
               <Input id="event-end-date" type="date" value={formState.endDate} onChange={(event) => setFormState((previous) => ({ ...previous, endDate: event.target.value }))} />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="event-type">{t("form.type")}</Label>
-              <Input id="event-type" value={getEventTypeLabel(formState.type, locale)} readOnly />
-            </div>
-            <div className="space-y-2">
               <Label htmlFor="event-start">{t("form.startTime")}</Label>
               <Input id="event-start" type="time" value={formState.startTime} onChange={(event) => setFormState((previous) => ({ ...previous, startTime: event.target.value }))} />
             </div>
@@ -832,9 +833,13 @@ export default function AdminEventsPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-2 md:col-span-2">
+            <div className="space-y-2">
               <Label htmlFor="event-address">{t("form.address")}</Label>
               <Input id="event-address" value={formState.address} onChange={(event) => setFormState((previous) => ({ ...previous, address: event.target.value }))} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="event-address-en">{t("form.addressEn")}</Label>
+              <Input id="event-address-en" placeholder={locale === "zh" ? "留空则使用系统自动翻译" : "Leave empty to use auto-translation"} value={formState.addressEn} onChange={(event) => setFormState((previous) => ({ ...previous, addressEn: event.target.value }))} />
             </div>
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="event-image">{t("form.image")}</Label>
