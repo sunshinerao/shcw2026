@@ -288,6 +288,11 @@ export default function EventRegisterPage() {
   }
 
   const localizedTitle = locale === "en" ? event.titleEn || event.title : event.title;
+  const localizedVenue = event
+    ? locale === "en"
+      ? event.venueEn || event.venue
+      : event.venue
+    : "";
 
   return (
     <div className="min-h-screen bg-slate-50 py-12">
@@ -452,7 +457,7 @@ export default function EventRegisterPage() {
                 <div className="flex items-start gap-3">
                   <MapPin className="w-5 h-5 text-emerald-600 mt-0.5" />
                   <div>
-                    <p className="font-medium text-slate-900">{event.venue}</p>
+                    <p className="font-medium text-slate-900">{localizedVenue}</p>
                     {event.address && (
                       <p className="text-sm text-slate-500">{event.address}</p>
                     )}

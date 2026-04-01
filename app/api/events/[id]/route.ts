@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { EventHostType, EventLayer, UserRole } from "@prisma/client";
+import { translateMissingEventFieldsToEnglish } from "@/lib/ai-translation";
 import { authOptions } from "@/lib/auth";
 import { normalizeAgendaDateKey } from "@/lib/agenda";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
@@ -27,6 +28,15 @@ async function requireSessionUser() {
 function parseEventDate(dateValue: string) {
   const parsed = new Date(dateValue);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function normalizeOptionalText(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 export async function GET(
@@ -152,7 +162,20 @@ export async function PUT(
 
     const existingEvent = await prisma.event.findUnique({
       where: { id: params.id },
-      select: { id: true, managerUserId: true },
+      select: {
+        id: true,
+        managerUserId: true,
+        title: true,
+        titleEn: true,
+        description: true,
+        descriptionEn: true,
+        shortDesc: true,
+        shortDescEn: true,
+        venue: true,
+        venueEn: true,
+        city: true,
+        cityEn: true,
+      },
     });
 
     if (!existingEvent) {
@@ -309,24 +332,68 @@ export async function PUT(
       parsedEndDate = nextDate;
     }
 
+    const nextTitle = title !== undefined ? title : existingEvent.title;
+    const nextDescription = description !== undefined ? description : existingEvent.description;
+    const nextShortDesc = shortDesc !== undefined ? shortDesc : existingEvent.shortDesc;
+    const nextVenue = venue !== undefined ? venue : existingEvent.venue;
+    const nextCity = city !== undefined ? city : existingEvent.city;
+
+    const manualTitleEn = titleEn !== undefined ? normalizeOptionalText(titleEn) : undefined;
+    const manualDescriptionEn = descriptionEn !== undefined ? normalizeOptionalText(descriptionEn) : undefined;
+    const manualShortDescEn = shortDescEn !== undefined ? normalizeOptionalText(shortDescEn) : undefined;
+    const manualVenueEn = venueEn !== undefined ? normalizeOptionalText(venueEn) : undefined;
+    const manualCityEn = cityEn !== undefined ? normalizeOptionalText(cityEn) : undefined;
+
+    const baseTitleEn = manualTitleEn !== undefined ? manualTitleEn : existingEvent.titleEn;
+    const baseDescriptionEn =
+      manualDescriptionEn !== undefined ? manualDescriptionEn : existingEvent.descriptionEn;
+    const baseShortDescEn =
+      manualShortDescEn !== undefined ? manualShortDescEn : existingEvent.shortDescEn;
+    const baseVenueEn = manualVenueEn !== undefined ? manualVenueEn : existingEvent.venueEn;
+    const baseCityEn = manualCityEn !== undefined ? manualCityEn : existingEvent.cityEn;
+
+    const translated = await translateMissingEventFieldsToEnglish({
+      title: !baseTitleEn ? nextTitle : null,
+      description: !baseDescriptionEn ? nextDescription : null,
+      shortDesc: !baseShortDescEn ? nextShortDesc : null,
+      venue: !baseVenueEn ? nextVenue : null,
+      city: !baseCityEn ? nextCity : null,
+    });
+
+    const finalTitleEn = baseTitleEn || translated.titleEn || null;
+    const finalDescriptionEn = baseDescriptionEn || translated.descriptionEn || null;
+    const finalShortDescEn = baseShortDescEn || translated.shortDescEn || null;
+    const finalVenueEn = baseVenueEn || translated.venueEn || null;
+    const finalCityEn = baseCityEn || translated.cityEn || null;
+
     const event = await prisma.event.update({
       where: { id: params.id },
       data: {
         ...(title !== undefined && { title }),
-        ...(titleEn !== undefined && { titleEn: titleEn || null }),
+        ...((title !== undefined || titleEn !== undefined || existingEvent.titleEn === null) && {
+          titleEn: finalTitleEn,
+        }),
         ...(description !== undefined && { description }),
-        ...(descriptionEn !== undefined && { descriptionEn: descriptionEn || null }),
+        ...((description !== undefined || descriptionEn !== undefined || existingEvent.descriptionEn === null) && {
+          descriptionEn: finalDescriptionEn,
+        }),
         ...(shortDesc !== undefined && { shortDesc: shortDesc || null }),
-        ...(shortDescEn !== undefined && { shortDescEn: shortDescEn || null }),
+        ...((shortDesc !== undefined || shortDescEn !== undefined || existingEvent.shortDescEn === null) && {
+          shortDescEn: finalShortDescEn,
+        }),
         ...(parsedStartDate && { startDate: parsedStartDate }),
         ...(parsedEndDate && { endDate: parsedEndDate }),
         ...(startTime !== undefined && { startTime }),
         ...(endTime !== undefined && { endTime }),
         ...(venue !== undefined && { venue }),
-        ...(venueEn !== undefined && { venueEn: venueEn || null }),
+        ...((venue !== undefined || venueEn !== undefined || existingEvent.venueEn === null) && {
+          venueEn: finalVenueEn,
+        }),
         ...(address !== undefined && { address: address || null }),
         ...(city !== undefined && { city: city || null }),
-        ...(cityEn !== undefined && { cityEn: cityEn || null }),
+        ...((city !== undefined || cityEn !== undefined || existingEvent.cityEn === null) && {
+          cityEn: finalCityEn,
+        }),
         ...(image !== undefined && { image: image || null }),
         ...(type !== undefined && { type }),
         ...(trackId !== undefined && { trackId: trackId || null }),

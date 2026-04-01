@@ -348,6 +348,8 @@ export default function EventDetailPage() {
   const localizedTitle = getLocalizedTitle(event, locale);
   const localizedDescription = getLocalizedDescription(event, locale);
   const fullDescription = getFullDescription(event, locale);
+  const localizedVenue = locale === "en" ? event.venueEn || event.venue : event.venue;
+  const localizedAddress = event.address || "";
 
   return (
     <div className="min-h-screen bg-slate-50 pt-16 lg:pt-20">
@@ -604,12 +606,12 @@ export default function EventDetailPage() {
                       </svg>
                     </div>
                     <MapPin className="w-10 h-10 text-emerald-500 mb-2" />
-                    <p className="text-sm text-slate-500 text-center px-4">{event.venue}</p>
+                    <p className="text-sm text-slate-500 text-center px-4">{localizedVenue}</p>
                   </div>
-                  <p className="font-medium text-slate-900 mb-1">{event.venue}</p>
-                  {event.address ? <p className="text-sm text-slate-500 mb-3">{event.address}</p> : null}
+                  <p className="font-medium text-slate-900 mb-1">{localizedVenue}</p>
+                  {localizedAddress ? <p className="text-sm text-slate-500 mb-3">{localizedAddress}</p> : null}
                   <a
-                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${event.venue} ${event.address || ""}`)}`}
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${localizedVenue} ${localizedAddress}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="block"

@@ -347,7 +347,7 @@ export default function EventsPage() {
                               <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
                                 <span className="flex items-center">
                                   <MapPin className="w-4 h-4 mr-1" />
-                                  {event.venue}
+                                  {locale === "en" ? event.venueEn || event.venue : event.venue}
                                 </span>
                               </div>
                             </div>
@@ -450,7 +450,7 @@ export default function EventsPage() {
                             <div className="flex items-center gap-4 text-sm text-slate-500 flex-wrap">
                               <span className="flex items-center">
                                 <MapPin className="w-4 h-4 mr-1" />
-                                {event.venue}
+                                {locale === "en" ? event.venueEn || event.venue : event.venue}
                               </span>
                               {event.maxAttendees ? (
                                 <span className="flex items-center">

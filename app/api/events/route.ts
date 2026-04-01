@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { EventHostType, EventLayer, Prisma, UserRole } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
+import { translateMissingEventFieldsToEnglish } from "@/lib/ai-translation";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canManageEvents } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -26,6 +27,15 @@ async function requireSessionUser() {
 function parseEventDate(dateValue: string) {
   const parsed = new Date(dateValue);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function normalizeOptionalText(value: unknown): string | null {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
 }
 
 export async function GET(req: NextRequest) {
@@ -289,23 +299,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const cityValue = normalizeOptionalText(city) || "Shanghai";
+    const providedTitleEn = normalizeOptionalText(titleEn);
+    const providedDescriptionEn = normalizeOptionalText(descriptionEn);
+    const providedShortDescEn = normalizeOptionalText(shortDescEn);
+    const providedVenueEn = normalizeOptionalText(venueEn);
+    const providedCityEn = normalizeOptionalText(cityEn);
+
+    const translated = await translateMissingEventFieldsToEnglish({
+      title: !providedTitleEn ? title : null,
+      description: !providedDescriptionEn ? description : null,
+      shortDesc: !providedShortDescEn ? shortDesc : null,
+      venue: !providedVenueEn ? venue : null,
+      city: !providedCityEn ? cityValue : null,
+    });
+
+    const finalTitleEn = providedTitleEn || translated.titleEn || null;
+    const finalDescriptionEn = providedDescriptionEn || translated.descriptionEn || null;
+    const finalShortDescEn = providedShortDescEn || translated.shortDescEn || null;
+    const finalVenueEn = providedVenueEn || translated.venueEn || null;
+    const finalCityEn = providedCityEn || translated.cityEn || null;
+
     const event = await prisma.event.create({
       data: {
         title,
-        titleEn: titleEn || null,
+        titleEn: finalTitleEn,
         description,
-        descriptionEn: descriptionEn || null,
+        descriptionEn: finalDescriptionEn,
         shortDesc: shortDesc || null,
-        shortDescEn: shortDescEn || null,
+        shortDescEn: finalShortDescEn,
         startDate: parsedStartDate,
         endDate: parsedEndDate,
         startTime,
         endTime,
         venue,
-        venueEn: venueEn || null,
+        venueEn: finalVenueEn,
         address: address || null,
-        city: city || "Shanghai",
-        cityEn: cityEn || city || "Shanghai",
+        city: cityValue,
+        cityEn: finalCityEn,
         image: image || null,
         type,
         trackId: trackId || null,
