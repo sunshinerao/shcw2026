@@ -2217,7 +2217,7 @@
             "docPagePhoto": "证件资料页照片",
             "recentPhoto": "近期免冠照片",
             "recentPhotoDesc": "请上传白底2寸免冠照片",
-            "uploadDragDrop": "点击或拖拽上传",
+            "uploadDragDrop": "点击上传",
             "uploadFormat": "支持 JPG、PNG 格式，最大 5MB",
             "name": "姓名",
             "namePlaceholder": "请输入护照/证件上的姓名",

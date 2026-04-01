@@ -2217,7 +2217,7 @@
             "docPagePhoto": "Document Information Page Photo",
             "recentPhoto": "Recent Photo",
             "recentPhotoDesc": "Please upload a recent passport-style photo",
-            "uploadDragDrop": "Click or drag to upload",
+            "uploadDragDrop": "Click to upload",
             "uploadFormat": "JPG, PNG format, max 5MB",
             "name": "Full Name",
             "namePlaceholder": "Enter name as shown on passport/ID",

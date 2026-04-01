@@ -112,6 +112,17 @@ interface ExistingPass {
   createdAt: string;
 }
 
+type ExtractedDocFields = {
+  name?: string;
+  birthDate?: string;
+  gender?: string;
+  docNumber?: string;
+  docValidFrom?: string;
+  docValidTo?: string;
+  countryCode?: string;
+  countryName?: string;
+};
+
 const initialForm: SpecialPassApplication = {
   entryType: "",
   country: "",
@@ -144,6 +155,7 @@ export default function SpecialPassPage() {
   const [passes, setPasses] = useState<ExistingPass[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRecognizingDoc, setIsRecognizingDoc] = useState(false);
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [countrySearch, setCountrySearch] = useState("");
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -218,12 +230,108 @@ export default function SpecialPassPage() {
     }
   }, [alert]);
 
+  const mapCountryToCode = useCallback((value?: string) => {
+    if (!value) {
+      return "";
+    }
+
+    const normalized = value.trim().toLowerCase();
+    if (!normalized) {
+      return "";
+    }
+
+    const matched = COUNTRIES.find((country) => {
+      return (
+        country.code.toLowerCase() === normalized ||
+        country.en.toLowerCase() === normalized ||
+        country.zh.toLowerCase() === normalized
+      );
+    });
+
+    return matched?.code || "";
+  }, []);
+
+  const mergeExtractedFields = useCallback((prev: SpecialPassApplication, extracted: ExtractedDocFields) => {
+    const mappedCountryCode = mapCountryToCode(extracted.countryCode || extracted.countryName);
+    const normalizedGender = extracted.gender === "M" || extracted.gender === "F" ? extracted.gender : "";
+
+    return {
+      ...prev,
+      name: prev.name || extracted.name || "",
+      birthDate: prev.birthDate || extracted.birthDate || "",
+      gender: prev.gender || normalizedGender,
+      docNumber: prev.docNumber || extracted.docNumber || "",
+      docValidFrom: prev.docValidFrom || extracted.docValidFrom || "",
+      docValidTo: prev.docValidTo || extracted.docValidTo || "",
+      country: prev.country || mappedCountryCode || prev.country,
+    };
+  }, [mapCountryToCode]);
+
+  const recognizeDocAndFill = useCallback(async (imageDataUrl: string, side: "front" | "back") => {
+    if (!form.entryType || !form.docType) {
+      return;
+    }
+
+    setIsRecognizingDoc(true);
+    try {
+      const res = await fetch("/api/special-pass/extract", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locale,
+          entryType: form.entryType,
+          docType: form.docType,
+          side,
+          imageDataUrl,
+        }),
+      });
+
+      const payload = await res.json();
+      if (!res.ok || !payload.success) {
+        throw new Error(payload.error || (locale === "zh" ? "证件识别失败" : "Document recognition failed"));
+      }
+
+      const extracted = (payload.data || {}) as ExtractedDocFields;
+      const hasAnyValue = Object.values(extracted).some((value) => typeof value === "string" && value.trim().length > 0);
+
+      if (!hasAnyValue) {
+        setAlert({
+          type: "error",
+          message: locale === "zh" ? "未识别到可填充的证件信息，请手动填写" : "No fillable document info recognized. Please fill in manually.",
+        });
+        return;
+      }
+
+      setForm((prev) => mergeExtractedFields(prev, extracted));
+      setAlert({
+        type: "success",
+        message: locale === "zh" ? "已自动识别证件信息，请核对后提交" : "Document fields auto-filled. Please verify before submitting.",
+      });
+    } catch (error) {
+      setAlert({
+        type: "error",
+        message: error instanceof Error ? error.message : (locale === "zh" ? "证件识别失败" : "Document recognition failed"),
+      });
+    } finally {
+      setIsRecognizingDoc(false);
+    }
+  }, [form.docType, form.entryType, locale, mergeExtractedFields]);
+
   const handleFileUpload = (
     field: "docPhoto" | "docPhotoBack" | "photo",
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    if (!["image/jpeg", "image/jpg", "image/png"].includes(file.type)) {
+      setAlert({
+        type: "error",
+        message: locale === "zh" ? "仅支持 JPG、JPEG、PNG 图片" : "Only JPG, JPEG, and PNG images are supported",
+      });
+      return;
+    }
+
     if (file.size > 5 * 1024 * 1024) {
       setAlert({
         type: "error",
@@ -232,38 +340,58 @@ export default function SpecialPassPage() {
       return;
     }
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setForm((prev) => ({ ...prev, [field]: reader.result as string }));
+    reader.onloadend = async () => {
+      const imageDataUrl = reader.result as string;
+      setForm((prev) => ({ ...prev, [field]: imageDataUrl }));
+
+      if (field === "docPhoto" || field === "docPhotoBack") {
+        await recognizeDocAndFill(imageDataUrl, field === "docPhoto" ? "front" : "back");
+      }
     };
     reader.readAsDataURL(file);
   };
 
   const handleSubmit = async () => {
-    // Domestic: only name + phone required
     if (form.entryType === "DOMESTIC") {
-      if (!form.name || !form.phone) {
+      if (!form.name || !form.phone || !form.email) {
         setAlert({
           type: "error",
-          message: locale === "zh" ? "请填写姓名和手机号码" : "Please enter your name and phone number",
+          message: locale === "zh"
+            ? "请填写境内申请必填信息（姓名、手机号码、电子邮箱）"
+            : "Please complete required domestic fields (name, phone, email)",
         });
         return;
       }
     } else {
-      // International: all fields required
-      if (!form.entryType || !form.country || !form.name || !form.birthDate || !form.gender || !form.docNumber || !form.docValidFrom || !form.docValidTo) {
+      if (
+        !form.entryType ||
+        !form.country ||
+        !form.docType ||
+        !form.docPhoto ||
+        !form.photo ||
+        !form.name ||
+        !form.birthDate ||
+        !form.gender ||
+        !form.docNumber ||
+        !form.docValidFrom ||
+        !form.docValidTo ||
+        !form.email ||
+        !form.phone
+      ) {
         setAlert({
           type: "error",
           message: locale === "zh" ? "请填写所有必填字段" : "Please fill in all required fields",
         });
         return;
       }
-      if (!form.docType) {
-        setAlert({
-          type: "error",
-          message: locale === "zh" ? "请选择证件类型" : "Please select document type",
-        });
-        return;
-      }
+    }
+
+    if (form.docValidFrom && form.docValidTo && form.docValidFrom > form.docValidTo) {
+      setAlert({
+        type: "error",
+        message: locale === "zh" ? "证件有效期开始日期不能晚于结束日期" : "Document validity start date cannot be later than end date",
+      });
+      return;
     }
 
     setIsSubmitting(true);
@@ -741,7 +869,7 @@ export default function SpecialPassPage() {
                     <div className="space-y-2">
                       <Label>
                         <Mail className="w-4 h-4 inline mr-1" />
-                        {t("fields.email")}
+                        <span className="text-red-500">*</span> {t("fields.email")}
                       </Label>
                       <Input
                         type="email"
@@ -1029,12 +1157,14 @@ export default function SpecialPassPage() {
                 <Button
                   className="bg-emerald-600 hover:bg-emerald-700"
                   onClick={handleSubmit}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isRecognizingDoc}
                 >
-                  {isSubmitting ? (
+                  {isSubmitting || isRecognizingDoc ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {t("submitting")}
+                      {isRecognizingDoc
+                        ? (locale === "zh" ? "识别证件中..." : "Recognizing document...")
+                        : t("submitting")}
                     </>
                   ) : (
                     <>
