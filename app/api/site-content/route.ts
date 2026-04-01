@@ -15,6 +15,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, error: "Key is required" }, { status: 400 });
     }
 
+    if (key === "system_settings") {
+      return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
+    }
+
     const content = await prisma.siteContent.findUnique({ where: { key } });
 
     return NextResponse.json({ success: true, data: content });

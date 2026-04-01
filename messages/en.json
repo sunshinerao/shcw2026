@@ -314,7 +314,8 @@
         "publish": "Publish",
         "unpublish": "Unpublish",
         "feature": "Mark as featured",
-        "unfeature": "Remove featured"
+          "unfeature": "Remove featured",
+          "regenerateHighlights": "Regenerate AI Highlights"
       },
       "form": {
         "createTitle": "Create event",
@@ -378,7 +379,11 @@
         "deleteSuccess": "Event deleted successfully.",
         "deleteFailed": "Failed to delete the event.",
         "statusUpdateSuccess": "Event status updated successfully.",
-        "statusUpdateFailed": "Failed to update the event status."
+        "statusUpdateFailed": "Failed to update the event status.",
+          "saveSuccessWithHighlightWarning": "Event was saved, but AI highlight generation failed. You can retry later.",
+          "highlightsSuccess": "AI highlights generated successfully.",
+          "highlightsSkipped": "AI highlight generation was skipped (feature not enabled).",
+          "highlightsRetryFailed": "AI highlight generation failed. Please check your API key configuration."
       },
       "agenda": {
         "title": "Agenda Management",
@@ -2070,6 +2075,33 @@
     "status": {
       "published": "Published",
       "draft": "Draft"
+    }
+  },
+  "adminSettingsPage": {
+    "title": "System Settings",
+    "subtitle": "Configure runtime platform parameters and AI generation behavior.",
+    "loading": "Loading settings...",
+    "save": "Save settings",
+    "reload": "Reload",
+    "ai": {
+      "title": "AI Highlight Generation",
+      "description": "Configure OpenAI options to auto-generate event highlights from event data.",
+      "enabled": "Enable AI highlight generation",
+      "enabledHint": "When disabled, no OpenAI calls will be made for highlights.",
+      "autoGenerate": "Auto-generate after event save",
+      "autoGenerateHint": "When enabled, the app will attempt highlight generation after save succeeds.",
+      "model": "OpenAI model",
+      "highlightCount": "Highlight count (3-6)",
+      "apiKey": "OpenAI API Key",
+      "apiKeyPlaceholder": "Enter a new key to update, leave empty to keep current",
+      "apiKeyHint": "The API key is encrypted and stored server-side only.",
+      "apiKeyStored": "Configured key: {masked}",
+      "clearApiKey": "Clear stored API key"
+    },
+    "messages": {
+      "loadFailed": "Failed to load system settings.",
+      "saveSuccess": "System settings saved.",
+      "saveFailed": "Failed to save system settings."
     }
   },
   "adminSiteContent": {

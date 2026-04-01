@@ -234,6 +234,9 @@ model Event {
   descriptionEn String? @db.Text
   shortDesc    String?  // 简短描述
   shortDescEn  String?
+  highlights   Json?    // AI 生成的中文活动亮点
+  highlightsEn Json?    // AI 生成的英文活动亮点
+  highlightsGeneratedAt DateTime?
   
   // 时间（支持跨天活动）
   startDate    DateTime

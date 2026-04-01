@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
-import { Calendar, Edit2, Eye, Mic, Plus, Search, Star, Trash2, Users } from "lucide-react";
+import { Calendar, Edit2, Eye, Mic, Plus, Search, Sparkles, Star, Trash2, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
@@ -133,6 +133,7 @@ export default function AdminEventsPage() {
   const [editingEvent, setEditingEvent] = useState<ManagedEvent | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<ManagedEvent | null>(null);
   const [formState, setFormState] = useState<EventFormState>(initialFormState);
+  const [generatingHighlightsId, setGeneratingHighlightsId] = useState<string | null>(null);
 
   const loadingLabel = t("loading");
   const genericLoadError = t("loadError");
@@ -279,6 +280,59 @@ export default function AdminEventsPage() {
     });
   };
 
+  const tryGenerateHighlightsAfterSave = async (eventId: string) => {
+    try {
+      const response = await fetch(`/api/events/${eventId}/generate-highlights`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ reason: "save" }),
+      });
+
+      const payload = await response.json();
+
+      if (!response.ok || !payload.success) {
+        console.error("[generate-highlights] failed:", response.status, payload);
+        setMessage("success", `${t("messages.saveSuccessWithHighlightWarning")}`);
+        return;
+      }
+
+      if (!payload.skipped) {
+        await loadEvents();
+      }
+    } catch (err) {
+      console.error("[generate-highlights] fetch error:", err);
+      setMessage("success", `${t("messages.saveSuccessWithHighlightWarning")}`);
+    }
+  };
+
+  const retryGenerateHighlights = async (eventId: string) => {
+    setGeneratingHighlightsId(eventId);
+    try {
+      const response = await fetch(`/api/events/${eventId}/generate-highlights`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason: "manual" }),
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.success) {
+        console.error("[retry-highlights] failed:", response.status, payload);
+        setMessage("error", payload.error || t("messages.highlightsRetryFailed"));
+      } else if (payload.skipped) {
+        setMessage("success", t("messages.highlightsSkipped"));
+      } else {
+        setMessage("success", t("messages.highlightsSuccess"));
+        await loadEvents();
+      }
+    } catch (err) {
+      console.error("[retry-highlights] fetch error:", err);
+      setMessage("error", t("messages.highlightsRetryFailed"));
+    } finally {
+      setGeneratingHighlightsId(null);
+    }
+  };
+
   const submitForm = async () => {
     if (
       !formState.title ||
@@ -337,6 +391,10 @@ export default function AdminEventsPage() {
       setMessage("success", result.message || (editingEvent ? t("messages.updateSuccess") : t("messages.createSuccess")));
       setIsFormDialogOpen(false);
       resetForm();
+
+      if (result.data?.id) {
+        void tryGenerateHighlightsAfterSave(result.data.id);
+      }
     } catch (error) {
       console.error("Save event failed:", error);
       setMessage("error", error instanceof Error ? error.message : editingEvent ? t("messages.updateFailed") : t("messages.createFailed"));
@@ -562,6 +620,15 @@ export default function AdminEventsPage() {
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title={t("actions.regenerateHighlights")}
+                              disabled={generatingHighlightsId === event.id}
+                              onClick={() => void retryGenerateHighlights(event.id)}
+                            >
+                              <Sparkles className={`h-4 w-4 ${generatingHighlightsId === event.id ? "animate-pulse text-emerald-500" : "text-slate-400"}`} />
+                            </Button>
                         </div>
                       </div>
                     </div>

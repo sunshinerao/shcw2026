@@ -75,8 +75,20 @@ type PublicEvent = {
   hostType?: string | null;
   maxAttendees?: number | null;
   isFeatured: boolean;
+  highlights?: string[] | null;
+  highlightsEn?: string[] | null;
   agendaItems?: AgendaItem[];
 };
+
+function parseHighlights(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter((item) => item.length > 0);
+}
 
 function formatEventDateLabel(dateValue: string, locale: string) {
   return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "zh-CN", {
@@ -121,7 +133,18 @@ export default function EventDetailPage() {
   const [isRegistered, setIsRegistered] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const highlights = t.raw("about.highlights") as string[];
+  const highlights = useMemo(() => {
+    if (event) {
+      const dynamicHighlights =
+        locale === "en" ? parseHighlights(event.highlightsEn) : parseHighlights(event.highlights);
+
+      if (dynamicHighlights.length > 0) {
+        return dynamicHighlights;
+      }
+    }
+
+    return t.raw("about.highlights") as string[];
+  }, [event, locale, t]);
 
   useEffect(() => {
     let cancelled = false;
