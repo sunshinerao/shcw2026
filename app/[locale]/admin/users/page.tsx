@@ -76,6 +76,7 @@ type UserRole =
   | "SPONSOR"
   | "ADMIN"
   | "EVENT_MANAGER"
+  | "SPECIAL_PASS_MANAGER"
   | "STAFF"
   | "VERIFIER";
 
@@ -155,6 +156,7 @@ const ROLE_OPTIONS: UserRole[] = [
   "MEDIA",
   "SPONSOR",
   "EVENT_MANAGER",
+  "SPECIAL_PASS_MANAGER",
   "STAFF",
   "VERIFIER",
   "ADMIN",
@@ -170,6 +172,7 @@ const roleColors: Record<UserRole, string> = {
   SPONSOR: "bg-amber-100 text-amber-700",
   ADMIN: "bg-red-100 text-red-700",
   EVENT_MANAGER: "bg-teal-100 text-teal-700",
+  SPECIAL_PASS_MANAGER: "bg-cyan-100 text-cyan-700",
   STAFF: "bg-blue-100 text-blue-700",
   VERIFIER: "bg-indigo-100 text-indigo-700",
 };

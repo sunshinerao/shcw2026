@@ -52,6 +52,7 @@
             "ADMIN": "Administrator",
             "STAFF": "Staff",
             "EVENT_MANAGER": "Event Manager",
+            "SPECIAL_PASS_MANAGER": "Special Pass Manager",
             "VERIFIER": "Verifier"
         },
         "logout": "Log out"
@@ -246,6 +247,7 @@
         "nav": {
             "dashboard": "Dashboard",
             "events": "Events",
+            "specialPass": "Special Pass",
             "tracks": "Tracks",
             "speakers": "Speakers",
             "invitations": "Invitations",
@@ -381,6 +383,9 @@
             "address": "Address",
             "addressEn": "Address (English)",
             "image": "Image URL",
+            "partners": "Partners (multi-select)",
+            "partnersSearchPlaceholder": "Search sponsors by Chinese or English name",
+            "partnersEmpty": "No partners available",
             "type": "Type",
             "maxAttendees": "Capacity",
             "isPublished": "Published",
@@ -551,6 +556,46 @@
             "uploadFailed": "Failed to upload the file."
         }
     },
+    "adminSpecialPassPage": {
+        "title": "Special Pass Management",
+        "subtitle": "Review special pass applications and export Excel.",
+        "searchPlaceholder": "Search by name, email, document number...",
+        "listTitle": "Application list ({count})",
+        "empty": "No applications match the current filters.",
+        "filters": {
+            "all": "All statuses"
+        },
+        "entryType": {
+            "domestic": "Domestic",
+            "international": "International"
+        },
+        "status": {
+            "pending": "Pending",
+            "approved": "Approved",
+            "rejected": "Rejected"
+        },
+        "fields": {
+            "country": "Country",
+            "docNumber": "Document Number",
+            "email": "Email",
+            "phone": "Phone",
+            "organization": "Organization",
+            "applicant": "Applicant User",
+            "adminNotes": "Review Notes",
+            "reviewedBy": "Reviewed By"
+        },
+        "actions": {
+            "approve": "Approve",
+            "reject": "Reject",
+            "export": "Export Excel",
+            "exporting": "Exporting..."
+        },
+        "messages": {
+            "loadFailed": "Failed to load applications.",
+            "updateFailed": "Failed to update application status.",
+            "exportFailed": "Failed to export Excel."
+        }
+    },
     "adminUsersPage": {
         "title": "User management",
         "subtitle": "Manage all user accounts on the platform.",
@@ -577,6 +622,7 @@
             "SPONSOR": "Sponsor",
             "ADMIN": "Administrator",
             "EVENT_MANAGER": "Event manager",
+            "SPECIAL_PASS_MANAGER": "Special pass manager",
             "STAFF": "Staff",
             "VERIFIER": "Verifier"
         },
@@ -1251,6 +1297,7 @@
         "admin": "Administrator",
         "staff": "Staff",
         "event_manager": "Event Manager",
+        "special_pass_manager": "Special Pass Manager",
         "verifier": "Verifier",
         "visitor": "Visitor"
     },
@@ -1731,7 +1778,24 @@
             "share": "Share",
             "saveSuccess": "Event saved to favorites",
             "unsaveSuccess": "Removed from favorites",
-            "shareSuccess": "Link copied to clipboard"
+            "shareSuccess": "Link copied to clipboard",
+            "shareQr": "QR code",
+            "sharePoster": "Generate poster with QR",
+            "shareQrOnly": "Generate QR code only",
+            "shareWechat": "WeChat",
+            "shareLinkedIn": "LinkedIn",
+            "shareX": "X",
+            "shareXiaohongshu": "Xiaohongshu",
+            "shareSystem": "System share",
+            "shareSystemCopied": "Link copied and ready to share",
+            "shareWechatCopied": "Link copied. Paste it into WeChat to share",
+            "shareXiaohongshuCopied": "Link copied. Paste it into Xiaohongshu to post",
+            "sharePosterScan": "Scan to view event details",
+            "sharePosterReady": "Poster generated",
+            "shareQrReady": "QR code generated",
+            "shareGenerateFailed": "Failed to generate share content. Please try again",
+            "sharePreviewDescription": "Press and hold to save, or tap the button below to download.",
+            "shareDownload": "Download image"
         },
         "locationTitle": "Location",
         "viewMap": "View Map",

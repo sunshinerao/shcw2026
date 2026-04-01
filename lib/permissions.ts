@@ -7,12 +7,14 @@ export type AppUserRole =
   | "MEDIA"
   | "ADMIN"
   | "EVENT_MANAGER"
+  | "SPECIAL_PASS_MANAGER"
   | "STAFF"
   | "VERIFIER";
 
 export type AdminSectionKey =
   | "dashboard"
   | "events"
+  | "specialPass"
   | "tracks"
   | "speakers"
   | "invitations"
@@ -34,6 +36,7 @@ const ADMIN_ONLY_SECTIONS: AdminSectionKey[] = [
 ];
 
 const EVENT_MANAGER_SECTIONS: AdminSectionKey[] = ["events", "invitations"];
+const SPECIAL_PASS_MANAGER_SECTIONS: AdminSectionKey[] = ["specialPass"];
 
 export function isAdminRole(role?: string | null): role is AppUserRole {
   return role === "ADMIN";
@@ -43,12 +46,20 @@ export function isEventManagerRole(role?: string | null): role is AppUserRole {
   return role === "EVENT_MANAGER";
 }
 
+export function isSpecialPassManagerRole(role?: string | null): role is AppUserRole {
+  return role === "SPECIAL_PASS_MANAGER";
+}
+
 export function isAdminConsoleRole(role?: string | null): role is AppUserRole {
-  return isAdminRole(role) || isEventManagerRole(role);
+  return isAdminRole(role) || isEventManagerRole(role) || isSpecialPassManagerRole(role);
 }
 
 export function canManageEvents(role?: string | null): boolean {
   return isAdminRole(role) || isEventManagerRole(role);
+}
+
+export function canManageSpecialPassApplications(role?: string | null): boolean {
+  return isAdminRole(role) || isSpecialPassManagerRole(role);
 }
 
 export function canManageTracks(role?: string | null): boolean {
@@ -71,6 +82,10 @@ export function canAccessAdminSection(
     return EVENT_MANAGER_SECTIONS.includes(section);
   }
 
+  if (isSpecialPassManagerRole(role)) {
+    return SPECIAL_PASS_MANAGER_SECTIONS.includes(section);
+  }
+
   return false;
 }
 
@@ -79,5 +94,9 @@ export function isAdminOnlySection(section: AdminSectionKey): boolean {
 }
 
 export function getAdminLandingPath(role?: string | null): string {
+  if (isSpecialPassManagerRole(role)) {
+    return "/admin/special-pass";
+  }
+
   return isEventManagerRole(role) ? "/admin/events" : "/admin";
 }

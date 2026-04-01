@@ -52,6 +52,7 @@
             "ADMIN": "管理员",
             "STAFF": "工作人员",
             "EVENT_MANAGER": "活动管理员",
+            "SPECIAL_PASS_MANAGER": "特别通行证管理员",
             "VERIFIER": "验证员"
         },
         "logout": "退出登录"
@@ -246,6 +247,7 @@
         "nav": {
             "dashboard": "仪表盘",
             "events": "活动管理",
+            "specialPass": "特别通行证",
             "tracks": "赛道管理",
             "speakers": "嘉宾管理",
             "invitations": "邀请函管理",
@@ -381,6 +383,9 @@
             "address": "地址",
             "addressEn": "英文地址",
             "image": "图片 URL",
+            "partners": "合作伙伴（可多选）",
+            "partnersSearchPlaceholder": "按中文名或英文名搜索赞助商",
+            "partnersEmpty": "未找到可选合作伙伴",
             "type": "类型",
             "maxAttendees": "容量",
             "isPublished": "已发布",
@@ -551,6 +556,46 @@
             "uploadFailed": "文件上传失败。"
         }
     },
+    "adminSpecialPassPage": {
+        "title": "特别通行证管理",
+        "subtitle": "审核特别通行证申请并导出 Excel。",
+        "searchPlaceholder": "搜索姓名、邮箱、证件号...",
+        "listTitle": "申请列表 ({count})",
+        "empty": "暂无符合条件的申请。",
+        "filters": {
+            "all": "全部状态"
+        },
+        "entryType": {
+            "domestic": "境内入场",
+            "international": "国际入境"
+        },
+        "status": {
+            "pending": "待审核",
+            "approved": "已批准",
+            "rejected": "已拒绝"
+        },
+        "fields": {
+            "country": "国家/地区",
+            "docNumber": "证件号码",
+            "email": "邮箱",
+            "phone": "电话",
+            "organization": "单位",
+            "applicant": "申请用户",
+            "adminNotes": "审核备注",
+            "reviewedBy": "审核人"
+        },
+        "actions": {
+            "approve": "批准",
+            "reject": "拒绝",
+            "export": "导出 Excel",
+            "exporting": "导出中..."
+        },
+        "messages": {
+            "loadFailed": "加载申请列表失败。",
+            "updateFailed": "更新审核状态失败。",
+            "exportFailed": "导出 Excel 失败。"
+        }
+    },
     "adminUsersPage": {
         "title": "用户管理",
         "subtitle": "管理平台所有用户账号。",
@@ -577,6 +622,7 @@
             "SPONSOR": "赞助商",
             "ADMIN": "管理员",
             "EVENT_MANAGER": "活动管理员",
+            "SPECIAL_PASS_MANAGER": "特别通行证管理员",
             "STAFF": "工作人员",
             "VERIFIER": "验证人员"
         },
@@ -1251,6 +1297,7 @@
         "admin": "管理员",
         "staff": "工作人员",
         "event_manager": "活动管理员",
+        "special_pass_manager": "特别通行证管理员",
         "verifier": "验证员",
         "visitor": "访客"
     },
@@ -1731,7 +1778,24 @@
             "share": "分享",
             "saveSuccess": "活动已收藏",
             "unsaveSuccess": "已取消收藏",
-            "shareSuccess": "链接已复制到剪贴板"
+            "shareSuccess": "链接已复制到剪贴板",
+            "shareQr": "二维码",
+            "sharePoster": "生成带二维码海报",
+            "shareQrOnly": "生成纯二维码",
+            "shareWechat": "微信",
+            "shareLinkedIn": "LinkedIn",
+            "shareX": "X",
+            "shareXiaohongshu": "小红书",
+            "shareSystem": "系统分享",
+            "shareSystemCopied": "链接已复制，可直接分享",
+            "shareWechatCopied": "链接已复制，请在微信中粘贴发送",
+            "shareXiaohongshuCopied": "链接已复制，请在小红书中粘贴发布",
+            "sharePosterScan": "扫码查看活动详情",
+            "sharePosterReady": "海报已生成",
+            "shareQrReady": "二维码已生成",
+            "shareGenerateFailed": "生成分享内容失败，请稍后重试",
+            "sharePreviewDescription": "长按可保存图片，也可点击下方按钮下载。",
+            "shareDownload": "下载图片"
         },
         "locationTitle": "活动地点",
         "viewMap": "查看地图",

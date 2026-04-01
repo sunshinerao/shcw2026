@@ -6,7 +6,9 @@ import { Calendar, Clock, MapPin, ArrowRight, Users, Loader2 } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
+  eventHostTypeColors,
   getEventDateLabel,
+  getEventHostTypeLabel,
   getEventTypeLabel,
   getLocalizedEventPartners,
   getLocalizedEventSummary,
@@ -112,7 +114,7 @@ export function EventsPreviewSection() {
           </div>
         ) : (
           <div className="space-y-8">
-            {sortedDates.slice(0, 2).map((date, dateIndex) => (
+            {sortedDates.slice(0, 3).map((date, dateIndex) => (
               <motion.div
                 key={date}
                 initial={{ opacity: 0, y: 30 }}
@@ -149,6 +151,11 @@ export function EventsPreviewSection() {
                               <Badge variant={event.type} className={typeColors[event.type]}>
                                 {getEventTypeLabel(event.type, locale)}
                               </Badge>
+                              {event.hostType ? (
+                                <Badge className={eventHostTypeColors[event.hostType] || "bg-slate-100 text-slate-700"}>
+                                  {getEventHostTypeLabel(event.hostType, locale)}
+                                </Badge>
+                              ) : null}
                             </div>
                             <h4 className="text-lg font-bold text-slate-900 mb-1">
                               {locale === "en" ? event.titleEn ?? event.title : event.title}

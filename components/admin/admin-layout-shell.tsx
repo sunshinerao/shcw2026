@@ -8,6 +8,7 @@ import {
   Calendar,
   Users,
   Mic,
+  Shield,
   Building2,
   Settings,
   ChevronRight,
@@ -40,6 +41,7 @@ export function AdminLayoutShell({
   const navItems = [
     { key: "dashboard", name: t("nav.dashboard"), href: "/admin", icon: LayoutDashboard },
     { key: "events", name: t("nav.events"), href: "/admin/events", icon: Calendar },
+    { key: "specialPass", name: t("nav.specialPass"), href: "/admin/special-pass", icon: Shield },
     { key: "tracks", name: t("nav.tracks"), href: "/admin/tracks", icon: Route },
     { key: "speakers", name: t("nav.speakers"), href: "/admin/speakers", icon: Mic },
     { key: "invitations", name: t("nav.invitations"), href: "/admin/invitations", icon: FileText },

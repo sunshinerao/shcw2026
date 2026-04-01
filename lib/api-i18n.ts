@@ -19,6 +19,10 @@ const apiMessages = {
     zh: "权限不足，仅管理员或活动管理员可操作",
     en: "Insufficient permissions. Admin or event manager access is required.",
   },
+  adminOrSpecialPassManagerOnly: {
+    zh: "权限不足，仅管理员或特别通行证管理员可操作",
+    en: "Insufficient permissions. Admin or special pass manager access is required.",
+  },
   invalidEmailRequired: {
     zh: "请提供有效的邮箱地址",
     en: "Please provide a valid email address.",

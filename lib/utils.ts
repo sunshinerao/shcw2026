@@ -66,6 +66,8 @@ const roleLabels: Record<SupportedLocale, Record<string, string>> = {
     SPEAKER: "演讲嘉宾",
     MEDIA: "媒体",
     ADMIN: "管理员",
+    EVENT_MANAGER: "活动管理员",
+    SPECIAL_PASS_MANAGER: "特别通行证管理员",
     STAFF: "工作人员",
     VERIFIER: "验证人员",
   },
@@ -77,6 +79,8 @@ const roleLabels: Record<SupportedLocale, Record<string, string>> = {
     SPEAKER: "Speaker",
     MEDIA: "Media",
     ADMIN: "Administrator",
+    EVENT_MANAGER: "Event Manager",
+    SPECIAL_PASS_MANAGER: "Special Pass Manager",
     STAFF: "Staff",
     VERIFIER: "Verifier",
   },
@@ -95,7 +99,10 @@ export function getRoleColor(role: string): string {
     SPEAKER: "bg-purple-100 text-purple-700",
     MEDIA: "bg-pink-100 text-pink-700",
     ADMIN: "bg-red-100 text-red-700",
+    EVENT_MANAGER: "bg-teal-100 text-teal-700",
+    SPECIAL_PASS_MANAGER: "bg-cyan-100 text-cyan-700",
     STAFF: "bg-orange-100 text-orange-700",
+    VERIFIER: "bg-indigo-100 text-indigo-700",
   };
   return colors[role] || "bg-neutral-100 text-neutral-700";
 }

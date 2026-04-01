@@ -2,9 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import QRCode from "qrcode";
 import {
   Calendar,
   Clock,
@@ -23,6 +25,22 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
 import { normalizeAgendaDateKey } from "@/lib/agenda";
@@ -143,6 +161,10 @@ export default function EventDetailPage() {
   const [isSaved, setIsSaved] = useState(false);
   const [isRegistered, setIsRegistered] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [sharePreviewOpen, setSharePreviewOpen] = useState(false);
+  const [sharePreviewImage, setSharePreviewImage] = useState("");
+  const [sharePreviewTitle, setSharePreviewTitle] = useState("");
+  const [sharePreviewFileName, setSharePreviewFileName] = useState("event-qr.png");
 
   const highlights = useMemo(() => {
     if (event) {
@@ -291,7 +313,192 @@ export default function EventDetailPage() {
     }
   };
 
-  const handleShare = async () => {
+  const getShareUrl = () => window.location.href;
+
+  const openShareWindow = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const downloadDataUrl = (dataUrl: string, fileName: string) => {
+    const anchor = document.createElement("a");
+    anchor.href = dataUrl;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  };
+
+  const loadImageElement = async (src: string) =>
+    new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("Image loading failed"));
+      image.src = src;
+    });
+
+  const drawWrappedText = (
+    context: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight: number,
+    maxLines: number
+  ) => {
+    const words = text.split(/\s+/);
+    const lines: string[] = [];
+    let currentLine = "";
+
+    words.forEach((word) => {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (context.measureText(testLine).width <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+        currentLine = word;
+      }
+    });
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    lines.slice(0, maxLines).forEach((line, index) => {
+      context.fillText(line, x, y + index * lineHeight);
+    });
+  };
+
+  const buildPosterImage = async (shareUrl: string) => {
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080;
+    canvas.height = 1520;
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Canvas context unavailable");
+    }
+
+    const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, "#052e2b");
+    gradient.addColorStop(0.6, "#0b4f46");
+    gradient.addColorStop(1, "#052f6d");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.fillStyle = "rgba(255,255,255,0.14)";
+    context.fillRect(80, 80, canvas.width - 160, canvas.height - 160);
+
+    const title = getLocalizedTitle(event, locale);
+    const description = getLocalizedDescription(event, locale);
+    const venue = locale === "en" ? event.venueEn || event.venue : event.venue;
+    const dateLabel = formatEventDateLabel(event.startDate, locale);
+
+    context.fillStyle = "#ffffff";
+    context.font = "700 62px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    drawWrappedText(context, title, 130, 220, canvas.width - 260, 78, 2);
+
+    context.fillStyle = "rgba(255,255,255,0.9)";
+    context.font = "400 36px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    drawWrappedText(context, description, 130, 400, canvas.width - 260, 48, 3);
+
+    context.fillStyle = "#d1fae5";
+    context.font = "600 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.fillText(`${dateLabel}  |  ${event.startTime}-${event.endTime}`, 130, 600);
+    context.fillText(venue, 130, 660);
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(300, 760, 480, 560);
+
+    const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+      width: 380,
+      margin: 1,
+      color: { dark: "#0f172a", light: "#ffffff" },
+    });
+    const qrImage = await loadImageElement(qrDataUrl);
+    context.drawImage(qrImage, 350, 810, 380, 380);
+
+    context.fillStyle = "#0f172a";
+    context.font = "600 30px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.textAlign = "center";
+    context.fillText(t("register.sharePosterScan"), canvas.width / 2, 1260);
+    context.textAlign = "start";
+
+    return canvas.toDataURL("image/png");
+  };
+
+  const handleGenerateQr = async (mode: "poster" | "qr") => {
+    if (!event) {
+      return;
+    }
+
+    try {
+      const shareUrl = getShareUrl();
+      const baseName = `event-${event.id}-${mode}`;
+
+      if (mode === "poster") {
+        const poster = await buildPosterImage(shareUrl);
+        setSharePreviewImage(poster);
+        setSharePreviewTitle(t("register.sharePoster"));
+        setSharePreviewFileName(`${baseName}.png`);
+        setSharePreviewOpen(true);
+        toast.success(t("register.sharePosterReady"));
+        return;
+      }
+
+      const qr = await QRCode.toDataURL(shareUrl, {
+        width: 520,
+        margin: 1,
+        color: { dark: "#0f172a", light: "#ffffff" },
+      });
+      setSharePreviewImage(qr);
+      setSharePreviewTitle(t("register.shareQrOnly"));
+      setSharePreviewFileName(`${baseName}.png`);
+      setSharePreviewOpen(true);
+      toast.success(t("register.shareQrReady"));
+    } catch (shareError) {
+      toast.error(shareError instanceof Error ? shareError.message : t("register.shareGenerateFailed"));
+    }
+  };
+
+  const handleShareLink = async (platform: "wechat" | "xiaohongshu") => {
+    try {
+      await navigator.clipboard.writeText(getShareUrl());
+      if (platform === "wechat") {
+        toast.success(t("register.shareWechatCopied"));
+      } else {
+        toast.success(t("register.shareXiaohongshuCopied"));
+      }
+    } catch {
+      toast.error(t("register.shareGenerateFailed"));
+    }
+  };
+
+  const handleShareLinkedIn = () => {
+    if (!event) {
+      return;
+    }
+
+    const url = encodeURIComponent(getShareUrl());
+    openShareWindow(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`);
+  };
+
+  const handleShareX = () => {
+    if (!event) {
+      return;
+    }
+
+    const url = encodeURIComponent(getShareUrl());
+    const text = encodeURIComponent(`${getLocalizedTitle(event, locale)}\n${getLocalizedDescription(event, locale)}`);
+    openShareWindow(`https://x.com/intent/tweet?url=${url}&text=${text}`);
+  };
+
+  const handleSystemShare = async () => {
     if (!event) {
       return;
     }
@@ -309,8 +516,8 @@ export default function EventDetailPage() {
         return;
       }
     } else {
-      await navigator.clipboard.writeText(window.location.href);
-      toast.success(t("register.shareSuccess"));
+      await navigator.clipboard.writeText(getShareUrl());
+      toast.success(t("register.shareSystemCopied"));
     }
   };
 
@@ -603,10 +810,40 @@ export default function EventDetailPage() {
                       <Heart className={`w-4 h-4 mr-2 ${isSaved ? "fill-current" : ""}`} />
                       {isSaved ? t("register.saved") : t("register.save")}
                     </Button>
-                    <Button variant="outline" className="flex-1" onClick={handleShare}>
-                      <Share2 className="w-4 h-4 mr-2" />
-                      {t("register.share")}
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="flex-1">
+                          <Share2 className="w-4 h-4 mr-2" />
+                          {t("register.share")}
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuSub>
+                          <DropdownMenuSubTrigger>{t("register.shareQr")}</DropdownMenuSubTrigger>
+                          <DropdownMenuSubContent className="w-48">
+                            <DropdownMenuItem onClick={() => void handleGenerateQr("poster")}>
+                              {t("register.sharePoster")}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => void handleGenerateQr("qr")}>
+                              {t("register.shareQrOnly")}
+                            </DropdownMenuItem>
+                          </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                        <DropdownMenuItem onClick={() => void handleShareLink("wechat")}>
+                          {t("register.shareWechat")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleShareLinkedIn}>
+                          {t("register.shareLinkedIn")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={handleShareX}>{t("register.shareX")}</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => void handleShareLink("xiaohongshu")}>
+                          {t("register.shareXiaohongshu")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => void handleSystemShare()}>
+                          {t("register.shareSystem")}
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
 
@@ -684,6 +921,30 @@ export default function EventDetailPage() {
           </div>
         </div>
       </section>
+
+      <Dialog open={sharePreviewOpen} onOpenChange={setSharePreviewOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{sharePreviewTitle}</DialogTitle>
+            <DialogDescription>{t("register.sharePreviewDescription")}</DialogDescription>
+          </DialogHeader>
+          <div className="rounded-xl border border-slate-200 bg-white p-3">
+            {sharePreviewImage ? (
+              <Image
+                src={sharePreviewImage}
+                alt={sharePreviewTitle}
+                width={720}
+                height={720}
+                className="w-full h-auto rounded-lg"
+                unoptimized
+              />
+            ) : null}
+          </div>
+          <Button onClick={() => downloadDataUrl(sharePreviewImage, sharePreviewFileName)}>
+            {t("register.shareDownload")}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

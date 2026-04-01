@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
+import { Checkbox } from "@/components/ui/checkbox";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
 
@@ -57,6 +58,8 @@ type ManagedEvent = {
     category: string;
   } | null;
   maxAttendees?: number | null;
+  partners?: string[];
+  partnersEn?: string[];
   isPublished: boolean;
   isFeatured: boolean;
   isPinned?: boolean;
@@ -80,6 +83,14 @@ type ManagedTrack = {
   name: string;
   nameEn?: string | null;
   category: string;
+};
+
+type SponsorOption = {
+  id: string;
+  name: string;
+  nameEn?: string | null;
+  tier: string;
+  isActive: boolean;
 };
 
 type EventFormState = {
@@ -110,6 +121,7 @@ type EventFormState = {
   isPinned: boolean;
   requireApproval: boolean;
   managerUserId: string;
+  partners: string[];
 };
 
 type ManagerOption = {
@@ -148,6 +160,7 @@ const initialFormState: EventFormState = {
   isPinned: false,
   requireApproval: false,
   managerUserId: "",
+  partners: [],
 };
 
 export default function AdminEventsPage() {
@@ -169,6 +182,8 @@ export default function AdminEventsPage() {
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
   const [managerOptions, setManagerOptions] = useState<ManagerOption[]>([]);
   const [managerSearch, setManagerSearch] = useState("");
+  const [sponsors, setSponsors] = useState<SponsorOption[]>([]);
+  const [sponsorSearch, setSponsorSearch] = useState("");
   const canEditRestrictedEventFields = currentUserRole === "ADMIN";
 
   const loadingLabel = t("loading");
@@ -288,6 +303,37 @@ export default function AdminEventsPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSponsors() {
+      try {
+        const response = await fetch("/api/sponsors?isActive=true&sortBy=order&order=asc", {
+          cache: "no-store",
+        });
+        const payload = await response.json();
+        if (!response.ok || !payload.success) {
+          throw new Error(payload.error || "Failed to load sponsors");
+        }
+
+        if (!cancelled) {
+          setSponsors(Array.isArray(payload.data) ? payload.data : []);
+        }
+      } catch (error) {
+        console.error("Load sponsors failed:", error);
+        if (!cancelled) {
+          setSponsors([]);
+        }
+      }
+    }
+
+    void loadSponsors();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const filteredEvents = useMemo(() => {
     const normalizedQuery = searchQuery.trim().toLowerCase();
 
@@ -320,6 +366,7 @@ export default function AdminEventsPage() {
     setEditingEvent(null);
     setFormState(initialFormState);
     setManagerSearch("");
+    setSponsorSearch("");
   };
 
   const openCreateDialog = () => {
@@ -357,7 +404,9 @@ export default function AdminEventsPage() {
       isPinned: event.isPinned ?? false,
       requireApproval: event.requireApproval ?? false,
       managerUserId: event.managerUserId || "",
+      partners: Array.isArray(event.partners) ? event.partners : [],
     });
+    setSponsorSearch("");
     setIsFormDialogOpen(true);
   };
 
@@ -445,6 +494,10 @@ export default function AdminEventsPage() {
     setIsSubmitting(true);
 
     try {
+      const partnerNameToEnglish = Object.fromEntries(
+        sponsors.map((sponsor) => [sponsor.name, sponsor.nameEn || sponsor.name])
+      );
+
       const payload = {
         locale,
         title: formState.title,
@@ -464,6 +517,8 @@ export default function AdminEventsPage() {
         address: formState.address || null,
         addressEn: formState.addressEn || null,
         image: formState.image || null,
+        partners: formState.partners,
+        partnersEn: formState.partners.map((name) => partnerNameToEnglish[name] || name),
         ...(canEditRestrictedEventFields ? { type: formState.type } : {}),
         ...(canEditRestrictedEventFields ? { eventLayer: formState.eventLayer || null } : {}),
         ...(canEditRestrictedEventFields ? { hostType: formState.hostType || null } : {}),
@@ -561,6 +616,33 @@ export default function AdminEventsPage() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const filteredSponsors = useMemo(() => {
+    const q = sponsorSearch.trim().toLowerCase();
+    if (!q) {
+      return sponsors;
+    }
+
+    return sponsors.filter((sponsor) => {
+      return (
+        sponsor.name.toLowerCase().includes(q) ||
+        (sponsor.nameEn || "").toLowerCase().includes(q)
+      );
+    });
+  }, [sponsorSearch, sponsors]);
+
+  const togglePartnerSelection = (partnerName: string, checked: boolean) => {
+    setFormState((previous) => {
+      const nextPartners = checked
+        ? Array.from(new Set([...previous.partners, partnerName]))
+        : previous.partners.filter((name) => name !== partnerName);
+
+      return {
+        ...previous,
+        partners: nextPartners,
+      };
+    });
   };
 
   return (
@@ -847,6 +929,39 @@ export default function AdminEventsPage() {
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="event-image">{t("form.image")}</Label>
               <Input id="event-image" value={formState.image} onChange={(event) => setFormState((previous) => ({ ...previous, image: event.target.value }))} />
+            </div>
+            <div className="space-y-2 md:col-span-2">
+              <Label htmlFor="event-partners-search">{t("form.partners")}</Label>
+              <Input
+                id="event-partners-search"
+                placeholder={t("form.partnersSearchPlaceholder")}
+                value={sponsorSearch}
+                onChange={(event) => setSponsorSearch(event.target.value)}
+              />
+              <div className="max-h-44 space-y-2 overflow-y-auto rounded-lg border border-slate-200 p-3">
+                {filteredSponsors.length === 0 ? (
+                  <p className="text-sm text-slate-500">{t("form.partnersEmpty")}</p>
+                ) : (
+                  filteredSponsors.map((sponsor) => {
+                    const checked = formState.partners.includes(sponsor.name);
+
+                    return (
+                      <label key={sponsor.id} className="flex items-center gap-2 text-sm text-slate-700">
+                        <Checkbox
+                          checked={checked}
+                          onCheckedChange={(value) =>
+                            togglePartnerSelection(sponsor.name, Boolean(value))
+                          }
+                        />
+                        <span>
+                          {locale === "en" ? sponsor.nameEn || sponsor.name : sponsor.name}
+                          <span className="ml-1 text-xs text-slate-400">({sponsor.tier})</span>
+                        </span>
+                      </label>
+                    );
+                  })
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="event-capacity">{t("form.maxAttendees")}</Label>

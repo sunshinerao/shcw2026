@@ -17,6 +17,7 @@ enum UserRole {
   MEDIA         // 媒体
   ADMIN         // 管理员
   EVENT_MANAGER // 活动管理员
+  SPECIAL_PASS_MANAGER // 特别通行证管理员
   STAFF         // 工作人员
   VERIFIER      // 现场验证人员
 }
