@@ -20,6 +20,8 @@ import {
   Check,
   Filter,
   Building2,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +52,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 
 // Speaker interface based on schema
@@ -76,6 +79,16 @@ interface Speaker {
   events?: string[];
   eventsEn?: string[];
 }
+
+type AutoUpdateSuggestion = {
+  organization?: string | null;
+  organizationEn?: string | null;
+  title?: string | null;
+  titleEn?: string | null;
+  bio?: string | null;
+  bioEn?: string | null;
+  avatarUrl?: string | null;
+};
 
 // Mock speakers data
 const mockSpeakers: Speaker[] = [
@@ -247,6 +260,11 @@ export default function AdminSpeakersPage() {
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isAutoUpdatingId, setIsAutoUpdatingId] = useState<string | null>(null);
+  const [autoUpdatePreview, setAutoUpdatePreview] = useState<AutoUpdateSuggestion | null>(null);
+  const [autoUpdateTargetSpeaker, setAutoUpdateTargetSpeaker] = useState<Speaker | null>(null);
+  const [isAutoUpdateDialogOpen, setIsAutoUpdateDialogOpen] = useState(false);
+  const [selectedAutoFields, setSelectedAutoFields] = useState<Set<keyof AutoUpdateSuggestion>>(new Set());
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -377,6 +395,80 @@ export default function AdminSpeakersPage() {
     return locale === "en"
       ? matchingSpeaker?.organizationEn || organization
       : organization;
+  };
+
+  const autoUpdateFieldConfig: Array<{ key: keyof AutoUpdateSuggestion; target: keyof Speaker | "avatar" }> = [
+    { key: "organization", target: "organization" },
+    { key: "organizationEn", target: "organizationEn" },
+    { key: "title", target: "title" },
+    { key: "titleEn", target: "titleEn" },
+    { key: "bio", target: "bio" },
+    { key: "bioEn", target: "bioEn" },
+    { key: "avatarUrl", target: "avatar" },
+  ];
+
+  const handleAutoUpdate = async (speaker: Speaker) => {
+    setIsAutoUpdatingId(speaker.id);
+    try {
+      const response = await fetch(`/api/speakers/${speaker.id}/auto-update`, {
+        method: "POST",
+      });
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || t("common.autoUpdateError"));
+      }
+
+      const suggestion = (data.data || {}) as AutoUpdateSuggestion;
+      const preselected = new Set<keyof AutoUpdateSuggestion>();
+      autoUpdateFieldConfig.forEach(({ key }) => {
+        const value = suggestion[key];
+        if (typeof value === "string" && value.trim().length > 0) {
+          preselected.add(key);
+        }
+      });
+
+      setAutoUpdatePreview(suggestion);
+      setAutoUpdateTargetSpeaker(speaker);
+      setSelectedAutoFields(preselected);
+      setIsAutoUpdateDialogOpen(true);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : t("common.autoUpdateError");
+      setStatusMessage(message);
+      toast.error(message);
+    } finally {
+      setIsAutoUpdatingId(null);
+    }
+  };
+
+  const applyAutoUpdateSelection = () => {
+    if (!autoUpdatePreview || !autoUpdateTargetSpeaker) {
+      return;
+    }
+
+    const nextFormData: Partial<Speaker> = { ...autoUpdateTargetSpeaker };
+    autoUpdateFieldConfig.forEach(({ key, target }) => {
+      if (!selectedAutoFields.has(key)) {
+        return;
+      }
+
+      const value = autoUpdatePreview[key];
+      if (typeof value !== "string" || value.trim().length === 0) {
+        return;
+      }
+
+      if (target === "avatar") {
+        nextFormData.avatar = value.trim();
+      } else {
+        (nextFormData[target] as string | undefined) = value.trim();
+      }
+    });
+
+    setFormData(nextFormData);
+    setSelectedSpeaker(autoUpdateTargetSpeaker);
+    setIsCreateDialogOpen(false);
+    setIsEditDialogOpen(true);
+    setIsAutoUpdateDialogOpen(false);
   };
 
   // Handle create/edit form submission
@@ -688,6 +780,22 @@ export default function AdminSpeakersPage() {
 
                       {/* Actions */}
                       <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-emerald-700 hover:text-emerald-800"
+                          onClick={() => void handleAutoUpdate(speaker)}
+                          disabled={isAutoUpdatingId === speaker.id}
+                        >
+                          {isAutoUpdatingId === speaker.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 mr-1" />
+                              {t("common.autoUpdate")}
+                            </>
+                          )}
+                        </Button>
                         <Button
                           size="sm"
                           variant="outline"
@@ -1057,6 +1165,74 @@ export default function AdminSpeakersPage() {
             >
               <Trash2 className="w-4 h-4 mr-2" />
               {t("delete.confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={isAutoUpdateDialogOpen}
+        onOpenChange={setIsAutoUpdateDialogOpen}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-emerald-600" />
+              {t("common.autoUpdatePreview")}
+            </DialogTitle>
+            <DialogDescription>
+              {t("common.autoUpdatePreviewDesc")}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            {autoUpdateFieldConfig.map(({ key }) => {
+              const value = autoUpdatePreview?.[key];
+              if (typeof value !== "string" || value.trim().length === 0) {
+                return null;
+              }
+
+              return (
+                <div key={key} className="flex items-start gap-3 rounded-lg border p-3 bg-slate-50">
+                  <Checkbox
+                    id={`auto-update-${key}`}
+                    checked={selectedAutoFields.has(key)}
+                    onCheckedChange={(checked) => {
+                      setSelectedAutoFields((prev) => {
+                        const next = new Set(prev);
+                        if (checked === true) {
+                          next.add(key);
+                        } else {
+                          next.delete(key);
+                        }
+                        return next;
+                      });
+                    }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <Label htmlFor={`auto-update-${key}`} className="text-xs text-slate-500">
+                      {t(`common.autoUpdateFieldLabel.${key}`)}
+                    </Label>
+                    <p className="mt-1 text-sm text-slate-900 whitespace-pre-wrap break-words">
+                      {value}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAutoUpdateDialogOpen(false)}>
+              {t("common.cancel")}
+            </Button>
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-700"
+              onClick={applyAutoUpdateSelection}
+              disabled={selectedAutoFields.size === 0}
+            >
+              <Check className="w-4 h-4 mr-2" />
+              {t("common.autoUpdateApply")}
             </Button>
           </DialogFooter>
         </DialogContent>

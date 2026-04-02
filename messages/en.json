@@ -1064,7 +1064,21 @@
         "common": {
             "cancel": "Cancel",
             "save": "Save changes",
-            "create": "Create speaker"
+            "create": "Create speaker",
+            "autoUpdate": "Auto Update",
+            "autoUpdatePreview": "Auto Update Preview",
+            "autoUpdatePreviewDesc": "The following fields were retrieved by AI. Select which ones to apply:",
+            "autoUpdateApply": "Apply and Edit",
+            "autoUpdateError": "Auto update failed",
+            "autoUpdateFieldLabel": {
+                "organization": "Organization (Chinese)",
+                "organizationEn": "Organization (English)",
+                "title": "Title (Chinese)",
+                "titleEn": "Title (English)",
+                "bio": "Biography (Chinese)",
+                "bioEn": "Biography (English)",
+                "avatarUrl": "Avatar photo"
+            }
         }
     },
     "language": {

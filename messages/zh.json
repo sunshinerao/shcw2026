@@ -1064,7 +1064,21 @@
         "common": {
             "cancel": "取消",
             "save": "保存修改",
-            "create": "创建嘉宾"
+            "create": "创建嘉宾",
+            "autoUpdate": "自动更新",
+            "autoUpdatePreview": "自动更新预览",
+            "autoUpdatePreviewDesc": "以下字段由 AI 检索生成，请选择需要应用的字段：",
+            "autoUpdateApply": "应用并编辑",
+            "autoUpdateError": "自动更新失败",
+            "autoUpdateFieldLabel": {
+                "organization": "机构（中文）",
+                "organizationEn": "机构（英文）",
+                "title": "职位（中文）",
+                "titleEn": "职位（英文）",
+                "bio": "简介（中文）",
+                "bioEn": "简介（英文）",
+                "avatarUrl": "头像照片"
+            }
         }
     },
     "language": {
