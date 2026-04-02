@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Save, Loader2, CheckCircle2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
 
 type ContentBlock = {
   key: string;
@@ -141,6 +142,18 @@ export default function AdminContentPage() {
 
     return (
       <div className="space-y-6">
+        {key !== "about_us" && (
+          <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border">
+            <div>
+              <Label className="text-sm font-medium">{t("form.sectionVisible")}</Label>
+              <p className="text-xs text-slate-500 mt-0.5">{t("form.sectionVisibleHint")}</p>
+            </div>
+            <Switch
+              checked={(blocks[key]?.extra as Record<string, Record<string, string>> | null)?._meta?.visible !== "false"}
+              onCheckedChange={(checked) => updateExtra(key, "_meta", "visible", checked ? "true" : "false")}
+            />
+          </div>
+        )}
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>{t("form.sectionTitle")}</Label>
@@ -235,6 +248,16 @@ export default function AdminContentPage() {
 
     return (
       <div className="space-y-6">
+        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border">
+          <div>
+            <Label className="text-sm font-medium">{t("form.sectionVisible")}</Label>
+            <p className="text-xs text-slate-500 mt-0.5">{t("form.sectionVisibleHint")}</p>
+          </div>
+          <Switch
+            checked={(block.extra as Record<string, Record<string, string>> | null)?._meta?.visible !== "false"}
+            onCheckedChange={(checked) => updateExtra(key, "_meta", "visible", checked ? "true" : "false")}
+          />
+        </div>
         {HIGHLIGHT_ITEMS.map((item) => (
           <div key={item.key} className="border rounded-lg p-4 space-y-4">
             <h4 className="font-semibold text-slate-700">{item.label} ({item.key})</h4>
@@ -273,6 +296,16 @@ export default function AdminContentPage() {
 
     return (
       <div className="space-y-6">
+        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border">
+          <div>
+            <Label className="text-sm font-medium">{t("form.sectionVisible")}</Label>
+            <p className="text-xs text-slate-500 mt-0.5">{t("form.sectionVisibleHint")}</p>
+          </div>
+          <Switch
+            checked={(block.extra as Record<string, Record<string, string>> | null)?._meta?.visible !== "false"}
+            onCheckedChange={(checked) => updateExtra(key, "_meta", "visible", checked ? "true" : "false")}
+          />
+        </div>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>{t("form.sectionTitle")}</Label>
@@ -331,6 +364,16 @@ export default function AdminContentPage() {
 
     return (
       <div className="space-y-6">
+        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border">
+          <div>
+            <Label className="text-sm font-medium">{t("form.sectionVisible")}</Label>
+            <p className="text-xs text-slate-500 mt-0.5">{t("form.sectionVisibleHint")}</p>
+          </div>
+          <Switch
+            checked={(block.extra as Record<string, Record<string, string>> | null)?._meta?.visible !== "false"}
+            onCheckedChange={(checked) => updateExtra(key, "_meta", "visible", checked ? "true" : "false")}
+          />
+        </div>
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label>{t("form.sectionTitle")}</Label>

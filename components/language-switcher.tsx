@@ -87,15 +87,14 @@ export function LanguageSwitcherSimple() {
   };
 
   return (
-    <Button
-      variant="outline"
-      size="sm"
+    <button
+      type="button"
       onClick={toggleLanguage}
       disabled={isPending}
-      className="text-xs"
+      className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-white transition-colors disabled:opacity-50"
     >
-      <Globe className="w-3 h-3 mr-1" />
-      {locale === "zh" ? t("en") : t("zh")}
-    </Button>
+      <Globe className="w-3 h-3" />
+      <span>{locale === "zh" ? t("en") : t("zh")}</span>
+    </button>
   );
 }

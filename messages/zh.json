@@ -2247,6 +2247,8 @@
             "roleEn": "英文职务",
             "bio": "简介",
             "bioEn": "英文简介",
+            "sectionVisible": "在前端显示此区块",
+            "sectionVisibleHint": "关闭后该区块将在关于页隐藏",
             "save": "保存"
         }
     },

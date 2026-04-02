@@ -64,11 +64,16 @@ export default function NewsPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Hero */}
-      <section className="bg-gradient-to-br from-emerald-900 via-slate-900 to-emerald-950 py-16 sm:py-20">
+      <section className="bg-gradient-to-br from-emerald-900 via-slate-900 to-emerald-950 py-20 sm:py-28">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h1 className="text-3xl sm:text-4xl font-bold text-white">{t("title")}</h1>
-            <p className="text-white/70 mt-2">{t("subtitle")}</p>
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">{t("title")}</h1>
+            <p className="text-lg text-white/70 max-w-2xl mx-auto">{t("subtitle")}</p>
           </motion.div>
         </div>
       </section>

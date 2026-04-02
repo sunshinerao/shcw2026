@@ -74,6 +74,11 @@ export default function AboutPage() {
     bio: ext(contents.team, key, "bio") || t(`team.${key}.bio`),
   }));
 
+  const missionVisible = ext(contents.mission, "_meta", "visible") !== "false";
+  const highlightsVisible = ext(contents.highlights, "_meta", "visible") !== "false";
+  const timelineVisible = ext(contents.timeline, "_meta", "visible") !== "false";
+  const teamVisible = ext(contents.team, "_meta", "visible") !== "false";
+
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Hero */}
@@ -84,12 +89,12 @@ export default function AboutPage() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            className="text-center"
           >
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-6">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
               {t("hero.title")}
             </h1>
-            <p className="text-xl text-slate-300 leading-relaxed">
+            <p className="text-lg text-slate-300 max-w-2xl mx-auto">
               {t("hero.description")}
             </p>
           </motion.div>
@@ -97,9 +102,11 @@ export default function AboutPage() {
       </section>
 
       {/* Mission */}
+      {(missionVisible || highlightsVisible) && (
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {missionVisible && (
             <motion.div
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -126,6 +133,8 @@ export default function AboutPage() {
                 </Link>
               </div>
             </motion.div>
+            )}
+            {highlightsVisible && (
             <motion.div
               initial={{ opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
@@ -145,11 +154,14 @@ export default function AboutPage() {
                 </div>
               ))}
             </motion.div>
+            )}
           </div>
         </div>
       </section>
+      )}
 
       {/* Timeline */}
+      {timelineVisible && (
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -179,8 +191,10 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Team */}
+      {teamVisible && (
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -209,6 +223,7 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* CTA */}
       <section className="py-20 bg-slate-900">

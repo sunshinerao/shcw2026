@@ -2247,6 +2247,8 @@
             "roleEn": "English Role",
             "bio": "Bio",
             "bioEn": "English Bio",
+            "sectionVisible": "Show this section on frontend",
+            "sectionVisibleHint": "When off, this section will be hidden on the About page",
             "save": "Save"
         }
     },
