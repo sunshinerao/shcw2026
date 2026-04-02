@@ -34,7 +34,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { COUNTRIES } from "@/data/countries";
 
-const SALUTATION_OPTIONS = ["Dr.", "Mr.", "Ms.", "Mrs.", "Prof."];
+const SALUTATION_OPTIONS = ["Dr.", "PhD", "Mr.", "Ms.", "Mrs.", "Prof."];
 
 interface UserProfile {
   id: string;

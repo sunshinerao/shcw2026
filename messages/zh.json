@@ -12,7 +12,7 @@
         "events": "浏览活动"
     },
     "metadata": {
-        "title": "上海气候周 2026 - 东方推力新启航",
+        "title": "上海气候周 2026 - 东方既白新起航",
         "description": "共塑未来十年的气候行动 (2026-2035)"
     },
     "nav": {
@@ -1070,10 +1070,10 @@
     },
     "hero": {
         "badge": "2026年4月20-28日 · 中国上海",
-        "title": "东方推力新启航",
+        "title": "东方既白新起航",
         "subtitle": "共塑未来十年的气候行动 (2026-2035)",
         "description": "The Eastern Momentum for the Decisive Decade",
-        "location": "上海 · 东方推力点",
+        "location": "中国 · 上海",
         "cta": {
             "explore": "探索核心议程",
             "video": "观看宣传片"
@@ -1483,14 +1483,14 @@
                 "title": "电子邮件",
                 "description": "一般咨询"
             },
-            "phone": {
-                "title": "联系电话",
-                "description": "工作日 9:00-18:00"
+            "website": {
+                "title": "官方网站",
+                "description": "点击访问官网"
             },
             "address": {
                 "title": "办公地址",
-                "content": "上海市浦东新区世博大道1500号",
-                "description": "上海世博中心"
+                "content": "上海市徐汇区衡山路8号",
+                "description": "上海气候周办公室"
             }
         },
         "inquiryTypes": {

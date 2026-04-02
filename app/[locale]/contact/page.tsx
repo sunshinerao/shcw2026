@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import {
-  Mail, Phone, MapPin, Send, CheckCircle,
+  Mail, Globe, MapPin, Send, CheckCircle,
   Handshake, Mic2, Camera, Heart, ArrowRight, UserPlus, LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -114,12 +114,14 @@ export default function ContactPage() {
       title: t("info.email.title"),
       content: "info@shanghaiclimateweek.org.cn",
       description: t("info.email.description"),
+      href: "mailto:info@shanghaiclimateweek.org.cn",
     },
     {
-      icon: Phone,
-      title: t("info.phone.title"),
-      content: "+86 21 1234 5678",
-      description: t("info.phone.description"),
+      icon: Globe,
+      title: t("info.website.title"),
+      content: "www.shanghaiclimateweek.org.cn",
+      description: t("info.website.description"),
+      href: "https://www.shanghaiclimateweek.org.cn",
     },
     {
       icon: MapPin,
@@ -175,7 +177,18 @@ export default function ContactPage() {
                       <item.icon className="w-6 h-6 text-emerald-600" />
                     </div>
                     <h3 className="font-bold text-slate-900 mb-2">{item.title}</h3>
-                    <p className="text-emerald-600 font-medium mb-1">{item.content}</p>
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        target={item.href.startsWith("http") ? "_blank" : undefined}
+                        rel={item.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                        className="text-emerald-600 font-medium mb-1 inline-block hover:text-emerald-700 hover:underline"
+                      >
+                        {item.content}
+                      </a>
+                    ) : (
+                      <p className="text-emerald-600 font-medium mb-1">{item.content}</p>
+                    )}
                     <p className="text-sm text-slate-500">{item.description}</p>
                   </CardContent>
                 </Card>

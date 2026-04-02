@@ -372,6 +372,7 @@ export default function DashboardInvitationsPage() {
                 <SelectContent>
                   <SelectItem value="none">{t("form.salutationPlaceholder")}</SelectItem>
                   <SelectItem value="Dr.">Dr.</SelectItem>
+                  <SelectItem value="PhD">PhD</SelectItem>
                   <SelectItem value="Mr.">Mr.</SelectItem>
                   <SelectItem value="Ms.">Ms.</SelectItem>
                   <SelectItem value="Mrs.">Mrs.</SelectItem>

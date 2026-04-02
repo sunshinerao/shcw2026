@@ -14,7 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Link } from "@/i18n/routing";
 
-const SALUTATION_OPTIONS = ["Dr.", "Mr.", "Ms.", "Mrs.", "Prof."];
+const SALUTATION_OPTIONS = ["Dr.", "PhD", "Mr.", "Ms.", "Mrs.", "Prof."];
 
 export default function RegisterPage() {
   const t = useTranslations("auth.register");

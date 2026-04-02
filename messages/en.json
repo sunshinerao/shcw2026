@@ -1072,8 +1072,8 @@
         "badge": "April 20-28, 2026 · Shanghai, China",
         "title": "Eastern Dawning New Partnership",
         "subtitle": "Shaping the Next Decade of Climate Action (2026-2035)",
-        "description": "Accelerating Climate Action of the Coming Decade (2026-2035)",
-        "location": "Shanghai · Eastern Dawning",
+        "description": "Accelerating action and innovation of the coming decade",
+        "location": "China · Shanghai",
         "cta": {
             "explore": "Explore Agenda",
             "video": "Watch Video"
@@ -1088,7 +1088,7 @@
     "mission": {
         "title": "Our Mission",
         "subtitle": "Partnership and Profit for People and the Planet",
-        "description": "Shanghai Climate Week 2026 is positioned as a global platform of climate action, innovation and partnership. A city-named platform, SHCW convenes best expertise, resources and leadership in advancing transition that is clean, green, smart and resilient, from China, Asia and worldwide. Together we create and enhance natural capital, human capital, social capital and financial capital that benefit people and the planet.",
+        "description": "Shanghai Climate Week 2026 is positioned as a global platform of climate action, innovation, and partnership. A city-named platform, Shanghai Climate Week convenes the best expertise, resources, and leadership in advancing a clean, green, smart, and resilient future from China, Asia, and worldwide. Together, we create and enhance natural capital, human capital, social capital, and financial capital that benefit people and the planet.",
         "learnMore": "Learn More",
         "highlights": {
             "system": {
@@ -1483,14 +1483,14 @@
                 "title": "Email",
                 "description": "General inquiries"
             },
-            "phone": {
-                "title": "Phone",
-                "description": "Weekdays 09:00-18:00"
+            "website": {
+                "title": "Website",
+                "description": "Visit the official website"
             },
             "address": {
                 "title": "Office",
-                "content": "1500 Expo Avenue, Pudong New Area, Shanghai",
-                "description": "Shanghai Expo Center"
+                "content": "8 Hengshan Road, Xuhui District, Shanghai",
+                "description": "Shanghai Climate Week Office"
             }
         },
         "inquiryTypes": {
