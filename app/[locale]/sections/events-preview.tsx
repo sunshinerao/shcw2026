@@ -37,7 +37,7 @@ export function EventsPreviewSection() {
     async function loadFeaturedEvents() {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/events?published=true&featured=true&city=Shanghai&pageSize=100&locale=${locale}`, {
+        const response = await fetch(`/api/events?published=true&featured=true&pageSize=100&locale=${locale}`, {
           cache: "no-store",
         });
         const payload = await response.json();
@@ -68,7 +68,21 @@ export function EventsPreviewSection() {
     };
   }, [locale]);
 
-  const groupedEvents = events.reduce((acc, event) => {
+  const sortedEvents = [...events].sort((a, b) => {
+    const byDate = a.startDate.localeCompare(b.startDate);
+    if (byDate !== 0) {
+      return byDate;
+    }
+
+    const byTime = a.startTime.localeCompare(b.startTime);
+    if (byTime !== 0) {
+      return byTime;
+    }
+
+    return a.title.localeCompare(b.title);
+  });
+
+  const groupedEvents = sortedEvents.reduce((acc, event) => {
     const dateKey = event.startDate.slice(0, 10);
     if (!acc[dateKey]) {
       acc[dateKey] = [];
@@ -78,6 +92,21 @@ export function EventsPreviewSection() {
   }, {} as Record<string, FeaturedEvent[]>);
 
   const sortedDates = Object.keys(groupedEvents).sort();
+
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const startIndex = sortedDates.findIndex((date) => date >= todayKey);
+  const windowStartDate =
+    startIndex >= 0 ? sortedDates[startIndex] : (sortedDates[0] || "");
+
+  let visibleDates: string[] = [];
+  if (windowStartDate) {
+    const endDate = new Date(`${windowStartDate}T00:00:00`);
+    endDate.setDate(endDate.getDate() + 2);
+    const windowEndKey = endDate.toISOString().slice(0, 10);
+    visibleDates = sortedDates.filter(
+      (date) => date >= windowStartDate && date <= windowEndKey
+    );
+  }
 
   if (!isLoading && events.length === 0) return null;
 
@@ -114,7 +143,7 @@ export function EventsPreviewSection() {
           </div>
         ) : (
           <div className="space-y-8">
-            {sortedDates.slice(0, 3).map((date, dateIndex) => (
+            {visibleDates.map((date, dateIndex) => (
               <motion.div
                 key={date}
                 initial={{ opacity: 0, y: 30 }}
