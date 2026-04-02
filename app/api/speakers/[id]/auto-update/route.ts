@@ -15,6 +15,33 @@ type AutoUpdateSuggestion = {
   avatarUrl?: string | null;
 };
 
+type ResponsesPayload = {
+  output_text?: string;
+  output?: Array<{
+    type?: string;
+    content?: Array<{
+      type?: string;
+      text?: string;
+    }>;
+  }>;
+};
+
+function extractResponsesText(payload: ResponsesPayload): string | null {
+  if (typeof payload.output_text === "string" && payload.output_text.trim().length > 0) {
+    return payload.output_text;
+  }
+
+  for (const item of payload.output || []) {
+    for (const block of item.content || []) {
+      if (typeof block.text === "string" && block.text.trim().length > 0) {
+        return block.text;
+      }
+    }
+  }
+
+  return null;
+}
+
 function sanitizeSuggestion(raw: AutoUpdateSuggestion, includeAvatar: boolean): AutoUpdateSuggestion {
   const next: AutoUpdateSuggestion = {
     organization: typeof raw.organization === "string" ? raw.organization.trim() : null,
@@ -60,7 +87,7 @@ async function fetchSpeakerInfo(params: {
   const displayName = params.nameEn ? `${params.name} (${params.nameEn})` : params.name;
   const linkedinHint = params.linkedinUrl ? ` LinkedIn URL hint: ${params.linkedinUrl}.` : "";
   const avatarField = params.includeAvatar
-    ? "- avatarUrl: direct public image URL for a professional headshot (if confidently found)"
+    ? "- avatarUrl: direct public image URL for a professional headshot. Prefer LinkedIn CDN image URL or official organization page image URL. Must be a direct image URL ending with .jpg/.jpeg/.png/.webp when possible; if unavailable return null."
     : "";
 
   const prompt = `Find reliable professional profile information for this speaker:\nName: ${displayName}\nOrganization hint: ${params.organization}.${linkedinHint}\n\nReturn ONLY valid JSON with fields below (unknown => null):\n- organization\n- organizationEn\n- title\n- titleEn\n- bio (Chinese, factual, 2-4 sentences)\n- bioEn (English, factual, 2-4 sentences)\n${avatarField}\n\nRules: no fabrication, no markdown, JSON only.`;
@@ -80,6 +107,7 @@ async function fetchSpeakerInfo(params: {
       body: JSON.stringify({
         model: params.model,
         tools: [{ type: "web_search_preview" }],
+        temperature: 0.1,
         input: prompt,
       }),
       cache: "no-store",
@@ -88,11 +116,10 @@ async function fetchSpeakerInfo(params: {
     clearTimeout(timeout);
 
     if (responsesRes.ok) {
-      const payload = await responsesRes.json() as {
-        output_text?: string;
-      };
-      if (typeof payload.output_text === "string" && payload.output_text.trim().length > 0) {
-        content = payload.output_text;
+      const payload = await responsesRes.json() as ResponsesPayload;
+      const parsed = extractResponsesText(payload);
+      if (parsed) {
+        content = parsed;
       }
     }
   } catch {
