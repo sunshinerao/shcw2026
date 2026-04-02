@@ -41,6 +41,7 @@ type SiteContent = {
   subtitleEn: string | null;
   description: string | null;
   descriptionEn: string | null;
+  extra?: Record<string, Record<string, string>> | null;
 };
 
 export function NarrativeSection() {
@@ -48,16 +49,24 @@ export function NarrativeSection() {
   const locale = useLocale();
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
-  const [content, setContent] = useState<SiteContent | null>(null);
+  const [content, setContent] = useState<Record<string, SiteContent | null>>({
+    mission: null,
+    highlights: null,
+  });
 
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/site-content?key=mission");
-        const json = await res.json();
-        if (json.success && json.data) {
-          setContent(json.data);
-        }
+        const [missionRes, highlightsRes] = await Promise.all([
+          fetch("/api/site-content?key=mission"),
+          fetch("/api/site-content?key=highlights"),
+        ]);
+        const [missionJson, highlightsJson] = await Promise.all([missionRes.json(), highlightsRes.json()]);
+
+        setContent({
+          mission: missionJson.success && missionJson.data ? missionJson.data : null,
+          highlights: highlightsJson.success && highlightsJson.data ? highlightsJson.data : null,
+        });
       } catch {
         // fall back to i18n
       }
@@ -65,15 +74,25 @@ export function NarrativeSection() {
     load();
   }, []);
 
-  const title = content
-    ? (locale === "en" ? content.titleEn || content.title : content.title) || t("mission.title")
+  const title = content.mission
+    ? (locale === "en" ? content.mission.titleEn || content.mission.title : content.mission.title) || t("mission.title")
     : t("mission.title");
-  const subtitle = content
-    ? (locale === "en" ? content.subtitleEn || content.subtitle : content.subtitle) || t("mission.subtitle")
+  const subtitle = content.mission
+    ? (locale === "en" ? content.mission.subtitleEn || content.mission.subtitle : content.mission.subtitle) || t("mission.subtitle")
     : t("mission.subtitle");
-  const description = content
-    ? (locale === "en" ? content.descriptionEn || content.description : content.description) || t("mission.description")
+  const description = content.mission
+    ? (locale === "en" ? content.mission.descriptionEn || content.mission.description : content.mission.description) || t("mission.description")
     : t("mission.description");
+
+  function getHighlightField(itemKey: string, field: "title" | "description") {
+    const source = content.highlights?.extra || content.mission?.extra;
+    const item = source?.[itemKey];
+    if (!item) return null;
+    if (locale === "en") {
+      return item[`${field}En`] || item[field] || null;
+    }
+    return item[field] || null;
+  }
 
   return (
     <section className="py-20 sm:py-28 bg-white" ref={ref}>
@@ -118,8 +137,12 @@ export function NarrativeSection() {
                 <div className={`w-12 h-12 rounded-xl ${item.bgColor} flex items-center justify-center mb-4`}>
                   <item.icon className={`w-6 h-6 ${item.color}`} />
                 </div>
-                <h3 className="text-lg font-bold text-slate-900 mb-1">{t(`mission.highlights.${item.key}.title`)}</h3>
-                <p className="text-sm text-slate-500">{t(`mission.highlights.${item.key}.desc`)}</p>
+                <h3 className="text-lg font-bold text-slate-900 mb-1">
+                  {getHighlightField(item.key, "title") || t(`mission.highlights.${item.key}.title`)}
+                </h3>
+                <p className="text-sm text-slate-500">
+                  {getHighlightField(item.key, "description") || t(`mission.highlights.${item.key}.desc`)}
+                </p>
               </motion.div>
             ))}
           </div>

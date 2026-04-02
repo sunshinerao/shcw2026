@@ -587,12 +587,15 @@
         "actions": {
             "approve": "Approve",
             "reject": "Reject",
+            "delete": "Delete",
+            "deleting": "Deleting...",
             "export": "Export Excel",
             "exporting": "Exporting..."
         },
         "messages": {
             "loadFailed": "Failed to load applications.",
             "updateFailed": "Failed to update application status.",
+            "deleteFailed": "Failed to delete application.",
             "exportFailed": "Failed to export Excel."
         }
     },
@@ -2289,8 +2292,8 @@
             "gender": "Gender",
             "male": "Male",
             "female": "Female",
-            "idNumber": "ID Number",
-            "idNumberPlaceholder": "Enter ID number",
+            "idNumber": "Certificate Number",
+            "idNumberPlaceholder": "Enter certificate number",
             "travelDocNumber": "Travel Document Number",
             "travelDocNumberPlaceholder": "Enter travel document number",
             "docValidity": "Document Validity",

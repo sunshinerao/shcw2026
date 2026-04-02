@@ -168,6 +168,7 @@ export default function SpecialPassPage() {
   const [alert, setAlert] = useState<{ type: "success" | "error"; message: string } | null>(null);
   const [countrySearch, setCountrySearch] = useState("");
   const [profileLoaded, setProfileLoaded] = useState(false);
+  const [requiredFieldErrors, setRequiredFieldErrors] = useState<Set<string>>(new Set());
 
   const docPhotoRef = useRef<HTMLInputElement>(null);
   const docPhotoBackRef = useRef<HTMLInputElement>(null);
@@ -409,8 +410,15 @@ export default function SpecialPassPage() {
   };
 
   const handleSubmit = async () => {
+    const errors = new Set<string>();
+    
     if (form.entryType === "DOMESTIC") {
-      if (!form.name || !form.phone || !form.email) {
+      if (!form.name) errors.add("name");
+      if (!form.phone) errors.add("phone");
+      if (!form.email) errors.add("email");
+      
+      if (errors.size > 0) {
+        setRequiredFieldErrors(errors);
         setAlert({
           type: "error",
           message: locale === "zh"
@@ -420,21 +428,22 @@ export default function SpecialPassPage() {
         return;
       }
     } else {
-      if (
-        !form.entryType ||
-        !form.country ||
-        !form.docType ||
-        !form.docPhoto ||
-        !form.photo ||
-        !form.name ||
-        !form.birthDate ||
-        !form.gender ||
-        !form.docNumber ||
-        !form.docValidFrom ||
-        !form.docValidTo ||
-        !form.email ||
-        !form.phone
-      ) {
+      if (!form.entryType) errors.add("entryType");
+      if (!form.country) errors.add("country");
+      if (!form.docType) errors.add("docType");
+      if (!form.docPhoto) errors.add("docPhoto");
+      if (!form.photo) errors.add("photo");
+      if (!form.name) errors.add("name");
+      if (!form.birthDate) errors.add("birthDate");
+      if (!form.gender) errors.add("gender");
+      if (!form.docNumber) errors.add("docNumber");
+      if (!form.docValidFrom) errors.add("docValidFrom");
+      if (!form.docValidTo) errors.add("docValidTo");
+      if (!form.email) errors.add("email");
+      if (!form.phone) errors.add("phone");
+      
+      if (errors.size > 0) {
+        setRequiredFieldErrors(errors);
         setAlert({
           type: "error",
           message: locale === "zh" ? "请填写所有必填字段" : "Please fill in all required fields",
@@ -452,11 +461,20 @@ export default function SpecialPassPage() {
     }
 
     setIsSubmitting(true);
+    setRequiredFieldErrors(new Set());
     try {
+      // Clean form data: ensure all values are strings
+      const cleanedForm: Record<string, any> = {};
+      Object.keys(form).forEach(key => {
+        const value = form[key as keyof SpecialPassApplication];
+        // Only include string values and non-empty data URLs/objects
+        cleanedForm[key] = typeof value === "string" ? value : "";
+      });
+      
       const res = await fetch("/api/special-pass", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(cleanedForm),
       });
       const data = await res.json();
 
@@ -817,7 +835,7 @@ export default function SpecialPassPage() {
                   {/* Name + Birth + Gender */}
                   <div className="grid gap-4 sm:grid-cols-3">
                     <div className="space-y-2">
-                      <Label>
+                      <Label className={requiredFieldErrors.has("name") ? "text-red-600" : ""}>
                         <User className="w-4 h-4 inline mr-1" />
                         <span className="text-red-500">*</span> {t("fields.name")}
                       </Label>
@@ -825,6 +843,7 @@ export default function SpecialPassPage() {
                         value={form.name}
                         onChange={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))}
                         placeholder={t("fields.namePlaceholder")}
+                        className={requiredFieldErrors.has("name") ? "border-red-500" : ""}
                       />
                     </div>
 
@@ -897,7 +916,7 @@ export default function SpecialPassPage() {
                   {/* Phone (required) + Email */}
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
-                      <Label>
+                      <Label className={requiredFieldErrors.has("phone") ? "text-red-600" : ""}>
                         <Phone className="w-4 h-4 inline mr-1" />
                         <span className="text-red-500">*</span> {t("fields.phone")}
                       </Label>
@@ -919,12 +938,12 @@ export default function SpecialPassPage() {
                           value={form.phone}
                           onChange={(e) => setForm((prev) => ({ ...prev, phone: e.target.value }))}
                           placeholder={t("fields.phonePlaceholder")}
-                          className="flex-1"
+                          className={`flex-1 ${requiredFieldErrors.has("phone") ? "border-red-500" : ""}`}
                         />
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>
+                      <Label className={requiredFieldErrors.has("email") ? "text-red-600" : ""}>
                         <Mail className="w-4 h-4 inline mr-1" />
                         <span className="text-red-500">*</span> {t("fields.email")}
                       </Label>
@@ -933,6 +952,7 @@ export default function SpecialPassPage() {
                         value={form.email}
                         onChange={(e) => setForm((prev) => ({ ...prev, email: e.target.value }))}
                         placeholder={t("fields.emailPlaceholder")}
+                        className={requiredFieldErrors.has("email") ? "border-red-500" : ""}
                       />
                     </div>
                   </div>

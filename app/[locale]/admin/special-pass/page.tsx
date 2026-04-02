@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { Download, Loader2, Search, CheckCircle2, XCircle } from "lucide-react";
+import { Download, Loader2, Search, CheckCircle2, XCircle, Trash2 } from "lucide-react";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,7 @@ export default function AdminSpecialPassPage() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [isExporting, setIsExporting] = useState(false);
 
@@ -138,6 +139,30 @@ export default function AdminSpecialPassPage() {
       console.error("Update special pass status failed:", error);
     } finally {
       setUpdatingId(null);
+    }
+  };
+
+  const deleteApplication = async (id: string) => {
+    if (!confirm(locale === "zh" ? "确定要删除这个申请吗？" : "Are you sure you want to delete this application?")) {
+      return;
+    }
+
+    setDeletingId(id);
+    try {
+      const response = await fetch(`/api/admin/special-pass/${id}`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+      });
+      const payload = await response.json();
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error || t("messages.deleteFailed"));
+      }
+
+      setRecords((previous) => previous.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Delete special pass failed:", error);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -258,7 +283,7 @@ export default function AdminSpecialPassPage() {
                           size="sm"
                           className="bg-emerald-600 hover:bg-emerald-700"
                           onClick={() => void updateStatus(record.id, "APPROVED")}
-                          disabled={isBusy}
+                          disabled={updatingId === record.id || deletingId === record.id}
                         >
                           <CheckCircle2 className="mr-1 h-4 w-4" />
                           {t("actions.approve")}
@@ -267,10 +292,20 @@ export default function AdminSpecialPassPage() {
                           size="sm"
                           variant="destructive"
                           onClick={() => void updateStatus(record.id, "REJECTED")}
-                          disabled={isBusy}
+                          disabled={updatingId === record.id || deletingId === record.id}
                         >
                           <XCircle className="mr-1 h-4 w-4" />
                           {t("actions.reject")}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => void deleteApplication(record.id)}
+                          disabled={updatingId === record.id || deletingId === record.id}
+                        >
+                          <Trash2 className="mr-1 h-4 w-4" />
+                          {deletingId === record.id ? t("actions.deleting") : t("actions.delete")}
                         </Button>
                         {record.reviewedBy ? (
                           <span className="text-xs text-slate-500">

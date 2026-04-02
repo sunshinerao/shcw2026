@@ -93,3 +93,38 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     );
   }
 }
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  let requestLocale = resolveRequestLocale(req);
+
+  try {
+    const permission = await requireManager(requestLocale);
+    if (!permission.ok) {
+      return permission.response;
+    }
+
+    const existing = await prisma.specialPass.findUnique({
+      where: { id: params.id },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: requestLocale === "zh" ? "申请不存在" : "Application not found" },
+        { status: 404 }
+      );
+    }
+
+    await prisma.specialPass.delete({
+      where: { id: params.id },
+    });
+
+    return NextResponse.json({ success: true, message: requestLocale === "zh" ? "申请已删除" : "Application deleted" });
+  } catch (error) {
+    console.error("Delete admin special pass error:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}

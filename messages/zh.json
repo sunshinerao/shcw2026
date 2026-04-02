@@ -587,12 +587,15 @@
         "actions": {
             "approve": "批准",
             "reject": "拒绝",
+            "delete": "删除",
+            "deleting": "删除中...",
             "export": "导出 Excel",
             "exporting": "导出中..."
         },
         "messages": {
             "loadFailed": "加载申请列表失败。",
             "updateFailed": "更新审核状态失败。",
+            "deleteFailed": "删除申请失败。",
             "exportFailed": "导出 Excel 失败。"
         }
     },
@@ -2289,8 +2292,8 @@
             "gender": "性别",
             "male": "男",
             "female": "女",
-            "idNumber": "身份证号",
-            "idNumberPlaceholder": "请输入18位身份证号码",
+            "idNumber": "证件号码",
+            "idNumberPlaceholder": "请输入证件号码",
             "travelDocNumber": "旅行证件号码",
             "travelDocNumberPlaceholder": "请输入旅行证件号码",
             "docValidity": "证件有效期",
