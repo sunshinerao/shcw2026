@@ -137,7 +137,7 @@ export default function PartnersPage() {
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
               <Link href="/contact">
-                <Button size="lg" variant="outline" className="border-white/30 text-white hover:bg-white/10">
+                <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50 font-semibold">
                   <Mail className="w-4 h-4 mr-2" />
                   {t("hero.contact")}
                 </Button>

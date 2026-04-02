@@ -493,6 +493,34 @@ model Sponsor {
   @@map("sponsors")
 }
 
+// 赞助方案详情表（后台可编辑的赞助方案信息）
+model SponsorshipTier {
+  id          String   @id @default(uuid())
+  
+  // 基本信息
+  tierType    String   @unique  // platinum | gold | silver | bronze | partner
+  name        String   // 中文名称
+  nameEn      String   // 英文名称
+  description String?  @db.Text
+  descriptionEn String? @db.Text
+  price       String?  // 价格范围，如 ¥300,000-500,000
+  
+  // 特性列表（JSON 数组）
+  features    Json     // 中文特性列表: ["feature1", "feature2", ...]
+  featuresEn  Json     // 英文特性列表: ["feature1", "feature2", ...]
+  
+  // 排序
+  order       Int      @default(0)
+  
+  // 状态
+  isActive    Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("sponsorship_tiers")
+}
+
 // 新闻表
 model News {
   id          String   @id @default(uuid())

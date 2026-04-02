@@ -47,6 +47,7 @@ export function AdminLayoutShell({
     { key: "invitations", name: t("nav.invitations"), href: "/admin/invitations", icon: FileText },
     { key: "users", name: t("nav.users"), href: "/admin/users", icon: Users },
     { key: "partners", name: t("nav.partners"), href: "/admin/partners", icon: Building2 },
+    { key: "sponsorshipTiers", name: t("nav.sponsorshipTiers"), href: "/admin/sponsorship-tiers", icon: Building2 },
     { key: "news", name: t("nav.news"), href: "/admin/news", icon: Newspaper },
     { key: "content", name: t("nav.content"), href: "/admin/content", icon: PanelTop },
     { key: "messages", name: t("nav.messages"), href: "/admin/messages", icon: MessageSquare },

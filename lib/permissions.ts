@@ -20,6 +20,7 @@ export type AdminSectionKey =
   | "invitations"
   | "users"
   | "partners"
+  | "sponsorshipTiers"
   | "messages"
   | "news"
   | "content"
@@ -29,6 +30,7 @@ const ADMIN_ONLY_SECTIONS: AdminSectionKey[] = [
   "dashboard",
   "users",
   "partners",
+  "sponsorshipTiers",
   "messages",
   "news",
   "content",
