@@ -246,7 +246,7 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Form + FAQ */}
-      <section className="py-12" id="contact-form">
+      <section className="py-12 scroll-mt-20" id="contact-form">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Form */}
