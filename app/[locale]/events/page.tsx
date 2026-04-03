@@ -35,6 +35,7 @@ type PublicEvent = {
   maxAttendees?: number | null;
   isFeatured: boolean;
   isPinned?: boolean;
+  isClosed?: boolean;
 };
 
 function formatEventDateLabel(dateValue: string, locale: string) {
@@ -358,12 +359,18 @@ export default function EventsPage() {
                                   {t("details")}
                                 </Button>
                               </Link>
-                              <Link href={`/events/${event.id}/register`}>
-                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                                  {t("register")}
-                                  <ArrowRight className="w-4 h-4 ml-1" />
+                              {event.isClosed ? (
+                                <Button size="sm" variant="outline" disabled>
+                                  {t("closedEvent")}
                                 </Button>
-                              </Link>
+                              ) : (
+                                <Link href={`/events/${event.id}/register`}>
+                                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                                    {t("register")}
+                                    <ArrowRight className="w-4 h-4 ml-1" />
+                                  </Button>
+                                </Link>
+                              )}
                             </div>
                           </div>
                         </motion.div>
@@ -467,12 +474,18 @@ export default function EventsPage() {
                                 {t("details")}
                               </Button>
                             </Link>
-                            <Link href={`/events/${event.id}/register`}>
-                              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                                {t("register")}
-                                <ArrowRight className="w-4 h-4 ml-1" />
+                            {event.isClosed ? (
+                              <Button size="sm" variant="outline" disabled>
+                                {t("closedEvent")}
                               </Button>
-                            </Link>
+                            ) : (
+                              <Link href={`/events/${event.id}/register`}>
+                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                                  {t("register")}
+                                  <ArrowRight className="w-4 h-4 ml-1" />
+                                </Button>
+                              </Link>
+                            )}
                           </div>
                         </div>
                       </motion.div>

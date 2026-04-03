@@ -291,9 +291,11 @@ export default function EventRegisterPage() {
     );
   }
 
+  const localizedEventTitle = locale === "en" ? event.titleEn || event.title : event.title;
+
   if (event.isClosed) {
     return (
-      <div className="min-h-screen bg-slate-50 py-12">
+      <div className="min-h-screen bg-slate-50 pt-20 py-12">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -303,6 +305,7 @@ export default function EventRegisterPage() {
             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertCircle className="w-10 h-10 text-slate-500" />
             </div>
+            <p className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">{localizedEventTitle}</p>
             <h1 className="text-2xl font-bold text-slate-900 mb-4">{t("eventClosed.title")}</h1>
             <p className="text-slate-600 mb-8">{t("eventClosed.description")}</p>
             <Link href={`/events/${eventId}`}>

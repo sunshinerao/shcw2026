@@ -1249,7 +1249,8 @@
         "capacity": "Limited to {count} attendees",
         "partners": "Partners",
         "details": "View details",
-        "register": "Register now"
+        "register": "Register now",
+        "closedEvent": "Registration Closed"
     },
     "partners": {
         "title": "Partners",

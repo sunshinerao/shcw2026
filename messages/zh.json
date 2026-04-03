@@ -1247,7 +1247,8 @@
         "capacity": "限额 {count} 人",
         "partners": "合作伙伴",
         "details": "了解详情",
-        "register": "立即报名"
+        "register": "立即报名",
+        "closedEvent": "活动不接受报名"
     },
     "partners": {
         "title": "合作伙伴",
