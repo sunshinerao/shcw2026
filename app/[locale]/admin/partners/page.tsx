@@ -709,10 +709,12 @@ export default function AdminPartnersPage() {
                                   className="object-contain p-1"
                                 />
                               ) : (
-                                // eslint-disable-next-line @next/next/no-img-element
-                                <img
+                                <Image
                                   src={sponsor.logo}
                                   alt={getSponsorName(sponsor)}
+                                  fill
+                                  unoptimized
+                                  sizes="48px"
                                   className="w-full h-full object-contain p-1"
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).style.display =
@@ -867,10 +869,12 @@ export default function AdminPartnersPage() {
                         className="object-contain p-2"
                       />
                     ) : (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
+                      <Image
                         src={formData.logo}
                         alt={t("form.logo")}
+                        fill
+                        unoptimized
+                        sizes="96px"
                         className="w-full h-full object-contain p-2"
                       />
                     )

@@ -7,7 +7,7 @@ import { Calendar, Clock, MapPin, ExternalLink, Heart, Loader2, CheckCircle } fr
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getEventTypeLabel, type Event } from "@/lib/data/events";
+import { getEventDateRangeLabel, getEventTimeSummaryLabel, getEventTypeLabel, type Event } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
 
@@ -16,7 +16,8 @@ interface ScheduleEvent {
   title: string;
   titleEn: string;
   startDate: string;
-  time: string;
+  dateLabel: string;
+  timeLabel: string;
   venue: string;
   venueEn: string;
   type: Event["type"];
@@ -55,9 +56,10 @@ export default function SchedulePage() {
           title: reg.event.title,
           titleEn: reg.event.titleEn || reg.event.title,
           startDate: reg.event.startDate,
-          time: `${reg.event.startTime} - ${reg.event.endTime}`,
+          dateLabel: getEventDateRangeLabel(reg.event, locale),
+          timeLabel: getEventTimeSummaryLabel(reg.event, locale),
           venue: reg.event.venue,
-          venueEn: reg.event.venue,
+          venueEn: reg.event.venueEn || reg.event.venue,
           type: reg.event.type,
           image: reg.event.image,
           status: "registered" as const,
@@ -72,9 +74,10 @@ export default function SchedulePage() {
           title: item.event.title,
           titleEn: item.event.titleEn || item.event.title,
           startDate: item.event.startDate,
-          time: `${item.event.startTime} - ${item.event.endTime}`,
+          dateLabel: getEventDateRangeLabel(item.event, locale),
+          timeLabel: getEventTimeSummaryLabel(item.event, locale),
           venue: item.event.venue,
-          venueEn: item.event.venue,
+          venueEn: item.event.venueEn || item.event.venue,
           type: item.event.type,
           image: item.event.image,
           status: "wishlist" as const,
@@ -269,8 +272,12 @@ function EventCard({ event, isRegistered, locale, t, onRemove }: EventCardProps)
           
           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
             <span className="flex items-center">
+              <Calendar className="w-4 h-4 mr-1" />
+              {event.dateLabel}
+            </span>
+            <span className="flex items-center">
               <Clock className="w-4 h-4 mr-1" />
-              {event.time}
+              {event.timeLabel}
             </span>
             <span className="flex items-center">
               <MapPin className="w-4 h-4 mr-1" />

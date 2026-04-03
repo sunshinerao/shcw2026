@@ -41,7 +41,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors } from "@/lib/data/events";
+import { getEventDateRangeLabel, getEventScheduleLabel, getEventTimeSummaryLabel, getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors, type EventDateSlot } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
 import { normalizeAgendaDateKey } from "@/lib/agenda";
 import { toast } from "sonner";
@@ -85,6 +85,7 @@ type PublicEvent = {
   endDate: string;
   startTime: string;
   endTime: string;
+  eventDateSlots?: EventDateSlot[];
   venue: string;
   venueEn?: string | null;
   address?: string | null;
@@ -398,7 +399,7 @@ export default function EventDetailPage() {
     const title = getLocalizedTitle(event, locale);
     const description = getLocalizedDescription(event, locale);
     const venue = locale === "en" ? event.venueEn || event.venue : event.venue;
-    const dateLabel = formatEventDateLabel(event.startDate, locale);
+    const scheduleLabel = getEventScheduleLabel(event, locale);
 
     context.fillStyle = "#ffffff";
     context.font = "700 62px 'PingFang SC', 'Microsoft YaHei', sans-serif";
@@ -410,7 +411,7 @@ export default function EventDetailPage() {
 
     context.fillStyle = "#d1fae5";
     context.font = "600 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    context.fillText(`${dateLabel}  |  ${event.startTime}-${event.endTime}`, 130, 600);
+    drawWrappedText(context, scheduleLabel, 130, 600, canvas.width - 260, 44, 4);
     context.fillText(venue, 130, 660);
 
     context.fillStyle = "#ffffff";
@@ -620,14 +621,11 @@ export default function EventDetailPage() {
           <div className="flex flex-wrap items-center gap-6 text-sm">
             <div className="flex items-center text-slate-600">
               <Calendar className="w-4 h-4 mr-2 text-emerald-600" />
-              {formatEventDateLabel(event.startDate, locale)}
-              {event.endDate && event.endDate.slice(0, 10) !== event.startDate.slice(0, 10) && (
-                <> - {formatEventDateLabel(event.endDate, locale)}</>
-              )}
+              {getEventDateRangeLabel(event, locale)}
             </div>
             <div className="flex items-center text-slate-600">
               <Clock className="w-4 h-4 mr-2 text-emerald-600" />
-              {event.startTime} - {event.endTime}
+              {getEventTimeSummaryLabel(event, locale)}
             </div>
             <div className="flex items-center text-slate-600">
               <MapPin className="w-4 h-4 mr-2 text-emerald-600" />

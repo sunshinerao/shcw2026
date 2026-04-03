@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { EventHostType, EventLayer, UserRole } from "@prisma/client";
 import { translateMissingEventFieldsToEnglish } from "@/lib/ai-translation";
+import { agendaDateToUtcDate, isAgendaDateWithinEventRange, isAgendaTimeRangeValid, isValidAgendaDate, normalizeAgendaDateKey } from "@/lib/agenda";
 import { authOptions } from "@/lib/auth";
-import { normalizeAgendaDateKey } from "@/lib/agenda";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canManageEvents } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
@@ -39,6 +39,53 @@ function normalizeOptionalText(value: unknown): string | null {
   return trimmed.length > 0 ? trimmed : null;
 }
 
+function buildEventDateSlots(input: {
+  eventDateSlots: Array<{ scheduleDate: string; startTime: string; endTime: string }> | undefined;
+  startDate: Date;
+  endDate: Date;
+  startTime: string;
+  endTime: string;
+}) {
+  const rawSlots = Array.isArray(input.eventDateSlots) ? input.eventDateSlots : [];
+  const slots = (rawSlots.length > 0
+    ? rawSlots
+    : [{
+        scheduleDate: normalizeAgendaDateKey(input.startDate),
+        startTime: input.startTime,
+        endTime: input.endTime,
+      }])
+    .map((slot) => ({
+      scheduleDate: normalizeAgendaDateKey(slot.scheduleDate),
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+    }))
+    .sort((left, right) => left.scheduleDate.localeCompare(right.scheduleDate));
+
+  if (slots.length === 0) {
+    throw new Error("At least one event date slot is required");
+  }
+
+  for (const slot of slots) {
+    if (!isValidAgendaDate(slot.scheduleDate)) {
+      throw new Error("Invalid event date slot date");
+    }
+
+    if (!isAgendaTimeRangeValid(slot.startTime, slot.endTime)) {
+      throw new Error("Invalid event date slot time range");
+    }
+
+    if (!isAgendaDateWithinEventRange(slot.scheduleDate, input.startDate, input.endDate)) {
+      throw new Error("Event date slot must fall within event date range");
+    }
+  }
+
+  return slots.map((slot) => ({
+    scheduleDate: agendaDateToUtcDate(slot.scheduleDate)!,
+    startTime: slot.startTime,
+    endTime: slot.endTime,
+  }));
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
@@ -61,6 +108,9 @@ export async function GET(
             : { isPublished: true }),
       },
       include: {
+        eventDateSlots: {
+          orderBy: [{ scheduleDate: "asc" }],
+        },
         manager: {
           select: {
             id: true,
@@ -119,6 +169,10 @@ export async function GET(
       success: true,
       data: {
         ...event,
+        eventDateSlots: event.eventDateSlots.map((slot) => ({
+          ...slot,
+          scheduleDate: normalizeAgendaDateKey(slot.scheduleDate),
+        })),
         agendaItems: event.agendaItems.map((item) => ({
           ...item,
           agendaDate: normalizeAgendaDateKey(item.agendaDate),
@@ -177,6 +231,10 @@ export async function PUT(
         cityEn: true,
         address: true,
         addressEn: true,
+        startDate: true,
+        endDate: true,
+        startTime: true,
+        endTime: true,
       },
     });
 
@@ -235,6 +293,7 @@ export async function PUT(
       hostType,
       isPinned,
       isClosed,
+      eventDateSlots,
       managerUserId,
     } = body;
 
@@ -375,6 +434,21 @@ export async function PUT(
     const finalAddressEn = baseAddressEn || translated.addressEn || null;
     const finalCityEn = baseCityEn || translated.cityEn || null;
 
+    const nextStartDate = parsedStartDate || existingEvent.startDate;
+    const nextEndDate = parsedEndDate || existingEvent.endDate || nextStartDate;
+    const nextStartTime = startTime !== undefined ? startTime : existingEvent.startTime;
+    const nextEndTime = endTime !== undefined ? endTime : existingEvent.endTime;
+
+    const normalizedEventDateSlots = buildEventDateSlots({
+      eventDateSlots,
+      startDate: nextStartDate,
+      endDate: nextEndDate,
+      startTime: nextStartTime,
+      endTime: nextEndTime,
+    });
+    const firstEventDateSlot = normalizedEventDateSlots[0];
+    const lastEventDateSlot = normalizedEventDateSlots[normalizedEventDateSlots.length - 1];
+
     const event = await prisma.event.update({
       where: { id: params.id },
       data: {
@@ -390,10 +464,10 @@ export async function PUT(
         ...((shortDesc !== undefined || shortDescEn !== undefined || existingEvent.shortDescEn === null) && {
           shortDescEn: finalShortDescEn,
         }),
-        ...(parsedStartDate && { startDate: parsedStartDate }),
-        ...(parsedEndDate && { endDate: parsedEndDate }),
-        ...(startTime !== undefined && { startTime }),
-        ...(endTime !== undefined && { endTime }),
+        startDate: firstEventDateSlot.scheduleDate,
+        endDate: lastEventDateSlot.scheduleDate,
+        startTime: firstEventDateSlot.startTime,
+        endTime: lastEventDateSlot.endTime,
         ...(venue !== undefined && { venue }),
         ...((venue !== undefined || venueEn !== undefined || existingEvent.venueEn === null) && {
           venueEn: finalVenueEn,
@@ -419,6 +493,10 @@ export async function PUT(
         ...(canEditRestrictedEventFields && isPinned !== undefined && { isPinned: Boolean(isPinned) }),
         ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
         ...(isClosed !== undefined && { isClosed: Boolean(isClosed) }),
+        eventDateSlots: {
+          deleteMany: {},
+          create: normalizedEventDateSlots,
+        },
         ...(resolvedManagerUserId !== undefined && { managerUserId: resolvedManagerUserId }),
         ...(canEditRestrictedEventFields && eventLayer !== undefined && {
           eventLayer: eventLayer && EVENT_LAYERS.has(eventLayer) ? (eventLayer as EventLayer) : null,
@@ -428,6 +506,9 @@ export async function PUT(
         }),
       },
       include: {
+        eventDateSlots: {
+          orderBy: [{ scheduleDate: "asc" }],
+        },
         manager: {
           select: {
             id: true,

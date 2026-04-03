@@ -233,8 +233,12 @@ async function verifyAndCheckIn(
           title: true,
           titleEn: true,
           startDate: true,
+          endDate: true,
           startTime: true,
           endTime: true,
+          eventDateSlots: {
+            orderBy: [{ scheduleDate: "asc" }],
+          },
           type: true,
           venue: true,
         },
@@ -272,8 +276,10 @@ async function verifyAndCheckIn(
 
   const passState = getEventPassState({
     startDate: registration.event.startDate,
+    endDate: registration.event.endDate,
     startTime: registration.event.startTime,
     endTime: registration.event.endTime,
+    eventDateSlots: registration.event.eventDateSlots,
     checkedInAt: registration.checkedInAt,
   });
 

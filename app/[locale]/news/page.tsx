@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
@@ -105,9 +106,12 @@ export default function NewsPage() {
                         {/* Image */}
                         <div className="aspect-[16/10] md:aspect-auto md:min-h-[320px] overflow-hidden relative">
                           {featured.coverImage ? (
-                            <img
+                            <Image
                               src={featured.coverImage}
                               alt={loc(featured, "title") || ""}
+                              fill
+                              unoptimized
+                              sizes="(min-width: 768px) 50vw, 100vw"
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                             />
                           ) : (
@@ -167,10 +171,13 @@ export default function NewsPage() {
                       <Link href={`/news/${item.slug}`}>
                         <div className="group rounded-2xl overflow-hidden border border-slate-100 hover:shadow-lg transition-all duration-300 bg-white h-full flex flex-col">
                           {item.coverImage ? (
-                            <div className="aspect-video overflow-hidden">
-                              <img
+                            <div className="aspect-video overflow-hidden relative">
+                              <Image
                                 src={item.coverImage}
                                 alt={loc(item, "title") || ""}
+                                fill
+                                unoptimized
+                                sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                               />
                             </div>

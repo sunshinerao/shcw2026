@@ -275,6 +275,7 @@ model Event {
   manager       User?    @relation("EventManager", fields: [managerUserId], references: [id])
   
   registrations Registration[]
+  eventDateSlots EventDateSlot[]
   agendaItems   AgendaItem[]
   checkins      CheckIn[]
   wishlist      Wishlist[]
@@ -299,6 +300,23 @@ model Event {
   @@index([managerUserId])
   @@index([isPinned, startDate, startTime])
   @@map("events")
+}
+
+model EventDateSlot {
+  id           String   @id @default(uuid())
+  eventId      String
+  scheduleDate DateTime
+  startTime    String
+  endTime      String
+
+  event        Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([eventId, scheduleDate])
+  @@index([eventId, scheduleDate])
+  @@map("event_date_slots")
 }
 
 // 报名表

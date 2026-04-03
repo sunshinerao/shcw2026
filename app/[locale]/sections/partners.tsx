@@ -64,10 +64,12 @@ function SponsorCard({ sponsor, locale, isSmallTier }: { sponsor: Sponsor; local
             className="object-contain p-2"
           />
         ) : (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={sponsor.logo}
             alt={displayName}
+            fill
+            unoptimized
+            sizes={isSmallTier ? "120px" : "200px"}
             className="w-full h-full object-contain p-2"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";

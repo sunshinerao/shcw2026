@@ -8,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Award, Calendar, Loader2, QrCode, ShieldCheck, Sparkles, Star } from "lucide-react";
-import { buildPassportAchievements, formatLearningHours, getEventDurationMinutes, type SupportedLocale } from "@/lib/climate-passport";
+import { buildPassportAchievements, formatLearningHours, getEventTotalDurationMinutes, type SupportedLocale } from "@/lib/climate-passport";
+import type { EventDateSlot } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
 
 interface ProfileResponse {
@@ -26,8 +27,10 @@ interface RegistrationItem {
   checkedInAt?: string | null;
   event: {
     startDate: string;
+    endDate: string;
     startTime: string;
     endTime: string;
+    eventDateSlots?: EventDateSlot[];
   };
 }
 
@@ -96,7 +99,7 @@ export default function ClimatePassportPage() {
         .filter((registration) => Boolean(registration.checkedInAt))
         .reduce(
           (total, registration) =>
-            total + getEventDurationMinutes(registration.event.startDate, registration.event.startTime, registration.event.endTime),
+            total + getEventTotalDurationMinutes(registration.event),
           0
         ),
     [registrations]

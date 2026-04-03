@@ -1,3 +1,5 @@
+import { normalizeEventDateSlots, type EventDateSlot } from "@/lib/data/events";
+
 export const EVENT_PASS_ENTRY_WINDOW_MS = 90 * 60 * 1000;
 export const EVENT_PASS_QR_TTL_MS = 60 * 1000;
 
@@ -6,8 +8,10 @@ export type EventPassState = "upcoming" | "active" | "checkedIn" | "expired" | "
 
 interface EventTimeInput {
   startDate: Date | string;
+  endDate?: Date | string;
   startTime: string;
   endTime: string;
+  eventDateSlots?: EventDateSlot[] | null;
   checkedInAt?: Date | string | null;
 }
 
@@ -32,18 +36,52 @@ export function getEventDurationMinutes(dateValue: Date | string, startTime: str
   return Math.max(0, Math.round((endAt.getTime() - startAt.getTime()) / 60000));
 }
 
+export function getEventTotalDurationMinutes(event: EventTimeInput) {
+  return normalizeEventDateSlots({
+    startDate: event.startDate,
+    endDate: event.endDate || event.startDate,
+    startTime: event.startTime,
+    endTime: event.endTime,
+    eventDateSlots: event.eventDateSlots,
+  }).reduce(
+    (total, slot) => total + getEventDurationMinutes(slot.scheduleDate, slot.startTime, slot.endTime),
+    0
+  );
+}
+
 export function getEventPassState(event: EventTimeInput, now = new Date()): EventPassState {
   if (event.checkedInAt) {
     return "checkedIn";
   }
 
-  const startAt = combineEventDateTime(event.startDate, event.startTime);
-  const endAt = combineEventDateTime(event.startDate, event.endTime);
-  const entryOpenAt = new Date(startAt.getTime() - EVENT_PASS_ENTRY_WINDOW_MS);
+  const slots = normalizeEventDateSlots({
+    startDate: event.startDate,
+    endDate: event.endDate || event.startDate,
+    startTime: event.startTime,
+    endTime: event.endTime,
+    eventDateSlots: event.eventDateSlots,
+  });
 
-  if (now > endAt) {
+  const slotWindows = slots.map((slot) => ({
+    startAt: combineEventDateTime(slot.scheduleDate, slot.startTime),
+    endAt: combineEventDateTime(slot.scheduleDate, slot.endTime),
+  }));
+
+  const lastSlot = slotWindows[slotWindows.length - 1];
+  if (!lastSlot) {
     return "expired";
   }
+
+  if (now > lastSlot.endAt) {
+    return "expired";
+  }
+
+  const currentOrNextSlot = slotWindows.find((slot) => now <= slot.endAt);
+  if (!currentOrNextSlot) {
+    return "expired";
+  }
+
+  const entryOpenAt = new Date(currentOrNextSlot.startAt.getTime() - EVENT_PASS_ENTRY_WINDOW_MS);
 
   if (now < entryOpenAt) {
     return "upcoming";

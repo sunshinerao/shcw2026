@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "@/i18n/routing";
-import { getEventTypeLabel, typeColors } from "@/lib/data/events";
+import { getEventDateRangeLabel, getEventTimeSummaryLabel, getEventTypeLabel, typeColors, type EventDateSlot } from "@/lib/data/events";
 import { useSession } from "next-auth/react";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
@@ -29,6 +29,7 @@ type PublicEvent = {
   endDate: string;
   startTime: string;
   endTime: string;
+  eventDateSlots?: EventDateSlot[];
   venue: string;
   venueEn?: string | null;
   address?: string | null;
@@ -473,15 +474,8 @@ export default function EventRegisterPage() {
                 <div className="flex items-start gap-3">
                   <Calendar className="w-5 h-5 text-emerald-600 mt-0.5" />
                   <div>
-                    <p className="font-medium text-slate-900">
-                      {formatEventDateLabel(event.startDate, locale)}
-                      {event.endDate && event.endDate.slice(0, 10) !== event.startDate.slice(0, 10) && (
-                        <> - {formatEventDateLabel(event.endDate, locale)}</>
-                      )}
-                    </p>
-                    <p className="text-sm text-slate-500">
-                      {event.startTime} - {event.endTime}
-                    </p>
+                    <p className="font-medium text-slate-900">{getEventDateRangeLabel(event, locale)}</p>
+                    <p className="text-sm text-slate-500">{getEventTimeSummaryLabel(event, locale)}</p>
                   </div>
                 </div>
                 <div className="flex items-start gap-3">

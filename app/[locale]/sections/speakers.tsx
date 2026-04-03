@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
@@ -80,11 +81,14 @@ export function SpeakersSection() {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="text-center group"
               >
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-slate-200 ring-4 ring-white shadow-lg group-hover:ring-emerald-100 transition-all">
+                <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-slate-200 ring-4 ring-white shadow-lg group-hover:ring-emerald-100 transition-all relative">
                   {speaker.avatar ? (
-                    <img
+                    <Image
                       src={speaker.avatar}
                       alt={name}
+                      fill
+                      unoptimized
+                      sizes="128px"
                       className="w-full h-full object-cover"
                     />
                   ) : (

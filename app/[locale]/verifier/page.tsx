@@ -92,6 +92,18 @@ export default function VerifierPage() {
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
 
+  const fetchRecentCheckIns = useCallback(async () => {
+    try {
+      const response = await fetch("/api/checkin?limit=10");
+      const data = await response.json();
+      if (data.success) {
+        setRecentCheckIns(data.data);
+      }
+    } catch (error) {
+      console.error("获取验码记录失败", error);
+    }
+  }, []);
+
   // 检查权限
   useEffect(() => {
     if (status === "loading") return;
@@ -109,21 +121,8 @@ export default function VerifierPage() {
     }
 
     setLoading(false);
-    fetchRecentCheckIns();
-  }, [session, status, router]);
-
-  // 获取最近的验码记录
-  const fetchRecentCheckIns = async () => {
-    try {
-      const response = await fetch("/api/checkin?limit=10");
-      const data = await response.json();
-      if (data.success) {
-        setRecentCheckIns(data.data);
-      }
-    } catch (error) {
-      console.error("获取验码记录失败", error);
-    }
-  };
+    void fetchRecentCheckIns();
+  }, [fetchRecentCheckIns, router, session, status, t]);
 
   // 处理扫描结果
   const onNewScanResult = useCallback(async (decodedText: string) => {
@@ -143,14 +142,14 @@ export default function VerifierPage() {
 
       if (data.success) {
         toast.success(data.data.message);
-        fetchRecentCheckIns();
+        void fetchRecentCheckIns();
       } else {
         toast.error(data.error || t("result.failed"));
       }
     } catch (error) {
       toast.error(t("result.requestFailed"));
     }
-  }, [scanning]);
+  }, [fetchRecentCheckIns, scanning, t]);
 
   // 重新开始扫描
   const restartScan = () => {

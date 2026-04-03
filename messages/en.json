@@ -375,6 +375,10 @@
             "endDate": "End date",
             "startTime": "Start time",
             "endTime": "End time",
+            "dailySchedule": "Daily schedule",
+            "dailyScheduleHelp": "For multi-day events, maintain the actual start and end time for each day.",
+            "dailyScheduleEmpty": "Select an event date range first to generate daily schedule rows.",
+            "dateSlot": "Intermediate day",
             "venue": "Venue",
             "venueEn": "English venue",
             "city": "City",
@@ -408,8 +412,6 @@
                 "official": "Official",
                 "coHosted": "Co-hosted",
                 "registered": "Registered",
-            "closedEvent": "Registration Closed",
-            "closedEventHint": "This is a closed-door event and does not accept public registrations.",
                 "sideEvent": "Side Event",
                 "community": "Community"
             },
@@ -426,6 +428,7 @@
         },
         "messages": {
             "requiredFields": "Please complete the required event fields.",
+            "invalidDateSlots": "Please provide a valid start and end time for each event day.",
             "createSuccess": "Event created successfully.",
             "createFailed": "Failed to create the event.",
             "updateSuccess": "Event updated successfully.",

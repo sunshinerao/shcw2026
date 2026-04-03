@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
@@ -314,9 +315,12 @@ export default function AdminNewsPage() {
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       {item.coverImage && (
-                        <img
+                        <Image
                           src={item.coverImage}
                           alt=""
+                          width={96}
+                          height={64}
+                          unoptimized
                           className="w-24 h-16 rounded-lg object-cover flex-shrink-0"
                         />
                       )}
@@ -454,7 +458,7 @@ export default function AdminNewsPage() {
                 <Label>{t("form.coverImage")}</Label>
                 <div className="flex items-center gap-4">
                   {form.coverImage && (
-                    <img src={form.coverImage} alt="" className="w-32 h-20 rounded-lg object-cover" />
+                    <Image src={form.coverImage} alt="" width={128} height={80} unoptimized className="w-32 h-20 rounded-lg object-cover" />
                   )}
                   <label className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border rounded-lg text-sm hover:bg-slate-50">
                     <ImageIcon className="w-4 h-4" />

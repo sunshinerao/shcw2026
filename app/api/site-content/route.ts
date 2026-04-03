@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/site-content?key=about_us — Public: get a specific content block.
  * PUT /api/site-content — Admin only: upsert a content block.

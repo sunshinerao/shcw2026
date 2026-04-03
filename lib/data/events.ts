@@ -21,11 +21,18 @@ export interface Event {
   hostType?: string | null;
   trackId?: string;
   maxAttendees?: number;
+  eventDateSlots?: EventDateSlot[];
   partners?: string[];
   partnersEn?: string[];
   speakerIds?: string[];
   isPublished: boolean;
   isFeatured: boolean;
+}
+
+export interface EventDateSlot {
+  scheduleDate: string | Date;
+  startTime: string;
+  endTime: string;
 }
 
 export const typeLabels = {
@@ -637,33 +644,76 @@ export function getEventDateLabel(dateStr: string, locale = "zh"): string {
   return `${month}月${day}日 (${weekday})`;
 }
 
-export function getEventDateRangeLabel(
-  startDate: string,
-  endDate: string,
-  locale = "zh"
-): string {
-  const normalizedStartDate = startDate.slice(0, 10);
-  const normalizedEndDate = endDate.slice(0, 10);
+type EventScheduleSource = {
+  startDate: string | Date;
+  endDate: string | Date;
+  startTime: string;
+  endTime: string;
+  eventDateSlots?: EventDateSlot[] | null;
+};
 
-  if (normalizedStartDate === normalizedEndDate) {
-    return getEventDateLabel(normalizedStartDate, locale);
+export function normalizeEventDateSlots(event: EventScheduleSource): EventDateSlot[] {
+  if (Array.isArray(event.eventDateSlots) && event.eventDateSlots.length > 0) {
+    return [...event.eventDateSlots]
+      .filter((slot) => slot?.scheduleDate && slot?.startTime && slot?.endTime)
+      .map((slot) => ({
+        scheduleDate: String(slot.scheduleDate).slice(0, 10),
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+      }))
+      .sort((left, right) => {
+        const byDate = left.scheduleDate.localeCompare(right.scheduleDate);
+        if (byDate !== 0) {
+          return byDate;
+        }
+
+        return left.startTime.localeCompare(right.startTime);
+      });
   }
 
-  return `${getEventDateLabel(normalizedStartDate, locale)} - ${getEventDateLabel(normalizedEndDate, locale)}`;
+  return [
+    {
+      scheduleDate: String(event.startDate).slice(0, 10),
+      startTime: event.startTime,
+      endTime: event.endTime,
+    },
+  ];
+}
+
+export function getEventDateRangeLabel(event: EventScheduleSource, locale = "zh"): string {
+  const slots = normalizeEventDateSlots(event);
+  const firstDate = slots[0]?.scheduleDate || String(event.startDate).slice(0, 10);
+  const lastDate = slots[slots.length - 1]?.scheduleDate || String(event.endDate || event.startDate).slice(0, 10);
+
+  if (firstDate === lastDate) {
+    return getEventDateLabel(String(firstDate), locale);
+  }
+
+  return `${getEventDateLabel(String(firstDate), locale)} - ${getEventDateLabel(String(lastDate), locale)}`;
+}
+
+export function getEventScheduleLines(event: EventScheduleSource, locale = "zh"): string[] {
+  return normalizeEventDateSlots(event).map((slot) => (
+    `${getEventDateLabel(String(slot.scheduleDate), locale)} ${slot.startTime} - ${slot.endTime}`
+  ));
+}
+
+export function getEventTimeSummaryLabel(event: EventScheduleSource, locale = "zh"): string {
+  const slots = normalizeEventDateSlots(event);
+
+  if (slots.length === 1) {
+    return `${slots[0].startTime} - ${slots[0].endTime}`;
+  }
+
+  const separator = locale === "en" ? "; " : "；";
+  return getEventScheduleLines(event, locale).join(separator);
 }
 
 export function getEventScheduleLabel(
-  event: Pick<Event, "startDate" | "endDate" | "startTime" | "endTime">,
+  event: EventScheduleSource,
   locale = "zh"
 ): string {
-  const normalizedStartDate = event.startDate.slice(0, 10);
-  const normalizedEndDate = event.endDate.slice(0, 10);
-
-  if (normalizedStartDate === normalizedEndDate) {
-    return `${getEventDateLabel(normalizedStartDate, locale)} ${event.startTime} - ${event.endTime}`;
-  }
-
-  return `${getEventDateLabel(normalizedStartDate, locale)} ${event.startTime} - ${getEventDateLabel(normalizedEndDate, locale)} ${event.endTime}`;
+  return getEventScheduleLines(event, locale).join(locale === "en" ? " / " : " / ");
 }
 
 export function groupEventsByDate(events: Event[]): Record<string, Event[]> {

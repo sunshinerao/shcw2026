@@ -76,7 +76,16 @@ export async function GET(req: NextRequest) {
         },
         include: {
           event: {
-            select: { title: true, startDate: true, startTime: true, endTime: true },
+            select: {
+              title: true,
+              startDate: true,
+              endDate: true,
+              startTime: true,
+              endTime: true,
+              eventDateSlots: {
+                orderBy: [{ scheduleDate: "asc" }],
+              },
+            },
           },
         },
       });
@@ -111,8 +120,10 @@ export async function GET(req: NextRequest) {
 
       const passState = getEventPassState({
         startDate: registration.event.startDate,
+        endDate: registration.event.endDate,
         startTime: registration.event.startTime,
         endTime: registration.event.endTime,
+        eventDateSlots: registration.event.eventDateSlots,
         checkedInAt: registration.checkedInAt,
       });
 

@@ -375,6 +375,10 @@
             "endDate": "结束日期",
             "startTime": "开始时间",
             "endTime": "结束时间",
+            "dailySchedule": "每日时间安排",
+            "dailyScheduleHelp": "如果活动跨天，请分别维护每天真实的开始和结束时间。",
+            "dailyScheduleEmpty": "请先选择活动日期范围，然后再维护每日时间。",
+            "dateSlot": "中间日期",
             "venue": "地点",
             "venueEn": "英文地点",
             "city": "城市",
@@ -424,6 +428,7 @@
         },
         "messages": {
             "requiredFields": "请完整填写活动必填字段。",
+            "invalidDateSlots": "请为每个活动日期填写有效的开始和结束时间。",
             "createSuccess": "活动创建成功。",
             "createFailed": "创建活动失败。",
             "updateSuccess": "活动更新成功。",

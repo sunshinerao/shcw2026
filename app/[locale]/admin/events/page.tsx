@@ -21,9 +21,15 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors } from "@/lib/data/events";
+import { getEventDateRangeLabel, getEventTimeSummaryLabel, getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
 import { Checkbox } from "@/components/ui/checkbox";
+
+type EventDateSlotForm = {
+  scheduleDate: string;
+  startTime: string;
+  endTime: string;
+};
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
 
@@ -58,6 +64,7 @@ type ManagedEvent = {
     category: string;
   } | null;
   maxAttendees?: number | null;
+  eventDateSlots?: EventDateSlotForm[];
   partners?: string[];
   partnersEn?: string[];
   isPublished: boolean;
@@ -122,6 +129,7 @@ type EventFormState = {
   isPinned: boolean;
   requireApproval: boolean;
   isClosed: boolean;
+  eventDateSlots: EventDateSlotForm[];
   managerUserId: string;
   partners: string[];
 };
@@ -133,6 +141,48 @@ type ManagerOption = {
 };
 
 const EVENT_TYPES: EventType[] = ["forum", "workshop", "ceremony", "conference", "networking"];
+
+function buildDateKeys(startDate: string, endDate: string) {
+  if (!startDate) {
+    return [] as string[];
+  }
+
+  const firstDate = new Date(`${startDate}T00:00:00`);
+  const lastDate = new Date(`${(endDate || startDate)}T00:00:00`);
+
+  if (Number.isNaN(firstDate.getTime()) || Number.isNaN(lastDate.getTime()) || firstDate > lastDate) {
+    return [] as string[];
+  }
+
+  const keys: string[] = [];
+  const cursor = new Date(firstDate);
+  while (cursor <= lastDate) {
+    keys.push(cursor.toISOString().slice(0, 10));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return keys;
+}
+
+function syncEventDateSlots(
+  startDate: string,
+  endDate: string,
+  existingSlots: EventDateSlotForm[],
+  defaultStartTime: string,
+  defaultEndTime: string
+) {
+  const dateKeys = buildDateKeys(startDate, endDate);
+
+  return dateKeys.map((dateKey, index) => {
+    const existingSlot = existingSlots.find((slot) => slot.scheduleDate === dateKey);
+
+    return {
+      scheduleDate: dateKey,
+      startTime: existingSlot?.startTime || (index === 0 ? defaultStartTime : defaultStartTime),
+      endTime: existingSlot?.endTime || (index === dateKeys.length - 1 ? defaultEndTime : defaultEndTime),
+    };
+  });
+}
 
 const initialFormState: EventFormState = {
   title: "",
@@ -162,6 +212,7 @@ const initialFormState: EventFormState = {
   isPinned: false,
   requireApproval: false,
   isClosed: false,
+  eventDateSlots: [],
   managerUserId: "",
   partners: [],
 };
@@ -350,20 +401,31 @@ export default function AdminEventsPage() {
     });
   }, [events, locale, searchQuery]);
 
-  const formatDate = (startDate: string, endDate?: string) => {
-    const opts: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    };
-    const loc = locale === "en" ? "en-US" : "zh-CN";
-    const start = new Date(startDate).toLocaleDateString(loc, opts);
-    if (endDate && endDate.slice(0, 10) !== startDate.slice(0, 10)) {
-      const end = new Date(endDate).toLocaleDateString(loc, opts);
-      return `${start} - ${end}`;
+  useEffect(() => {
+    if (!isFormDialogOpen) {
+      return;
     }
-    return start;
-  };
+
+    setFormState((previous) => {
+      const nextSlots = syncEventDateSlots(
+        previous.startDate,
+        previous.endDate || previous.startDate,
+        previous.eventDateSlots,
+        previous.startTime,
+        previous.endTime
+      );
+
+      const slotsChanged = JSON.stringify(previous.eventDateSlots) !== JSON.stringify(nextSlots);
+      if (!slotsChanged) {
+        return previous;
+      }
+
+      return {
+        ...previous,
+        eventDateSlots: nextSlots,
+      };
+    });
+  }, [formState.endDate, formState.startDate, formState.startTime, formState.endTime, isFormDialogOpen]);
 
   const resetForm = () => {
     setEditingEvent(null);
@@ -379,6 +441,20 @@ export default function AdminEventsPage() {
 
   const openEditDialog = (event: ManagedEvent) => {
     setEditingEvent(event);
+    const normalizedEventDateSlots = syncEventDateSlots(
+      new Date(event.startDate).toISOString().slice(0, 10),
+      new Date(event.endDate).toISOString().slice(0, 10),
+      Array.isArray(event.eventDateSlots)
+        ? event.eventDateSlots.map((slot) => ({
+            scheduleDate: slot.scheduleDate.slice(0, 10),
+            startTime: slot.startTime,
+            endTime: slot.endTime,
+          }))
+        : [],
+      event.startTime,
+      event.endTime
+    );
+
     setFormState({
       title: event.title,
       titleEn: event.titleEn || "",
@@ -407,6 +483,7 @@ export default function AdminEventsPage() {
       isPinned: event.isPinned ?? false,
       requireApproval: event.requireApproval ?? false,
       isClosed: event.isClosed ?? false,
+      eventDateSlots: normalizedEventDateSlots,
       managerUserId: event.managerUserId || "",
       partners: Array.isArray(event.partners) ? event.partners : [],
     });
@@ -487,11 +564,15 @@ export default function AdminEventsPage() {
       !formState.title ||
       !formState.description ||
       !formState.startDate ||
-      !formState.startTime ||
-      !formState.endTime ||
+      formState.eventDateSlots.length === 0 ||
       !formState.venue
     ) {
       setMessage("error", t("messages.requiredFields"));
+      return;
+    }
+
+    if (formState.eventDateSlots.some((slot) => !slot.startTime || !slot.endTime || slot.startTime >= slot.endTime)) {
+      setMessage("error", t("messages.invalidDateSlots"));
       return;
     }
 
@@ -503,6 +584,7 @@ export default function AdminEventsPage() {
       );
 
       const payload = {
+        eventDateSlots: formState.eventDateSlots,
         locale,
         title: formState.title,
         titleEn: formState.titleEn || null,
@@ -512,8 +594,8 @@ export default function AdminEventsPage() {
         shortDescEn: formState.shortDescEn || null,
         startDate: formState.startDate,
         endDate: formState.endDate || formState.startDate,
-        startTime: formState.startTime,
-        endTime: formState.endTime,
+        startTime: formState.eventDateSlots[0]?.startTime || formState.startTime,
+        endTime: formState.eventDateSlots[formState.eventDateSlots.length - 1]?.endTime || formState.endTime,
         venue: formState.venue,
         venueEn: formState.venueEn || null,
         city: formState.city,
@@ -745,9 +827,9 @@ export default function AdminEventsPage() {
                             {event.isFeatured ? <Badge className="bg-amber-100 text-amber-700">{t("featured")}</Badge> : null}
                           </div>
                           <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
-                            <span>{formatDate(event.startDate, event.endDate)}</span>
+                            <span>{getEventDateRangeLabel(event, locale)}</span>
                             <span>·</span>
-                            <span>{event.startTime} - {event.endTime}</span>
+                            <span>{getEventTimeSummaryLabel(event, locale)}</span>
                             <span>·</span>
                             <span>{event.city || "Shanghai"}</span>
                             <span>·</span>
@@ -883,13 +965,63 @@ export default function AdminEventsPage() {
               <Label htmlFor="event-end-date">{t("form.endDate")}</Label>
               <Input id="event-end-date" type="date" value={formState.endDate} onChange={(event) => setFormState((previous) => ({ ...previous, endDate: event.target.value }))} />
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-start">{t("form.startTime")}</Label>
-              <Input id="event-start" type="time" value={formState.startTime} onChange={(event) => setFormState((previous) => ({ ...previous, startTime: event.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="event-end">{t("form.endTime")}</Label>
-              <Input id="event-end" type="time" value={formState.endTime} onChange={(event) => setFormState((previous) => ({ ...previous, endTime: event.target.value }))} />
+            <div className="space-y-3 md:col-span-2">
+              <div>
+                <Label>{t("form.dailySchedule")}</Label>
+                <p className="mt-1 text-xs text-slate-500">{t("form.dailyScheduleHelp")}</p>
+              </div>
+              <div className="space-y-3 rounded-lg border border-slate-200 p-3">
+                {formState.eventDateSlots.length === 0 ? (
+                  <p className="text-sm text-slate-500">{t("form.dailyScheduleEmpty")}</p>
+                ) : (
+                  formState.eventDateSlots.map((slot, index) => (
+                    <div key={slot.scheduleDate} className="grid grid-cols-1 gap-3 rounded-lg border border-slate-100 p-3 md:grid-cols-[1.2fr_1fr_1fr] md:items-center">
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">{slot.scheduleDate}</p>
+                        <p className="text-xs text-slate-400">{index === 0 ? t("form.startDate") : index === formState.eventDateSlots.length - 1 ? t("form.endDate") : t("form.dateSlot")}</p>
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor={`event-slot-start-${slot.scheduleDate}`} className="text-xs text-slate-500">{t("form.startTime")}</Label>
+                        <Input
+                          id={`event-slot-start-${slot.scheduleDate}`}
+                          type="time"
+                          value={slot.startTime}
+                          onChange={(event) =>
+                            setFormState((previous) => ({
+                              ...previous,
+                              startTime: index === 0 ? event.target.value : previous.startTime,
+                              eventDateSlots: previous.eventDateSlots.map((item) =>
+                                item.scheduleDate === slot.scheduleDate
+                                  ? { ...item, startTime: event.target.value }
+                                  : item
+                              ),
+                            }))
+                          }
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label htmlFor={`event-slot-end-${slot.scheduleDate}`} className="text-xs text-slate-500">{t("form.endTime")}</Label>
+                        <Input
+                          id={`event-slot-end-${slot.scheduleDate}`}
+                          type="time"
+                          value={slot.endTime}
+                          onChange={(event) =>
+                            setFormState((previous) => ({
+                              ...previous,
+                              endTime: index === previous.eventDateSlots.length - 1 ? event.target.value : previous.endTime,
+                              eventDateSlots: previous.eventDateSlots.map((item) =>
+                                item.scheduleDate === slot.scheduleDate
+                                  ? { ...item, endTime: event.target.value }
+                                  : item
+                              ),
+                            }))
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="event-venue">{t("form.venue")}</Label>

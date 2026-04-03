@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
@@ -760,7 +761,7 @@ export default function SpecialPassPage() {
                         onClick={() => docPhotoRef.current?.click()}
                       >
                         {form.docPhoto ? (
-                          <img src={form.docPhoto} alt="doc" className="max-h-36 rounded object-contain" />
+                          <Image src={form.docPhoto} alt="doc" width={320} height={144} unoptimized className="max-h-36 w-auto rounded object-contain" />
                         ) : (
                           <>
                             <Upload className="w-8 h-8 text-slate-400" />
@@ -788,7 +789,7 @@ export default function SpecialPassPage() {
                           onClick={() => docPhotoBackRef.current?.click()}
                         >
                           {form.docPhotoBack ? (
-                            <img src={form.docPhotoBack} alt="doc-back" className="max-h-36 rounded object-contain" />
+                            <Image src={form.docPhotoBack} alt="doc-back" width={320} height={144} unoptimized className="max-h-36 w-auto rounded object-contain" />
                           ) : (
                             <>
                               <Upload className="w-8 h-8 text-slate-400" />
@@ -814,7 +815,7 @@ export default function SpecialPassPage() {
                         onClick={() => photoRef.current?.click()}
                       >
                         {form.photo ? (
-                          <img src={form.photo} alt="photo" className="max-h-36 rounded object-contain" />
+                          <Image src={form.photo} alt="photo" width={320} height={144} unoptimized className="max-h-36 w-auto rounded object-contain" />
                         ) : (
                           <>
                             <User className="w-8 h-8 text-slate-400" />
@@ -1059,7 +1060,7 @@ export default function SpecialPassPage() {
                         onClick={() => docPhotoRef.current?.click()}
                       >
                         {form.docPhoto ? (
-                          <img src={form.docPhoto} alt="doc" className="max-h-36 rounded object-contain" />
+                          <Image src={form.docPhoto} alt="doc" width={320} height={144} unoptimized className="max-h-36 w-auto rounded object-contain" />
                         ) : (
                           <>
                             <Upload className="w-8 h-8 text-slate-400" />
@@ -1086,7 +1087,7 @@ export default function SpecialPassPage() {
                         onClick={() => photoRef.current?.click()}
                       >
                         {form.photo ? (
-                          <img src={form.photo} alt="photo" className="max-h-36 rounded object-contain" />
+                          <Image src={form.photo} alt="photo" width={320} height={144} unoptimized className="max-h-36 w-auto rounded object-contain" />
                         ) : (
                           <>
                             <User className="w-8 h-8 text-slate-400" />

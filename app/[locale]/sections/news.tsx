@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
@@ -79,10 +80,13 @@ export function NewsSection() {
                 <Link href={`/news/${item.slug}`}>
                   <div className="group rounded-2xl overflow-hidden border border-slate-100 hover:shadow-lg transition-all duration-300 bg-white h-full flex flex-col">
                     {item.coverImage && (
-                      <div className="aspect-video overflow-hidden">
-                        <img
+                      <div className="aspect-video overflow-hidden relative">
+                        <Image
                           src={item.coverImage}
                           alt={title}
+                          fill
+                          unoptimized
+                          sizes="(min-width: 1024px) 33vw, (min-width: 768px) 50vw, 100vw"
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>

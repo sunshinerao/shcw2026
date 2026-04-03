@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
@@ -99,7 +100,7 @@ export default function NewsDetailPage() {
       {/* Cover Image */}
       {article.coverImage && (
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-6">
-          <img src={article.coverImage} alt={title} className="w-full rounded-2xl shadow-lg object-cover max-h-96" />
+          <Image src={article.coverImage} alt={title} width={1600} height={900} unoptimized className="w-full h-auto max-h-96 rounded-2xl object-cover shadow-lg" />
         </div>
       )}
 

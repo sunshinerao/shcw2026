@@ -7,9 +7,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { Calendar, Heart, Trophy, CheckCircle2, ArrowRight, MapPin, Loader2, BadgeCheck, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Link, useRouter } from "@/i18n/routing";
 import { combineEventDateTime } from "@/lib/climate-passport";
+import { getEventDateRangeLabel, getEventTimeSummaryLabel, normalizeEventDateSlots, type EventDateSlot } from "@/lib/data/events";
 
 interface RegistrationItem {
   id: string;
@@ -19,10 +19,13 @@ interface RegistrationItem {
     title: string;
     titleEn?: string | null;
     startDate: string;
+    endDate: string;
     startTime: string;
     endTime: string;
     venue: string;
+    venueEn?: string | null;
     type: string;
+    eventDateSlots?: EventDateSlot[];
   };
 }
 
@@ -33,14 +36,6 @@ interface WishlistItem {
 interface ProfileData {
   points: number;
 }
-
-const typeColors: Record<string, string> = {
-  ceremony: "bg-amber-100 text-amber-700",
-  workshop: "bg-green-100 text-green-700",
-  forum: "bg-blue-100 text-blue-700",
-  conference: "bg-purple-100 text-purple-700",
-  networking: "bg-pink-100 text-pink-700",
-};
 
 export default function DashboardPage() {
   const t = useTranslations("dashboardPage");
@@ -53,13 +48,12 @@ export default function DashboardPage() {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [profile, setProfile] = useState<ProfileData | null>(null);
 
-  const typeLabels: Record<string, string> = {
-    ceremony: eventT("filters.ceremony"),
-    workshop: eventT("filters.workshop"),
-    forum: eventT("filters.forum"),
-    conference: eventT("filters.conference"),
-    networking: eventT("filters.networking"),
-  };
+  const getEventSlotWindows = (event: RegistrationItem["event"]) =>
+    normalizeEventDateSlots(event).map((slot) => ({
+      scheduleDate: slot.scheduleDate,
+      startAt: combineEventDateTime(slot.scheduleDate, slot.startTime),
+      endAt: combineEventDateTime(slot.scheduleDate, slot.endTime),
+    }));
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -109,11 +103,17 @@ export default function DashboardPage() {
 
   const upcomingEvents = useMemo(() => {
     return registrations
-      .filter((registration) => combineEventDateTime(registration.event.startDate, registration.event.endTime).getTime() >= Date.now())
+      .filter((registration) => {
+        const slotWindows = getEventSlotWindows(registration.event);
+        const lastSlot = slotWindows[slotWindows.length - 1];
+        return Boolean(lastSlot && lastSlot.endAt.getTime() >= Date.now());
+      })
       .sort(
-        (left, right) =>
-          combineEventDateTime(left.event.startDate, left.event.startTime).getTime() -
-          combineEventDateTime(right.event.startDate, right.event.startTime).getTime()
+        (left, right) => {
+          const leftFirstSlot = getEventSlotWindows(left.event)[0];
+          const rightFirstSlot = getEventSlotWindows(right.event)[0];
+          return (leftFirstSlot?.startAt.getTime() || 0) - (rightFirstSlot?.startAt.getTime() || 0);
+        }
       )
       .slice(0, 3);
   }, [registrations]);
@@ -233,7 +233,8 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 {upcomingEvents.map((registration) => {
                   const event = registration.event;
-                  const eventDate = new Date(event.startDate);
+                  const displayDate = normalizeEventDateSlots(event)[0]?.scheduleDate || event.startDate;
+                  const eventDate = new Date(displayDate);
                   const monthLabel = locale === "en"
                     ? eventDate.toLocaleString("en-US", { month: "short" })
                     : `${eventDate.getMonth() + 1}月`;
@@ -249,22 +250,23 @@ export default function DashboardPage() {
                           <span className="text-lg font-bold">{eventDate.getDate()}</span>
                         </div>
                         <div>
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="mb-1">
                             <h3 className="font-semibold text-slate-900">
                               {locale === "en" ? event.titleEn || event.title : event.title}
                             </h3>
-                            <Badge className={typeColors[event.type] || "bg-slate-100 text-slate-700"}>
-                              {typeLabels[event.type] || event.type}
-                            </Badge>
                           </div>
                           <div className="flex flex-wrap items-center gap-4 text-sm text-slate-500">
                             <span className="flex items-center">
+                              <Calendar className="w-4 h-4 mr-1" />
+                              {getEventDateRangeLabel(event, locale)}
+                            </span>
+                            <span className="flex items-center">
                               <Clock className="w-4 h-4 mr-1" />
-                              {event.startTime} - {event.endTime}
+                              {getEventTimeSummaryLabel(event, locale)}
                             </span>
                             <span className="flex items-center">
                               <MapPin className="w-4 h-4 mr-1" />
-                              {event.venue}
+                              {locale === "en" ? event.venueEn || event.venue : event.venue}
                             </span>
                           </div>
                         </div>

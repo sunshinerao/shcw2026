@@ -134,9 +134,9 @@ PENDING_APPROVAL
 | State | Condition |
 |---|---|
 | `checkedIn` | `checkedInAt` is set (takes priority over all others) |
-| `expired` | Current time is past `endTime` on `startDate` |
-| `upcoming` | Current time is before `startTime - 90min` |
-| `active` | Between `startTime - 90min` and `endTime` (QR can be generated) |
+| `expired` | Current time is past the end time of the last event day |
+| `upcoming` | Current time is before the current or next event day's start time minus 90 minutes |
+| `active` | Between the current or next event day's start time minus 90 minutes and that day's end time |
 | `pendingApproval` | (UI-level only, not computed by `getEventPassState`) |
 | `rejected` | (UI-level only) |
 
@@ -146,9 +146,20 @@ PENDING_APPROVAL
 |---|---|
 | `combineEventDateTime(date, time)` | Merges a `Date` and `HH:mm` string into a single `Date` |
 | `getEventDurationMinutes(date, start, end)` | Calculates event length in minutes |
+| `getEventTotalDurationMinutes(event)` | Sums total learning minutes across all scheduled event days |
 | `getEventPassState(event, now?)` | Returns the current pass state for time-gated QR display |
 | `formatLearningHours(minutes, locale)` | Formats accumulated learning time (zh/en) |
 | `buildPassportAchievements(input, locale)` | Builds the 6 achievement badges for the passport UI |
+
+### Multi-day Event Schedule
+
+- Events can now store `eventDateSlots`, one row per event day.
+- Each slot contains `scheduleDate`, `startTime`, and `endTime`.
+- Event display helpers and QR gating logic normalize these slots so the same per-day schedule is used across:
+  - public event pages
+  - dashboard schedule and event pass
+  - QR generation and check-in validation
+  - climate passport learning-hour calculation
 
 ### Achievement System (6 badges)
 

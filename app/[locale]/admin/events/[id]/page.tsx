@@ -47,6 +47,7 @@ import {
   isAgendaTimeRangeValid,
   normalizeAgendaDateKey,
 } from "@/lib/agenda";
+import { getEventDateRangeLabel, getEventTimeSummaryLabel, type EventDateSlot } from "@/lib/data/events";
 
 type AgendaSpeaker = {
   id: string;
@@ -82,6 +83,7 @@ type EventInfo = {
   endDate: string;
   startTime: string;
   endTime: string;
+  eventDateSlots?: EventDateSlot[];
   venue: string;
 };
 
@@ -533,18 +535,11 @@ export default function EventAgendaPage({
               <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
                 <span className="inline-flex items-center">
                   <Calendar className="mr-1 h-4 w-4" />
-                  {new Date(event.startDate).toLocaleDateString(
-                    locale === "en" ? "en-US" : "zh-CN"
-                  )}
-                  {event.endDate && event.endDate.slice(0, 10) !== event.startDate.slice(0, 10) && (
-                    <> - {new Date(event.endDate).toLocaleDateString(
-                      locale === "en" ? "en-US" : "zh-CN"
-                    )}</>
-                  )}
+                  {getEventDateRangeLabel(event, locale)}
                 </span>
                 <span className="inline-flex items-center">
                   <Clock className="mr-1 h-4 w-4" />
-                  {event.startTime} - {event.endTime}
+                  {getEventTimeSummaryLabel(event, locale)}
                 </span>
                 <span className="inline-flex items-center">
                   <MapPin className="mr-1 h-4 w-4" />

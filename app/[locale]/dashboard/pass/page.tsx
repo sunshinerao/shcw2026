@@ -1,14 +1,33 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
+import QRCode from "qrcode";
 import { Download, Share2, QrCode, Ticket, CheckCircle, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Link } from "@/i18n/routing";
 import { EVENT_PASS_QR_TTL_MS, getEventPassState, type EventPassState } from "@/lib/climate-passport";
+import { getEventDateRangeLabel, getEventScheduleLabel, getEventTimeSummaryLabel, type EventDateSlot } from "@/lib/data/events";
 import { toast } from "sonner";
 
 interface PassData {
@@ -16,18 +35,17 @@ interface PassData {
   eventId: string;
   eventTitle: string;
   eventTitleEn: string;
-  eventDate: string;
-  eventDateEn: string;
-  eventTime: string;
+  startDate: string;
+  endDate: string;
   venue: string;
   venueEn: string;
   type: string;
   qrCodeSvg: string;
   checkedIn: boolean;
   pointsEarned: number;
-  date: string;
   startTime: string;
   endTime: string;
+  eventDateSlots: EventDateSlot[];
   passState: EventPassState;
 }
 
@@ -47,6 +65,7 @@ const badgeClasses: Record<EventPassState, string> = {
 
 export default function PassPage() {
   const t = useTranslations("dashboardPassPage");
+  const detailT = useTranslations("eventDetailPage");
   const locale = useLocale();
   const [passes, setPasses] = useState<PassData[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -54,6 +73,10 @@ export default function PassPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [passportQrCode, setPassportQrCode] = useState<string | null>(null);
+  const [sharePreviewOpen, setSharePreviewOpen] = useState(false);
+  const [sharePreviewImage, setSharePreviewImage] = useState("");
+  const [sharePreviewTitle, setSharePreviewTitle] = useState("");
+  const [sharePreviewFileName, setSharePreviewFileName] = useState("event-share.png");
 
   const selectedPass = useMemo(
     () => passes.find((pass) => pass.id === selectedPassId) || passes[0] || null,
@@ -81,7 +104,6 @@ export default function PassPage() {
         const nextPasses = await Promise.all(
           registrations.map(async (registration: any) => {
             const event = registration.event;
-            const eventDate = new Date(event.startDate);
             let passState: EventPassState;
             if (registration.status === "PENDING_APPROVAL") {
               passState = "pendingApproval";
@@ -90,8 +112,10 @@ export default function PassPage() {
             } else {
               passState = getEventPassState({
                 startDate: event.startDate,
+                endDate: event.endDate,
                 startTime: event.startTime,
                 endTime: event.endTime,
+                eventDateSlots: event.eventDateSlots,
                 checkedInAt: registration.checkedInAt,
               });
             }
@@ -110,18 +134,17 @@ export default function PassPage() {
               eventId: event.id,
               eventTitle: event.title,
               eventTitleEn: event.titleEn || event.title,
-              eventDate: eventDate.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" }),
-              eventDateEn: eventDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
-              eventTime: `${event.startTime} - ${event.endTime}`,
+              endDate: event.endDate,
               venue: event.venue,
-              venueEn: event.venue,
+              venueEn: event.venueEn || event.venue,
               type: "STANDARD",
               qrCodeSvg,
               checkedIn: Boolean(registration.checkedInAt),
               pointsEarned: registration.pointsEarned,
-              date: event.startDate,
+              startDate: event.startDate,
               startTime: event.startTime,
               endTime: event.endTime,
+              eventDateSlots: Array.isArray(event.eventDateSlots) ? event.eventDateSlots : [],
               passState,
             } satisfies PassData;
           })
@@ -179,22 +202,203 @@ export default function PassPage() {
     toast.success(t("messages.passDownloaded"));
   };
 
-  const sharePass = async () => {
+  const getShareUrl = () => `${window.location.origin}/${locale}/events/${selectedPass?.eventId || ""}`;
+
+  const openShareWindow = (url: string) => {
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const downloadDataUrl = (dataUrl: string, fileName: string) => {
+    const anchor = document.createElement("a");
+    anchor.href = dataUrl;
+    anchor.download = fileName;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  };
+
+  const loadImageElement = async (src: string) =>
+    new Promise<HTMLImageElement>((resolve, reject) => {
+      const image = document.createElement("img");
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("Image loading failed"));
+      image.src = src;
+    });
+
+  const drawWrappedText = (
+    context: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number,
+    maxWidth: number,
+    lineHeight: number,
+    maxLines: number
+  ) => {
+    const words = text.split(/\s+/);
+    const lines: string[] = [];
+    let currentLine = "";
+
+    words.forEach((word) => {
+      const testLine = currentLine ? `${currentLine} ${word}` : word;
+      if (context.measureText(testLine).width <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        if (currentLine) {
+          lines.push(currentLine);
+        }
+        currentLine = word;
+      }
+    });
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+
+    lines.slice(0, maxLines).forEach((line, index) => {
+      context.fillText(line, x, y + index * lineHeight);
+    });
+  };
+
+  const buildPosterImage = async (pass: PassData, shareUrl: string) => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1080;
+    canvas.height = 1520;
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Canvas context unavailable");
+    }
+
+    const gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, "#052e2b");
+    gradient.addColorStop(0.6, "#0b4f46");
+    gradient.addColorStop(1, "#052f6d");
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.fillStyle = "rgba(255,255,255,0.14)";
+    context.fillRect(80, 80, canvas.width - 160, canvas.height - 160);
+
+    const title = locale === "en" ? pass.eventTitleEn : pass.eventTitle;
+    const schedule = getEventScheduleLabel(pass, locale);
+    const venue = locale === "en" ? pass.venueEn || pass.venue : pass.venue;
+
+    context.fillStyle = "#ffffff";
+    context.font = "700 62px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    drawWrappedText(context, title, 130, 220, canvas.width - 260, 78, 2);
+
+    context.fillStyle = "rgba(255,255,255,0.9)";
+    context.font = "400 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    drawWrappedText(context, schedule, 130, 410, canvas.width - 260, 48, 3);
+
+    context.fillStyle = "#d1fae5";
+    context.font = "600 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    drawWrappedText(context, venue, 130, 620, canvas.width - 260, 44, 2);
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(300, 760, 480, 560);
+
+    const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+      width: 380,
+      margin: 1,
+      color: { dark: "#0f172a", light: "#ffffff" },
+    });
+    const qrImage = await loadImageElement(qrDataUrl);
+    context.drawImage(qrImage, 350, 810, 380, 380);
+
+    context.fillStyle = "#0f172a";
+    context.font = "600 30px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.textAlign = "center";
+    context.fillText(detailT("register.sharePosterScan"), canvas.width / 2, 1260);
+    context.textAlign = "start";
+
+    return canvas.toDataURL("image/png");
+  };
+
+  const handleGenerateQr = async (mode: "poster" | "qr") => {
     if (!selectedPass) {
       return;
     }
 
+    try {
+      const shareUrl = getShareUrl();
+      const baseName = `event-${selectedPass.eventId}-${mode}`;
+
+      if (mode === "poster") {
+        const poster = await buildPosterImage(selectedPass, shareUrl);
+        setSharePreviewImage(poster);
+        setSharePreviewTitle(detailT("register.sharePoster"));
+        setSharePreviewFileName(`${baseName}.png`);
+        setSharePreviewOpen(true);
+        toast.success(detailT("register.sharePosterReady"));
+        return;
+      }
+
+      const qr = await QRCode.toDataURL(shareUrl, {
+        width: 520,
+        margin: 1,
+        color: { dark: "#0f172a", light: "#ffffff" },
+      });
+      setSharePreviewImage(qr);
+      setSharePreviewTitle(detailT("register.shareQrOnly"));
+      setSharePreviewFileName(`${baseName}.png`);
+      setSharePreviewOpen(true);
+      toast.success(detailT("register.shareQrReady"));
+    } catch (shareError) {
+      toast.error(shareError instanceof Error ? shareError.message : detailT("register.shareGenerateFailed"));
+    }
+  };
+
+  const handleShareLink = async (platform: "wechat" | "xiaohongshu") => {
+    try {
+      await navigator.clipboard.writeText(getShareUrl());
+      if (platform === "wechat") {
+        toast.success(detailT("register.shareWechatCopied"));
+      } else {
+        toast.success(detailT("register.shareXiaohongshuCopied"));
+      }
+    } catch {
+      toast.error(detailT("register.shareGenerateFailed"));
+    }
+  };
+
+  const handleShareLinkedIn = () => {
+    const url = encodeURIComponent(getShareUrl());
+    openShareWindow(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`);
+  };
+
+  const handleShareX = () => {
+    if (!selectedPass) {
+      return;
+    }
+
+    const url = encodeURIComponent(getShareUrl());
+    const text = encodeURIComponent(locale === "en" ? selectedPass.eventTitleEn : selectedPass.eventTitle);
+    openShareWindow(`https://x.com/intent/tweet?url=${url}&text=${text}`);
+  };
+
+  const handleSystemShare = async () => {
+    if (!selectedPass) {
+      return;
+    }
+
+    const shareData = {
+      title: t("share.title"),
+      text: t("share.text", {
+        eventTitle: locale === "en" ? selectedPass.eventTitleEn : selectedPass.eventTitle,
+      }),
+      url: getShareUrl(),
+    };
+
     if (navigator.share) {
       try {
-        await navigator.share({
-          title: t("share.title"),
-          text: t("share.text", {
-            eventTitle: locale === "en" ? selectedPass.eventTitleEn : selectedPass.eventTitle,
-          }),
-        });
-      } catch {}
+        await navigator.share(shareData);
+      } catch {
+        return;
+      }
     } else {
-      toast.info(t("messages.shareUnavailable"));
+      await navigator.clipboard.writeText(getShareUrl());
+      toast.success(detailT("register.shareSystemCopied"));
     }
   };
 
@@ -388,11 +592,11 @@ export default function PassPage() {
                     <div className="space-y-3">
                       <div className="flex items-center text-slate-600">
                         <span className="w-20 text-slate-400">{t("fields.date")}</span>
-                        <span>{locale === "en" ? selectedPass.eventDateEn : selectedPass.eventDate}</span>
+                        <span>{getEventDateRangeLabel(selectedPass, locale)}</span>
                       </div>
                       <div className="flex items-center text-slate-600">
                         <span className="w-20 text-slate-400">{t("fields.time")}</span>
-                        <span>{selectedPass.eventTime}</span>
+                        <span>{getEventTimeSummaryLabel(selectedPass, locale)}</span>
                       </div>
                       <div className="flex items-center text-slate-600">
                         <span className="w-20 text-slate-400">{t("fields.venue")}</span>
@@ -434,10 +638,40 @@ export default function PassPage() {
                         <Download className="w-4 h-4 mr-2" />
                         {t("actions.download")}
                       </Button>
-                      <Button variant="outline" className="flex-1" onClick={sharePass}>
-                        <Share2 className="w-4 h-4 mr-2" />
-                        {t("actions.share")}
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="outline" className="flex-1">
+                            <Share2 className="w-4 h-4 mr-2" />
+                            {t("actions.share")}
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="w-56">
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>{detailT("register.shareQr")}</DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent className="w-48">
+                              <DropdownMenuItem onClick={() => void handleGenerateQr("poster")}>
+                                {detailT("register.sharePoster")}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => void handleGenerateQr("qr")}>
+                                {detailT("register.shareQrOnly")}
+                              </DropdownMenuItem>
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
+                          <DropdownMenuItem onClick={() => void handleShareLink("wechat")}>
+                            {detailT("register.shareWechat")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleShareLinkedIn}>
+                            {detailT("register.shareLinkedIn")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={handleShareX}>{detailT("register.shareX")}</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => void handleShareLink("xiaohongshu")}>
+                            {detailT("register.shareXiaohongshu")}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => void handleSystemShare()}>
+                            {detailT("register.shareSystem")}
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
                   </div>
                 </div>
@@ -446,6 +680,23 @@ export default function PassPage() {
           </Card>
         </motion.div>
       )}
+
+      <Dialog open={sharePreviewOpen} onOpenChange={setSharePreviewOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{sharePreviewTitle}</DialogTitle>
+            <DialogDescription>{detailT("register.sharePreviewDescription")}</DialogDescription>
+          </DialogHeader>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            {sharePreviewImage ? (
+              <Image src={sharePreviewImage} alt={sharePreviewTitle} width={720} height={960} unoptimized className="mx-auto w-full h-auto rounded-xl" />
+            ) : null}
+          </div>
+          <Button onClick={() => downloadDataUrl(sharePreviewImage, sharePreviewFileName)}>
+            {detailT("register.shareDownload")}
+          </Button>
+        </DialogContent>
+      </Dialog>
 
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }}>
         <Card>
