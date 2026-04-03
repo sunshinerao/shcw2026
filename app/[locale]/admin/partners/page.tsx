@@ -17,6 +17,8 @@ import {
   X,
   Upload,
   GripVertical,
+  Download,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -269,6 +271,7 @@ export default function AdminPartnersPage() {
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isExportingLogos, setIsExportingLogos] = useState(false);
 
   const loadingLabel = locale === "en" ? "Loading partners..." : "正在加载合作伙伴...";
   const genericLoadError = locale === "en" ? "Failed to load partners." : "加载合作伙伴失败。";
@@ -339,6 +342,33 @@ export default function AdminPartnersPage() {
     locale === "en"
       ? sponsor.descriptionEn || sponsor.description
       : sponsor.description;
+
+  // 导出 Logo ZIP
+  const exportLogos = async () => {
+    setIsExportingLogos(true);
+    try {
+      const res = await fetch("/api/admin/export-photos?type=partners");
+      if (!res.ok) {
+        const p = await res.json().catch(() => ({})) as { error?: string };
+        toast.error(p.error ?? (locale === "zh" ? "导出失败" : "Export failed"));
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `partner-logos-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export logos failed:", err);
+      toast.error(locale === "zh" ? "导出失败" : "Export failed");
+    } finally {
+      setIsExportingLogos(false);
+    }
+  };
 
   // 打开创建对话框
   const handleCreate = () => {
@@ -533,13 +563,28 @@ export default function AdminPartnersPage() {
             <p className="mt-2 text-sm text-slate-500">{statusMessage}</p>
           )}
         </div>
-        <Button
-          onClick={handleCreate}
-          className="bg-emerald-600 hover:bg-emerald-700"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          {t("add")}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+            onClick={() => void exportLogos()}
+            disabled={isExportingLogos}
+          >
+            {isExportingLogos
+              ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              : <Download className="w-4 h-4 mr-2" />}
+            {isExportingLogos
+              ? (locale === "zh" ? "导出中..." : "Exporting...")
+              : (locale === "zh" ? "导出 Logo ZIP" : "Export Logos ZIP")}
+          </Button>
+          <Button
+            onClick={handleCreate}
+            className="bg-emerald-600 hover:bg-emerald-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {t("add")}
+          </Button>
+        </div>
       </motion.div>
 
       {/* Filters */}

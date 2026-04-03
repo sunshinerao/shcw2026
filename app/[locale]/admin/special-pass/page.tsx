@@ -48,6 +48,7 @@ export default function AdminSpecialPassPage() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [notesDraft, setNotesDraft] = useState<Record<string, string>>({});
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingPhotos, setIsExportingPhotos] = useState(false);
 
   const loadRecords = useCallback(async () => {
     setIsLoading(true);
@@ -190,6 +191,29 @@ export default function AdminSpecialPassPage() {
     }
   };
 
+  const exportPhotos = async () => {
+    setIsExportingPhotos(true);
+    try {
+      const response = await fetch("/api/admin/export-photos?type=special-pass");
+      if (!response.ok) {
+        throw new Error(t("messages.exportPhotosFailed"));
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `special-pass-photos-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Export special pass photos failed:", error);
+    } finally {
+      setIsExportingPhotos(false);
+    }
+  };
+
   return (
     <AdminSectionGuard section="specialPass">
       <div className="space-y-6">
@@ -198,10 +222,16 @@ export default function AdminSpecialPassPage() {
             <h1 className="text-2xl font-bold text-slate-900">{t("title")}</h1>
             <p className="text-slate-600">{t("subtitle")}</p>
           </div>
-          <Button onClick={() => void exportExcel()} disabled={isExporting} className="bg-emerald-600 hover:bg-emerald-700">
-            <Download className="mr-2 h-4 w-4" />
-            {isExporting ? t("actions.exporting") : t("actions.export")}
-          </Button>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <Button onClick={() => void exportExcel()} disabled={isExporting} className="bg-emerald-600 hover:bg-emerald-700">
+              <Download className="mr-2 h-4 w-4" />
+              {isExporting ? t("actions.exporting") : t("actions.export")}
+            </Button>
+            <Button onClick={() => void exportPhotos()} disabled={isExportingPhotos} variant="outline" className="border-emerald-600 text-emerald-700 hover:bg-emerald-50">
+              <Download className="mr-2 h-4 w-4" />
+              {isExportingPhotos ? t("actions.exportingPhotos") : t("actions.exportPhotos")}
+            </Button>
+          </div>
         </div>
 
         <Card>

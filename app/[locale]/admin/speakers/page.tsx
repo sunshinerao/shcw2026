@@ -22,6 +22,7 @@ import {
   Building2,
   Sparkles,
   Loader2,
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -265,6 +266,7 @@ export default function AdminSpeakersPage() {
   const [autoUpdateTargetSpeaker, setAutoUpdateTargetSpeaker] = useState<Speaker | null>(null);
   const [isAutoUpdateDialogOpen, setIsAutoUpdateDialogOpen] = useState(false);
   const [selectedAutoFields, setSelectedAutoFields] = useState<Set<keyof AutoUpdateSuggestion>>(new Set());
+  const [isExportingAvatars, setIsExportingAvatars] = useState(false);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -406,6 +408,32 @@ export default function AdminSpeakersPage() {
     { key: "bioEn", target: "bioEn" },
     { key: "avatarUrl", target: "avatar" },
   ];
+
+  const exportAvatars = async () => {
+    setIsExportingAvatars(true);
+    try {
+      const res = await fetch("/api/admin/export-photos?type=speakers");
+      if (!res.ok) {
+        const p = await res.json().catch(() => ({})) as { error?: string };
+        toast.error(p.error ?? t("exportAvatarsError"));
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `speaker-avatars-${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export avatars failed:", err);
+      toast.error(t("exportAvatarsError"));
+    } finally {
+      setIsExportingAvatars(false);
+    }
+  };
 
   const handleAutoUpdate = async (speaker: Speaker) => {
     setIsAutoUpdatingId(speaker.id);
@@ -590,13 +618,26 @@ export default function AdminSpeakersPage() {
             <p className="mt-2 text-sm text-slate-500">{statusMessage}</p>
           )}
         </div>
-        <Button
-          className="bg-emerald-600 hover:bg-emerald-700"
-          onClick={openCreateDialog}
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          {t("add")}
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+            onClick={() => void exportAvatars()}
+            disabled={isExportingAvatars}
+          >
+            {isExportingAvatars
+              ? <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              : <Download className="w-4 h-4 mr-2" />}
+            {isExportingAvatars ? t("exportingAvatars") : t("exportAvatars")}
+          </Button>
+          <Button
+            className="bg-emerald-600 hover:bg-emerald-700"
+            onClick={openCreateDialog}
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            {t("add")}
+          </Button>
+        </div>
       </motion.div>
 
       {/* Filters */}

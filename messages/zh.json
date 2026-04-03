@@ -591,13 +591,16 @@
             "delete": "删除",
             "deleting": "删除中...",
             "export": "导出 Excel",
-            "exporting": "导出中..."
+            "exporting": "导出中...",
+            "exportPhotos": "导出照片 ZIP",
+            "exportingPhotos": "导出中..."
         },
         "messages": {
             "loadFailed": "加载申请列表失败。",
             "updateFailed": "更新审核状态失败。",
             "deleteFailed": "删除申请失败。",
-            "exportFailed": "导出 Excel 失败。"
+            "exportFailed": "导出 Excel 失败。",
+            "exportPhotosFailed": "导出照片失败。"
         }
     },
     "adminUsersPage": {
@@ -1079,8 +1082,11 @@
                 "bioEn": "简介（英文）",
                 "avatarUrl": "头像照片"
             }
-        }
-    },
+        },
+        "exportAvatars": "导出头像 ZIP",
+        "exportingAvatars": "导出中...",
+        "exportAvatarsError": "导出头像失败。"
+    }
     "language": {
         "zh": "中文",
         "en": "English",

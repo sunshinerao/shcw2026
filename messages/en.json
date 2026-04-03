@@ -591,13 +591,16 @@
             "delete": "Delete",
             "deleting": "Deleting...",
             "export": "Export Excel",
-            "exporting": "Exporting..."
+            "exporting": "Exporting...",
+            "exportPhotos": "Export Photos ZIP",
+            "exportingPhotos": "Exporting..."
         },
         "messages": {
             "loadFailed": "Failed to load applications.",
             "updateFailed": "Failed to update application status.",
             "deleteFailed": "Failed to delete application.",
-            "exportFailed": "Failed to export Excel."
+            "exportFailed": "Failed to export Excel.",
+            "exportPhotosFailed": "Failed to export photos."
         }
     },
     "adminUsersPage": {
@@ -1079,8 +1082,11 @@
                 "bioEn": "Biography (English)",
                 "avatarUrl": "Avatar photo"
             }
-        }
-    },
+        },
+        "exportAvatars": "Export Avatars ZIP",
+        "exportingAvatars": "Exporting...",
+        "exportAvatarsError": "Failed to export avatars."
+    }
     "language": {
         "zh": "Chinese",
         "en": "English",
