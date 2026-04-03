@@ -95,6 +95,7 @@ type PublicEvent = {
   eventLayer?: string | null;
   hostType?: string | null;
   maxAttendees?: number | null;
+  isClosed?: boolean;
   isFeatured: boolean;
   highlights?: string[] | null;
   highlightsEn?: string[] | null;
@@ -793,6 +794,13 @@ export default function EventDetailPage() {
                     <Button className="w-full mb-3" disabled>
                       {t("register.registered")}
                     </Button>
+                  ) : event.isClosed ? (
+                    <>
+                      <Button className="w-full mb-2" disabled variant="outline">
+                        {t("register.closedEvent")}
+                      </Button>
+                      <p className="text-xs text-slate-500 mb-3 text-center">{t("register.closedEventHint")}</p>
+                    </>
                   ) : (
                     <Link href={`/events/${eventId}/register`} className="block">
                       <Button className="w-full bg-emerald-600 hover:bg-emerald-700 mb-3">

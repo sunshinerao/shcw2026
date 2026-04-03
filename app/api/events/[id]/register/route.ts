@@ -33,6 +33,7 @@ export async function POST(
         id: true,
         maxAttendees: true,
         requireApproval: true,
+        isClosed: true,
       },
     });
 
@@ -40,6 +41,13 @@ export async function POST(
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "eventNotFound") },
         { status: 404 }
+      );
+    }
+
+    if (event.isClosed) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "eventRegisterClosed") },
+        { status: 403 }
       );
     }
 

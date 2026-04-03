@@ -64,6 +64,7 @@ type ManagedEvent = {
   isFeatured: boolean;
   isPinned?: boolean;
   requireApproval: boolean;
+  isClosed?: boolean;
   managerUserId?: string | null;
   manager?: {
     id: string;
@@ -120,6 +121,7 @@ type EventFormState = {
   isFeatured: boolean;
   isPinned: boolean;
   requireApproval: boolean;
+  isClosed: boolean;
   managerUserId: string;
   partners: string[];
 };
@@ -159,6 +161,7 @@ const initialFormState: EventFormState = {
   isFeatured: false,
   isPinned: false,
   requireApproval: false,
+  isClosed: false,
   managerUserId: "",
   partners: [],
 };
@@ -403,6 +406,7 @@ export default function AdminEventsPage() {
       isFeatured: event.isFeatured,
       isPinned: event.isPinned ?? false,
       requireApproval: event.requireApproval ?? false,
+      isClosed: event.isClosed ?? false,
       managerUserId: event.managerUserId || "",
       partners: Array.isArray(event.partners) ? event.partners : [],
     });
@@ -528,6 +532,7 @@ export default function AdminEventsPage() {
         ...(canEditRestrictedEventFields ? { isFeatured: formState.isFeatured } : {}),
         ...(canEditRestrictedEventFields ? { isPinned: formState.isPinned } : {}),
         requireApproval: formState.requireApproval,
+        isClosed: formState.isClosed,
         ...(currentUserRole === "ADMIN"
           ? { managerUserId: formState.managerUserId || null }
           : {}),
@@ -987,6 +992,10 @@ export default function AdminEventsPage() {
               <div className="flex items-center justify-between rounded-lg border px-3 py-2">
                 <Label htmlFor="event-require-approval">{t("form.requireApproval")}</Label>
                 <Switch id="event-require-approval" checked={formState.requireApproval} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, requireApproval: checked }))} />
+              </div>
+              <div className="flex items-center justify-between rounded-lg border px-3 py-2">
+                <Label htmlFor="event-is-closed">{t("form.isClosed")}</Label>
+                <Switch id="event-is-closed" checked={formState.isClosed} onCheckedChange={(checked) => setFormState((previous) => ({ ...previous, isClosed: checked }))} />
               </div>
             </div>
             {currentUserRole === "ADMIN" ? (

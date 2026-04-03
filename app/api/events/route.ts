@@ -231,6 +231,7 @@ export async function POST(req: NextRequest) {
       isPublished = false,
       isFeatured = false,
       requireApproval = false,
+      isClosed = false,
       eventLayer,
       hostType,
       isPinned = false,
@@ -353,6 +354,7 @@ export async function POST(req: NextRequest) {
         isPublished: Boolean(isPublished),
         isFeatured: canEditRestrictedEventFields ? Boolean(isFeatured) : false,
         requireApproval: Boolean(requireApproval),
+        isClosed: Boolean(isClosed),
         isPinned: canEditRestrictedEventFields ? Boolean(isPinned) : false,
         managerUserId: resolvedManagerUserId,
         eventLayer:

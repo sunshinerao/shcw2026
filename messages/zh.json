@@ -392,6 +392,7 @@
             "isPublished": "已发布",
             "isFeatured": "重磅推荐",
             "requireApproval": "注册需审批",
+            "isClosed": "闭门活动（不接受报名）",
             "eventLayer": "所属层级",
             "eventLayerPlaceholder": "未指定层级",
             "layers": {
@@ -1799,6 +1800,8 @@
             "save": "收藏",
             "saved": "已收藏",
             "registered": "已报名",
+            "closedEvent": "活动不接受报名",
+            "closedEventHint": "这是一场闭门活动，不接受公开报名申请。",
             "share": "分享",
             "saveSuccess": "活动已收藏",
             "unsaveSuccess": "已取消收藏",
@@ -2081,10 +2084,14 @@
             "capacity": "限额 {count} 人"
         },
         "success": {
-            "title": "报名成功！",
-            "description": "您已成功报名此活动，请查看邮件确认信息。",
+            "title": "报名提交成功！",
+            "description": "报名成功！请前往活动通行证页面确认报名状态。",
             "viewEvent": "查看活动",
             "goToDashboard": "前往个人中心"
+        },
+        "eventClosed": {
+            "title": "该活动不接受报名",
+            "description": "这是一场闭门活动，不接受公开报名申请。如需参加，请联系主办方了解详情。"
         }
     },
     "faqPage": {

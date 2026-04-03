@@ -234,6 +234,7 @@ export async function PUT(
       eventLayer,
       hostType,
       isPinned,
+      isClosed,
       managerUserId,
     } = body;
 
@@ -417,6 +418,7 @@ export async function PUT(
         ...(canEditRestrictedEventFields && isFeatured !== undefined && { isFeatured: Boolean(isFeatured) }),
         ...(canEditRestrictedEventFields && isPinned !== undefined && { isPinned: Boolean(isPinned) }),
         ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
+        ...(isClosed !== undefined && { isClosed: Boolean(isClosed) }),
         ...(resolvedManagerUserId !== undefined && { managerUserId: resolvedManagerUserId }),
         ...(canEditRestrictedEventFields && eventLayer !== undefined && {
           eventLayer: eventLayer && EVENT_LAYERS.has(eventLayer) ? (eventLayer as EventLayer) : null,

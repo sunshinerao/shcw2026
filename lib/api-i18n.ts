@@ -420,8 +420,12 @@ const apiMessages = {
     en: "This event has reached capacity.",
   },
   eventRegisterSuccess: {
-    zh: "活动报名成功",
-    en: "Event registration completed successfully.",
+    zh: "报名成功！请前往活动通行证页面确认报名状态。",
+    en: "Registration successful! Please visit your Event Pass to confirm your registration.",
+  },
+  eventRegisterClosed: {
+    zh: "该活动不接受报名申请",
+    en: "This event is not accepting registrations.",
   },
   eventRegisterFailed: {
     zh: "活动报名失败",
@@ -655,8 +659,8 @@ const apiMessages = {
   },
   // Registration approval messages
   eventRegisterPendingApproval: {
-    zh: "报名申请已提交，等待管理员审批",
-    en: "Registration submitted. Waiting for admin approval.",
+    zh: "报名申请已提交，请耐心等待管理员审批。审批完成后，请及时查看活动通行证。",
+    en: "Your registration request has been submitted and is awaiting admin approval. Please check your Event Pass for updates.",
   },
   qrRegistrationPendingApproval: {
     zh: "报名尚未审批通过，无法生成通行证",

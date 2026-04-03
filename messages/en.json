@@ -392,6 +392,7 @@
             "isPublished": "Published",
             "isFeatured": "Featured",
             "requireApproval": "Require Approval",
+            "isClosed": "Closed-Door Event (No Registration)",
             "eventLayer": "Event layer",
             "eventLayerPlaceholder": "Unassigned layer",
             "layers": {
@@ -407,6 +408,8 @@
                 "official": "Official",
                 "coHosted": "Co-hosted",
                 "registered": "Registered",
+            "closedEvent": "Registration Closed",
+            "closedEventHint": "This is a closed-door event and does not accept public registrations.",
                 "sideEvent": "Side Event",
                 "community": "Community"
             },
@@ -2081,10 +2084,14 @@
             "capacity": "Limited to {count} people"
         },
         "success": {
-            "title": "Registration Successful!",
-            "description": "You have successfully registered for this event. Please check your email for confirmation.",
+            "title": "Registration Submitted!",
+            "description": "Registration successful! Please visit your Event Pass to confirm your registration.",
             "viewEvent": "View Event",
             "goToDashboard": "Go to Dashboard"
+        },
+        "eventClosed": {
+            "title": "Registration Not Available",
+            "description": "This is a closed-door event and does not accept public registrations. Please contact the organizer for more information."
         }
     },
     "faqPage": {

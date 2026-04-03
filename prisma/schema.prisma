@@ -284,6 +284,7 @@ model Event {
   // 限制
   maxAttendees  Int?     // 人数限制
   requireApproval Boolean @default(false) // 报名是否需要管理员审批
+  isClosed     Boolean  @default(false)  // 闭门活动，不接受报名申请
   
   // 状态
   isPublished   Boolean  @default(false)

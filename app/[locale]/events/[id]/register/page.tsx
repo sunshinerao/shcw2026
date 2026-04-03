@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, MapPin, Clock, CheckCircle, Loader2, User, LogIn } from "lucide-react";
+import { ArrowLeft, AlertCircle, Calendar, MapPin, Clock, CheckCircle, Loader2, User, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,8 @@ type PublicEvent = {
   address?: string | null;
   type: EventType;
   maxAttendees?: number | null;
+  isClosed?: boolean;
+  requireApproval?: boolean;
 };
 
 type UserProfile = {
@@ -65,6 +67,7 @@ export default function EventRegisterPage() {
   const [isEventLoading, setIsEventLoading] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [successMessage, setSuccessMessage] = useState("");
   const [error, setError] = useState("");
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState({
@@ -249,6 +252,7 @@ export default function EventRegisterPage() {
         throw new Error(payload.error || t("submitError"));
       }
 
+      setSuccessMessage(payload.message || "");
       setIsSuccess(true);
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : t("submitError"));
@@ -270,7 +274,7 @@ export default function EventRegisterPage() {
               <CheckCircle className="w-10 h-10 text-emerald-600" />
             </div>
             <h1 className="text-2xl font-bold text-slate-900 mb-4">{t("success.title")}</h1>
-            <p className="text-slate-600 mb-8">{t("success.description")}</p>
+            <p className="text-slate-600 mb-8">{successMessage || t("success.description")}</p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href={`/events/${eventId}`}>
                 <Button variant="outline">{t("success.viewEvent")}</Button>
@@ -281,6 +285,29 @@ export default function EventRegisterPage() {
                 </Button>
               </Link>
             </div>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
+  if (event.isClosed) {
+    return (
+      <div className="min-h-screen bg-slate-50 py-12">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <AlertCircle className="w-10 h-10 text-slate-500" />
+            </div>
+            <h1 className="text-2xl font-bold text-slate-900 mb-4">{t("eventClosed.title")}</h1>
+            <p className="text-slate-600 mb-8">{t("eventClosed.description")}</p>
+            <Link href={`/events/${eventId}`}>
+              <Button variant="outline">{t("backToEvent")}</Button>
+            </Link>
           </motion.div>
         </div>
       </div>
