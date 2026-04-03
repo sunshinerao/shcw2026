@@ -513,7 +513,7 @@ model Sponsor {
 }
 
 // 赞助方案详情表（后台可编辑的赞助方案信息）
-model SponsorshipTier {
+model CooperationPlan {
   id          String   @id @default(uuid())
   
   // 基本信息

@@ -2,6 +2,42 @@
 
 > 历史文档说明: 本文件保留为阶段性历史报告，不再作为当前项目的正式事实源或研发交接文档。当前正式文档请查看 `README.md` 与 `docs/*.md`。
 
+## 2026-04-04 合作伙伴/合作方案第一步改造记录
+
+### 本次已完成
+
+- 前台 [app/[locale]/partners/page.tsx](app/[locale]/partners/page.tsx) 调整为“合作伙伴总览页”，主内容改为按层级展示数据库中的合作伙伴 logo，不再直接展示合作方案卡片。
+- 新增 [app/[locale]/partners/cooperation-plans/page.tsx](app/[locale]/partners/cooperation-plans/page.tsx)，点击“查看合作方案”后进入新页面，按现有层级卡片样式展示合作方案内容。
+- 后台导航与合作方案管理页的可见文案统一从“赞助方案 / Sponsorship Tiers”调整为“合作方案 / Cooperation Plans”。
+- 新增默认合作方案常量文件 [lib/default-sponsorship-tiers.ts](lib/default-sponsorship-tiers.ts)，用于承接原 i18n 中的静态合作方案内容。
+- 新增导入接口 [app/api/sponsorship-tiers/import-defaults/route.ts](app/api/sponsorship-tiers/import-defaults/route.ts)，后台“合作方案管理”页可一键导入默认合作方案到数据库，导入后即可继续通过后台修改。
+
+### 第一步范围说明
+
+- 本次只调整用户可见结构、文案与合作方案数据来源，不改动现有 Prisma model、API 路径与文件目录命名。
+- `Sponsor` 继续作为合作伙伴实体数据源，`SponsorshipTier` 继续作为合作方案数据源。
+
+### 第二步建议
+
+- 如果后续希望术语在代码层也完全统一，可将 `SponsorshipTier` 相关 Prisma model、API 路径、页面目录和变量命名逐步重构为 `CooperationPlan` / `PartnershipPlan`。
+- 第二步应单独执行，避免把“前台信息架构调整”和“底层命名迁移”混在同一批提交中，降低回归风险。
+- 若执行第二步，建议同时补充 Prisma migration、接口兼容策略和一次性重命名验证。
+
+## 2026-04-04 合作伙伴/合作方案第二步改造记录
+
+### 本次已完成
+
+- 新增规范后台路由 [app/[locale]/admin/cooperation-plans/page.tsx](app/[locale]/admin/cooperation-plans/page.tsx)，旧地址 [app/[locale]/admin/sponsorship-tiers/page.tsx](app/[locale]/admin/sponsorship-tiers/page.tsx) 现在仅做兼容跳转。
+- 新增规范接口路径 `app/api/cooperation-plans/**`，旧接口 `app/api/sponsorship-tiers/**` 现在仅做兼容导出。
+- Prisma schema 中的 model 已从 `SponsorshipTier` 统一为 `CooperationPlan`，并继续映射到原有数据库表 `sponsorship_tiers`，无需更改表名。
+- 默认数据源已切换到 [lib/default-cooperation-plans.ts](lib/default-cooperation-plans.ts)，旧文件 [lib/default-sponsorship-tiers.ts](lib/default-sponsorship-tiers.ts) 保留为兼容导出。
+- 后台权限 key 与导航 key 已统一为 `cooperationPlans`。
+
+### 兼容策略
+
+- 旧前端后台地址 `/admin/sponsorship-tiers` 自动跳转到 `/admin/cooperation-plans`。
+- 旧接口 `/api/sponsorship-tiers` 仍可访问，但底层实现已切换到 `/api/cooperation-plans`。
+
 > 报告日期: 2026-03-21  
 > 开发状态: **所有功能开发完成**
 

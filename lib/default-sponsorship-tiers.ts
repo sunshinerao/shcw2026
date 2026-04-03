@@ -1,0 +1,2 @@
+export { defaultCooperationPlans as defaultSponsorshipTiers } from "@/lib/default-cooperation-plans";
+export type { DefaultCooperationPlan as DefaultSponsorshipTier } from "@/lib/default-cooperation-plans";

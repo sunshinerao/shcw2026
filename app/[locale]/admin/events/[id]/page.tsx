@@ -431,7 +431,14 @@ export default function EventAgendaPage({
       setMessage("success", data.message || (editingItem ? t("updateSuccess") : t("createSuccess")));
       setIsAgendaDialogOpen(false);
       setEditingItem(null);
-      await loadAgenda();
+      const saved = data.data as AgendaItem | undefined;
+      if (saved?.id) {
+        setAgendaItems((prev) => {
+          const idx = prev.findIndex((a) => a.id === saved.id);
+          if (idx >= 0) { const next = [...prev]; next[idx] = saved; return next; }
+          return [...prev, saved];
+        });
+      }
     } catch (error) {
       setMessage("error", error instanceof Error ? error.message : t("saveFailed"));
     } finally {
@@ -458,7 +465,7 @@ export default function EventAgendaPage({
       setMessage("success", data.message || t("deleteSuccess"));
       setIsDeleteDialogOpen(false);
       setDeletingItem(null);
-      await loadAgenda();
+      setAgendaItems((prev) => prev.filter((a) => a.id !== deletingItem.id));
     } catch (error) {
       setMessage("error", error instanceof Error ? error.message : t("deleteFailed"));
     } finally {

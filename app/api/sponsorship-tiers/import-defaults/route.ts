@@ -1,0 +1,1 @@
+export { POST } from "../../cooperation-plans/import-defaults/route";

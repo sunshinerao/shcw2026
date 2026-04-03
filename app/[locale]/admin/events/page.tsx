@@ -528,11 +528,23 @@ export default function AdminEventsPage() {
       }
 
       if (!payload.skipped) {
-        await loadEvents();
+        await refreshSingleEvent(eventId);
       }
     } catch (err) {
       console.error("[generate-highlights] fetch error:", err);
       setMessage("success", `${t("messages.saveSuccessWithHighlightWarning")}`);
+    }
+  };
+
+  const refreshSingleEvent = async (eventId: string) => {
+    try {
+      const res = await fetch(`/api/events/${eventId}`);
+      const payload = await res.json();
+      if (res.ok && payload.data) {
+        upsertEventInState(payload.data);
+      }
+    } catch {
+      // non-critical, ignore
     }
   };
 
@@ -551,7 +563,7 @@ export default function AdminEventsPage() {
       } else if (payload.skipped) {
         setMessage("success", t("messages.highlightsSkipped"));
       } else {
-        await loadEvents();
+        await refreshSingleEvent(eventId);
         setMessage("success", t("messages.highlightsSuccess"));
       }
     } catch (err) {

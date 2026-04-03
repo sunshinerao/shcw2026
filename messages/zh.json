@@ -253,7 +253,7 @@
             "invitations": "邀请函管理",
             "users": "用户管理",
             "partners": "合作伙伴",
-            "sponsorshipTiers": "赞助方案",
+            "cooperationPlans": "合作方案",
             "news": "新闻管理",
             "content": "内容管理",
             "messages": "留言管理",
@@ -1910,12 +1910,21 @@
         "hero": {
             "title": "成为合作伙伴",
             "description": "加入上海气候周2026，与全球气候领袖共同塑造未来十年的气候行动。通过战略合作，提升品牌影响力，拓展商业机会。",
-            "download": "下载赞助方案",
+            "download": "查看合作方案",
             "contact": "联系我们"
         },
-        "tiersTitle": "赞助方案",
+        "tiersTitle": "合作方案",
         "tiersSubtitle": "选择适合您的合作层级，共同推动气候行动",
         "currentPartners": "当前合作伙伴",
+        "currentPartnersSubtitle": "按合作层级浏览已确认的合作伙伴 logo。",
+        "cooperationPlans": {
+            "title": "合作方案",
+            "subtitle": "查看各合作层级的权益内容与价格区间。",
+            "back": "返回合作伙伴",
+            "loading": "正在加载合作方案...",
+            "emptyTitle": "暂无合作方案",
+            "emptyDescription": "后台导入默认合作方案后，这里将展示可编辑的合作方案内容。"
+        },
         "tiers": {
             "chief": {
                 "name": "首席合作伙伴",
@@ -1990,7 +1999,7 @@
             }
         },
         "otherWaysTitle": "其他合作方式",
-        "otherWaysSubtitle": "除赞助外，我们还提供多种合作形式",
+        "otherWaysSubtitle": "除以上合作方案外，我们还提供多种合作形式",
         "partnerTypes": {
             "forum": {
                 "title": "论坛合作伙伴",

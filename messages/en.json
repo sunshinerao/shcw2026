@@ -253,7 +253,7 @@
             "invitations": "Invitations",
             "users": "Users",
             "partners": "Partners",
-            "sponsorshipTiers": "Sponsorship Tiers",
+            "cooperationPlans": "Cooperation Plans",
             "news": "News",
             "content": "Content",
             "messages": "Messages",
@@ -1908,12 +1908,21 @@
         "hero": {
             "title": "Become a Partner",
             "description": "Join Shanghai Climate Week 2026 and work with global climate leaders to shape climate action for the next decade. Through strategic partnership, you can strengthen brand influence and unlock new business opportunities.",
-            "download": "Download sponsorship deck",
+            "download": "View cooperation plans",
             "contact": "Contact us"
         },
-        "tiersTitle": "Sponsorship Packages",
+        "tiersTitle": "Cooperation Plans",
         "tiersSubtitle": "Choose the right level of partnership and help accelerate climate action",
         "currentPartners": "Current partners",
+        "currentPartnersSubtitle": "Browse confirmed partner logos grouped by cooperation level.",
+        "cooperationPlans": {
+            "title": "Cooperation Plans",
+            "subtitle": "Review the benefits and pricing range for each cooperation tier.",
+            "back": "Back to partners",
+            "loading": "Loading cooperation plans...",
+            "emptyTitle": "No cooperation plans available",
+            "emptyDescription": "Import the default cooperation plans from the admin console to populate this page."
+        },
         "tiers": {
             "chief": {
                 "name": "Chief Partner",
@@ -1988,7 +1997,7 @@
             }
         },
         "otherWaysTitle": "Other Ways to Collaborate",
-        "otherWaysSubtitle": "Beyond sponsorship, we offer multiple forms of partnership",
+        "otherWaysSubtitle": "Beyond these cooperation plans, we offer multiple forms of partnership",
         "partnerTypes": {
             "forum": {
                 "title": "Forum Partner",

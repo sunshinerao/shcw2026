@@ -398,6 +398,18 @@ export default function AdminPartnersPage() {
     setIsEditDialogOpen(true);
   };
 
+  const upsertSponsorInState = (sponsor: Sponsor) => {
+    setSponsors((previous) => {
+      const idx = previous.findIndex((s) => s.id === sponsor.id);
+      if (idx >= 0) {
+        const next = [...previous];
+        next[idx] = sponsor;
+        return next;
+      }
+      return [sponsor, ...previous];
+    });
+  };
+
   // 打开删除对话框
   const handleDeleteClick = (sponsor: Sponsor) => {
     setDeletingSponsor(sponsor);
@@ -423,7 +435,7 @@ export default function AdminPartnersPage() {
       setStatusMessage(data.message || "");
       setIsDeleteDialogOpen(false);
       setDeletingSponsor(null);
-      await loadSponsors();
+      setSponsors((previous) => previous.filter((s) => s.id !== deletingSponsor.id));
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
     }
@@ -453,7 +465,8 @@ export default function AdminPartnersPage() {
 
       setStatusMessage(data.message || "");
       setIsEditDialogOpen(false);
-      await loadSponsors();
+      const saved = (data.data ?? data) as Sponsor;
+      if (saved?.id) upsertSponsorInState(saved);
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
     }
@@ -479,7 +492,8 @@ export default function AdminPartnersPage() {
       }
 
       setStatusMessage(data.message || "");
-      await loadSponsors();
+      const toggled = (data.data ?? data) as Sponsor;
+      if (toggled?.id) upsertSponsorInState(toggled);
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
     }
@@ -505,7 +519,8 @@ export default function AdminPartnersPage() {
       }
 
       setStatusMessage(data.message || "");
-      await loadSponsors();
+      const toggled2 = (data.data ?? data) as Sponsor;
+      if (toggled2?.id) upsertSponsorInState(toggled2);
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
     }

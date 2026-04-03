@@ -1,95 +1,73 @@
 "use client";
 
+import Image from "next/image";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
-import { Check, ArrowRight, Building2, Mail } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { ArrowRight, Building2, FileText, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 
+type Sponsor = {
+  id: string;
+  name: string;
+  nameEn?: string | null;
+  logo: string;
+  website?: string | null;
+  tier: string;
+  order: number;
+};
+
+const tierOrder = ["platinum", "gold", "silver", "bronze", "partner"];
+
+const tierColors: Record<string, string> = {
+  platinum: "from-slate-700 to-slate-900",
+  gold: "from-amber-500 to-amber-600",
+  silver: "from-slate-400 to-slate-500",
+  bronze: "from-orange-500 to-orange-600",
+  partner: "from-emerald-600 to-emerald-700",
+};
+
+function isLocalImagePath(src: string) {
+  return src.startsWith("/") || src.startsWith("./");
+}
+
 export default function PartnersPage() {
   const t = useTranslations("partnersPage");
+  const locale = useLocale();
+  const [sponsorsByTier, setSponsorsByTier] = useState<Record<string, Sponsor[]>>({});
+  const [loading, setLoading] = useState(true);
 
-  const sponsorTiers = [
-    {
-      name: t("tiers.chief.name"),
-      nameEn: t("tiers.chief.nameEn"),
-      price: "¥300,000-500,000",
-      color: "from-slate-700 to-slate-900",
-      bgColor: "bg-slate-50",
-      borderColor: "border-slate-200",
-      features: [
-        t("tiers.chief.features.0"),
-        t("tiers.chief.features.1"),
-        t("tiers.chief.features.2"),
-        t("tiers.chief.features.3"),
-        t("tiers.chief.features.4"),
-        t("tiers.chief.features.5"),
-        t("tiers.chief.features.6"),
-      ],
-      sponsors: [t("tiers.chief.sponsors.0"), t("tiers.chief.sponsors.1")],
-    },
-    {
-      name: t("tiers.partner.name"),
-      nameEn: t("tiers.partner.nameEn"),
-      price: "¥50,000-200,000",
-      color: "from-amber-500 to-amber-600",
-      bgColor: "bg-amber-50",
-      borderColor: "border-amber-200",
-      features: [
-        t("tiers.partner.features.0"),
-        t("tiers.partner.features.1"),
-        t("tiers.partner.features.2"),
-        t("tiers.partner.features.3"),
-        t("tiers.partner.features.4"),
-        t("tiers.partner.features.5"),
-        t("tiers.partner.features.6"),
-      ],
-      sponsors: [
-        t("tiers.partner.sponsors.0"),
-        t("tiers.partner.sponsors.1"),
-        t("tiers.partner.sponsors.2"),
-        t("tiers.partner.sponsors.3"),
-      ],
-    },
-    {
-      name: t("tiers.ecosystem.name"),
-      nameEn: t("tiers.ecosystem.nameEn"),
-      price: "¥30,000-50,000",
-      color: "from-slate-400 to-slate-500",
-      bgColor: "bg-slate-50",
-      borderColor: "border-slate-200",
-      features: [
-        t("tiers.ecosystem.features.0"),
-        t("tiers.ecosystem.features.1"),
-        t("tiers.ecosystem.features.2"),
-        t("tiers.ecosystem.features.3"),
-        t("tiers.ecosystem.features.4"),
-        t("tiers.ecosystem.features.5"),
-      ],
-      sponsors: [
-        t("tiers.ecosystem.sponsors.0"),
-        t("tiers.ecosystem.sponsors.1"),
-        t("tiers.ecosystem.sponsors.2"),
-        t("tiers.ecosystem.sponsors.3"),
-      ],
-    },
-    {
-      name: t("tiers.media.name"),
-      nameEn: t("tiers.media.nameEn"),
-      price: t("tiers.media.price"),
-      color: "from-emerald-600 to-emerald-700",
-      bgColor: "bg-emerald-50",
-      borderColor: "border-emerald-200",
-      features: [
-        t("tiers.media.features.0"),
-        t("tiers.media.features.1"),
-        t("tiers.media.features.2"),
-        t("tiers.media.features.3"),
-        t("tiers.media.features.4"),
-      ],
-      sponsors: [t("tiers.media.sponsors.0"), t("tiers.media.sponsors.1"), t("tiers.media.sponsors.2")],
-    },
-  ];
+  useEffect(() => {
+    fetch("/api/sponsors?isActive=true", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data) {
+          const grouped: Record<string, Sponsor[]> = {};
+          for (const sponsor of data.data as Sponsor[]) {
+            if (!grouped[sponsor.tier]) {
+              grouped[sponsor.tier] = [];
+            }
+            grouped[sponsor.tier].push(sponsor);
+          }
+          setSponsorsByTier(grouped);
+        }
+      })
+      .catch(() => {
+        setSponsorsByTier({});
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const activeTiers = tierOrder.filter((tier) => sponsorsByTier[tier]?.length);
+
+  const tierLabelKey: Record<string, string> = {
+    platinum: "tiers.chief.name",
+    gold: "tiers.partner.name",
+    silver: "tiers.ecosystem.name",
+    bronze: "tiers.ecosystem.name",
+    partner: "tiers.media.name",
+  };
 
   const partnerTypes = [
     {
@@ -132,10 +110,13 @@ export default function PartnersPage() {
               {t("hero.description")}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
-                {t("hero.download")}
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
+              <Link href="/partners/cooperation-plans">
+                <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700">
+                  <FileText className="w-4 h-4 mr-2" />
+                  {t("hero.download")}
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
+              </Link>
               <Link href="/contact">
                 <Button size="lg" className="bg-white text-emerald-600 hover:bg-emerald-50 font-semibold">
                   <Mail className="w-4 h-4 mr-2" />
@@ -147,69 +128,66 @@ export default function PartnersPage() {
         </div>
       </section>
 
-      {/* Sponsor Tiers */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-              <h2 className="text-3xl font-bold text-slate-900 mb-4">{t("tiersTitle")}</h2>
-              <p className="text-slate-600">{t("tiersSubtitle")}</p>
-          </div>
+      {/* Partner Logos */}
+      {!loading && activeTiers.length > 0 && (
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">{t("currentPartners")}</h2>
+              <p className="text-slate-600">{t("currentPartnersSubtitle")}</p>
+            </div>
 
-          <div className="grid lg:grid-cols-2 gap-8">
-            {sponsorTiers.map((tier, index) => (
-              <motion.div
-                key={tier.name}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`rounded-2xl overflow-hidden border ${tier.borderColor} ${tier.bgColor}`}
-              >
-                {/* Header */}
-                <div className={`bg-gradient-to-r ${tier.color} p-6 text-white`}>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-2xl font-bold">{tier.name}</h3>
-                      <p className="text-white/80 text-sm">{tier.nameEn}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-3xl font-bold">{tier.price}</p>
-                    </div>
+            <div className="space-y-14">
+              {activeTiers.map((tier, index) => (
+                <motion.div
+                  key={tier}
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                >
+                  <div className="text-center mb-6">
+                    <span className={`inline-block px-5 py-1.5 rounded-full text-sm font-semibold text-white bg-gradient-to-r ${tierColors[tier] || tierColors.partner}`}>
+                      {t(tierLabelKey[tier] || "tiers.ecosystem.name")}
+                    </span>
                   </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  {/* Features */}
-                  <ul className="space-y-3 mb-6">
-                    {tier.features.map((feature, i) => (
-                      <li key={i} className="flex items-start">
-                        <Check className="w-5 h-5 text-emerald-600 mr-3 mt-0.5 shrink-0" />
-                        <span className="text-slate-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* Current Sponsors */}
-                  <div className="border-t border-slate-200 pt-4">
-                    <p className="text-sm text-slate-500 mb-3">{t("currentPartners")}</p>
-                    <div className="flex flex-wrap gap-2">
-                      {tier.sponsors.map((sponsor) => (
-                        <div
-                          key={sponsor}
-                          className="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-slate-200"
-                        >
-                          <Building2 className="w-4 h-4 text-slate-400" />
-                          <span className="text-sm text-slate-600">{sponsor}</span>
+                  <div className="flex flex-wrap justify-center gap-6">
+                    {sponsorsByTier[tier].map((sponsor) => {
+                      const displayName = locale === "en" ? sponsor.nameEn || sponsor.name : sponsor.name;
+                      const card = (
+                        <div className="relative flex h-24 w-40 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 transition-all hover:-translate-y-0.5 hover:shadow-md">
+                          {sponsor.logo ? (
+                            <Image
+                              src={sponsor.logo}
+                              alt={displayName}
+                              fill
+                              unoptimized={!isLocalImagePath(sponsor.logo)}
+                              sizes="160px"
+                              className="object-contain p-3"
+                            />
+                          ) : (
+                            <div className="flex flex-col items-center gap-1 text-slate-400">
+                              <Building2 className="h-5 w-5" />
+                              <span className="text-center text-xs leading-tight">{displayName}</span>
+                            </div>
+                          )}
                         </div>
-                      ))}
-                    </div>
+                      );
+
+                      return sponsor.website ? (
+                        <a key={sponsor.id} href={sponsor.website} target="_blank" rel="noopener noreferrer">
+                          {card}
+                        </a>
+                      ) : (
+                        <div key={sponsor.id}>{card}</div>
+                      );
+                    })}
                   </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Partner Types */}
       <section className="py-20 bg-white">

@@ -185,8 +185,12 @@ export default function EventRegistrationsPage({
       }
 
       setMessage("success", `${data.message} (${data.count})`);
+      const updatedStatus = action === "approve" ? "REGISTERED" : "REJECTED";
+      const idSet = new Set(ids);
+      setRegistrations((prev) =>
+        prev.map((r) => idSet.has(r.id) ? { ...r, status: updatedStatus } : r)
+      );
       setSelectedIds(new Set());
-      await loadData();
     } catch (error) {
       setMessage("error", error instanceof Error ? error.message : t("actionFailed"));
     } finally {

@@ -435,6 +435,18 @@ export default function AdminSpeakersPage() {
     }
   };
 
+  const upsertSpeakerInState = (speaker: Speaker) => {
+    setSpeakers((previous) => {
+      const idx = previous.findIndex((s) => s.id === speaker.id);
+      if (idx >= 0) {
+        const next = [...previous];
+        next[idx] = speaker;
+        return next;
+      }
+      return [speaker, ...previous];
+    });
+  };
+
   const handleAutoUpdate = async (speaker: Speaker) => {
     setIsAutoUpdatingId(speaker.id);
     try {
@@ -528,7 +540,10 @@ export default function AdminSpeakersPage() {
       setIsCreateDialogOpen(false);
       setIsEditDialogOpen(false);
       resetForm();
-      await loadSpeakers();
+      const saved = (data.data ?? data) as Speaker;
+      if (saved?.id) {
+        upsertSpeakerInState({ ...saved, agendaItemsCount: saved.agendaItemsCount ?? 0 });
+      }
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
     }
@@ -552,8 +567,8 @@ export default function AdminSpeakersPage() {
 
       setStatusMessage(data.message || "");
       setIsDeleteDialogOpen(false);
+      setSpeakers((previous) => previous.filter((s) => s.id !== selectedSpeaker.id));
       setSelectedSpeaker(null);
-      await loadSpeakers();
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
     }
