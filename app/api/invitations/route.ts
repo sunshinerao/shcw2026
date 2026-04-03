@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { InvitationStatus, Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
-import { canManageEvents } from "@/lib/permissions";
+import { canManageEvents, isAdminRole } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 async function requireSessionUser() {
@@ -39,8 +39,17 @@ export async function GET(req: NextRequest) {
     const where: Prisma.InvitationRequestWhereInput = {};
 
     if (!isManager) {
+      // Regular user: only own requests
       where.userId = currentUser.id;
+    } else if (!isAdminRole(currentUser.role)) {
+      // EVENT_MANAGER: only invitations linked to their managed events
+      const managedEvents = await prisma.event.findMany({
+        where: { managerUserId: currentUser.id },
+        select: { id: true },
+      });
+      where.eventId = { in: managedEvents.map((e) => e.id) };
     }
+    // ADMIN: no filter — sees everything
 
     if (status) {
       const validStatuses = new Set(Object.values(InvitationStatus));

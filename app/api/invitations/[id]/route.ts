@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { InvitationStatus } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
-import { canManageEvents } from "@/lib/permissions";
+import { canManageEvents, isAdminRole } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 async function requireSessionUser() {
@@ -56,6 +56,26 @@ export async function GET(
       );
     }
 
+    // EVENT_MANAGER can only see invitations linked to their managed events
+    if (isManager && !isAdminRole(currentUser.role)) {
+      if (!invitation.eventId) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "invitationNotFound") },
+          { status: 404 }
+        );
+      }
+      const managedEvent = await prisma.event.findFirst({
+        where: { id: invitation.eventId, managerUserId: currentUser.id },
+        select: { id: true },
+      });
+      if (!managedEvent) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "invitationNotFound") },
+          { status: 404 }
+        );
+      }
+    }
+
     return NextResponse.json({ success: true, data: invitation });
   } catch (error) {
     console.error("Get invitation error:", error);
@@ -89,7 +109,7 @@ export async function PUT(
 
     const existing = await prisma.invitationRequest.findUnique({
       where: { id: params.id },
-      select: { id: true, userId: true, status: true },
+      select: { id: true, userId: true, status: true, eventId: true },
     });
 
     if (!existing) {
@@ -107,6 +127,26 @@ export async function PUT(
         { success: false, error: apiMessage(requestLocale, "invitationNotFound") },
         { status: 404 }
       );
+    }
+
+    // EVENT_MANAGER can only update invitations linked to their managed events
+    if (isManager && !isAdminRole(currentUser.role) && !isOwner) {
+      if (!existing.eventId) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "invitationNotFound") },
+          { status: 404 }
+        );
+      }
+      const managedEvent = await prisma.event.findFirst({
+        where: { id: existing.eventId, managerUserId: currentUser.id },
+        select: { id: true },
+      });
+      if (!managedEvent) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "invitationNotFound") },
+          { status: 404 }
+        );
+      }
     }
 
     const { status, letterFileUrl, rejectReason, salutation, guestName, guestTitle, guestOrg, guestEmail, language, eventId, purpose, notes } = body;
