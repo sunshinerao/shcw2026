@@ -8,7 +8,7 @@ import { Calendar, Clock, MapPin, Users, ArrowRight, Filter, Loader2, ChevronDow
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/routing";
-import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors } from "@/lib/data/events";
+import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors, getEventDateLabel, getEventScheduleLabel } from "@/lib/data/events";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
 
@@ -37,14 +37,6 @@ type PublicEvent = {
   isPinned?: boolean;
   isClosed?: boolean;
 };
-
-function formatEventDateLabel(dateValue: string, locale: string) {
-  return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "zh-CN", {
-    month: "long",
-    day: "numeric",
-    weekday: "long",
-  }).format(new Date(dateValue));
-}
 
 function getLocalizedTitle(event: PublicEvent, locale: string) {
   return locale === "en" ? event.titleEn || event.title : event.title;
@@ -326,11 +318,11 @@ export default function EventsPage() {
                             </span>
                           </div>
                           <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                            <div className="lg:w-48 shrink-0">
-                              <div className="flex items-center text-slate-600 mb-2">
+                            <div className="lg:w-72 shrink-0">
+                              <div className="flex items-start text-slate-600 mb-2">
                                 <Clock className="w-4 h-4 mr-2 text-slate-400" />
-                                <span className="font-medium">
-                                  {event.startTime} - {event.endTime}
+                                <span className="font-medium leading-6">
+                                  {getEventScheduleLabel(event, locale)}
                                 </span>
                               </div>
                               <div className="flex flex-wrap gap-1.5">
@@ -393,7 +385,7 @@ export default function EventsPage() {
                     </div>
                     <div>
                       <h2 className="text-xl font-bold text-slate-900">
-                        {formatEventDateLabel(date, locale)}
+                        {getEventDateLabel(date, locale)}
                       </h2>
                       <p className="text-sm text-slate-500">
                         {t("eventCount", { count: groupedEvents[date].length })}
@@ -430,11 +422,11 @@ export default function EventsPage() {
                           </div>
                         ) : null}
                         <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                          <div className="lg:w-48 shrink-0">
-                            <div className="flex items-center text-slate-600 mb-2">
+                          <div className="lg:w-72 shrink-0">
+                            <div className="flex items-start text-slate-600 mb-2">
                               <Clock className="w-4 h-4 mr-2 text-slate-400" />
-                              <span className="font-medium">
-                                {event.startTime} - {event.endTime}
+                              <span className="font-medium leading-6">
+                                {getEventScheduleLabel(event, locale)}
                               </span>
                             </div>
                             <div className="flex flex-wrap gap-1.5">

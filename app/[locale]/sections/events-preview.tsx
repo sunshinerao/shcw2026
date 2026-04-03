@@ -9,6 +9,7 @@ import {
   eventHostTypeColors,
   getEventDateLabel,
   getEventHostTypeLabel,
+  getEventScheduleLabel,
   getEventTypeLabel,
   getLocalizedEventPartners,
   getLocalizedEventSummary,
@@ -82,7 +83,11 @@ export function EventsPreviewSection() {
     return a.title.localeCompare(b.title);
   });
 
-  const groupedEvents = sortedEvents.reduce((acc, event) => {
+  const todayKey = new Date().toISOString().slice(0, 10);
+  const upcomingEvents = sortedEvents.filter((event) => event.endDate.slice(0, 10) >= todayKey);
+  const previewEvents = (upcomingEvents.length > 0 ? upcomingEvents : sortedEvents).slice(0, 4);
+
+  const groupedEvents = previewEvents.reduce((acc, event) => {
     const dateKey = event.startDate.slice(0, 10);
     if (!acc[dateKey]) {
       acc[dateKey] = [];
@@ -92,21 +97,6 @@ export function EventsPreviewSection() {
   }, {} as Record<string, FeaturedEvent[]>);
 
   const sortedDates = Object.keys(groupedEvents).sort();
-
-  const todayKey = new Date().toISOString().slice(0, 10);
-  const startIndex = sortedDates.findIndex((date) => date >= todayKey);
-  const windowStartDate =
-    startIndex >= 0 ? sortedDates[startIndex] : (sortedDates[0] || "");
-
-  let visibleDates: string[] = [];
-  if (windowStartDate) {
-    const endDate = new Date(`${windowStartDate}T00:00:00`);
-    endDate.setDate(endDate.getDate() + 2);
-    const windowEndKey = endDate.toISOString().slice(0, 10);
-    visibleDates = sortedDates.filter(
-      (date) => date >= windowStartDate && date <= windowEndKey
-    );
-  }
 
   if (!isLoading && events.length === 0) return null;
 
@@ -143,7 +133,7 @@ export function EventsPreviewSection() {
           </div>
         ) : (
           <div className="space-y-8">
-            {visibleDates.map((date, dateIndex) => (
+            {sortedDates.map((date, dateIndex) => (
               <motion.div
                 key={date}
                 initial={{ opacity: 0, y: 30 }}
@@ -168,10 +158,10 @@ export function EventsPreviewSection() {
                         className="bg-slate-50 rounded-xl p-6 hover:bg-emerald-50/50 transition-colors border border-slate-100 hover:border-emerald-200"
                       >
                         <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-                          <div className="flex items-center gap-4 lg:w-48 shrink-0">
-                            <div className="flex items-center text-slate-600">
+                          <div className="flex items-center gap-4 lg:w-72 shrink-0">
+                            <div className="flex items-start text-slate-600">
                               <Clock className="w-4 h-4 mr-2 text-slate-400" />
-                              <span className="text-sm font-medium">{event.startTime} - {event.endTime}</span>
+                              <span className="text-sm font-medium leading-6">{getEventScheduleLabel(event, locale)}</span>
                             </div>
                           </div>
 

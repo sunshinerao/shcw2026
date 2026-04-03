@@ -637,6 +637,35 @@ export function getEventDateLabel(dateStr: string, locale = "zh"): string {
   return `${month}月${day}日 (${weekday})`;
 }
 
+export function getEventDateRangeLabel(
+  startDate: string,
+  endDate: string,
+  locale = "zh"
+): string {
+  const normalizedStartDate = startDate.slice(0, 10);
+  const normalizedEndDate = endDate.slice(0, 10);
+
+  if (normalizedStartDate === normalizedEndDate) {
+    return getEventDateLabel(normalizedStartDate, locale);
+  }
+
+  return `${getEventDateLabel(normalizedStartDate, locale)} - ${getEventDateLabel(normalizedEndDate, locale)}`;
+}
+
+export function getEventScheduleLabel(
+  event: Pick<Event, "startDate" | "endDate" | "startTime" | "endTime">,
+  locale = "zh"
+): string {
+  const normalizedStartDate = event.startDate.slice(0, 10);
+  const normalizedEndDate = event.endDate.slice(0, 10);
+
+  if (normalizedStartDate === normalizedEndDate) {
+    return `${getEventDateLabel(normalizedStartDate, locale)} ${event.startTime} - ${event.endTime}`;
+  }
+
+  return `${getEventDateLabel(normalizedStartDate, locale)} ${event.startTime} - ${getEventDateLabel(normalizedEndDate, locale)} ${event.endTime}`;
+}
+
 export function groupEventsByDate(events: Event[]): Record<string, Event[]> {
   return events.reduce((acc, event) => {
     const dateKey = event.startDate.slice(0, 10);
