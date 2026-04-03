@@ -83,7 +83,8 @@ export function EventsPreviewSection() {
     return a.title.localeCompare(b.title);
   });
 
-  const todayKey = new Date().toISOString().slice(0, 10);
+  const _now = new Date();
+  const todayKey = `${_now.getFullYear()}-${String(_now.getMonth() + 1).padStart(2, "0")}-${String(_now.getDate()).padStart(2, "0")}`;
   const upcomingEvents = sortedEvents.filter((event) => event.endDate.slice(0, 10) >= todayKey);
   const previewEvents = (upcomingEvents.length > 0 ? upcomingEvents : sortedEvents).slice(0, 4);
 

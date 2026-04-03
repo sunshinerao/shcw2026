@@ -234,7 +234,7 @@ export default function DashboardPage() {
                 {upcomingEvents.map((registration) => {
                   const event = registration.event;
                   const displayDate = normalizeEventDateSlots(event)[0]?.scheduleDate || event.startDate;
-                  const eventDate = new Date(displayDate);
+                  const eventDate = new Date(`${String(displayDate).slice(0, 10)}T12:00:00`);
                   const monthLabel = locale === "en"
                     ? eventDate.toLocaleString("en-US", { month: "short" })
                     : `${eventDate.getMonth() + 1}月`;

@@ -157,7 +157,10 @@ function buildDateKeys(startDate: string, endDate: string) {
   const keys: string[] = [];
   const cursor = new Date(firstDate);
   while (cursor <= lastDate) {
-    keys.push(cursor.toISOString().slice(0, 10));
+    const y = cursor.getFullYear();
+    const m = String(cursor.getMonth() + 1).padStart(2, "0");
+    const d = String(cursor.getDate()).padStart(2, "0");
+    keys.push(`${y}-${m}-${d}`);
     cursor.setDate(cursor.getDate() + 1);
   }
 

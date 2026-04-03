@@ -232,7 +232,7 @@ interface EventCardProps {
 }
 
 function EventCard({ event, isRegistered, locale, t, onRemove }: EventCardProps) {
-  const eventDate = new Date(event.startDate);
+  const eventDate = new Date(`${String(event.startDate).slice(0, 10)}T12:00:00`);
   const monthLabel = locale === "en"
     ? eventDate.toLocaleString("en-US", { month: "short" })
     : `${eventDate.getMonth() + 1}月`;
