@@ -1089,7 +1089,7 @@
         "exportAvatars": "Export Avatars ZIP",
         "exportingAvatars": "Exporting...",
         "exportAvatarsError": "Failed to export avatars."
-    }
+    },
     "language": {
         "zh": "Chinese",
         "en": "English",
