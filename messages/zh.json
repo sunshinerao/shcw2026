@@ -1087,7 +1087,7 @@
         "exportAvatars": "导出头像 ZIP",
         "exportingAvatars": "导出中...",
         "exportAvatarsError": "导出头像失败。"
-    }
+    },
     "language": {
         "zh": "中文",
         "en": "English",
