@@ -1806,6 +1806,7 @@
         "register": {
             "title": "报名参加",
             "description": "名额有限，立即报名锁定席位。",
+            "applyAttend": "申请参会",
             "save": "收藏",
             "saved": "已收藏",
             "registered": "已报名",
