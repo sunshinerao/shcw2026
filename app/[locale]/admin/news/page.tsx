@@ -21,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -79,6 +80,7 @@ export default function AdminNewsPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -175,6 +177,7 @@ export default function AdminNewsPage() {
 
   async function handleDelete() {
     if (!deleteId) return;
+    setDeleting(true);
     try {
       const res = await fetch(`/api/news/${deleteId}`, { method: "DELETE" });
       const data = await res.json();
@@ -187,6 +190,8 @@ export default function AdminNewsPage() {
     } catch {
       setStatusTone("error");
       setStatusMessage(t("loadError"));
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -489,14 +494,15 @@ export default function AdminNewsPage() {
               <Button variant="outline" onClick={() => setDialogOpen(false)}>
                 {t("form.cancel")}
               </Button>
-              <Button
+              <LoadingButton
                 onClick={handleSave}
-                disabled={saving || !form.title || !form.slug || !form.content}
+                disabled={!form.title || !form.slug || !form.content}
                 className="bg-emerald-600 hover:bg-emerald-700"
+                loading={saving}
+                loadingText={locale === "en" ? "Saving..." : "保存中..."}
               >
-                {saving && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 {t("form.save")}
-              </Button>
+              </LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -512,9 +518,9 @@ export default function AdminNewsPage() {
               <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
                 {t("form.cancel")}
               </Button>
-              <Button variant="destructive" onClick={handleDelete}>
+              <LoadingButton variant="destructive" onClick={handleDelete} loading={deleting} loadingText={locale === "en" ? "Deleting..." : "删除中..."}>
                 {t("delete")}
-              </Button>
+              </LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>

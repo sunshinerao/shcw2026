@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Dialog,
   DialogContent,
@@ -966,13 +967,14 @@ export default function EventAgendaPage({
               >
                 {t("cancel")}
               </Button>
-              <Button
+              <LoadingButton
                 className="bg-emerald-600 hover:bg-emerald-700"
                 onClick={() => void submitAgendaItem()}
-                disabled={isSubmitting}
+                loading={isSubmitting}
+                loadingText={locale === "en" ? "Saving..." : "保存中..."}
               >
                 {t("save")}
-              </Button>
+              </LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1160,18 +1162,19 @@ export default function EventAgendaPage({
               >
                 {t("cancel")}
               </Button>
-              <Button
+              <LoadingButton
                 className="bg-emerald-600 hover:bg-emerald-700"
                 onClick={() => void submitNewSpeaker()}
                 disabled={
-                  isSubmitting ||
                   !newSpeakerForm.name ||
                   !newSpeakerForm.title ||
                   !newSpeakerForm.organization
                 }
+                loading={isSubmitting}
+                loadingText={locale === "en" ? "Saving..." : "保存中..."}
               >
                 {t("save")}
-              </Button>
+              </LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -1190,13 +1193,14 @@ export default function EventAgendaPage({
               >
                 {t("cancel")}
               </Button>
-              <Button
+              <LoadingButton
                 variant="destructive"
                 onClick={() => void submitDeleteItem()}
-                disabled={isSubmitting}
+                loading={isSubmitting}
+                loadingText={locale === "en" ? "Deleting..." : "删除中..."}
               >
                 {t("deleteItem")}
-              </Button>
+              </LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>

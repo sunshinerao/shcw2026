@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -208,16 +209,14 @@ export default function AdminContentPage() {
         </div>
 
         <div className="flex justify-end">
-          <Button onClick={() => saveBlock(key)} disabled={saving === key}>
-            {saving === key ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : saved === key ? (
+          <LoadingButton onClick={() => saveBlock(key)} loading={saving === key} loadingText={t("form.saving")}>
+            {saved === key ? (
               <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
             ) : (
               <Save className="w-4 h-4 mr-2" />
             )}
             {saved === key ? t("saveSuccess") : t("form.save")}
-          </Button>
+          </LoadingButton>
         </div>
       </div>
     );
@@ -226,16 +225,14 @@ export default function AdminContentPage() {
   function renderSaveButton(key: string) {
     return (
       <div className="flex justify-end">
-        <Button onClick={() => saveBlock(key)} disabled={saving === key}>
-          {saving === key ? (
-            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-          ) : saved === key ? (
+        <LoadingButton onClick={() => saveBlock(key)} loading={saving === key} loadingText={t("form.saving")}>
+          {saved === key ? (
             <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
           ) : (
             <Save className="w-4 h-4 mr-2" />
           )}
           {saved === key ? t("saveSuccess") : t("form.save")}
-        </Button>
+        </LoadingButton>
       </div>
     );
   }

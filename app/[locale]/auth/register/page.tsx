@@ -5,13 +5,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { Loader2, Mail, Lock, User, ArrowRight, CheckCircle, Phone, Briefcase, Building2, ChevronDown, ChevronUp } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, CheckCircle, Phone, Briefcase, Building2, ChevronDown, ChevronUp } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Link } from "@/i18n/routing";
 
 const SALUTATION_OPTIONS = ["Dr.", "PhD", "Mr.", "Ms.", "Mrs.", "Prof."];
@@ -369,20 +370,14 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <Button
+            <LoadingButton
               type="submit"
               className="w-full bg-emerald-600 hover:bg-emerald-700"
-              disabled={isLoading}
+              loading={isLoading}
+              loadingText={t("submitting")}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t("submitting")}
-                </>
-              ) : (
-                t("submit")
-              )}
-            </Button>
+              {t("submit")}
+            </LoadingButton>
           </form>
 
           <div className="mt-6 text-center">

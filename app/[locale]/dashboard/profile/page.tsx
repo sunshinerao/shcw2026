@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -491,19 +492,12 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="flex justify-end">
-                    <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700" disabled={isLoading}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {t("actions.saving")}
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4 mr-2" />
-                          {t("actions.save")}
-                        </>
-                      )}
-                    </Button>
+                    <LoadingButton type="submit" className="bg-emerald-600 hover:bg-emerald-700" loading={isLoading} loadingText={t("actions.saving")}>
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        {t("actions.save")}
+                      </>
+                    </LoadingButton>
                   </div>
                 </form>
               </CardContent>
@@ -557,19 +551,12 @@ export default function ProfilePage() {
                   ))}
 
                   <div className="flex justify-end">
-                    <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700" disabled={isPasswordLoading}>
-                      {isPasswordLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {t("password.submitting")}
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-4 h-4 mr-2" />
-                          {t("password.submit")}
-                        </>
-                      )}
-                    </Button>
+                    <LoadingButton type="submit" className="bg-emerald-600 hover:bg-emerald-700" loading={isPasswordLoading} loadingText={t("password.submitting")}>
+                      <>
+                        <Lock className="w-4 h-4 mr-2" />
+                        {t("password.submit")}
+                      </>
+                    </LoadingButton>
                   </div>
                 </form>
               </CardContent>
@@ -641,19 +628,12 @@ export default function ProfilePage() {
                   </div>
 
                   <div className="flex justify-end">
-                    <Button type="button" className="bg-emerald-600 hover:bg-emerald-700" disabled={isLoading} onClick={handleProfileSubmit}>
-                      {isLoading ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          {t("actions.saving")}
-                        </>
-                      ) : (
-                        <>
-                          <Save className="w-4 h-4 mr-2" />
-                          {t("actions.save")}
-                        </>
-                      )}
-                    </Button>
+                    <LoadingButton type="button" className="bg-emerald-600 hover:bg-emerald-700" loading={isLoading} loadingText={t("actions.saving")} onClick={handleProfileSubmit}>
+                      <>
+                        <Save className="w-4 h-4 mr-2" />
+                        {t("actions.save")}
+                      </>
+                    </LoadingButton>
                   </div>
                 </div>
               </CardContent>

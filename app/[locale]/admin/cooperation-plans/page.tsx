@@ -15,6 +15,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -119,6 +120,8 @@ export default function AdminCooperationPlansPage() {
   const [editingTier, setEditingTier] = useState<CooperationPlan | null>(null);
   const [deletingTier, setDeletingTier] = useState<CooperationPlan | null>(null);
   const [isImportingDefaults, setIsImportingDefaults] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [formData, setFormData] = useState<CooperationPlanFormData>(initialFormData);
   const [featureInput, setFeatureInput] = useState("");
   const [featureInputEn, setFeatureInputEn] = useState("");
@@ -233,6 +236,7 @@ export default function AdminCooperationPlansPage() {
     if (!deletingTier) return;
 
     try {
+      setIsDeleting(true);
       const response = await fetch(`/api/cooperation-plans/${deletingTier.id}`, {
         method: "DELETE",
       });
@@ -250,6 +254,8 @@ export default function AdminCooperationPlansPage() {
       const msg = error instanceof Error ? error.message : genericLoadError;
       setStatusMessage(msg);
       toast.error(msg);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -308,6 +314,7 @@ export default function AdminCooperationPlansPage() {
     const method = editingTier ? "PUT" : "POST";
 
     try {
+      setIsSaving(true);
       const response = await fetch(url, {
         method,
         headers: {
@@ -329,6 +336,8 @@ export default function AdminCooperationPlansPage() {
       const msg = error instanceof Error ? error.message : genericLoadError;
       setStatusMessage(msg);
       toast.error(msg);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -840,12 +849,14 @@ export default function AdminCooperationPlansPage() {
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
                 {locale === "en" ? "Cancel" : "取消"}
               </Button>
-              <Button
+              <LoadingButton
                 onClick={handleSave}
                 className="bg-emerald-600 hover:bg-emerald-700"
+                loading={isSaving}
+                loadingText={locale === "en" ? "Saving..." : "保存中..."}
               >
                 {locale === "en" ? "Save" : "保存"}
-              </Button>
+              </LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -875,12 +886,14 @@ export default function AdminCooperationPlansPage() {
               >
                 {locale === "en" ? "Cancel" : "取消"}
               </Button>
-              <Button
+              <LoadingButton
                 onClick={confirmDelete}
                 className="bg-red-600 hover:bg-red-700"
+                loading={isDeleting}
+                loadingText={locale === "en" ? "Deleting..." : "删除中..."}
               >
                 {locale === "en" ? "Delete" : "删除"}
-              </Button>
+              </LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>

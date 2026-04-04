@@ -17,6 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Dialog,
   DialogContent,
@@ -434,14 +435,16 @@ export default function AdminMessagesPage() {
 
                 {/* Actions */}
                 <div className="flex flex-wrap gap-2 pt-2">
-                  <Button
+                  <LoadingButton
                     onClick={handleReply}
-                    disabled={!replyText.trim() || isSubmitting}
+                    disabled={!replyText.trim()}
+                    loading={isSubmitting}
+                    loadingText={locale === "zh" ? "发送中..." : "Sending..."}
                     className="bg-emerald-600 hover:bg-emerald-700"
                   >
                     <Send className="mr-2 h-4 w-4" />
                     {t("detail.sendReply")}
-                  </Button>
+                  </LoadingButton>
                   {viewMessage.status !== "CLOSED" && (
                     <Button
                       variant="outline"

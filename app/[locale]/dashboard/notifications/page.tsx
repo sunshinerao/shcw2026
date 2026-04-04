@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
-import { Mail, MessageSquare, Smartphone, Bell, Info, CheckCircle, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Mail, MessageSquare, Smartphone, Bell, Info, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { LoadingButton } from "@/components/ui/loading-button";
 
 // 通知设置类型定义
 interface NotificationSettings {
@@ -362,20 +362,15 @@ export default function NotificationsPage() {
         transition={{ duration: 0.5, delay: 0.4 }}
         className="flex justify-end"
       >
-        <Button
+        <LoadingButton
           onClick={handleSave}
-          disabled={isSaving || !hasChanges}
+          disabled={!hasChanges}
           className="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 min-w-[140px]"
+          loading={isSaving}
+          loadingText={t("saving")}
         >
-          {isSaving ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              {t("saving")}
-            </>
-          ) : (
-            t("save")
-          )}
-        </Button>
+          {t("save")}
+        </LoadingButton>
       </motion.div>
     </div>
   );

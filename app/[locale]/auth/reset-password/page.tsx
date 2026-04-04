@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Link } from "@/i18n/routing";
 import { Loader2, Lock, ArrowLeft, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 
@@ -499,20 +500,14 @@ function ResetPasswordForm() {
                 </ul>
               </div>
 
-              <Button
+              <LoadingButton
                 type="submit"
                 className="w-full bg-emerald-600 hover:bg-emerald-700"
-                disabled={isLoading}
+                loading={isLoading}
+                loadingText={t("submitting")}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {t("submitting")}
-                  </>
-                ) : (
-                  t("submit")
-                )}
-              </Button>
+                {t("submit")}
+              </LoadingButton>
             </form>
           </CardContent>
         </Card>

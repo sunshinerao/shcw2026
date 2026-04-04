@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -793,12 +794,11 @@ export default function EventDetailPage() {
                       {t("register.registered")}
                     </Button>
                   ) : event.isClosed ? (
-                    <>
-                      <Button className="w-full mb-2" disabled variant="outline">
-                        {t("register.closedEvent")}
+                    <Link href={`/events/${eventId}/register`} className="block">
+                      <Button className="w-full bg-emerald-600 hover:bg-emerald-700 mb-3">
+                        {t("register.applyAttend")}
                       </Button>
-                      <p className="text-xs text-slate-500 mb-3 text-center">{t("register.closedEventHint")}</p>
-                    </>
+                    </Link>
                   ) : (
                     <Link href={`/events/${eventId}/register`} className="block">
                       <Button className="w-full bg-emerald-600 hover:bg-emerald-700 mb-3">
@@ -807,15 +807,17 @@ export default function EventDetailPage() {
                     </Link>
                   )}
                   <div className="flex gap-2">
-                    <Button
+                    <LoadingButton
                       variant="outline"
                       className={`flex-1 ${isSaved ? "text-red-500 border-red-200 bg-red-50" : ""}`}
                       onClick={handleSave}
-                      disabled={isSaving || isRegistered}
+                      disabled={isRegistered}
+                      loading={isSaving}
+                      loadingText={locale === "en" ? "Saving..." : "保存中..."}
                     >
                       <Heart className={`w-4 h-4 mr-2 ${isSaved ? "fill-current" : ""}`} />
                       {isSaved ? t("register.saved") : t("register.save")}
-                    </Button>
+                    </LoadingButton>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="outline" className="flex-1">

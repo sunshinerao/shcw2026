@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingButton } from "@/components/ui/loading-button";
 import {
   Dialog,
   DialogContent,
@@ -1243,9 +1244,14 @@ export default function AdminEventsPage() {
           </div>
           <DialogFooter className="mt-6">
             <Button variant="outline" onClick={() => setIsFormDialogOpen(false)}>{t("common.cancel")}</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void submitForm()} disabled={isSubmitting}>
+            <LoadingButton
+              className="bg-emerald-600 hover:bg-emerald-700"
+              onClick={() => void submitForm()}
+              loading={isSubmitting}
+              loadingText={locale === "en" ? (editingEvent ? "Saving..." : "Creating...") : (editingEvent ? "保存中..." : "创建中...")}
+            >
               {editingEvent ? t("form.save") : t("form.create")}
-            </Button>
+            </LoadingButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1258,9 +1264,9 @@ export default function AdminEventsPage() {
           </DialogHeader>
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>{t("common.cancel")}</Button>
-            <Button variant="destructive" onClick={() => void submitDelete()} disabled={isSubmitting}>
+            <LoadingButton variant="destructive" onClick={() => void submitDelete()} loading={isSubmitting} loadingText={locale === "en" ? "Deleting..." : "删除中..."}>
               {t("delete.confirm")}
-            </Button>
+            </LoadingButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

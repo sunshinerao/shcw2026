@@ -6,11 +6,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
+import { Mail, Lock, ArrowRight } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Link } from "@/i18n/routing";
 
 function LoginForm() {
@@ -130,20 +130,14 @@ function LoginForm() {
             </div>
           </div>
 
-          <Button
+          <LoadingButton
             type="submit"
             className="w-full bg-emerald-600 hover:bg-emerald-700"
-            disabled={isLoading}
+            loading={isLoading}
+            loadingText={t("submitting")}
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {t("submitting")}
-              </>
-            ) : (
-              t("submit")
-            )}
-          </Button>
+            {t("submit")}
+          </LoadingButton>
         </form>
 
         <div className="mt-6 text-center">

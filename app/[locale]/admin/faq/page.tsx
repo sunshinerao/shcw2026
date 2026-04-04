@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -107,6 +108,7 @@ export default function AdminFaqPage() {
   const [items, setItems] = useState<FaqItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -253,6 +255,7 @@ export default function AdminFaqPage() {
     }
 
     try {
+      setDeleting(true);
       const res = await fetch(`/api/faqs/${deletingItem.id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok || !data.success) {
@@ -264,6 +267,8 @@ export default function AdminFaqPage() {
       toast.success(t("deleteSuccess"));
     } catch (error) {
       toast.error(error instanceof Error ? error.message : t("deleteError"));
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -482,10 +487,9 @@ export default function AdminFaqPage() {
 
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{t("cancel")}</Button>
-              <Button onClick={handleSave} disabled={saving} className="bg-emerald-600 hover:bg-emerald-700">
-                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              <LoadingButton onClick={handleSave} loading={saving} loadingText={locale === "en" ? "Saving..." : "保存中..."} className="bg-emerald-600 hover:bg-emerald-700">
                 {t("save")}
-              </Button>
+              </LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -498,7 +502,7 @@ export default function AdminFaqPage() {
             </DialogHeader>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDeleteOpen(false)}>{t("cancel")}</Button>
-              <Button className="bg-red-600 hover:bg-red-700" onClick={handleDelete}>{t("delete")}</Button>
+              <LoadingButton className="bg-red-600 hover:bg-red-700" onClick={handleDelete} loading={deleting} loadingText={locale === "en" ? "Deleting..." : "删除中..."}>{t("delete")}</LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>

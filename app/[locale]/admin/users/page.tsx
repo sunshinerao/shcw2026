@@ -31,6 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -906,14 +907,14 @@ export default function AdminUsersPage() {
             <div className="space-y-2"><Label htmlFor="org-logo">{t("form.organizationLogo")}</Label><Input id="org-logo" value={formState.organizationLogo} onChange={(event) => setFormState((previous) => ({ ...previous, organizationLogo: event.target.value }))} placeholder="https://..." /></div>
             <div className="space-y-2 md:col-span-2"><Label htmlFor="org-description">{t("form.organizationDescription")}</Label><Textarea id="org-description" rows={3} value={formState.organizationDescription} onChange={(event) => setFormState((previous) => ({ ...previous, organizationDescription: event.target.value }))} /></div>
           </div>
-          <DialogFooter className="mt-6"><Button variant="outline" onClick={() => setIsFormDialogOpen(false)}>{t("common.cancel")}</Button><Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void saveUser()} disabled={isSubmitting}>{editingUser ? t("form.save") : t("form.create")}</Button></DialogFooter>
+          <DialogFooter className="mt-6"><Button variant="outline" onClick={() => setIsFormDialogOpen(false)}>{t("common.cancel")}</Button><LoadingButton className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void saveUser()} loading={isSubmitting} loadingText={locale === "en" ? (editingUser ? "Saving..." : "Creating...") : (editingUser ? "保存中..." : "创建中...")}>{editingUser ? t("form.save") : t("form.create")}</LoadingButton></DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader><DialogTitle>{t("delete.title")}</DialogTitle><DialogDescription>{t("delete.description", { name: userToDelete?.name || "" })}</DialogDescription></DialogHeader>
-          <DialogFooter className="mt-4"><Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>{t("common.cancel")}</Button><Button variant="destructive" onClick={() => void deleteUser()} disabled={isSubmitting}>{t("delete.confirm")}</Button></DialogFooter>
+          <DialogFooter className="mt-4"><Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>{t("common.cancel")}</Button><LoadingButton variant="destructive" onClick={() => void deleteUser()} loading={isSubmitting} loadingText={locale === "en" ? "Deleting..." : "删除中..."}>{t("delete.confirm")}</LoadingButton></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -938,7 +939,7 @@ export default function AdminUsersPage() {
               {batchAction === "delete" ? ` ${t("batchDialog.irreversible")}` : ""}
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="mt-4"><Button variant="outline" onClick={() => setIsBatchDialogOpen(false)}>{t("common.cancel")}</Button><Button variant={batchAction === "delete" ? "destructive" : "default"} className={batchAction !== "delete" ? "bg-emerald-600 hover:bg-emerald-700" : ""} onClick={() => void runBatchAction()} disabled={isSubmitting}>{t("batchDialog.confirm")}</Button></DialogFooter>
+          <DialogFooter className="mt-4"><Button variant="outline" onClick={() => setIsBatchDialogOpen(false)}>{t("common.cancel")}</Button><LoadingButton variant={batchAction === "delete" ? "destructive" : "default"} className={batchAction !== "delete" ? "bg-emerald-600 hover:bg-emerald-700" : ""} onClick={() => void runBatchAction()} loading={isSubmitting} loadingText={locale === "en" ? "Processing..." : "处理中..."}>{t("batchDialog.confirm")}</LoadingButton></DialogFooter>
         </DialogContent>
       </Dialog>
 
@@ -997,13 +998,15 @@ export default function AdminUsersPage() {
                     />
                   </div>
                 </div>
-                <Button 
+                <LoadingButton 
                   className="mt-3 w-full bg-emerald-600 hover:bg-emerald-700"
                   onClick={adjustPoints}
-                  disabled={isSubmitting || pointsAmount === 0 || !pointsReason}
+                  disabled={pointsAmount === 0 || !pointsReason}
+                  loading={isSubmitting}
+                  loadingText={t("pointsDialog.adjust.submitting")}
                 >
-                  {isSubmitting ? t("pointsDialog.adjust.submitting") : t("pointsDialog.adjust.confirm")}
-                </Button>
+                  {t("pointsDialog.adjust.confirm")}
+                </LoadingButton>
               </div>
 
               <div>

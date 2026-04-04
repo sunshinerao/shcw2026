@@ -22,6 +22,7 @@ import { useLocale, useTranslations } from "next-intl";
 
 type FeaturedEvent = Event & {
   maxAttendees?: number | null;
+  isClosed?: boolean;
 };
 
 export function EventsPreviewSection() {
@@ -219,7 +220,7 @@ export function EventsPreviewSection() {
                             </Link>
                             <Link href={`/events/${event.id}/register`}>
                               <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                                {t("events.register")}
+                                {event.isClosed ? t("events.applyAttend") : t("events.register")}
                               </Button>
                             </Link>
                           </div>

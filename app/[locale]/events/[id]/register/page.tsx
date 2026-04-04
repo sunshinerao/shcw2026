@@ -4,11 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { ArrowLeft, AlertCircle, Calendar, MapPin, Clock, CheckCircle, Loader2, User, LogIn } from "lucide-react";
+import { ArrowLeft, AlertCircle, Calendar, MapPin, Clock, CheckCircle, Loader2, User, LogIn, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "@/i18n/routing";
@@ -293,25 +294,49 @@ export default function EventRegisterPage() {
   }
 
   const localizedEventTitle = locale === "en" ? event.titleEn || event.title : event.title;
+  const supportEmail = t("eventClosed.email");
 
   if (event.isClosed) {
     return (
       <div className="min-h-screen bg-slate-50 pt-20 py-12">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center"
+            className="space-y-6"
           >
-            <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6">
-              <AlertCircle className="w-10 h-10 text-slate-500" />
+            <div className="text-center">
+              <div className="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-10 h-10 text-amber-600" />
+              </div>
+              <p className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">{localizedEventTitle}</p>
+              <h1 className="text-2xl font-bold text-slate-900 mb-4">{t("eventClosed.title")}</h1>
+              <p className="text-slate-600 max-w-2xl mx-auto">{t("eventClosed.description")}</p>
             </div>
-            <p className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">{localizedEventTitle}</p>
-            <h1 className="text-2xl font-bold text-slate-900 mb-4">{t("eventClosed.title")}</h1>
-            <p className="text-slate-600 mb-8">{t("eventClosed.description")}</p>
-            <Link href={`/events/${eventId}`}>
-              <Button variant="outline">{t("backToEvent")}</Button>
-            </Link>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("eventClosed.contactTitle")}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-600">{t("eventClosed.contactDescription")}</p>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs uppercase tracking-wide text-slate-400 mb-2">{t("eventClosed.contactLabel")}</p>
+                  <a href={`mailto:${supportEmail}`} className="inline-flex items-center text-emerald-700 hover:text-emerald-800 font-medium">
+                    <Mail className="w-4 h-4 mr-2" />
+                    {supportEmail}
+                  </a>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a href={`mailto:${supportEmail}`} className="sm:flex-1">
+                    <Button className="w-full bg-emerald-600 hover:bg-emerald-700">{t("eventClosed.contactAction")}</Button>
+                  </a>
+                  <Link href={`/events/${eventId}`} className="sm:flex-1">
+                    <Button variant="outline" className="w-full">{t("backToEvent")}</Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         </div>
       </div>
@@ -437,20 +462,14 @@ export default function EventRegisterPage() {
                     />
                   </div>
 
-                  <Button
+                  <LoadingButton
                     type="submit"
                     className="w-full bg-emerald-600 hover:bg-emerald-700"
-                    disabled={isLoading}
+                    loading={isLoading}
+                    loadingText={t("form.submitting")}
                   >
-                    {isLoading ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        {t("form.submitting")}
-                      </>
-                    ) : (
-                      t("form.submit")
-                    )}
-                  </Button>
+                    {t("form.submit")}
+                  </LoadingButton>
                 </form>
               </CardContent>
             </Card>

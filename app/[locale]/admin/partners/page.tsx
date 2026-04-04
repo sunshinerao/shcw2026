@@ -21,6 +21,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -271,6 +272,7 @@ export default function AdminPartnersPage() {
 
   const logoInputRef = useRef<HTMLInputElement>(null);
   const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isExportingLogos, setIsExportingLogos] = useState(false);
 
   const loadingLabel = locale === "en" ? "Loading partners..." : "正在加载合作伙伴...";
@@ -423,6 +425,7 @@ export default function AdminPartnersPage() {
     }
 
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/sponsors/${deletingSponsor.id}`, {
         method: "DELETE",
       });
@@ -438,6 +441,8 @@ export default function AdminPartnersPage() {
       setSponsors((previous) => previous.filter((s) => s.id !== deletingSponsor.id));
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -447,6 +452,7 @@ export default function AdminPartnersPage() {
     const method = editingSponsor ? "PUT" : "POST";
 
     try {
+      setIsSubmitting(true);
       const response = await fetch(url, {
         method,
         headers: {
@@ -469,6 +475,8 @@ export default function AdminPartnersPage() {
       if (saved?.id) upsertSponsorInState(saved);
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1113,13 +1121,15 @@ export default function AdminPartnersPage() {
             >
               {t("common.cancel")}
             </Button>
-            <Button
+            <LoadingButton
               onClick={handleSave}
               disabled={!formData.name}
               className="bg-emerald-600 hover:bg-emerald-700"
+              loading={isSubmitting}
+              loadingText={locale === "en" ? (editingSponsor ? "Saving..." : "Creating...") : (editingSponsor ? "保存中..." : "创建中...")}
             >
               {editingSponsor ? t("common.save") : t("common.create")}
-            </Button>
+            </LoadingButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1146,13 +1156,15 @@ export default function AdminPartnersPage() {
             >
               {t("common.cancel")}
             </Button>
-            <Button
+            <LoadingButton
               variant="destructive"
               onClick={confirmDelete}
               className="bg-red-600 hover:bg-red-700"
+              loading={isSubmitting}
+              loadingText={locale === "en" ? "Deleting..." : "删除中..."}
             >
               {t("delete.confirm")}
-            </Button>
+            </LoadingButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

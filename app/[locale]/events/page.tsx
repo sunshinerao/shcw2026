@@ -351,18 +351,12 @@ export default function EventsPage() {
                                   {t("details")}
                                 </Button>
                               </Link>
-                              {event.isClosed ? (
-                                <Button size="sm" variant="outline" disabled>
-                                  {t("closedEvent")}
+                              <Link href={`/events/${event.id}/register`}>
+                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                                  {event.isClosed ? t("applyAttend") : t("register")}
+                                  <ArrowRight className="w-4 h-4 ml-1" />
                                 </Button>
-                              ) : (
-                                <Link href={`/events/${event.id}/register`}>
-                                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                                    {t("register")}
-                                    <ArrowRight className="w-4 h-4 ml-1" />
-                                  </Button>
-                                </Link>
-                              )}
+                              </Link>
                             </div>
                           </div>
                         </motion.div>
@@ -466,18 +460,12 @@ export default function EventsPage() {
                                 {t("details")}
                               </Button>
                             </Link>
-                            {event.isClosed ? (
-                              <Button size="sm" variant="outline" disabled>
-                                {t("closedEvent")}
+                            <Link href={`/events/${event.id}/register`}>
+                              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                                {event.isClosed ? t("applyAttend") : t("register")}
+                                <ArrowRight className="w-4 h-4 ml-1" />
                               </Button>
-                            ) : (
-                              <Link href={`/events/${event.id}/register`}>
-                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                                  {t("register")}
-                                  <ArrowRight className="w-4 h-4 ml-1" />
-                                </Button>
-                              </Link>
-                            )}
+                            </Link>
                           </div>
                         </div>
                       </motion.div>

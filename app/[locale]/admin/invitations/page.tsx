@@ -7,6 +7,7 @@ import { FileText, Search, Upload, XCircle, CheckCircle, Clock, Download, Loader
 import { Badge } from "@/components/ui/badge";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -365,9 +366,9 @@ export default function AdminInvitationsPage() {
             </div>
             <DialogFooter className="mt-4">
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>{t("editDialog.cancel")}</Button>
-              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void submitEdit()} disabled={isSubmitting}>
+              <LoadingButton className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void submitEdit()} loading={isSubmitting} loadingText={locale === "en" ? "Saving..." : "保存中..."}>
                 {t("editDialog.save")}
-              </Button>
+              </LoadingButton>
             </DialogFooter>
           </DialogContent>
         </Dialog>

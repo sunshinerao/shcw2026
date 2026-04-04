@@ -25,6 +25,7 @@ import {
   Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -261,6 +262,7 @@ export default function AdminSpeakersPage() {
 
   const avatarInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAutoUpdatingId, setIsAutoUpdatingId] = useState<string | null>(null);
   const [autoUpdatePreview, setAutoUpdatePreview] = useState<AutoUpdateSuggestion | null>(null);
   const [autoUpdateTargetSpeaker, setAutoUpdateTargetSpeaker] = useState<Speaker | null>(null);
@@ -519,6 +521,7 @@ export default function AdminSpeakersPage() {
     const method = isEditDialogOpen && selectedSpeaker ? "PUT" : "POST";
 
     try {
+      setIsSubmitting(true);
       const response = await fetch(url, {
         method,
         headers: {
@@ -546,6 +549,8 @@ export default function AdminSpeakersPage() {
       }
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -556,6 +561,7 @@ export default function AdminSpeakersPage() {
     }
 
     try {
+      setIsSubmitting(true);
       const response = await fetch(`/api/speakers/${selectedSpeaker.id}`, {
         method: "DELETE",
       });
@@ -571,6 +577,8 @@ export default function AdminSpeakersPage() {
       setSelectedSpeaker(null);
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -1184,14 +1192,16 @@ export default function AdminSpeakersPage() {
             >
               {t("common.cancel")}
             </Button>
-            <Button
+            <LoadingButton
               className="bg-emerald-600 hover:bg-emerald-700"
               onClick={handleSubmit}
               disabled={!formData.name || !formData.title || !formData.organization}
+              loading={isSubmitting}
+              loadingText={locale === "en" ? (isEditDialogOpen ? "Saving..." : "Creating...") : (isEditDialogOpen ? "保存中..." : "创建中...")}
             >
               <Check className="w-4 h-4 mr-2" />
               {isEditDialogOpen ? t("common.save") : t("common.create")}
-            </Button>
+            </LoadingButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -1215,13 +1225,15 @@ export default function AdminSpeakersPage() {
             <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
               {t("common.cancel")}
             </Button>
-            <Button
+            <LoadingButton
               variant="destructive"
               onClick={handleDelete}
+              loading={isSubmitting}
+              loadingText={locale === "en" ? "Deleting..." : "删除中..."}
             >
               <Trash2 className="w-4 h-4 mr-2" />
               {t("delete.confirm")}
-            </Button>
+            </LoadingButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

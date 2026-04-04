@@ -2,13 +2,14 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { KeyRound, Loader2, Save, Sparkles, Trash2 } from "lucide-react";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Switch } from "@/components/ui/switch";
 
 type SettingsResponse = {
@@ -22,6 +23,7 @@ type SettingsResponse = {
 
 export default function AdminSettingsPage() {
   const t = useTranslations("adminSettingsPage");
+  const locale = useLocale();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -237,10 +239,10 @@ export default function AdminSettingsPage() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Button onClick={saveSettings} disabled={isSaving}>
-                    {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  <LoadingButton onClick={saveSettings} loading={isSaving} loadingText={locale === "en" ? "Saving..." : "保存中..."}>
+                    <Save className="mr-2 h-4 w-4" />
                     {t("save")}
-                  </Button>
+                  </LoadingButton>
 
                   <Button variant="outline" onClick={loadSettings} disabled={isSaving}>
                     <Trash2 className="mr-2 h-4 w-4" />

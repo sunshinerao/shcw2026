@@ -1161,6 +1161,7 @@
         "subtitle": "2026年4月20日 - 4月28日",
         "viewAll": "查看完整日程",
         "register": "立即报名",
+        "applyAttend": "申请参会",
         "details": "了解详情",
         "partners": "合作伙伴",
         "capacity": "限额 {count} 人"
@@ -1254,6 +1255,7 @@
         "partners": "合作伙伴",
         "details": "了解详情",
         "register": "立即报名",
+        "applyAttend": "申请参会",
         "closedEvent": "活动不接受报名"
     },
     "partners": {
@@ -2106,8 +2108,13 @@
             "goToDashboard": "前往个人中心"
         },
         "eventClosed": {
-            "title": "该活动不接受报名",
-            "description": "这是一场闭门活动，不接受公开报名申请。如需参加，请联系主办方了解详情。"
+            "title": "闭门会议申请参会",
+            "description": "该活动为闭门会议，不接受公开报名。若您希望申请参会，请通过电子邮件联系主办方，并简要说明您的机构、职务与参会需求。",
+            "contactTitle": "联系主办方",
+            "contactDescription": "主办方将根据活动安排与席位情况评估申请，并通过邮件与您联系。",
+            "contactLabel": "联系邮箱",
+            "contactAction": "发送邮件申请",
+            "email": "info@shanghaiclimateweek.org.cn"
         }
     },
     "faqPage": {

@@ -1161,6 +1161,7 @@
         "subtitle": "April 20-28, 2026",
         "viewAll": "View Full Schedule",
         "register": "Register Now",
+        "applyAttend": "Apply to Attend",
         "details": "Learn More",
         "partners": "Partners",
         "capacity": "Limited to {count} people"
@@ -1254,6 +1255,7 @@
         "partners": "Partners",
         "details": "View details",
         "register": "Register now",
+        "applyAttend": "Apply to Attend",
         "closedEvent": "Registration Closed"
     },
     "partners": {
@@ -2104,8 +2106,13 @@
             "goToDashboard": "Go to Dashboard"
         },
         "eventClosed": {
-            "title": "Registration Not Available",
-            "description": "This is a closed-door event and does not accept public registrations. Please contact the organizer for more information."
+            "title": "Apply to Attend a Closed-Door Event",
+            "description": "This event is closed-door and does not accept public registrations. If you would like to attend, please email the organizer with a short introduction to your organization, role, and reason for attending.",
+            "contactTitle": "Contact the organizer",
+            "contactDescription": "The organizer will review your request based on the event arrangement and seat availability, then follow up by email.",
+            "contactLabel": "Contact email",
+            "contactAction": "Email to apply",
+            "email": "info@shanghaiclimateweek.org.cn"
         }
     },
     "faqPage": {

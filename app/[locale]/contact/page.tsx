@@ -10,6 +10,7 @@ import {
   Handshake, Mic2, Camera, Heart, ArrowRight, UserPlus, LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -565,14 +566,15 @@ export default function ContactPage() {
                         <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">{submitError}</p>
                       )}
 
-                      <Button
+                      <LoadingButton
                         type="submit"
                         className="w-full bg-emerald-600 hover:bg-emerald-700"
-                        disabled={isSubmitting}
+                        loading={isSubmitting}
+                        loadingText={t("form.submitting")}
                       >
                         <Send className="w-4 h-4 mr-2" />
-                        {isSubmitting ? t("form.submitting") : t("form.submit")}
-                      </Button>
+                        {t("form.submit")}
+                      </LoadingButton>
                     </form>
                   )}
                 </CardContent>

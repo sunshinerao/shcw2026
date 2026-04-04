@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { FileText, Plus, Download, Clock, CheckCircle, XCircle, Loader2, User, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -431,9 +432,9 @@ export default function DashboardInvitationsPage() {
           </div>
           <DialogFooter className="mt-4">
             <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t("form.cancel")}</Button>
-            <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void submitRequest()} disabled={isSubmitting}>
+            <LoadingButton className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void submitRequest()} loading={isSubmitting} loadingText={locale === "en" ? (editingId ? "Saving..." : "Submitting...") : (editingId ? "保存中..." : "提交中...")}>
               {editingId ? t("form.saveChanges") : t("form.submit")}
-            </Button>
+            </LoadingButton>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -16,6 +16,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LoadingButton } from "@/components/ui/loading-button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -309,24 +310,26 @@ export default function EventRegistrationsPage({
                     <span className="text-sm text-slate-500">
                       {t("selected", { count: selectedIds.size })}
                     </span>
-                    <Button
+                    <LoadingButton
                       size="sm"
                       className="bg-emerald-600 hover:bg-emerald-700"
                       onClick={() => void submitAction("approve")}
-                      disabled={isSubmitting}
+                      loading={isSubmitting}
+                      loadingText={locale === "en" ? "Approving..." : "审批中..."}
                     >
                       <CheckCircle className="mr-1.5 h-3.5 w-3.5" />
                       {t("approve")}
-                    </Button>
-                    <Button
+                    </LoadingButton>
+                    <LoadingButton
                       size="sm"
                       variant="destructive"
                       onClick={() => void submitAction("reject")}
-                      disabled={isSubmitting}
+                      loading={isSubmitting}
+                      loadingText={locale === "en" ? "Rejecting..." : "处理中..."}
                     >
                       <XCircle className="mr-1.5 h-3.5 w-3.5" />
                       {t("reject")}
-                    </Button>
+                    </LoadingButton>
                   </div>
                 )}
               </div>
