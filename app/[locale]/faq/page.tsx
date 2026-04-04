@@ -134,12 +134,18 @@ export default function FAQPage() {
                               <AccordionContent className="space-y-4 text-slate-600 leading-relaxed">
                                 <div>{localizedAnswer}</div>
                                 {item.attachmentUrl ? (
-                                  <a href={item.attachmentUrl} download={item.attachmentName || "faq-attachment"} className="inline-flex">
-                                    <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-                                      <Download className="mr-2 h-4 w-4" />
-                                      {item.attachmentName || t("downloadAttachment")}
-                                    </Button>
-                                  </a>
+                                  <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
+                                    <p className="mb-2 text-sm font-medium text-slate-900">{t("attachment")}</p>
+                                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                      <p className="text-sm text-slate-600">{item.attachmentName || t("downloadAttachment")}</p>
+                                      <a href={item.attachmentUrl} download={item.attachmentName || "faq-attachment"} className="inline-flex">
+                                        <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                                          <Download className="mr-2 h-4 w-4" />
+                                          {t("downloadAttachment")}
+                                        </Button>
+                                      </a>
+                                    </div>
+                                  </div>
                                 ) : null}
                               </AccordionContent>
                             </AccordionItem>

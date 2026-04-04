@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import {
-  Mail, Globe, MapPin, Send, CheckCircle,
+  Mail, Globe, MapPin, Send, CheckCircle, Download,
   Handshake, Mic2, Camera, Heart, ArrowRight, UserPlus, LogIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,7 @@ const QUICK_LINK_ICONS = { partnership: Handshake, speaker: Mic2, media: Camera,
 
 export default function ContactPage() {
   const t = useTranslations("contactPage");
+  const faqT = useTranslations("faqPage");
   const locale = useLocale();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
@@ -50,7 +51,7 @@ export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [inquiryType, setInquiryType] = useState<InquiryType>("general");
-  const [faqs, setFaqs] = useState<Array<{ q: string; a: string }>>([]);
+  const [faqs, setFaqs] = useState<Array<{ q: string; a: string; attachmentUrl?: string | null; attachmentName?: string | null }>>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -136,11 +137,11 @@ export default function ContactPage() {
 
   useEffect(() => {
     const fallbackFaqs = [
-      { q: t("faq.items.registration.question"), a: t("faq.items.registration.answer") },
-      { q: t("faq.items.fees.question"), a: t("faq.items.fees.answer") },
-      { q: t("faq.items.partnership.question"), a: t("faq.items.partnership.answer") },
-      { q: t("faq.items.speaker.question"), a: t("faq.items.speaker.answer") },
-      { q: t("faq.items.interpretation.question"), a: t("faq.items.interpretation.answer") },
+      { q: t("faq.items.registration.question"), a: t("faq.items.registration.answer"), attachmentUrl: null, attachmentName: null },
+      { q: t("faq.items.fees.question"), a: t("faq.items.fees.answer"), attachmentUrl: null, attachmentName: null },
+      { q: t("faq.items.partnership.question"), a: t("faq.items.partnership.answer"), attachmentUrl: null, attachmentName: null },
+      { q: t("faq.items.speaker.question"), a: t("faq.items.speaker.answer"), attachmentUrl: null, attachmentName: null },
+      { q: t("faq.items.interpretation.question"), a: t("faq.items.interpretation.answer"), attachmentUrl: null, attachmentName: null },
     ];
 
     fetch("/api/faqs?publishedOnly=true&limit=5", { cache: "no-store" })
@@ -153,9 +154,13 @@ export default function ContactPage() {
               questionEn?: string | null;
               answer: string;
               answerEn?: string | null;
+              attachmentUrl?: string | null;
+              attachmentName?: string | null;
             }) => ({
               q: locale === "en" ? item.questionEn || item.question : item.question,
               a: locale === "en" ? item.answerEn || item.answer : item.answer,
+              attachmentUrl: item.attachmentUrl || null,
+              attachmentName: item.attachmentName || null,
             }))
           );
         } else {
@@ -594,6 +599,20 @@ export default function ContactPage() {
                     <CardContent className="p-6">
                       <h3 className="font-semibold text-slate-900 mb-2">{faq.q}</h3>
                       <p className="text-slate-600 text-sm">{faq.a}</p>
+                      {faq.attachmentUrl ? (
+                        <div className="mt-4 rounded-lg border border-emerald-100 bg-emerald-50/60 p-3">
+                          <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">{faqT("attachment")}</p>
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-sm text-slate-700">{faq.attachmentName || faqT("downloadAttachment")}</p>
+                            <a href={faq.attachmentUrl} download={faq.attachmentName || "faq-attachment"} className="inline-flex">
+                              <Button variant="outline" size="sm" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                                <Download className="mr-2 h-4 w-4" />
+                                {faqT("downloadAttachment")}
+                              </Button>
+                            </a>
+                          </div>
+                        </div>
+                      ) : null}
                     </CardContent>
                   </Card>
                 ))}
