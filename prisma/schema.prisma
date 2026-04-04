@@ -584,6 +584,29 @@ model SiteContent {
   @@map("site_contents")
 }
 
+  // 常见问题
+  model FaqItem {
+    id             String   @id @default(uuid())
+    category       String
+    categoryEn     String?
+    question       String
+    questionEn     String?
+    summary        String?  @db.Text
+    summaryEn      String?  @db.Text
+    answer         String   @db.Text
+    answerEn       String?  @db.Text
+    attachmentUrl  String?
+    attachmentName String?
+    isPinned       Boolean  @default(false)
+    isPublished    Boolean  @default(true)
+    sortOrder      Int      @default(0)
+    createdAt      DateTime @default(now())
+    updatedAt      DateTime @updatedAt
+
+    @@index([category, isPublished, isPinned, sortOrder])
+    @@map("faq_items")
+  }
+
 // 邀请函申请表
 model InvitationRequest {
   id              String           @id @default(uuid())

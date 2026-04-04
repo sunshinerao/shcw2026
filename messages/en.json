@@ -254,6 +254,7 @@
             "users": "Users",
             "partners": "Partners",
             "cooperationPlans": "Cooperation Plans",
+            "faq": "FAQ",
             "news": "News",
             "content": "Content",
             "messages": "Messages",
@@ -2111,49 +2112,75 @@
         "title": "FAQ",
         "subtitle": "Frequently asked questions about Shanghai Climate Week 2026",
         "backToHome": "Back to Home",
-        "categories": {
-            "registration": "Registration & Participation",
-            "events": "Events & Schedule",
-            "venue": "Venue & Transportation"
-        },
-        "items": {
-            "q1": {
-                "question": "How do I register for Shanghai Climate Week 2026?",
-                "answer": "You can register through our official website. Click the \"Register\" button in the top right corner and fill in your basic information to complete registration. After registration, you can sign up for events that interest you."
-            },
-            "q2": {
-                "question": "Is there a fee to attend events?",
-                "answer": "Most events at Shanghai Climate Week 2026 are free and open to the public. Some exclusive closed-door sessions or workshops may require a fee. Please check the event details page for specific information."
-            },
-            "q3": {
-                "question": "How can I become a speaker or partner?",
-                "answer": "If you wish to be a speaker, please select the \"Speaker\" role during registration, and our team will review your application. Organizations interested in becoming partners can submit an application through the \"Partners\" page or contact our partnership team directly."
-            },
-            "q4": {
-                "question": "Where can I view the event schedule?",
-                "answer": "You can view the complete schedule on the \"Events\" page of the website. All events are categorized by date and theme, and you can filter and register according to your interests."
-            },
-            "q5": {
-                "question": "Can I cancel my event registration?",
-                "answer": "Yes, you can cancel registered events in the \"My Schedule\" section of your personal dashboard. Please cancel at least 24 hours before the event starts so we can release the spot to other participants."
-            },
-            "q6": {
-                "question": "Will events offer online participation?",
-                "answer": "Some important forums and summits will offer live streaming. You can check the event details page to see if live streaming is available. Online participation also requires advance registration."
-            },
-            "q7": {
-                "question": "Where are the event venues located?",
-                "answer": "The main venues for Shanghai Climate Week 2026 include the Shanghai International Convention Center, Shanghai Tower, Zhangjiang Science City, and others. Please check each event's details page for specific addresses."
-            },
-            "q8": {
-                "question": "How do I get to the event venues?",
-                "answer": "All venues are located in easily accessible areas of Shanghai and can be reached by subway, bus, or taxi. Detailed transportation guides will be sent to registered participants before the events."
-            }
-        },
+        "loading": "Loading FAQs...",
+        "emptyTitle": "No FAQs available yet",
+        "emptyDescription": "Please add and publish FAQ items from the admin console.",
+        "detailTitle": "FAQ details",
+        "viewDetail": "View details",
+        "downloadAttachment": "Download attachment",
+        "attachment": "Related attachment",
+        "pinned": "Pinned",
         "contact": {
             "title": "Still have questions?",
             "description": "If you couldn't find the answer you're looking for, please feel free to contact our team.",
             "button": "Contact Us"
+        }
+    },
+    "adminFaq": {
+        "title": "FAQ Management",
+        "subtitle": "Manage the FAQ cards, detail content, and attachment downloads shown on the public site.",
+        "create": "Add FAQ",
+        "edit": "Edit FAQ",
+        "delete": "Delete FAQ",
+        "createTitle": "Create FAQ",
+        "editTitle": "Edit FAQ",
+        "deleteTitle": "Confirm deletion",
+        "deleteDescription": "Delete this FAQ item permanently? This action cannot be undone.",
+        "save": "Save",
+        "cancel": "Cancel",
+        "upload": "Upload attachment",
+        "uploading": "Uploading...",
+        "removeAttachment": "Remove attachment",
+        "attachmentUploaded": "Attachment uploaded",
+        "previewAttachment": "Preview attachment",
+        "attachmentHint": "Supports PDF / PNG / JPG / WEBP, up to 10MB.",
+        "empty": "No FAQ items yet.",
+        "loadError": "Failed to load FAQ items.",
+        "saveError": "Failed to save the FAQ item.",
+        "deleteError": "Failed to delete the FAQ item.",
+        "uploadError": "Failed to upload the attachment.",
+        "createSuccess": "FAQ item created.",
+        "updateSuccess": "FAQ item updated.",
+        "deleteSuccess": "FAQ item deleted.",
+        "importDefaults": "Import defaults",
+        "importError": "Failed to import default FAQ items.",
+        "importSuccess": "Imported {created} default FAQ items and skipped {skipped} duplicates.",
+        "fields": {
+            "category": "Category (Chinese)",
+            "categoryEn": "Category (English)",
+            "question": "Question (Chinese)",
+            "questionEn": "Question (English)",
+            "summary": "Summary (Chinese)",
+            "summaryEn": "Summary (English)",
+            "answer": "Detailed answer (Chinese)",
+            "answerEn": "Detailed answer (English)",
+            "sortOrder": "Sort order",
+            "published": "Visible on site",
+            "pinned": "Pin to top",
+            "attachment": "Attachment file"
+        },
+        "table": {
+            "question": "Question",
+            "summary": "Summary",
+            "status": "Status",
+            "attachment": "Attachment",
+            "actions": "Actions",
+            "published": "Published",
+            "draft": "Draft",
+            "pinned": "Pinned",
+            "notPinned": "Not pinned",
+            "hasAttachment": "Attached",
+            "noAttachment": "None"
         }
     },
     "verifierPage": {

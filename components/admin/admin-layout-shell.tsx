@@ -14,6 +14,7 @@ import {
   ChevronRight,
   Route,
   FileText,
+  HelpCircle,
   MessageSquare,
   Newspaper,
   PanelTop,
@@ -48,6 +49,7 @@ export function AdminLayoutShell({
     { key: "users", name: t("nav.users"), href: "/admin/users", icon: Users },
     { key: "partners", name: t("nav.partners"), href: "/admin/partners", icon: Building2 },
     { key: "cooperationPlans", name: t("nav.cooperationPlans"), href: "/admin/cooperation-plans", icon: Building2 },
+    { key: "faq", name: t("nav.faq"), href: "/admin/faq", icon: HelpCircle },
     { key: "news", name: t("nav.news"), href: "/admin/news", icon: Newspaper },
     { key: "content", name: t("nav.content"), href: "/admin/content", icon: PanelTop },
     { key: "messages", name: t("nav.messages"), href: "/admin/messages", icon: MessageSquare },
@@ -75,7 +77,11 @@ export function AdminLayoutShell({
               <span className="font-bold">{t("title")}</span>
             </div>
             <Link href="/">
-              <Button variant="ghost" size="sm" className="text-slate-300 hover:text-white">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-slate-300 hover:bg-white/10 hover:text-white focus-visible:ring-white/40"
+              >
                 {t("backToSite")}
               </Button>
             </Link>

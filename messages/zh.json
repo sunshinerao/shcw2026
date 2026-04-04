@@ -254,6 +254,7 @@
             "users": "用户管理",
             "partners": "合作伙伴",
             "cooperationPlans": "合作方案",
+            "faq": "常见问题",
             "news": "新闻管理",
             "content": "内容管理",
             "messages": "留言管理",
@@ -2113,49 +2114,75 @@
         "title": "常见问题",
         "subtitle": "关于上海气候周2026的常见问题和解答",
         "backToHome": "返回首页",
-        "categories": {
-            "registration": "注册与参会",
-            "events": "活动与日程",
-            "venue": "场馆与交通"
-        },
-        "items": {
-            "q1": {
-                "question": "如何注册参加上海气候周2026？",
-                "answer": "您可以通过我们的官方网站注册。点击右上角的\"立即注册\"按钮，填写基本信息后即可完成注册。注册成功后，您可以报名参加感兴趣的活动。"
-            },
-            "q2": {
-                "question": "参加活动需要付费吗？",
-                "answer": "上海气候周2026的大部分活动对公众免费开放。部分高端闭门会议或工作坊可能需要付费，具体信息请查看活动详情页面。"
-            },
-            "q3": {
-                "question": "如何成为演讲嘉宾或合作伙伴？",
-                "answer": "如果您希望成为演讲嘉宾，请在注册时选择\"演讲嘉宾\"角色，我们的团队会审核您的申请。有意成为合作伙伴的机构，请通过\"合作伙伴\"页面提交申请或直接联系我们的合作团队。"
-            },
-            "q4": {
-                "question": "活动日程在哪里查看？",
-                "answer": "您可以在网站的\"活动\"页面查看完整日程。所有活动按日期和主题分类，您可以根据自己的兴趣筛选和报名。"
-            },
-            "q5": {
-                "question": "可以取消已报名的活动吗？",
-                "answer": "是的，您可以在个人中心的\"我的日程\"页面取消已报名的活动。请在活动开始前至少24小时取消，以便我们将名额释放给其他参与者。"
-            },
-            "q6": {
-                "question": "活动是否提供线上参与方式？",
-                "answer": "部分重要论坛和峰会将提供线上直播，您可以在活动详情页面查看是否有直播选项。线上参与也需要提前注册。"
-            },
-            "q7": {
-                "question": "活动场馆在哪里？",
-                "answer": "上海气候周2026的主要活动场馆包括上海国际会议中心、上海中心大厦、张江科学城等。具体地址请查看各活动的详情页面。"
-            },
-            "q8": {
-                "question": "如何到达活动现场？",
-                "answer": "各场馆均位于上海市交通便利的区域，可通过地铁、公交或出租车到达。具体交通指南将在活动前发送给已注册的参与者。"
-            }
-        },
+        "loading": "正在加载常见问题...",
+        "emptyTitle": "暂无常见问题",
+        "emptyDescription": "请前往后台添加并发布常见问题。",
+        "detailTitle": "问题详情",
+        "viewDetail": "查看详情",
+        "downloadAttachment": "下载附件",
+        "attachment": "相关附件",
+        "pinned": "置顶",
         "contact": {
             "title": "还有其他问题？",
             "description": "如果您没有找到想要的答案，请随时联系我们的团队。",
             "button": "联系我们"
+        }
+    },
+    "adminFaq": {
+        "title": "常见问题管理",
+        "subtitle": "维护前台 FAQ 卡片、详情内容与附件下载。",
+        "create": "新增问题",
+        "edit": "编辑问题",
+        "delete": "删除问题",
+        "createTitle": "新增常见问题",
+        "editTitle": "编辑常见问题",
+        "deleteTitle": "确认删除",
+        "deleteDescription": "确定要删除这个常见问题吗？此操作无法撤销。",
+        "save": "保存",
+        "cancel": "取消",
+        "upload": "上传附件",
+        "uploading": "上传中...",
+        "removeAttachment": "移除附件",
+        "attachmentUploaded": "已上传附件",
+        "previewAttachment": "预览附件",
+        "attachmentHint": "支持 PDF / PNG / JPG / WEBP，最大 10MB。",
+        "empty": "暂无常见问题，请先新增。",
+        "loadError": "加载常见问题失败。",
+        "saveError": "保存常见问题失败。",
+        "deleteError": "删除常见问题失败。",
+        "uploadError": "附件上传失败。",
+        "createSuccess": "常见问题已创建。",
+        "updateSuccess": "常见问题已更新。",
+        "deleteSuccess": "常见问题已删除。",
+        "importDefaults": "导入默认问题",
+        "importError": "导入默认问题失败。",
+        "importSuccess": "已导入 {created} 条默认问题，跳过 {skipped} 条重复问题。",
+        "fields": {
+            "category": "分类（中文）",
+            "categoryEn": "分类（英文）",
+            "question": "问题（中文）",
+            "questionEn": "问题（英文）",
+            "summary": "简述（中文）",
+            "summaryEn": "简述（英文）",
+            "answer": "详情回答（中文）",
+            "answerEn": "详情回答（英文）",
+            "sortOrder": "排序",
+            "published": "前台显示",
+            "pinned": "置顶显示",
+            "attachment": "附件文件"
+        },
+        "table": {
+            "question": "问题",
+            "summary": "简述",
+            "status": "状态",
+            "attachment": "附件",
+            "actions": "操作",
+            "published": "已发布",
+            "draft": "未发布",
+            "pinned": "已置顶",
+            "notPinned": "未置顶",
+            "hasAttachment": "有附件",
+            "noAttachment": "无附件"
         }
     },
     "verifierPage": {

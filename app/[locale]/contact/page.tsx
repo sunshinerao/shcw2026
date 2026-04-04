@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   Mail, Globe, MapPin, Send, CheckCircle,
   Handshake, Mic2, Camera, Heart, ArrowRight, UserPlus, LogIn,
@@ -42,12 +42,14 @@ const QUICK_LINK_ICONS = { partnership: Handshake, speaker: Mic2, media: Camera,
 
 export default function ContactPage() {
   const t = useTranslations("contactPage");
+  const locale = useLocale();
   const searchParams = useSearchParams();
   const { data: session } = useSession();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [inquiryType, setInquiryType] = useState<InquiryType>("general");
+  const [faqs, setFaqs] = useState<Array<{ q: string; a: string }>>([]);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -131,13 +133,36 @@ export default function ContactPage() {
     },
   ];
 
-  const faqs = [
-    { q: t("faq.items.registration.question"), a: t("faq.items.registration.answer") },
-    { q: t("faq.items.fees.question"), a: t("faq.items.fees.answer") },
-    { q: t("faq.items.partnership.question"), a: t("faq.items.partnership.answer") },
-    { q: t("faq.items.speaker.question"), a: t("faq.items.speaker.answer") },
-    { q: t("faq.items.interpretation.question"), a: t("faq.items.interpretation.answer") },
-  ];
+  useEffect(() => {
+    const fallbackFaqs = [
+      { q: t("faq.items.registration.question"), a: t("faq.items.registration.answer") },
+      { q: t("faq.items.fees.question"), a: t("faq.items.fees.answer") },
+      { q: t("faq.items.partnership.question"), a: t("faq.items.partnership.answer") },
+      { q: t("faq.items.speaker.question"), a: t("faq.items.speaker.answer") },
+      { q: t("faq.items.interpretation.question"), a: t("faq.items.interpretation.answer") },
+    ];
+
+    fetch("/api/faqs?publishedOnly=true&limit=5", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+          setFaqs(
+            data.data.map((item: {
+              question: string;
+              questionEn?: string | null;
+              answer: string;
+              answerEn?: string | null;
+            }) => ({
+              q: locale === "en" ? item.questionEn || item.question : item.question,
+              a: locale === "en" ? item.answerEn || item.answer : item.answer,
+            }))
+          );
+        } else {
+          setFaqs(fallbackFaqs);
+        }
+      })
+      .catch(() => setFaqs(fallbackFaqs));
+  }, [locale, t]);
 
   return (
     <div className="min-h-screen bg-slate-50">

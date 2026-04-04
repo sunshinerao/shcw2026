@@ -1,70 +1,64 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useTranslations } from "next-intl";
-import { HelpCircle, ChevronDown, Mail, ArrowLeft } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
+import { ArrowLeft, Download, HelpCircle, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Link } from "@/i18n/routing";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Link } from "@/i18n/routing";
+
+type FaqItem = {
+  id: string;
+  category: string;
+  categoryEn?: string | null;
+  question: string;
+  questionEn?: string | null;
+  summary?: string | null;
+  summaryEn?: string | null;
+  answer: string;
+  answerEn?: string | null;
+  attachmentUrl?: string | null;
+  attachmentName?: string | null;
+  isPinned: boolean;
+};
 
 export default function FAQPage() {
   const t = useTranslations("faqPage");
+  const locale = useLocale();
+  const [items, setItems] = useState<FaqItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const faqCategories = [
-    {
-      category: t("categories.registration"),
-      items: [
-        {
-          question: t("items.q1.question"),
-          answer: t("items.q1.answer"),
-        },
-        {
-          question: t("items.q2.question"),
-          answer: t("items.q2.answer"),
-        },
-        {
-          question: t("items.q3.question"),
-          answer: t("items.q3.answer"),
-        },
-      ],
-    },
-    {
-      category: t("categories.events"),
-      items: [
-        {
-          question: t("items.q4.question"),
-          answer: t("items.q4.answer"),
-        },
-        {
-          question: t("items.q5.question"),
-          answer: t("items.q5.answer"),
-        },
-        {
-          question: t("items.q6.question"),
-          answer: t("items.q6.answer"),
-        },
-      ],
-    },
-    {
-      category: t("categories.venue"),
-      items: [
-        {
-          question: t("items.q7.question"),
-          answer: t("items.q7.answer"),
-        },
-        {
-          question: t("items.q8.question"),
-          answer: t("items.q8.answer"),
-        },
-      ],
-    },
-  ];
+  useEffect(() => {
+    fetch("/api/faqs?publishedOnly=true", { cache: "no-store" })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.data)) {
+          setItems(data.data as FaqItem[]);
+        } else {
+          setItems([]);
+        }
+      })
+      .catch(() => setItems([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const groupedItems = items.reduce<Record<string, { title: string; items: FaqItem[] }>>((accumulator, item) => {
+    const key = locale === "en" ? item.categoryEn || item.category : item.category;
+    if (!accumulator[key]) {
+      accumulator[key] = { title: key, items: [] };
+    }
+    accumulator[key].items.push(item);
+    return accumulator;
+  }, {});
+
+  const sections = Object.values(groupedItems);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -96,36 +90,68 @@ export default function FAQPage() {
       {/* FAQ Content */}
       <section className="py-12 pb-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          {faqCategories.map((category, categoryIndex) => (
-            <motion.div
-              key={category.category}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
-              className="mb-12"
-            >
-              <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center">
-                <HelpCircle className="w-5 h-5 mr-2 text-emerald-600" />
-                {category.category}
-              </h2>
-              <Card>
-                <CardContent className="p-6">
-                  <Accordion type="single" collapsible className="w-full">
-                    {category.items.map((item, itemIndex) => (
-                      <AccordionItem key={itemIndex} value={`item-${categoryIndex}-${itemIndex}`}>
-                        <AccordionTrigger className="text-left font-medium text-slate-900 hover:text-emerald-600">
-                          {item.question}
-                        </AccordionTrigger>
-                        <AccordionContent className="text-slate-600 leading-relaxed">
-                          {item.answer}
-                        </AccordionContent>
-                      </AccordionItem>
-                    ))}
-                  </Accordion>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
+          {loading ? (
+            <div className="rounded-2xl border border-slate-200 bg-white px-6 py-10 text-center text-slate-500">
+              {t("loading")}
+            </div>
+          ) : items.length === 0 ? (
+            <div className="rounded-2xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+              <h2 className="text-xl font-semibold text-slate-900">{t("emptyTitle")}</h2>
+              <p className="mt-3 text-slate-600">{t("emptyDescription")}</p>
+            </div>
+          ) : (
+            <div>
+              {sections.map((section, categoryIndex) => (
+                <motion.div
+                  key={section.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: categoryIndex * 0.1 }}
+                  className="mb-12"
+                >
+                  <h2 className="mb-6 flex items-center text-xl font-bold text-slate-900">
+                    <HelpCircle className="mr-2 h-5 w-5 text-emerald-600" />
+                    {section.title}
+                  </h2>
+                  <Card>
+                    <CardContent className="p-6">
+                      <Accordion type="single" collapsible className="w-full">
+                        {section.items.map((item) => {
+                          const localizedQuestion = locale === "en" ? item.questionEn || item.question : item.question;
+                          const localizedSummary = locale === "en"
+                            ? item.summaryEn || item.summary || item.answerEn || item.answer
+                            : item.summary || item.answer;
+                          const localizedAnswer = locale === "en" ? item.answerEn || item.answer : item.answer;
+
+                          return (
+                            <AccordionItem key={item.id} value={item.id}>
+                              <AccordionTrigger className="text-left font-medium text-slate-900 hover:text-emerald-600">
+                                <div className="pr-4">
+                                  <div>{localizedQuestion}</div>
+                                  {localizedSummary ? <p className="mt-1 text-sm font-normal text-slate-500">{localizedSummary}</p> : null}
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="space-y-4 text-slate-600 leading-relaxed">
+                                <div>{localizedAnswer}</div>
+                                {item.attachmentUrl ? (
+                                  <a href={item.attachmentUrl} download={item.attachmentName || "faq-attachment"} className="inline-flex">
+                                    <Button variant="outline" className="border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+                                      <Download className="mr-2 h-4 w-4" />
+                                      {item.attachmentName || t("downloadAttachment")}
+                                    </Button>
+                                  </a>
+                                ) : null}
+                              </AccordionContent>
+                            </AccordionItem>
+                          );
+                        })}
+                      </Accordion>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          )}
 
           {/* Contact CTA */}
           <motion.div
