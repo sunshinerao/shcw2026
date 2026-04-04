@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
-import { KeyRound, Loader2, Save, Sparkles, Trash2 } from "lucide-react";
+import { KeyRound, Loader2, Save, Sparkles, Trash2, FileImage } from "lucide-react";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
 
 type SettingsResponse = {
   hasOpenaiApiKey: boolean;
@@ -39,6 +40,24 @@ export default function AdminSettingsPage() {
   const [aiHighlightsEnabled, setAiHighlightsEnabled] = useState(false);
   const [autoGenerateHighlightsOnSave, setAutoGenerateHighlightsOnSave] = useState(true);
   const [highlightCount, setHighlightCount] = useState(5);
+
+  // Invitation template settings
+  const [isTplLoading, setIsTplLoading] = useState(true);
+  const [isTplSaving, setIsTplSaving] = useState(false);
+  const [tplStatusMessage, setTplStatusMessage] = useState("");
+  const [tplStatusTone, setTplStatusTone] = useState<"success" | "error">("success");
+  const [tplForm, setTplForm] = useState({
+    coverImageUrl_zh: "",
+    coverImageUrl_en: "",
+    bodyBgImageUrl_zh: "",
+    bodyBgImageUrl_en: "",
+    backBgImageUrl_zh: "",
+    backBgImageUrl_en: "",
+    backLogoImageUrl_zh: "",
+    backLogoImageUrl_en: "",
+    mainContentHtml_zh: "",
+    mainContentHtml_en: "",
+  });
 
   const setMessage = (tone: "success" | "error", message: string) => {
     setStatusTone(tone);
@@ -71,9 +90,26 @@ export default function AdminSettingsPage() {
     }
   }, [t]);
 
+  const loadTplSettings = useCallback(async () => {
+    setIsTplLoading(true);
+    try {
+      const res = await fetch("/api/admin/invitation-template", { cache: "no-store" });
+      const payload = await res.json();
+      if (!res.ok || !payload.success) throw new Error(payload.error);
+      setTplForm(payload.data);
+      setTplStatusMessage("");
+    } catch (error) {
+      setTplStatusTone("error");
+      setTplStatusMessage(error instanceof Error ? error.message : t("invitationTemplate.loadFailed"));
+    } finally {
+      setIsTplLoading(false);
+    }
+  }, [t]);
+
   useEffect(() => {
     void loadSettings();
-  }, [loadSettings]);
+    void loadTplSettings();
+  }, [loadSettings, loadTplSettings]);
 
   const saveSettings = async () => {
     setIsSaving(true);
@@ -116,6 +152,26 @@ export default function AdminSettingsPage() {
       setMessage("error", error instanceof Error ? error.message : t("messages.saveFailed"));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const saveTplSettings = async () => {
+    setIsTplSaving(true);
+    try {
+      const res = await fetch("/api/admin/invitation-template", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(tplForm),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) throw new Error(result.error || t("invitationTemplate.saveFailed"));
+      setTplStatusTone("success");
+      setTplStatusMessage(t("invitationTemplate.saveSuccess"));
+    } catch (error) {
+      setTplStatusTone("error");
+      setTplStatusMessage(error instanceof Error ? error.message : t("invitationTemplate.saveFailed"));
+    } finally {
+      setIsTplSaving(false);
     }
   };
 
@@ -248,6 +304,104 @@ export default function AdminSettingsPage() {
                     <Trash2 className="mr-2 h-4 w-4" />
                     {t("reload")}
                   </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Invitation Template Settings */}
+        <Card className="border border-slate-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <FileImage className="h-5 w-5 text-slate-600" />
+              {t("invitationTemplate.title")}
+            </CardTitle>
+            <CardDescription>{t("invitationTemplate.description")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {tplStatusMessage && (
+              <div
+                className={`rounded-xl border px-4 py-3 text-sm ${
+                  tplStatusTone === "success"
+                    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                    : "border-rose-200 bg-rose-50 text-rose-700"
+                }`}
+              >
+                {tplStatusMessage}
+              </div>
+            )}
+            {isTplLoading ? (
+              <p className="text-sm text-slate-500">{t("invitationTemplate.loading")}</p>
+            ) : (
+              <>
+                {/* Image URL fields */}
+                {(
+                  [
+                    ["coverImageUrl", "invitationTemplate.coverImages"],
+                    ["bodyBgImageUrl", "invitationTemplate.bodyBgImages"],
+                    ["backBgImageUrl", "invitationTemplate.backBgImages"],
+                    ["backLogoImageUrl", "invitationTemplate.backLogoImages"],
+                  ] as [string, string][]
+                ).map(([fieldBase, labelKey]) => (
+                  <div key={fieldBase}>
+                    <p className="mb-2 text-sm font-medium text-slate-700">{t(labelKey)}</p>
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="mb-1 block text-xs text-slate-500">{t("invitationTemplate.zhLabel")}</label>
+                        <Input
+                          value={tplForm[`${fieldBase}_zh` as keyof typeof tplForm]}
+                          onChange={(e) => setTplForm((f) => ({ ...f, [`${fieldBase}_zh`]: e.target.value }))}
+                          placeholder="https://..."
+                          disabled={isTplSaving}
+                        />
+                      </div>
+                      <div>
+                        <label className="mb-1 block text-xs text-slate-500">{t("invitationTemplate.enLabel")}</label>
+                        <Input
+                          value={tplForm[`${fieldBase}_en` as keyof typeof tplForm]}
+                          onChange={(e) => setTplForm((f) => ({ ...f, [`${fieldBase}_en`]: e.target.value }))}
+                          placeholder="https://..."
+                          disabled={isTplSaving}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Main content HTML fields */}
+                <div>
+                  <p className="mb-1 text-sm font-medium text-slate-700">{t("invitationTemplate.mainContentHtml")}</p>
+                  <p className="mb-2 text-xs text-slate-500">{t("invitationTemplate.mainContentHtmlHint")}</p>
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1 block text-xs text-slate-500">{t("invitationTemplate.zhLabel")}</label>
+                      <Textarea
+                        value={tplForm.mainContentHtml_zh}
+                        onChange={(e) => setTplForm((f) => ({ ...f, mainContentHtml_zh: e.target.value }))}
+                        rows={8}
+                        className="font-mono text-xs"
+                        disabled={isTplSaving}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs text-slate-500">{t("invitationTemplate.enLabel")}</label>
+                      <Textarea
+                        value={tplForm.mainContentHtml_en}
+                        onChange={(e) => setTplForm((f) => ({ ...f, mainContentHtml_en: e.target.value }))}
+                        rows={8}
+                        className="font-mono text-xs"
+                        disabled={isTplSaving}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <LoadingButton onClick={saveTplSettings} loading={isTplSaving} loadingText={locale === "en" ? "Saving..." : "保存中..."}>
+                    <Save className="mr-2 h-4 w-4" />
+                    {t("invitationTemplate.save")}
+                  </LoadingButton>
                 </div>
               </>
             )}

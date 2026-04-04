@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { motion } from "framer-motion";
-import { FileText, Plus, Download, Clock, CheckCircle, XCircle, Loader2, User, Pencil } from "lucide-react";
+import { FileText, Plus, Download, Clock, CheckCircle, XCircle, Loader2, User, Pencil, Eye, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LoadingButton } from "@/components/ui/loading-button";
@@ -68,6 +68,12 @@ export default function DashboardInvitationsPage() {
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"success" | "error">("success");
   const [editingId, setEditingId] = useState<string | null>(null);
+
+  // Two-step flow: form → preview → submit
+  const [step, setStep] = useState<"form" | "preview">("form");
+  const [previewHtml, setPreviewHtml] = useState<string>("");
+  const [previewError, setPreviewError] = useState<string>("");
+  const [isPreviewing, setIsPreviewing] = useState(false);
 
   const [form, setForm] = useState({
     salutation: "",
@@ -136,6 +142,40 @@ export default function DashboardInvitationsPage() {
       notes: "",
     });
     setEditingId(null);
+    setStep("form");
+    setPreviewHtml("");
+    setPreviewError("");
+  };
+
+  const handlePreview = async () => {
+    if (!form.guestName.trim()) {
+      setPreviewError(t("form.guestNameRequired"));
+      return;
+    }
+    setPreviewError("");
+    setIsPreviewing(true);
+    try {
+      const res = await fetch("/api/invitations/preview", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          salutation: form.salutation || null,
+          guestName: form.guestName,
+          language: form.language,
+          eventId: form.eventId || null,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(t("preview.error"));
+      }
+      const html = await res.text();
+      setPreviewHtml(html);
+      setStep("preview");
+    } catch (err) {
+      setPreviewError(err instanceof Error ? err.message : t("preview.error"));
+    } finally {
+      setIsPreviewing(false);
+    }
   };
 
   const submitRequest = async () => {
@@ -202,6 +242,9 @@ export default function DashboardInvitationsPage() {
       purpose: req.purpose || "",
       notes: req.notes || "",
     });
+    setStep("form");
+    setPreviewHtml("");
+    setPreviewError("");
     setIsDialogOpen(true);
   };
 
@@ -347,95 +390,138 @@ export default function DashboardInvitationsPage() {
         </CardContent>
       </Card>
 
-      {/* Create Request Dialog */}
+      {/* Create / Edit Request Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={(open) => { setIsDialogOpen(open); if (!open) resetForm(); }}>
-        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>{editingId ? t("form.editTitle") : t("form.title")}</DialogTitle>
-            <DialogDescription>{editingId ? t("form.editDescription") : t("form.description")}</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {/* Applicant info (auto-filled from session) */}
-            {session?.user ? (
-              <div className="rounded-lg bg-slate-50 border border-slate-100 p-4 space-y-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <User className="h-4 w-4 text-emerald-600" />
-                  <span className="text-sm font-medium text-slate-700">{t("form.applicantInfo")}</span>
+        <DialogContent className={`max-h-[90vh] overflow-y-auto transition-all ${step === "preview" ? "max-w-3xl" : "max-w-lg"}`}>
+          {step === "form" ? (
+            <>
+              <DialogHeader>
+                <DialogTitle>{editingId ? t("form.editTitle") : t("form.title")}</DialogTitle>
+                <DialogDescription>{editingId ? t("form.editDescription") : t("form.description")}</DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                {/* Applicant info (auto-filled from session) */}
+                {session?.user ? (
+                  <div className="rounded-lg bg-slate-50 border border-slate-100 p-4 space-y-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <User className="h-4 w-4 text-emerald-600" />
+                      <span className="text-sm font-medium text-slate-700">{t("form.applicantInfo")}</span>
+                    </div>
+                    <p className="text-sm text-slate-600">{t("form.applicantName")}: {session.user.name}</p>
+                    <p className="text-sm text-slate-600">{t("form.applicantEmail")}: {session.user.email}</p>
+                  </div>
+                ) : null}
+                <div className="space-y-2">
+                  <Label htmlFor="salutation">{t("form.salutation")}</Label>
+                  <Select value={form.salutation || "none"} onValueChange={(v) => setForm((p) => ({ ...p, salutation: v === "none" ? "" : v }))}>
+                    <SelectTrigger id="salutation"><SelectValue placeholder={t("form.salutationPlaceholder")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("form.salutationPlaceholder")}</SelectItem>
+                      <SelectItem value="Dr.">Dr.</SelectItem>
+                      <SelectItem value="PhD">PhD</SelectItem>
+                      <SelectItem value="Mr.">Mr.</SelectItem>
+                      <SelectItem value="Ms.">Ms.</SelectItem>
+                      <SelectItem value="Mrs.">Mrs.</SelectItem>
+                      <SelectItem value="Prof.">Prof.</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <p className="text-sm text-slate-600">{t("form.applicantName")}: {session.user.name}</p>
-                <p className="text-sm text-slate-600">{t("form.applicantEmail")}: {session.user.email}</p>
+                <div className="space-y-2">
+                  <Label htmlFor="guest-name">{t("form.guestName")} *</Label>
+                  <Input id="guest-name" value={form.guestName} onChange={(e) => setForm((p) => ({ ...p, guestName: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guest-title">{t("form.guestTitle")}</Label>
+                  <Input id="guest-title" value={form.guestTitle} onChange={(e) => setForm((p) => ({ ...p, guestTitle: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guest-org">{t("form.guestOrg")}</Label>
+                  <Input id="guest-org" value={form.guestOrg} onChange={(e) => setForm((p) => ({ ...p, guestOrg: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="guest-email">{t("form.guestEmail")}</Label>
+                  <Input id="guest-email" type="email" value={form.guestEmail} onChange={(e) => setForm((p) => ({ ...p, guestEmail: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inv-language">{t("form.language")}</Label>
+                  <Select value={form.language} onValueChange={(v) => setForm((p) => ({ ...p, language: v }))}>
+                    <SelectTrigger id="inv-language"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="zh">中文</SelectItem>
+                      <SelectItem value="en">English</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inv-event">{t("form.event")}</Label>
+                  <Select value={form.eventId || "none"} onValueChange={(v) => setForm((p) => ({ ...p, eventId: v === "none" ? "" : v }))}>
+                    <SelectTrigger id="inv-event"><SelectValue placeholder={t("form.eventPlaceholder")} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{t("form.eventPlaceholder")}</SelectItem>
+                      {events.map((ev) => (
+                        <SelectItem key={ev.id} value={ev.id}>
+                          {locale === "en" ? ev.titleEn || ev.title : ev.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inv-purpose">{t("form.purpose")}</Label>
+                  <Textarea id="inv-purpose" rows={2} value={form.purpose} onChange={(e) => setForm((p) => ({ ...p, purpose: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inv-notes">{t("form.notes")}</Label>
+                  <Textarea id="inv-notes" rows={2} value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} />
+                </div>
+                {previewError ? (
+                  <p className="text-sm text-red-600">{previewError}</p>
+                ) : null}
               </div>
-            ) : null}
-            <div className="space-y-2">
-              <Label htmlFor="salutation">{t("form.salutation")}</Label>
-              <Select value={form.salutation || "none"} onValueChange={(v) => setForm((p) => ({ ...p, salutation: v === "none" ? "" : v }))}>
-                <SelectTrigger id="salutation"><SelectValue placeholder={t("form.salutationPlaceholder")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("form.salutationPlaceholder")}</SelectItem>
-                  <SelectItem value="Dr.">Dr.</SelectItem>
-                  <SelectItem value="PhD">PhD</SelectItem>
-                  <SelectItem value="Mr.">Mr.</SelectItem>
-                  <SelectItem value="Ms.">Ms.</SelectItem>
-                  <SelectItem value="Mrs.">Mrs.</SelectItem>
-                  <SelectItem value="Prof.">Prof.</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guest-name">{t("form.guestName")} *</Label>
-              <Input id="guest-name" value={form.guestName} onChange={(e) => setForm((p) => ({ ...p, guestName: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guest-title">{t("form.guestTitle")}</Label>
-              <Input id="guest-title" value={form.guestTitle} onChange={(e) => setForm((p) => ({ ...p, guestTitle: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guest-org">{t("form.guestOrg")}</Label>
-              <Input id="guest-org" value={form.guestOrg} onChange={(e) => setForm((p) => ({ ...p, guestOrg: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="guest-email">{t("form.guestEmail")}</Label>
-              <Input id="guest-email" type="email" value={form.guestEmail} onChange={(e) => setForm((p) => ({ ...p, guestEmail: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="inv-language">{t("form.language")}</Label>
-              <Select value={form.language} onValueChange={(v) => setForm((p) => ({ ...p, language: v }))}>
-                <SelectTrigger id="inv-language"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="zh">中文</SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="inv-event">{t("form.event")}</Label>
-              <Select value={form.eventId || "none"} onValueChange={(v) => setForm((p) => ({ ...p, eventId: v === "none" ? "" : v }))}>
-                <SelectTrigger id="inv-event"><SelectValue placeholder={t("form.eventPlaceholder")} /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">{t("form.eventPlaceholder")}</SelectItem>
-                  {events.map((ev) => (
-                    <SelectItem key={ev.id} value={ev.id}>
-                      {locale === "en" ? ev.titleEn || ev.title : ev.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="inv-purpose">{t("form.purpose")}</Label>
-              <Textarea id="inv-purpose" rows={2} value={form.purpose} onChange={(e) => setForm((p) => ({ ...p, purpose: e.target.value }))} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="inv-notes">{t("form.notes")}</Label>
-              <Textarea id="inv-notes" rows={2} value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} />
-            </div>
-          </div>
-          <DialogFooter className="mt-4">
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t("form.cancel")}</Button>
-            <LoadingButton className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void submitRequest()} loading={isSubmitting} loadingText={locale === "en" ? (editingId ? "Saving..." : "Submitting...") : (editingId ? "保存中..." : "提交中...")}>
-              {editingId ? t("form.saveChanges") : t("form.submit")}
-            </LoadingButton>
-          </DialogFooter>
+              <DialogFooter className="mt-4">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t("form.cancel")}</Button>
+                <LoadingButton
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                  onClick={() => void handlePreview()}
+                  loading={isPreviewing}
+                  loadingText={locale === "en" ? "Generating..." : "生成预览中..."}
+                >
+                  <Eye className="mr-2 h-4 w-4" />
+                  {t("form.preview")}
+                </LoadingButton>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <DialogHeader>
+                <DialogTitle>{t("preview.title")}</DialogTitle>
+                <DialogDescription>{t("preview.description")}</DialogDescription>
+              </DialogHeader>
+              <div className="mt-2">
+                <iframe
+                  srcDoc={previewHtml}
+                  className="w-full rounded-lg border border-slate-200"
+                  style={{ height: "60vh", minHeight: "480px" }}
+                  title="Invitation preview"
+                  sandbox="allow-same-origin"
+                />
+              </div>
+              <DialogFooter className="mt-4 flex-col gap-2 sm:flex-row">
+                <Button variant="outline" onClick={() => setStep("form")} className="w-full sm:w-auto">
+                  <ArrowLeft className="mr-2 h-4 w-4" />
+                  {t("preview.backToEdit")}
+                </Button>
+                <LoadingButton
+                  className="bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto"
+                  onClick={() => void submitRequest()}
+                  loading={isSubmitting}
+                  loadingText={locale === "en" ? "Submitting..." : "提交中..."}
+                >
+                  {t("preview.confirmSubmit")}
+                </LoadingButton>
+              </DialogFooter>
+            </>
+          )}
         </DialogContent>
       </Dialog>
     </div>

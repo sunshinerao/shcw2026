@@ -560,7 +560,13 @@
             "letterFileUrlPlaceholder": "Enter the file download link",
             "rejectReason": "Rejection reason",
             "cancel": "Cancel",
-            "save": "Save"
+            "save": "Save",
+            "generateSection": "Option 1: Generate from template",
+            "generateHint": "Automatically generate an invitation letter based on the request data and the configured template. Once generated, the user can download it.",
+            "generateBtn": "Generate & mark complete",
+            "generateSuccess": "Invitation letter generated from template. The user can now download it.",
+            "previewTemplate": "Preview rendered result",
+            "uploadSection": "Option 2: Upload file manually"
         },
         "messages": {
             "updateSuccess": "Invitation updated successfully.",
@@ -1237,7 +1243,15 @@
             "notes": "Notes",
             "cancel": "Cancel",
             "submit": "Submit Request",
-            "saveChanges": "Save Changes"
+            "saveChanges": "Save Changes",
+            "preview": "Preview Letter"
+        },
+        "preview": {
+            "title": "Preview Invitation Letter",
+            "description": "Please review the invitation letter before submitting. Your request will be reviewed by an administrator.",
+            "backToEdit": "Back to Edit",
+            "confirmSubmit": "Confirm & Submit",
+            "error": "Failed to generate preview. Please check the required fields and try again."
         },
         "messages": {
             "createSuccess": "Invitation request submitted successfully.",
@@ -2328,6 +2342,23 @@
             "loadFailed": "Failed to load system settings.",
             "saveSuccess": "System settings saved.",
             "saveFailed": "Failed to save system settings."
+        },
+        "invitationTemplate": {
+            "title": "Invitation Letter Template",
+            "description": "Configure background images for all three pages and main content HTML per language.",
+            "coverImages": "Cover image (Page 1)",
+            "bodyBgImages": "Body background (Page 2)",
+            "backBgImages": "Back cover background (Page 3)",
+            "backLogoImages": "Back cover logo (Page 3)",
+            "zhLabel": "Chinese version",
+            "enLabel": "English version",
+            "mainContentHtml": "Main content template (Page 2 mainContent)",
+            "mainContentHtmlHint": "Supports HTML tags: <p>, <strong>, <br>. Available placeholders: {eventTitle}, {guestName}, {eventDate}.",
+            "save": "Save template settings",
+            "loading": "Loading...",
+            "saveSuccess": "Invitation template settings saved.",
+            "saveFailed": "Failed to save invitation template settings.",
+            "loadFailed": "Failed to load invitation template settings."
         }
     },
     "adminSiteContent": {

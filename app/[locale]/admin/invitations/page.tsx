@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { FileText, Search, Upload, XCircle, CheckCircle, Clock, Download, Loader2 } from "lucide-react";
+import { FileText, Search, Upload, XCircle, CheckCircle, Clock, Download, Loader2, Wand2, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,7 @@ export default function AdminInvitationsPage() {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [editForm, setEditForm] = useState({
     status: "",
     letterFileUrl: "",
@@ -134,6 +135,36 @@ export default function AdminInvitationsPage() {
     } finally {
       setIsUploading(false);
       e.target.value = "";
+    }
+  };
+
+  const handleGenerateFromTemplate = async () => {
+    if (!editingRequest) return;
+    setIsGenerating(true);
+    try {
+      const renderUrl = `/api/invitations/${editingRequest.id}/render`;
+      const res = await fetch(`/api/invitations/${editingRequest.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locale,
+          status: "UPLOADED",
+          letterFileUrl: renderUrl,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t("messages.updateFailed"));
+      setRequests((prev) =>
+        prev.map((r) => (r.id === editingRequest.id ? data.data : r))
+      );
+      setEditForm((p) => ({ ...p, status: "UPLOADED", letterFileUrl: renderUrl }));
+      setStatusTone("success");
+      setStatusMessage(t("editDialog.generateSuccess"));
+    } catch (err) {
+      setStatusTone("error");
+      setStatusMessage(err instanceof Error ? err.message : t("messages.updateFailed"));
+    } finally {
+      setIsGenerating(false);
     }
   };
 
@@ -315,8 +346,39 @@ export default function AdminInvitationsPage() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {/* Option A: Generate from template */}
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-3">
+                <p className="text-sm font-medium text-emerald-800">{t("editDialog.generateSection")}</p>
+                <p className="text-xs text-emerald-700">{t("editDialog.generateHint")}</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <LoadingButton
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => void handleGenerateFromTemplate()}
+                    loading={isGenerating}
+                    loadingText={locale === "en" ? "Generating..." : "生成中..."}
+                  >
+                    <Wand2 className="mr-1.5 h-4 w-4" />
+                    {t("editDialog.generateBtn")}
+                  </LoadingButton>
+                  {editingRequest ? (
+                    <a
+                      href={`/api/invitations/${editingRequest.id}/render`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-emerald-700 underline"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      {t("editDialog.previewTemplate")}
+                    </a>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Option B: Manual file upload */}
               <div className="space-y-2">
-                <Label>{t("editDialog.uploadFile")}</Label>
+                <p className="text-sm font-medium text-slate-700">{t("editDialog.uploadSection")}</p>
                 <div className="flex items-center gap-2">
                   <label className="flex-1">
                     <input
