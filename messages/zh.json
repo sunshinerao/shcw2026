@@ -155,7 +155,10 @@
         "emptyWishlist": "暂无收藏活动。",
         "browseEvents": "去浏览活动",
         "viewPass": "查看通行证",
+        "cancelRegistration": "取消报名",
+        "cancellingRegistration": "取消中...",
         "registerNow": "立即报名",
+        "removeFromWishlist": "取消收藏",
         "badges": {
             "checkedIn": "已入场",
             "pointsEarned": "+{points} 积分"
@@ -163,7 +166,9 @@
         "messages": {
             "loadError": "获取日程失败",
             "removeSuccess": "已取消收藏",
-            "actionError": "操作失败"
+            "actionError": "操作失败",
+            "cancelSuccess": "报名已取消",
+            "cancelError": "取消报名失败"
         }
     },
     "dashboardNotificationsPage": {
@@ -1155,6 +1160,32 @@
             "exploreMore": "探索更多"
         },
         "viewAll": "查看完整赛道体系"
+    },
+    "tracksPage": {
+        "heroBadge": "主题赛道",
+        "title": "完整赛道信息列表",
+        "subtitle": "从制度设计到产业转型，再到基础设施与社会协同，浏览上海气候周全部主题赛道。",
+        "categoryHeading": "按层级浏览",
+        "cardDescription": "赛道概览",
+        "partners": "核心伙伴",
+        "eventCount": "{count} 场关联活动",
+        "viewDetail": "进入赛道详情",
+        "browseEvents": "查看全部活动",
+        "empty": "暂无可展示的赛道。"
+    },
+    "trackDetailPage": {
+        "backToTracks": "返回赛道列表",
+        "heroBadge": "赛道详情",
+        "overviewTitle": "赛道概览",
+        "partnersTitle": "联动伙伴",
+        "eventsTitle": "关联活动",
+        "eventsSubtitle": "围绕该赛道已发布的活动与议程。",
+        "eventCount": "{count} 场已发布活动",
+        "partnerCount": "{count} 家合作机构",
+        "viewEvent": "查看活动",
+        "viewTrackEvents": "查看该赛道全部活动",
+        "browseAllTracks": "浏览全部赛道",
+        "emptyEvents": "该赛道下暂未发布活动。"
     },
     "events": {
         "title": "活动日历",

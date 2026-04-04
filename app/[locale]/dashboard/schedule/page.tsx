@@ -7,12 +7,15 @@ import { Calendar, Clock, MapPin, ExternalLink, Heart, Loader2, CheckCircle } fr
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getEventDateRangeLabel, getEventTimeSummaryLabel, getEventTypeLabel, type Event } from "@/lib/data/events";
+import { LoadingButton } from "@/components/ui/loading-button";
+import { getEventDateRangeLabel, getEventTimeSummaryLabel, type Event } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
 import { toast } from "sonner";
 
 interface ScheduleEvent {
   id: string;
+  registrationId?: string;
+  wishlistId?: string;
   title: string;
   titleEn: string;
   startDate: string;
@@ -27,20 +30,13 @@ interface ScheduleEvent {
   pointsEarned?: number;
 }
 
-const typeColors: Record<string, string> = {
-  ceremony: "bg-amber-100 text-amber-700",
-  workshop: "bg-green-100 text-green-700",
-  forum: "bg-blue-100 text-blue-700",
-  conference: "bg-purple-100 text-purple-700",
-  networking: "bg-pink-100 text-pink-700",
-};
-
 export default function SchedulePage() {
   const t = useTranslations("dashboardSchedulePage");
   const locale = useLocale();
   const [registeredEvents, setRegisteredEvents] = useState<ScheduleEvent[]>([]);
   const [wishlistEvents, setWishlistEvents] = useState<ScheduleEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [mutatingEventId, setMutatingEventId] = useState<string | null>(null);
 
   // 获取用户活动数据
   const fetchSchedule = useCallback(async () => {
@@ -100,6 +96,7 @@ export default function SchedulePage() {
   // 取消收藏
   const removeFromWishlist = async (eventId: string) => {
     try {
+      setMutatingEventId(eventId);
       const response = await fetch("/api/user/registrations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -110,10 +107,37 @@ export default function SchedulePage() {
         toast.success(t("messages.removeSuccess"));
         fetchSchedule();
       } else {
-        toast.error(t("messages.actionError"));
+        const payload = await response.json().catch(() => null);
+        toast.error(payload?.error || t("messages.actionError"));
       }
     } catch (error) {
       toast.error(t("messages.actionError"));
+    } finally {
+      setMutatingEventId(null);
+    }
+  };
+
+  const cancelRegistration = async (eventId: string) => {
+    try {
+      setMutatingEventId(eventId);
+      const response = await fetch("/api/user/registrations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ locale, action: "cancel_registration", eventId }),
+      });
+
+      const payload = await response.json().catch(() => null);
+
+      if (response.ok) {
+        toast.success(payload?.message || t("messages.cancelSuccess"));
+        await fetchSchedule();
+      } else {
+        toast.error(payload?.error || t("messages.cancelError"));
+      }
+    } catch (error) {
+      toast.error(t("messages.cancelError"));
+    } finally {
+      setMutatingEventId(null);
     }
   };
 
@@ -172,6 +196,8 @@ export default function SchedulePage() {
                     isRegistered 
                     locale={locale}
                     t={t}
+                    isMutating={mutatingEventId === event.id}
+                    onCancel={() => cancelRegistration(event.id)}
                   />
                 ))}
               </div>
@@ -211,6 +237,7 @@ export default function SchedulePage() {
                     event={event} 
                     locale={locale}
                     t={t}
+                    isMutating={mutatingEventId === event.id}
                     onRemove={() => removeFromWishlist(event.id)}
                   />
                 ))}
@@ -228,10 +255,12 @@ interface EventCardProps {
   isRegistered?: boolean;
   locale: string;
   t: any;
+  isMutating?: boolean;
+  onCancel?: () => void;
   onRemove?: () => void;
 }
 
-function EventCard({ event, isRegistered, locale, t, onRemove }: EventCardProps) {
+function EventCard({ event, isRegistered, locale, t, isMutating, onCancel, onRemove }: EventCardProps) {
   const eventDate = new Date(`${String(event.startDate).slice(0, 10)}T12:00:00`);
   const monthLabel = locale === "en"
     ? eventDate.toLocaleString("en-US", { month: "short" })
@@ -250,10 +279,7 @@ function EventCard({ event, isRegistered, locale, t, onRemove }: EventCardProps)
             <h3 className="font-semibold text-slate-900">
               {locale === "en" ? event.titleEn : event.title}
             </h3>
-            <Badge className={typeColors[event.type]}>
-              {getEventTypeLabel(event.type, locale)}
-            </Badge>
-            
+
             {/* 已入场标记 */}
             {isRegistered && event.checkedIn && (
               <Badge className="bg-green-100 text-green-700">
@@ -288,11 +314,24 @@ function EventCard({ event, isRegistered, locale, t, onRemove }: EventCardProps)
       </div>
       <div className="flex items-center gap-2">
         {isRegistered ? (
-          <Link href="/dashboard/pass">
-            <Button size="sm" variant="outline">
-              {t("viewPass")}
-            </Button>
-          </Link>
+          <>
+            {!event.checkedIn && onCancel ? (
+              <LoadingButton
+                size="sm"
+                variant="outline"
+                loading={Boolean(isMutating)}
+                loadingText={t("cancellingRegistration")}
+                onClick={onCancel}
+              >
+                {t("cancelRegistration")}
+              </LoadingButton>
+            ) : null}
+            <Link href="/dashboard/pass">
+              <Button size="sm" variant="outline">
+                {t("viewPass")}
+              </Button>
+            </Link>
+          </>
         ) : (
           <>
             <Link href={`/events/${event.id}/register`}>
@@ -301,9 +340,15 @@ function EventCard({ event, isRegistered, locale, t, onRemove }: EventCardProps)
               </Button>
             </Link>
             {onRemove && (
-              <Button size="sm" variant="ghost" onClick={onRemove}>
+              <LoadingButton
+                size="sm"
+                variant="ghost"
+                loading={Boolean(isMutating)}
+                onClick={onRemove}
+                aria-label={t("removeFromWishlist")}
+              >
                 <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-              </Button>
+              </LoadingButton>
             )}
           </>
         )}

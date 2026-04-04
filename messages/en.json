@@ -155,7 +155,10 @@
         "emptyWishlist": "No saved events yet.",
         "browseEvents": "Browse events",
         "viewPass": "View pass",
+        "cancelRegistration": "Cancel registration",
+        "cancellingRegistration": "Cancelling...",
         "registerNow": "Register now",
+        "removeFromWishlist": "Remove from saved events",
         "badges": {
             "checkedIn": "Checked in",
             "pointsEarned": "+{points} points"
@@ -163,7 +166,9 @@
         "messages": {
             "loadError": "Failed to load schedule.",
             "removeSuccess": "Removed from saved events.",
-            "actionError": "Action failed."
+            "actionError": "Action failed.",
+            "cancelSuccess": "Registration cancelled.",
+            "cancelError": "Failed to cancel the registration."
         }
     },
     "dashboardNotificationsPage": {
@@ -1155,6 +1160,32 @@
             "exploreMore": "Explore more"
         },
         "viewAll": "View Full Track System"
+    },
+    "tracksPage": {
+        "heroBadge": "Theme Tracks",
+        "title": "Full Track Directory",
+        "subtitle": "Browse every Shanghai Climate Week track, from governance design and industrial transition to foundational infrastructure and social acceleration.",
+        "categoryHeading": "Browse by layer",
+        "cardDescription": "Track overview",
+        "partners": "Core partners",
+        "eventCount": "{count} linked events",
+        "viewDetail": "Open track detail",
+        "browseEvents": "Browse all events",
+        "empty": "No tracks are available right now."
+    },
+    "trackDetailPage": {
+        "backToTracks": "Back to track directory",
+        "heroBadge": "Track detail",
+        "overviewTitle": "Track overview",
+        "partnersTitle": "Partners",
+        "eventsTitle": "Related events",
+        "eventsSubtitle": "Published sessions and programs currently mapped to this track.",
+        "eventCount": "{count} published events",
+        "partnerCount": "{count} partner organizations",
+        "viewEvent": "View event",
+        "viewTrackEvents": "View all events in this track",
+        "browseAllTracks": "Browse all tracks",
+        "emptyEvents": "No published events are available for this track yet."
     },
     "events": {
         "title": "Event Calendar",

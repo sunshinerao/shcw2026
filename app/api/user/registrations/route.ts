@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { RegistrationStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
@@ -133,12 +134,13 @@ export async function GET(req: NextRequest) {
  * 
  * 请求体:
  * {
- *   action: "add_wishlist" | "remove_wishlist",
+ *   action: "add_wishlist" | "remove_wishlist" | "cancel_registration",
  *   eventId: string
  * }
  */
 export async function POST(req: NextRequest) {
   let requestLocale = resolveRequestLocale(req);
+  let action: string | undefined;
 
   try {
     const session = await getServerSession(authOptions);
@@ -153,7 +155,8 @@ export async function POST(req: NextRequest) {
     const userId = session.user.id;
     const body = await req.json();
     requestLocale = resolveRequestLocale(req, body.locale);
-    const { action, eventId } = body;
+    ({ action } = body);
+    const { eventId } = body;
 
     if (!eventId) {
       return NextResponse.json(
@@ -208,6 +211,48 @@ export async function POST(req: NextRequest) {
         success: true,
         message: apiMessage(requestLocale, "wishlistRemoveSuccess"),
       });
+    } else if (action === "cancel_registration") {
+      const existingRegistration = await prisma.registration.findUnique({
+        where: {
+          userId_eventId: {
+            userId,
+            eventId,
+          },
+        },
+        select: {
+          id: true,
+          status: true,
+        },
+      });
+
+      if (!existingRegistration || existingRegistration.status === RegistrationStatus.CANCELLED) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "registrationNotFound") },
+          { status: 404 }
+        );
+      }
+
+      if (
+        existingRegistration.status === RegistrationStatus.ATTENDED ||
+        existingRegistration.status === RegistrationStatus.REJECTED
+      ) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "registrationCannotCancel") },
+          { status: 409 }
+        );
+      }
+
+      await prisma.registration.update({
+        where: { id: existingRegistration.id },
+        data: {
+          status: RegistrationStatus.CANCELLED,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: apiMessage(requestLocale, "registrationCancelSuccess"),
+      });
     } else {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "unsupportedAction") },
@@ -217,7 +262,12 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("操作收藏失败:", error);
     return NextResponse.json(
-      { success: false, error: apiMessage(requestLocale, "wishlistOperationFailed") },
+      {
+        success: false,
+        error: action === "cancel_registration"
+          ? apiMessage(requestLocale, "registrationCancelFailed")
+          : apiMessage(requestLocale, "wishlistOperationFailed"),
+      },
       { status: 500 }
     );
   }

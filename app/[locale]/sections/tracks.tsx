@@ -16,7 +16,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 type TrackCategory = "institution" | "economy" | "foundation" | "accelerator";
 
@@ -92,7 +92,7 @@ function TrackCard({ track, index }: { track: Track; index: number }) {
 
       <div className="flex items-center justify-between pt-4 border-t border-slate-100">
         <span className="text-xs text-slate-400">{t("tracks.card.eventCount", { count: track.eventCount })}</span>
-        <Link href={`/events?track=${track.id}`} className="flex items-center text-sm font-medium text-slate-600 hover:text-emerald-600 transition-colors group/link">
+        <Link href={`/tracks/${track.id}`} className="flex items-center text-sm font-medium text-slate-600 hover:text-emerald-600 transition-colors group/link">
           {t("tracks.card.exploreMore")}
           <ChevronRight className="w-4 h-4 transition-transform group-hover/link:translate-x-0.5" />
         </Link>
@@ -209,7 +209,7 @@ export function TracksSection() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="text-center mt-8"
         >
-          <Link href="/events">
+          <Link href="/tracks">
             <Button
               variant="outline"
               size="lg"

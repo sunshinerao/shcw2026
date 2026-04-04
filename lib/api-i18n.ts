@@ -431,6 +431,22 @@ const apiMessages = {
     zh: "活动报名失败",
     en: "Failed to register for the event.",
   },
+  registrationNotFound: {
+    zh: "未找到对应的报名记录",
+    en: "The registration record could not be found.",
+  },
+  registrationCannotCancel: {
+    zh: "当前报名状态不支持取消",
+    en: "This registration can no longer be cancelled.",
+  },
+  registrationCancelSuccess: {
+    zh: "报名已取消",
+    en: "Registration cancelled successfully.",
+  },
+  registrationCancelFailed: {
+    zh: "取消报名失败",
+    en: "Failed to cancel the registration.",
+  },
   qrMissingEventId: {
     zh: "缺少活动ID",
     en: "Missing event ID.",
