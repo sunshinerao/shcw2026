@@ -251,15 +251,20 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
       z-index: 2;
     }
 
+    /* Single sig with image: image sits at top, text shifted down by image height */
     .inside-en .v-sig-image-single {
       position: absolute;
       right: 294px;
       top: 2816px;
       max-width: 400px;
-      max-height: 280px;
+      max-height: 200px;
       object-fit: contain;
       display: block;
-      z-index: 2;
+      z-index: 3;
+    }
+
+    .inside-en .v-sig-image-single ~ .v-invitation-sender {
+      top: 3040px;
     }
 
     /* Dual sig */
@@ -546,53 +551,7 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
       z-index: 2;
     }
 
-    /* EN single-sig with image ----------------------------------------- */
-    .inside .v-sig-image-single {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      top: 2860px;
-      max-width: 530px;
-      max-height: 280px;
-      object-fit: contain;
-      display: block;
-      z-index: 2;
-    }
-
-    /* EN dual-sig layout ------------------------------------------------ */
-    .inside .v-sig-left,
-    .inside .v-sig-right {
-      position: absolute;
-      top: 2816px;
-      width: 700px;
-      z-index: 2;
-    }
-
-    .inside .v-sig-left  { left: 310px; }
-    .inside .v-sig-right { right: 310px; text-align: right; }
-
-    .inside .v-sig-left img,
-    .inside .v-sig-right img {
-      max-width: 530px;
-      max-height: 280px;
-      object-fit: contain;
-      display: block;
-      margin-bottom: 24px;
-    }
-
-    .inside .v-sig-right img {
-      margin-left: auto;
-    }
-
-    .inside .v-sig-left .v-sender,
-    .inside .v-sig-right .v-sender {
-      font-family: ${bodyFont};
-      font-size: ${bodyTextFontSize}px;
-      line-height: ${bodyTextLineHeight}px;
-      color: var(--text-main);
-      white-space: nowrap;
-      margin-top: 24px;
-    }
+    /* (EN single-sig and dual-sig use .inside-en classes; no sig rules needed here) */
 
     .inside .v-footer-notes,
     .inside .v-footer-confirm-webaddress {
