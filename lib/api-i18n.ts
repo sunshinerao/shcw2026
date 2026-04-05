@@ -710,6 +710,10 @@ const apiMessages = {
     zh: "操作失败",
     en: "Failed to process registration action.",
   },
+  internalServerError: {
+    zh: "服务器内部错误",
+    en: "Internal server error.",
+  },
 } as const;
 
 type ApiMessageKey = keyof typeof apiMessages;
