@@ -295,6 +295,8 @@ export async function PUT(
       isClosed,
       eventDateSlots,
       managerUserId,
+      invitationContentHtml_zh,
+      invitationContentHtml_en,
     } = body;
 
     if (title !== undefined && !title) {
@@ -493,6 +495,12 @@ export async function PUT(
         ...(canEditRestrictedEventFields && isPinned !== undefined && { isPinned: Boolean(isPinned) }),
         ...(requireApproval !== undefined && { requireApproval: Boolean(requireApproval) }),
         ...(isClosed !== undefined && { isClosed: Boolean(isClosed) }),
+        ...(invitationContentHtml_zh !== undefined && {
+          invitationContentHtml_zh: invitationContentHtml_zh || null,
+        }),
+        ...(invitationContentHtml_en !== undefined && {
+          invitationContentHtml_en: invitationContentHtml_en || null,
+        }),
         eventDateSlots: {
           deleteMany: {},
           create: normalizedEventDateSlots,

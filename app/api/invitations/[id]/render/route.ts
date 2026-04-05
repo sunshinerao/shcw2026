@@ -56,6 +56,8 @@ export async function GET(
             venueEn: true,
             startTime: true,
             endTime: true,
+            invitationContentHtml_zh: true,
+            invitationContentHtml_en: true,
           },
         },
       },
@@ -123,14 +125,33 @@ export async function GET(
       : baseUrl;
     const qrCodeDataUrl = await generateQrCodeDataUrl(footerUrl);
 
-    const rawMainContent =
-      lang === "en" ? settings.mainContentHtml_en : settings.mainContentHtml_zh;
+    // Priority: user custom content > per-event content > global settings
+    const perEventContent = lang === "en"
+      ? (event?.invitationContentHtml_en || "")
+      : (event?.invitationContentHtml_zh || "");
+    const globalContent = lang === "en" ? settings.mainContentHtml_en : settings.mainContentHtml_zh;
 
-    const mainContentHtml = applyMainContentPlaceholders(rawMainContent, {
-      eventTitle,
-      guestName: invitation.guestName.trim(),
-      eventDate: eventDateStr,
-    });
+    let mainContentHtml: string;
+    if (invitation.customMainContent?.trim()) {
+      // User-entered plain text: wrap in <p> tags
+      mainContentHtml = invitation.customMainContent
+        .trim()
+        .split(/\n\n+/)
+        .map((para) => `<p>${para.replace(/\n/g, "<br />")}</p>`)
+        .join("\n");
+    } else if (perEventContent) {
+      mainContentHtml = applyMainContentPlaceholders(perEventContent, {
+        eventTitle,
+        guestName: invitation.guestName.trim(),
+        eventDate: eventDateStr,
+      });
+    } else {
+      mainContentHtml = applyMainContentPlaceholders(globalContent, {
+        eventTitle,
+        guestName: invitation.guestName.trim(),
+        eventDate: eventDateStr,
+      });
+    }
 
     const html = renderInvitationHtml({
       language: lang,
@@ -148,8 +169,6 @@ export async function GET(
         lang === "en" ? settings.bodyBgImageUrl_en : settings.bodyBgImageUrl_zh,
       backBgImageUrl:
         lang === "en" ? settings.backBgImageUrl_en : settings.backBgImageUrl_zh,
-      backLogoImageUrl:
-        lang === "en" ? settings.backLogoImageUrl_en : settings.backLogoImageUrl_zh,
     });
 
     return new NextResponse(html, {

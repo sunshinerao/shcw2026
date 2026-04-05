@@ -10,8 +10,6 @@ export type InvitationTemplateSettings = {
   bodyBgImageUrl_en: string;
   backBgImageUrl_zh: string;
   backBgImageUrl_en: string;
-  backLogoImageUrl_zh: string;
-  backLogoImageUrl_en: string;
   mainContentHtml_zh: string;
   mainContentHtml_en: string;
 };
@@ -23,8 +21,6 @@ const DEFAULTS: InvitationTemplateSettings = {
   bodyBgImageUrl_en: "",
   backBgImageUrl_zh: "",
   backBgImageUrl_en: "",
-  backLogoImageUrl_zh: "",
-  backLogoImageUrl_en: "",
   mainContentHtml_zh: "",
   mainContentHtml_en: "",
 };
@@ -41,8 +37,6 @@ function normalizeSettings(raw: unknown): InvitationTemplateSettings {
     bodyBgImageUrl_en: typeof r.bodyBgImageUrl_en === "string" ? r.bodyBgImageUrl_en : "",
     backBgImageUrl_zh: typeof r.backBgImageUrl_zh === "string" ? r.backBgImageUrl_zh : "",
     backBgImageUrl_en: typeof r.backBgImageUrl_en === "string" ? r.backBgImageUrl_en : "",
-    backLogoImageUrl_zh: typeof r.backLogoImageUrl_zh === "string" ? r.backLogoImageUrl_zh : "",
-    backLogoImageUrl_en: typeof r.backLogoImageUrl_en === "string" ? r.backLogoImageUrl_en : "",
     mainContentHtml_zh: typeof r.mainContentHtml_zh === "string" ? r.mainContentHtml_zh : "",
     mainContentHtml_en: typeof r.mainContentHtml_en === "string" ? r.mainContentHtml_en : "",
   };

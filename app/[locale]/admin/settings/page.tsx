@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
-import { KeyRound, Loader2, Save, Sparkles, Trash2, FileImage } from "lucide-react";
+import { KeyRound, Loader2, Save, Sparkles, Trash2, FileImage, Upload } from "lucide-react";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,8 +53,6 @@ export default function AdminSettingsPage() {
     bodyBgImageUrl_en: "",
     backBgImageUrl_zh: "",
     backBgImageUrl_en: "",
-    backLogoImageUrl_zh: "",
-    backLogoImageUrl_en: "",
     mainContentHtml_zh: "",
     mainContentHtml_en: "",
   });
@@ -173,6 +171,16 @@ export default function AdminSettingsPage() {
     } finally {
       setIsTplSaving(false);
     }
+  };
+
+  const uploadTplImage = async (fieldKey: string, file: File) => {
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("category", "invitation_template");
+    const res = await fetch("/api/upload/image", { method: "POST", body: fd });
+    const result = await res.json();
+    if (!res.ok || !result.success) throw new Error(result.error || "Upload failed");
+    setTplForm((f) => ({ ...f, [fieldKey]: result.data.url as string }));
   };
 
   return (
@@ -335,36 +343,67 @@ export default function AdminSettingsPage() {
               <p className="text-sm text-slate-500">{t("invitationTemplate.loading")}</p>
             ) : (
               <>
-                {/* Image URL fields */}
+                {/* Image upload fields */}
                 {(
                   [
                     ["coverImageUrl", "invitationTemplate.coverImages"],
                     ["bodyBgImageUrl", "invitationTemplate.bodyBgImages"],
                     ["backBgImageUrl", "invitationTemplate.backBgImages"],
-                    ["backLogoImageUrl", "invitationTemplate.backLogoImages"],
                   ] as [string, string][]
                 ).map(([fieldBase, labelKey]) => (
                   <div key={fieldBase}>
                     <p className="mb-2 text-sm font-medium text-slate-700">{t(labelKey)}</p>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                      <div>
-                        <label className="mb-1 block text-xs text-slate-500">{t("invitationTemplate.zhLabel")}</label>
-                        <Input
-                          value={tplForm[`${fieldBase}_zh` as keyof typeof tplForm]}
-                          onChange={(e) => setTplForm((f) => ({ ...f, [`${fieldBase}_zh`]: e.target.value }))}
-                          placeholder="https://..."
-                          disabled={isTplSaving}
-                        />
-                      </div>
-                      <div>
-                        <label className="mb-1 block text-xs text-slate-500">{t("invitationTemplate.enLabel")}</label>
-                        <Input
-                          value={tplForm[`${fieldBase}_en` as keyof typeof tplForm]}
-                          onChange={(e) => setTplForm((f) => ({ ...f, [`${fieldBase}_en`]: e.target.value }))}
-                          placeholder="https://..."
-                          disabled={isTplSaving}
-                        />
-                      </div>
+                      {(["zh", "en"] as const).map((lang) => {
+                        const fieldKey = `${fieldBase}_${lang}`;
+                        const currentUrl = tplForm[fieldKey as keyof typeof tplForm];
+                        return (
+                          <div key={lang}>
+                            <label className="mb-1 block text-xs text-slate-500">
+                              {lang === "zh" ? t("invitationTemplate.zhLabel") : t("invitationTemplate.enLabel")}
+                            </label>
+                            <div className="flex items-center gap-2">
+                              {currentUrl && (
+                                <img
+                                  src={currentUrl}
+                                  alt=""
+                                  className="h-12 w-12 rounded border border-slate-200 object-cover flex-shrink-0"
+                                />
+                              )}
+                              <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50">
+                                <Upload className="h-3.5 w-3.5" />
+                                {currentUrl ? t("invitationTemplate.reupload") : t("invitationTemplate.upload")}
+                                <input
+                                  type="file"
+                                  accept="image/png,image/jpeg,image/webp"
+                                  className="sr-only"
+                                  disabled={isTplSaving}
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    try {
+                                      await uploadTplImage(fieldKey, file);
+                                    } catch (err) {
+                                      setTplStatusTone("error");
+                                      setTplStatusMessage(err instanceof Error ? err.message : t("invitationTemplate.uploadFailed"));
+                                    }
+                                    e.target.value = "";
+                                  }}
+                                />
+                              </label>
+                              {currentUrl && (
+                                <button
+                                  type="button"
+                                  className="text-xs text-slate-400 hover:text-rose-500"
+                                  onClick={() => setTplForm((f) => ({ ...f, [fieldKey]: "" }))}
+                                >
+                                  {t("invitationTemplate.remove")}
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 ))}

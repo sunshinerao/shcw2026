@@ -15,7 +15,6 @@ export type InvitationRenderData = {
   coverImageUrl: string;
   bodyBgImageUrl: string;
   backBgImageUrl: string;
-  backLogoImageUrl: string;
 };
 
 const FIXED_TEXT = {
@@ -35,7 +34,6 @@ const FIXED_TEXT = {
     coverAlt: "邀请函封面",
     bgAlt: "正文页背景",
     backBgAlt: "邀请函封底背景",
-    backLogoAlt: "SHCW 白色 LOGO",
     qrAlt: "二维码",
     printTip: '<strong>打印为 PDF：</strong>按 <strong>Ctrl+P / Cmd+P</strong> → 边距选<strong>无 (None)</strong> → 取消勾选<strong>页眉和页脚 (Headers and Footers)</strong> → 另存为 PDF。',
   },
@@ -55,7 +53,6 @@ const FIXED_TEXT = {
     coverAlt: "Invitation cover",
     bgAlt: "Page background",
     backBgAlt: "Invitation back cover background",
-    backLogoAlt: "SHCW white logo",
     qrAlt: "QR code",
     printTip: '<strong>Print to PDF:</strong> Press <strong>Ctrl+P / Cmd+P</strong> → set margins to <strong>None</strong> → uncheck <strong>Headers and Footers</strong> → Save as PDF.',
   },
@@ -124,9 +121,6 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
     : "";
   const backBgSection = data.backBgImageUrl
     ? `<img class="bg-full" src="${escHtml(data.backBgImageUrl)}" alt="${escHtml(t.backBgAlt)}" />`
-    : "";
-  const backLogoSection = data.backLogoImageUrl
-    ? `<img class="back-logo" src="${escHtml(data.backLogoImageUrl)}" alt="${escHtml(t.backLogoAlt)}" />`
     : "";
   const qrSection = data.qrCodeDataUrl
     ? `<img class="qr" src="${data.qrCodeDataUrl}" alt="${escHtml(t.qrAlt)}" />`
@@ -486,7 +480,6 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
     <!-- Page 3: Back cover -->
     <section class="page back scaled">
       ${backBgSection}
-      ${backLogoSection}
       <div class="back-info-cn">${escHtml(t.backInfoCn)}</div>
       <div class="back-info-en">${escHtml(t.backInfoEn)}</div>
       <div class="back-link">${escHtml(t.backLink)}</div>

@@ -85,6 +85,7 @@ export default function DashboardInvitationsPage() {
     eventId: "",
     purpose: "",
     notes: "",
+    customMainContent: "",
   });
 
   useEffect(() => {
@@ -140,6 +141,7 @@ export default function DashboardInvitationsPage() {
       eventId: "",
       purpose: "",
       notes: "",
+      customMainContent: "",
     });
     setEditingId(null);
     setStep("form");
@@ -163,6 +165,7 @@ export default function DashboardInvitationsPage() {
           guestName: form.guestName,
           language: form.language,
           eventId: form.eventId || null,
+          customMainContent: form.customMainContent || null,
         }),
       });
       if (!res.ok) {
@@ -198,6 +201,7 @@ export default function DashboardInvitationsPage() {
         eventId: form.eventId || null,
         purpose: form.purpose || null,
         notes: form.notes || null,
+        customMainContent: form.customMainContent || null,
       };
 
       const isEditing = !!editingId;
@@ -241,6 +245,7 @@ export default function DashboardInvitationsPage() {
       eventId: req.eventId || "",
       purpose: req.purpose || "",
       notes: req.notes || "",
+      customMainContent: (req as unknown as Record<string, unknown>).customMainContent as string || "",
     });
     setStep("form");
     setPreviewHtml("");
@@ -473,6 +478,17 @@ export default function DashboardInvitationsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="inv-notes">{t("form.notes")}</Label>
                   <Textarea id="inv-notes" rows={2} value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="inv-custom-content">{t("form.customMainContent")}</Label>
+                  <p className="text-xs text-slate-500">{t("form.customMainContentHint")}</p>
+                  <Textarea
+                    id="inv-custom-content"
+                    rows={5}
+                    value={form.customMainContent}
+                    onChange={(e) => setForm((p) => ({ ...p, customMainContent: e.target.value }))}
+                    placeholder={t("form.customMainContentPlaceholder")}
+                  />
                 </div>
                 {previewError ? (
                   <p className="text-sm text-red-600">{previewError}</p>

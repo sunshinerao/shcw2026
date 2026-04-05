@@ -133,6 +133,8 @@ type EventFormState = {
   eventDateSlots: EventDateSlotForm[];
   managerUserId: string;
   partners: string[];
+  invitationContentHtml_zh: string;
+  invitationContentHtml_en: string;
 };
 
 type ManagerOption = {
@@ -219,6 +221,8 @@ const initialFormState: EventFormState = {
   eventDateSlots: [],
   managerUserId: "",
   partners: [],
+  invitationContentHtml_zh: "",
+  invitationContentHtml_en: "",
 };
 
 export default function AdminEventsPage() {
@@ -490,6 +494,8 @@ export default function AdminEventsPage() {
       eventDateSlots: normalizedEventDateSlots,
       managerUserId: event.managerUserId || "",
       partners: Array.isArray(event.partners) ? event.partners : [],
+      invitationContentHtml_zh: (event as unknown as Record<string, unknown>).invitationContentHtml_zh as string || "",
+      invitationContentHtml_en: (event as unknown as Record<string, unknown>).invitationContentHtml_en as string || "",
     });
     setSponsorSearch("");
     setIsFormDialogOpen(true);
@@ -631,6 +637,8 @@ export default function AdminEventsPage() {
         ...(canEditRestrictedEventFields ? { isPinned: formState.isPinned } : {}),
         requireApproval: formState.requireApproval,
         isClosed: formState.isClosed,
+        invitationContentHtml_zh: formState.invitationContentHtml_zh || null,
+        invitationContentHtml_en: formState.invitationContentHtml_en || null,
         ...(currentUserRole === "ADMIN"
           ? { managerUserId: formState.managerUserId || null }
           : {}),
@@ -1241,6 +1249,40 @@ export default function AdminEventsPage() {
                 </div>
               </>
             ) : null}
+
+            {/* Per-event invitation content override */}
+            <div className="border-t pt-4 md:col-span-2">
+              <p className="mb-1 text-sm font-medium text-slate-700">
+                {locale === "en" ? "Invitation letter body content (this event)" : "邀请函正文内容（本活动独立设置）"}
+              </p>
+              <p className="mb-3 text-xs text-slate-500">
+                {locale === "en"
+                  ? "Optional. Overrides the global template for this event. Supports HTML: <p>, <strong>, <br>. Placeholders: {eventTitle}, {guestName}, {eventDate}."
+                  : "可选。覆盖系统通用模板，仅对本活动生效。支持 HTML：<p>、<strong>、<br>。占位符：{eventTitle}、{guestName}、{eventDate}。"}
+              </p>
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs text-slate-500">{locale === "en" ? "Chinese version" : "中文版"}</label>
+                  <Textarea
+                    value={formState.invitationContentHtml_zh}
+                    onChange={(e) => setFormState((prev) => ({ ...prev, invitationContentHtml_zh: e.target.value }))}
+                    rows={6}
+                    className="font-mono text-xs"
+                    placeholder={locale === "en" ? "Leave empty to use global template" : "留空则使用系统通用模板"}
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs text-slate-500">{locale === "en" ? "English version" : "英文版"}</label>
+                  <Textarea
+                    value={formState.invitationContentHtml_en}
+                    onChange={(e) => setFormState((prev) => ({ ...prev, invitationContentHtml_en: e.target.value }))}
+                    rows={6}
+                    className="font-mono text-xs"
+                    placeholder={locale === "en" ? "Leave empty to use global template" : "留空则使用系统通用模板"}
+                  />
+                </div>
+              </div>
+            </div>
           </div>
           <DialogFooter className="mt-6">
             <Button variant="outline" onClick={() => setIsFormDialogOpen(false)}>{t("common.cancel")}</Button>

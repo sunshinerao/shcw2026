@@ -282,6 +282,10 @@ model Event {
   pointTransactions PointTransaction[]
   invitationRequests InvitationRequest[]
   
+  // 邀请函独立正文内容（可选，覆盖全局模板设置）
+  invitationContentHtml_zh String?  @db.Text
+  invitationContentHtml_en String?  @db.Text
+
   // 限制
   maxAttendees  Int?     // 人数限制
   requireApproval Boolean @default(false) // 报名是否需要管理员审批
@@ -626,6 +630,7 @@ model InvitationRequest {
   // 参会说明
   purpose         String?          @db.Text // 参会目的或说明
   notes           String?          @db.Text // 备注
+  customMainContent String?        @db.Text // 用户自定义邀请函正文（纯文本，优先级最高）
   
   // 状态与文件
   status          InvitationStatus @default(PENDING)

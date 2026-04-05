@@ -1244,7 +1244,10 @@
             "cancel": "取消",
             "submit": "提交申请",
             "saveChanges": "保存修改",
-            "preview": "预览邀请函"
+            "preview": "预览邀请函",
+            "customMainContent": "自定义正文内容（可选）",
+            "customMainContentHint": "输入后将覆盖活动或系统通用模板正文。如不填写，将使用活动独立正文或系统通用模板。",
+            "customMainContentPlaceholder": "请输入您希望在邀请函正文中呈现的内容..."
         },
         "preview": {
             "title": "预览邀请函",
@@ -2351,9 +2354,12 @@
             "coverImages": "封面图片（第1页）",
             "bodyBgImages": "正文背景（第2页）",
             "backBgImages": "封底背景（第3页）",
-            "backLogoImages": "封底 LOGO（第3页）",
             "zhLabel": "中文版",
             "enLabel": "英文版",
+            "upload": "上传图片",
+            "reupload": "重新上传",
+            "remove": "移除",
+            "uploadFailed": "图片上传失败，请重试。",
             "mainContentHtml": "正文内容模板（第2页 mainContent）",
             "mainContentHtmlHint": "支持 HTML 标签：<p>、<strong>、<br>。可用变量：{eventTitle} 活动标题、{guestName} 嘉宾姓名、{eventDate} 活动日期。",
             "save": "保存模板设置",

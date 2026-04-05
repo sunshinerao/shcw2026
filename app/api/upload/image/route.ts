@@ -11,7 +11,7 @@ const ALLOWED_TYPES = new Set([
   "image/webp",
 ]);
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_CATEGORIES = new Set(["speakers", "sponsors", "news"]);
+const ALLOWED_CATEGORIES = new Set(["speakers", "sponsors", "news", "invitation_template"]);
 
 /**
  * POST /api/upload/image
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
 
     if (!category || !ALLOWED_CATEGORIES.has(category)) {
       return NextResponse.json(
-        { success: false, error: "Invalid category. Must be 'speakers' or 'sponsors'." },
+        { success: false, error: "Invalid category." },
         { status: 400 }
       );
     }

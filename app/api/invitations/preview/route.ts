@@ -33,9 +33,10 @@ export async function POST(req: NextRequest) {
       guestName?: string;
       language?: string;
       eventId?: string;
+      customMainContent?: string;
     };
 
-    const { salutation, guestName, language, eventId } = body;
+    const { salutation, guestName, language, eventId, customMainContent } = body;
 
     if (!guestName?.trim()) {
       return NextResponse.json(
@@ -55,6 +56,8 @@ export async function POST(req: NextRequest) {
       venueEn: string | null;
       startTime: string;
       endTime: string;
+      invitationContentHtml_zh: string | null;
+      invitationContentHtml_en: string | null;
     };
 
     let event: EventRow | null = null;
@@ -70,6 +73,8 @@ export async function POST(req: NextRequest) {
           venueEn: true,
           startTime: true,
           endTime: true,
+          invitationContentHtml_zh: true,
+          invitationContentHtml_en: true,
         },
       });
     }
@@ -122,14 +127,33 @@ export async function POST(req: NextRequest) {
 
     const qrCodeDataUrl = await generateQrCodeDataUrl(footerUrl);
 
-    const rawMainContent =
-      lang === "en" ? settings.mainContentHtml_en : settings.mainContentHtml_zh;
+    // Priority: user custom content > per-event content > global settings
+    const perEventContent = lang === "en"
+      ? (event?.invitationContentHtml_en || "")
+      : (event?.invitationContentHtml_zh || "");
+    const globalContent = lang === "en" ? settings.mainContentHtml_en : settings.mainContentHtml_zh;
 
-    const mainContentHtml = applyMainContentPlaceholders(rawMainContent, {
-      eventTitle,
-      guestName: guestName.trim(),
-      eventDate: eventDateStr,
-    });
+    let rawMainContent: string;
+    if (customMainContent?.trim()) {
+      // User-entered plain text: wrap in <p> tags (line breaks → separate paragraphs)
+      rawMainContent = customMainContent
+        .trim()
+        .split(/\n\n+/)
+        .map((para) => `<p>${para.replace(/\n/g, "<br />")}</p>`)
+        .join("\n");
+    } else if (perEventContent) {
+      rawMainContent = perEventContent;
+    } else {
+      rawMainContent = globalContent;
+    }
+
+    const mainContentHtml = customMainContent?.trim()
+      ? rawMainContent // already processed user plain text, no placeholder replacement needed
+      : applyMainContentPlaceholders(rawMainContent, {
+          eventTitle,
+          guestName: guestName.trim(),
+          eventDate: eventDateStr,
+        });
 
     const html = renderInvitationHtml({
       language: lang,
@@ -147,8 +171,6 @@ export async function POST(req: NextRequest) {
         lang === "en" ? settings.bodyBgImageUrl_en : settings.bodyBgImageUrl_zh,
       backBgImageUrl:
         lang === "en" ? settings.backBgImageUrl_en : settings.backBgImageUrl_zh,
-      backLogoImageUrl:
-        lang === "en" ? settings.backLogoImageUrl_en : settings.backLogoImageUrl_zh,
     });
 
     return new NextResponse(html, {

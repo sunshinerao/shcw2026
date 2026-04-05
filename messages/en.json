@@ -1244,7 +1244,10 @@
             "cancel": "Cancel",
             "submit": "Submit Request",
             "saveChanges": "Save Changes",
-            "preview": "Preview Letter"
+            "preview": "Preview Letter",
+            "customMainContent": "Custom body content (optional)",
+            "customMainContentHint": "If provided, this will override the event or system default template content.",
+            "customMainContentPlaceholder": "Enter the content you would like to appear in the invitation letter body..."
         },
         "preview": {
             "title": "Preview Invitation Letter",
@@ -2349,9 +2352,12 @@
             "coverImages": "Cover image (Page 1)",
             "bodyBgImages": "Body background (Page 2)",
             "backBgImages": "Back cover background (Page 3)",
-            "backLogoImages": "Back cover logo (Page 3)",
             "zhLabel": "Chinese version",
             "enLabel": "English version",
+            "upload": "Upload image",
+            "reupload": "Re-upload",
+            "remove": "Remove",
+            "uploadFailed": "Image upload failed. Please try again.",
             "mainContentHtml": "Main content template (Page 2 mainContent)",
             "mainContentHtmlHint": "Supports HTML tags: <p>, <strong>, <br>. Available placeholders: {eventTitle}, {guestName}, {eventDate}.",
             "save": "Save template settings",
