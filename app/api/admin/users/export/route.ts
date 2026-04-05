@@ -80,12 +80,18 @@ export async function GET(req: NextRequest) {
       SUSPENDED: { zh: "已禁用", en: "Suspended" },
     };
 
+    const dateFormatOptions: Intl.DateTimeFormatOptions = {
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", second: "2-digit",
+      hour12: false,
+    };
+
     const rows = users.map((user) => {
       const roleLabel = roleLabels[user.role]?.[requestLocale] ?? user.role;
       const statusLabel = statusLabels[user.status]?.[requestLocale] ?? user.status;
       const registeredAt = user.createdAt.toLocaleString(
         requestLocale === "zh" ? "zh-CN" : "en-US",
-        { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }
+        dateFormatOptions
       );
 
       if (requestLocale === "zh") {
