@@ -94,7 +94,10 @@ export const authOptions: NextAuthOptions = {
             id: user.id,
             email: user.email,
             name: user.name,
-            image: user.avatar,
+            // Intentionally omit `image`/`avatar`: NextAuth automatically copies
+            // `user.image` → token.picture in its built-in JWT handling. Avatars
+            // are stored as base64 data URLs which bloat the cookie past Vercel's
+            // 8 KB header limit (494 REQUEST_HEADER_TOO_LARGE).
             role: user.role,
             passCode: user.passCode,
           };
@@ -122,6 +125,9 @@ export const authOptions: NextAuthOptions = {
         // avatars are base64 data URLs that would bloat the cookie
         // past Vercel's 8 KB header limit (494 REQUEST_HEADER_TOO_LARGE).
       }
+      // Always clear picture from the token, including on existing sessions
+      // that may have been issued before this fix.
+      token.picture = undefined;
 
       if (trigger === "update" && session) {
         if (session.name !== undefined) {
