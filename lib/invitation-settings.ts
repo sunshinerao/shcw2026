@@ -22,6 +22,7 @@ export type InvitationTemplateSettings = {
   eventTimeTemplate_en: string;
   eventVenueTemplate_zh: string;
   eventVenueTemplate_en: string;
+  eventLanguageTemplate_en: string;
   closingText_zh: string;
   closingText_en: string;
   greetingText_zh: string;
@@ -55,6 +56,7 @@ const DEFAULTS: InvitationTemplateSettings = {
   eventTimeTemplate_en: "Time: {eventTime}",
   eventVenueTemplate_zh: "地点：{eventVenue}",
   eventVenueTemplate_en: "Venue: {eventVenue}",
+  eventLanguageTemplate_en: "Language: {eventLanguage}",
   closingText_zh: "谨此诚邀，期待您的莅临。",
   closingText_en: "We sincerely look forward to your presence.",
   greetingText_zh: "致以问候，",
@@ -107,6 +109,7 @@ function normalizeSettings(raw: unknown): InvitationTemplateSettings {
     eventTimeTemplate_en: valueOf("eventTimeTemplate_en"),
     eventVenueTemplate_zh: valueOf("eventVenueTemplate_zh"),
     eventVenueTemplate_en: valueOf("eventVenueTemplate_en"),
+    eventLanguageTemplate_en: valueOf("eventLanguageTemplate_en"),
     closingText_zh: valueOf("closingText_zh"),
     closingText_en: valueOf("closingText_en"),
     greetingText_zh: valueOf("greetingText_zh"),

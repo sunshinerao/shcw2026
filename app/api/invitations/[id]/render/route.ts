@@ -137,6 +137,7 @@ export async function GET(
         eventDate: eventDateStr,
         eventTime: timeStr,
         eventVenue: eventVenueRaw,
+        eventLanguage: req.nextUrl.searchParams.get("eventLanguage") || undefined,
         eventUrl: footerUrl,
       },
       eventBodyTemplate:
@@ -175,6 +176,7 @@ export async function GET(
       backBgImageUrl:
         lang === "en" ? settings.backBgImageUrl_en : settings.backBgImageUrl_zh,
       signaturePreset,
+      eventLanguageText: resolved.eventLanguageText,
     });
 
     return new NextResponse(html, {

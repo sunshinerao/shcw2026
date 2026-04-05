@@ -44,9 +44,11 @@ export async function POST(req: NextRequest) {
       customMainContent?: string;
       /** EN only: signature preset id to use for this preview */
       signaturePresetId?: string;
+      /** EN only: language line text, e.g. "English and Chinese" */
+      eventLanguage?: string;
     };
 
-    const { salutation, guestName, guestTitle, guestOrg, language, eventId, customMainContent, signaturePresetId } = body;
+    const { salutation, guestName, guestTitle, guestOrg, language, eventId, customMainContent, signaturePresetId, eventLanguage } = body;
 
     if (!guestName?.trim()) {
       return NextResponse.json(
@@ -160,6 +162,7 @@ export async function POST(req: NextRequest) {
         eventDate: eventDateStr,
         eventTime: timeStr,
         eventVenue: eventVenueRaw,
+        eventLanguage: eventLanguage || undefined,
         eventUrl: footerUrl,
       },
       eventBodyTemplate:
@@ -196,6 +199,7 @@ export async function POST(req: NextRequest) {
       backBgImageUrl:
         lang === "en" ? settings.backBgImageUrl_en : settings.backBgImageUrl_zh,
       signaturePreset,
+      eventLanguageText: resolved.eventLanguageText,
     });
 
     return new NextResponse(html, {

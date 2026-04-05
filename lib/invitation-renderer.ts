@@ -26,6 +26,8 @@ export type InvitationRenderData = {
    * appropriate single‑ or dual‑signatory CSS layout.
    */
   signaturePreset?: SignaturePreset | null;
+  /** EN-only: language line text, e.g. "Language: English and Chinese" */
+  eventLanguageText?: string;
 };
 
 const FIXED_TEXT = {
@@ -110,21 +112,241 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
     }
     // dual — B on the left, A on the right (per reference template)
     const sigBImg = preset.signatoryBImageUrl
-      ? `<img src="${escHtml(preset.signatoryBImageUrl)}" alt="" />`
+      ? `<img class="v-signed-b-en" src="${escHtml(preset.signatoryBImageUrl)}" alt="" />`
       : "";
     const sigAImg = preset.signatoryAImageUrl
-      ? `<img src="${escHtml(preset.signatoryAImageUrl)}" alt="" />`
+      ? `<img class="v-signed-a-en" src="${escHtml(preset.signatoryAImageUrl)}" alt="" />`
       : "";
     return `
-      <div class="v-sig-left">
-        ${sigBImg}
-        <div class="v-sender">${preset.signatoryBHtml ?? ""}</div>
-      </div>
-      <div class="v-sig-right">
-        ${sigAImg}
-        <div class="v-sender">${preset.signatoryAHtml ?? ""}</div>
-      </div>`;
+      ${sigBImg}
+      <div class="v-sender-b-en">${preset.signatoryBHtml ?? ""}</div>
+      ${sigAImg}
+      <div class="v-sender-a-en">${preset.signatoryAHtml ?? ""}</div>`;
   })();
+
+  // EN uses a dedicated CSS class (.inside-en) that matches the reference template exactly
+  const sectionClass = isEnglish ? "inside-en" : "inside";
+  const eventLanguageHtml =
+    isEnglish && data.eventLanguageText ? escHtml(data.eventLanguageText) : "";
+
+  // Full EN-specific CSS — injected only for EN invitations
+  const enPageCss = !isEnglish ? "" : `
+    .inside-en .bg { z-index: 0; }
+
+    .inside-en .panel {
+      position: absolute;
+      left: 73px;
+      top: 100px;
+      width: 2162px;
+      height: 3343px;
+      background: var(--panel-bg);
+      z-index: 1;
+    }
+
+    .inside-en .title {
+      position: absolute;
+      left: 610px;
+      top: 266px;
+      width: 1142px;
+      font-family: ${bodyFont};
+      text-align: center;
+      font-size: 160px;
+      line-height: 1;
+      color: var(--text-main);
+      font-weight: 400;
+      z-index: 2;
+    }
+
+    .inside-en .v-second-title {
+      position: absolute;
+      left: 285px;
+      top: 520px;
+      width: 1792px;
+      font-family: ${bodyFont};
+      text-align: center;
+      font-size: 50px;
+      line-height: 1.2;
+      color: var(--text-main);
+      font-weight: 700;
+      z-index: 2;
+    }
+
+    .inside-en .v-body-content {
+      position: absolute;
+      left: 294px;
+      top: 755px;
+      width: 1795px;
+      height: 1444px;
+      overflow: hidden;
+      font-family: ${bodyFont};
+      font-size: 34px;
+      line-height: 1.28;
+      color: var(--text-main);
+      text-align: justify;
+      z-index: 2;
+    }
+
+    .inside-en .v-body-content p { margin: 0; }
+    .inside-en .v-body-content p + p { margin-top: 20px; }
+
+    .inside-en .v-body-content .salutation,
+    .inside-en .v-body-content .recipient-title {
+      text-align: left;
+      font-weight: 700;
+    }
+
+    .inside-en .v-body-content strong {
+      font-weight: 700;
+      color: var(--text-strong);
+    }
+
+    .inside-en .v-event-note,
+    .inside-en .v-event-date,
+    .inside-en .v-event-time,
+    .inside-en .v-event-venue,
+    .inside-en .v-event-language,
+    .inside-en .v-invitation-end {
+      position: absolute;
+      left: 295px;
+      width: 1794px;
+      font-family: ${bodyFont};
+      font-size: 34px;
+      line-height: 1.2;
+      color: var(--text-main);
+      z-index: 2;
+    }
+
+    .inside-en .v-event-note    { top: 2266px; font-weight: 700; }
+    .inside-en .v-event-date    { top: 2321px; }
+    .inside-en .v-event-time    { top: 2373px; }
+    .inside-en .v-event-venue   { top: 2425px; }
+    .inside-en .v-event-language { top: 2478px; }
+    .inside-en .v-invitation-end { top: 2554px; }
+
+    .inside-en .v-invitation-sincerely {
+      position: absolute;
+      left: 294px;
+      top: 2720px;
+      width: 420px;
+      font-family: ${bodyFont};
+      font-size: 34px;
+      line-height: 1.2;
+      color: var(--text-main);
+      white-space: nowrap;
+      z-index: 2;
+    }
+
+    /* Single sig */
+    .inside-en .v-invitation-sender {
+      position: absolute;
+      right: 294px;
+      top: 2816px;
+      width: 1774px;
+      font-family: ${bodyFont};
+      text-align: right;
+      font-size: 34px;
+      line-height: 1.2;
+      color: var(--text-main);
+      white-space: nowrap;
+      z-index: 2;
+    }
+
+    .inside-en .v-sig-image-single {
+      position: absolute;
+      right: 294px;
+      top: 2816px;
+      max-width: 400px;
+      max-height: 280px;
+      object-fit: contain;
+      display: block;
+      z-index: 2;
+    }
+
+    /* Dual sig */
+    .inside-en .v-signed-b-en {
+      position: absolute;
+      left: 404.61px;
+      top: 2816px;
+      width: 295.783px;
+      height: 298.443px;
+      object-fit: contain;
+      display: block;
+      z-index: 2;
+    }
+
+    .inside-en .v-sender-b-en {
+      position: absolute;
+      left: 294px;
+      top: 3135px;
+      width: 756px;
+      min-height: 135px;
+      font-family: ${bodyFont};
+      font-size: 34px;
+      line-height: 1.2;
+      color: var(--text-main);
+      z-index: 2;
+    }
+
+    .inside-en .v-signed-a-en {
+      position: absolute;
+      left: 1452.09px;
+      top: 2839.67px;
+      width: 208.051px;
+      height: 338.083px;
+      object-fit: contain;
+      display: block;
+      z-index: 2;
+    }
+
+    .inside-en .v-sender-a-en {
+      position: absolute;
+      left: 1431px;
+      top: 3129px;
+      width: 756px;
+      min-height: 135px;
+      font-family: ${bodyFont};
+      font-size: 34px;
+      line-height: 1.2;
+      color: var(--text-main);
+      z-index: 2;
+    }
+
+    .inside-en .v-footer-notes,
+    .inside-en .v-footer-confirm-webaddress {
+      position: absolute;
+      width: 1617px;
+      font-family: var(--font-footer);
+      font-size: 30px;
+      color: var(--text-main);
+      z-index: 2;
+    }
+
+    .inside-en .v-footer-notes {
+      left: 294px;
+      top: 3340px;
+      line-height: 20px;
+    }
+
+    .inside-en .v-footer-confirm-webaddress {
+      left: 294px;
+      top: 3380px;
+      line-height: 20px;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .inside-en .v-footer-qrcode {
+      position: absolute;
+      left: 1938px;
+      top: 3293px;
+      width: 131px;
+      height: 131px;
+      object-fit: cover;
+      display: block;
+      background: #fff;
+      z-index: 2;
+    }
+  `;
 
   const coverSection = data.coverImageUrl
     ? `<img class="bg-full" src="${escHtml(data.coverImageUrl)}" alt="${escHtml(t.coverAlt)}" />`
@@ -407,6 +629,8 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
       z-index: 2;
     }
 
+    ${enPageCss}
+
     @media print {
       body {
         background: #fff;
@@ -435,7 +659,7 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
       ${coverSection}
     </section>
 
-    <section class="page inside scaled">
+    <section class="page ${sectionClass} scaled">
       ${bodyBgSection}
       <div class="panel"></div>
 
@@ -446,6 +670,7 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
       <div class="v-event-date">${eventDateText}</div>
       <div class="v-event-time">${eventTimeText}</div>
       <div class="v-event-venue">${eventVenueText}</div>
+      ${eventLanguageHtml ? `<div class="v-event-language">${eventLanguageHtml}</div>` : ""}
       <div class="v-invitation-end">${closingText}</div>
       <div class="v-invitation-sincerely">${greetingText}</div>
       ${signatureSection}

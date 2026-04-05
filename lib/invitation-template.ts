@@ -12,6 +12,7 @@ export type InvitationTemplateVariables = {
   eventDate: string;
   eventTime: string;
   eventVenue: string;
+  eventLanguage?: string | null;
   eventUrl: string;
 };
 
@@ -22,6 +23,8 @@ export type InvitationResolvedContent = {
   eventDateText: string;
   eventTimeText: string;
   eventVenueText: string;
+  /** EN-only: language line, e.g. "Language: English and Chinese" */
+  eventLanguageText?: string;
   closingText: string;
   greetingText: string;
   signatureHtml: string;
@@ -136,6 +139,7 @@ export function applyInvitationTemplate(
     eventTime: vars.eventTime,
     eventVenue: vars.eventVenue,
     eventUrl: vars.eventUrl,
+    eventLanguage: vars.eventLanguage ?? "",
   };
 
   let result = template.replaceAll("{salutationBlock}", buildSalutationBlock(language, vars));
@@ -161,6 +165,7 @@ function applyInvitationTextTemplate(
     eventTime: vars.eventTime,
     eventVenue: vars.eventVenue,
     eventUrl: vars.eventUrl,
+    eventLanguage: vars.eventLanguage ?? "",
   };
 
   let result = template.replaceAll("{salutationBlock}", invitationHtmlToPlainText(buildSalutationBlock(language, vars)));
@@ -257,6 +262,13 @@ export function buildInvitationResolvedContent(params: {
       language,
       vars
     ),
+    eventLanguageText: language === "en" && vars.eventLanguage
+      ? applyInvitationTextTemplate(
+          settings.eventLanguageTemplate_en,
+          language,
+          vars
+        )
+      : undefined,
     closingText: applyInvitationTextTemplate(
       getLocalizedSetting(settings, "closingText", language),
       language,
