@@ -11,7 +11,7 @@ const ALLOWED_TYPES = new Set([
   "image/webp",
 ]);
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_CATEGORIES = new Set(["speakers", "sponsors", "news", "invitation_template"]);
+const ALLOWED_CATEGORIES = new Set(["speakers", "sponsors", "news", "invitation_template", "invitation_signature"]);
 
 /**
  * POST /api/upload/image

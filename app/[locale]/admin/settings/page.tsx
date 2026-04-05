@@ -104,6 +104,7 @@ export default function AdminSettingsPage() {
   const [sigEditingIndex, setSigEditingIndex] = useState<number | null>(null);
   const [sigEditForm, setSigEditForm] = useState<SignaturePreset>(EMPTY_PRESET);
   const [isAddingPreset, setIsAddingPreset] = useState(false);
+  const [sigUploadingField, setSigUploadingField] = useState<string | null>(null);
 
   const setMessage = (tone: "success" | "error", message: string) => {
     setStatusTone(tone);
@@ -812,8 +813,10 @@ export default function AdminSettingsPage() {
                               {sigEditForm.singleImageUrl && (
                                 <img src={sigEditForm.singleImageUrl} alt="" className="h-10 w-auto rounded border" />
                               )}
-                              <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50">
-                                <Upload className="h-3.5 w-3.5" />
+                              <label className={`flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 ${sigUploadingField === "singleImageUrl" ? "opacity-50 pointer-events-none" : ""}`}>
+                                {sigUploadingField === "singleImageUrl"
+                                  ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  : <Upload className="h-3.5 w-3.5" />}
                                 {sigEditForm.singleImageUrl
                                   ? locale === "en" ? "Replace" : "替换"
                                   : locale === "en" ? "Upload" : "上传"}
@@ -821,15 +824,19 @@ export default function AdminSettingsPage() {
                                   type="file"
                                   accept="image/png,image/jpeg,image/webp"
                                   className="sr-only"
+                                  disabled={sigUploadingField !== null}
                                   onChange={async (e) => {
                                     const file = e.target.files?.[0];
                                     if (!file) return;
+                                    setSigUploadingField("singleImageUrl");
                                     try {
                                       const url = await uploadSigImage(sigEditForm.singleImageUrl ?? "", file);
                                       setSigEditForm((f) => ({ ...f, singleImageUrl: url }));
                                     } catch (err) {
                                       setSigStatusTone("error");
                                       setSigStatus(err instanceof Error ? err.message : "Upload failed");
+                                    } finally {
+                                      setSigUploadingField(null);
                                     }
                                     e.target.value = "";
                                   }}
@@ -869,8 +876,10 @@ export default function AdminSettingsPage() {
                                 {sigEditForm.signatoryBImageUrl && (
                                   <img src={sigEditForm.signatoryBImageUrl} alt="" className="h-10 w-auto rounded border" />
                                 )}
-                                <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50">
-                                  <Upload className="h-3.5 w-3.5" />
+                                <label className={`flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 ${sigUploadingField === "signatoryBImageUrl" ? "opacity-50 pointer-events-none" : ""}`}>
+                                  {sigUploadingField === "signatoryBImageUrl"
+                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    : <Upload className="h-3.5 w-3.5" />}
                                   {sigEditForm.signatoryBImageUrl
                                     ? locale === "en" ? "Replace" : "替换"
                                     : locale === "en" ? "Upload" : "上传"}
@@ -878,15 +887,19 @@ export default function AdminSettingsPage() {
                                     type="file"
                                     accept="image/png,image/jpeg,image/webp"
                                     className="sr-only"
+                                    disabled={sigUploadingField !== null}
                                     onChange={async (e) => {
                                       const file = e.target.files?.[0];
                                       if (!file) return;
+                                      setSigUploadingField("signatoryBImageUrl");
                                       try {
                                         const url = await uploadSigImage(sigEditForm.signatoryBImageUrl ?? "", file);
                                         setSigEditForm((f) => ({ ...f, signatoryBImageUrl: url }));
                                       } catch (err) {
                                         setSigStatusTone("error");
                                         setSigStatus(err instanceof Error ? err.message : "Upload failed");
+                                      } finally {
+                                        setSigUploadingField(null);
                                       }
                                       e.target.value = "";
                                     }}
@@ -924,8 +937,10 @@ export default function AdminSettingsPage() {
                                 {sigEditForm.signatoryAImageUrl && (
                                   <img src={sigEditForm.signatoryAImageUrl} alt="" className="h-10 w-auto rounded border" />
                                 )}
-                                <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50">
-                                  <Upload className="h-3.5 w-3.5" />
+                                <label className={`flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 ${sigUploadingField === "signatoryAImageUrl" ? "opacity-50 pointer-events-none" : ""}`}>
+                                  {sigUploadingField === "signatoryAImageUrl"
+                                    ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    : <Upload className="h-3.5 w-3.5" />}
                                   {sigEditForm.signatoryAImageUrl
                                     ? locale === "en" ? "Replace" : "替换"
                                     : locale === "en" ? "Upload" : "上传"}
@@ -933,15 +948,19 @@ export default function AdminSettingsPage() {
                                     type="file"
                                     accept="image/png,image/jpeg,image/webp"
                                     className="sr-only"
+                                    disabled={sigUploadingField !== null}
                                     onChange={async (e) => {
                                       const file = e.target.files?.[0];
                                       if (!file) return;
+                                      setSigUploadingField("signatoryAImageUrl");
                                       try {
                                         const url = await uploadSigImage(sigEditForm.signatoryAImageUrl ?? "", file);
                                         setSigEditForm((f) => ({ ...f, signatoryAImageUrl: url }));
                                       } catch (err) {
                                         setSigStatusTone("error");
                                         setSigStatus(err instanceof Error ? err.message : "Upload failed");
+                                      } finally {
+                                        setSigUploadingField(null);
                                       }
                                       e.target.value = "";
                                     }}
