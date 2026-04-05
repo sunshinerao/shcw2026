@@ -14,8 +14,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Link } from "@/i18n/routing";
-
-const SALUTATION_OPTIONS = ["Dr.", "PhD", "Mr.", "Ms.", "Mrs.", "Prof."];
+import { COUNTRIES } from "@/data/countries";
+import { combinePhoneNumber, getLocalizedSalutationOptions, getPhoneAreaByCountry } from "@/lib/user-form-options";
 
 export default function RegisterPage() {
   const t = useTranslations("auth.register");
@@ -27,12 +27,15 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [showOrgSection, setShowOrgSection] = useState(false);
+  const [countrySearch, setCountrySearch] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     salutation: "",
+    country: "",
+    phoneArea: "",
     phone: "",
     title: "",
     bio: "",
@@ -41,6 +44,7 @@ export default function RegisterPage() {
     organizationWebsite: "",
     organizationDescription: "",
   });
+  const salutationOptions = getLocalizedSalutationOptions(locale === "en" ? "en" : "zh");
 
   useEffect(() => {
     if (!success) {
@@ -77,6 +81,12 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!formData.country) {
+      setError(t("errors.countryRequired"));
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/register", {
         method: "POST",
@@ -86,7 +96,8 @@ export default function RegisterPage() {
           email: formData.email,
           password: formData.password,
           salutation: formData.salutation || undefined,
-          phone: formData.phone || undefined,
+          phone: combinePhoneNumber(formData.phoneArea, formData.phone) || undefined,
+          country: formData.country,
           title: formData.title,
           bio: formData.bio || undefined,
           organization: formData.organizationName
@@ -189,8 +200,8 @@ export default function RegisterPage() {
                     <SelectValue placeholder={t("salutationPlaceholder")} />
                   </SelectTrigger>
                   <SelectContent>
-                    {SALUTATION_OPTIONS.map((s) => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    {salutationOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -244,6 +255,58 @@ export default function RegisterPage() {
                     required
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="country">{t("countryLabel")} *</Label>
+                <Select
+                  value={formData.country}
+                  onValueChange={(value) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      country: value,
+                      phoneArea: prev.phoneArea || getPhoneAreaByCountry(value),
+                    }));
+                    setCountrySearch("");
+                  }}
+                >
+                  <SelectTrigger id="country">
+                    <SelectValue placeholder={t("countryPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <div className="px-2 pb-2">
+                      <Input
+                        placeholder={locale === "zh" ? "输入搜索..." : "Search..."}
+                        value={countrySearch}
+                        onChange={(event) => setCountrySearch(event.target.value)}
+                        className="h-8"
+                        onKeyDown={(event) => event.stopPropagation()}
+                      />
+                    </div>
+                    {COUNTRIES.filter((country) => {
+                      if (!countrySearch) return true;
+                      const q = countrySearch.toLowerCase();
+                      return country.zh.includes(q) || country.en.toLowerCase().includes(q) || country.code.toLowerCase().includes(q);
+                    }).map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        {locale === "zh" ? `${country.zh} [${country.en}]` : `${country.en} [${country.zh}]`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="phoneArea">{t("phoneAreaLabel")}</Label>
+                <Input
+                  id="phoneArea"
+                  type="tel"
+                  placeholder={t("phoneAreaPlaceholder")}
+                  value={formData.phoneArea}
+                  onChange={(event) => setFormData((prev) => ({ ...prev, phoneArea: event.target.value }))}
+                />
               </div>
 
               <div className="space-y-2">

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "sh ./scripts/start-dev.sh",
+    "build": "rm -rf .next && next build",
     "vercel-build": "prisma generate && (prisma migrate resolve --rolled-back 20260330010017_add_salutation_to_invitation 2>/dev/null || true) && prisma migrate deploy && next build",
     "postinstall": "prisma generate",
     "start": "next start",

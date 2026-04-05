@@ -118,15 +118,14 @@ export const authOptions: NextAuthOptions = {
         token.passCode = user.passCode;
         token.sub = user.id; // 确保 sub 设置为 user.id
         token.name = user.name;
-        token.picture = user.image ?? null;
+        // avatar is intentionally NOT stored in the JWT token —
+        // avatars are base64 data URLs that would bloat the cookie
+        // past Vercel's 8 KB header limit (494 REQUEST_HEADER_TOO_LARGE).
       }
 
       if (trigger === "update" && session) {
         if (session.name !== undefined) {
           token.name = session.name;
-        }
-        if (session.image !== undefined) {
-          token.picture = session.image;
         }
         if (session.role !== undefined) {
           token.role = session.role;
@@ -167,7 +166,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
         session.user.passCode = token.passCode as string;
         session.user.name = (token.name as string) || session.user.name;
-        session.user.image = (token.picture as string | null | undefined) ?? session.user.image;
+        // image is not populated from JWT — fetched separately via /api/user/profile
       }
       return session;
     },

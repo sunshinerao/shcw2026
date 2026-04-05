@@ -56,6 +56,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
+import { getLocalizedSalutationOptions } from "@/lib/user-form-options";
 
 // Speaker interface based on schema
 interface Speaker {
@@ -230,6 +231,7 @@ const getOrganizations = (speakers: Speaker[]) => {
 export default function AdminSpeakersPage() {
   const t = useTranslations("adminSpeakersPage");
   const locale = useLocale();
+  const salutationOptions = getLocalizedSalutationOptions(locale === "en" ? "en" : "zh");
   const [speakers, setSpeakers] = useState<Speaker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
@@ -969,11 +971,11 @@ export default function AdminSpeakersPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">{t("form.salutationPlaceholder")}</SelectItem>
-                  <SelectItem value="Dr.">Dr.</SelectItem>
-                  <SelectItem value="Mr.">Mr.</SelectItem>
-                  <SelectItem value="Ms.">Ms.</SelectItem>
-                  <SelectItem value="Mrs.">Mrs.</SelectItem>
-                  <SelectItem value="Prof.">Prof.</SelectItem>
+                  {salutationOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

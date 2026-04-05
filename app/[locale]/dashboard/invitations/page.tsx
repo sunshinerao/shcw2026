@@ -22,6 +22,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { countInvitationBodyChars, getInvitationRequestBodyCharLimit } from "@/lib/invitation-content-limits";
+import { getLocalizedSalutationLabel, getLocalizedSalutationOptions } from "@/lib/user-form-options";
 
 type InvitationRequest = {
   id: string;
@@ -36,6 +38,7 @@ type InvitationRequest = {
   user?: { id: string; name: string; email: string; title?: string | null; organization?: { name: string } | null } | null;
   purpose?: string | null;
   notes?: string | null;
+  customMainContent?: string | null;
   status: string;
   letterFileUrl?: string | null;
   rejectReason?: string | null;
@@ -74,6 +77,12 @@ export default function DashboardInvitationsPage() {
   const [previewHtml, setPreviewHtml] = useState<string>("");
   const [previewError, setPreviewError] = useState<string>("");
   const [isPreviewing, setIsPreviewing] = useState(false);
+  const [bodyDraftText, setBodyDraftText] = useState("");
+  const [bodyDraftSource, setBodyDraftSource] = useState<"event" | "global" | null>(null);
+  const [bodyDraftError, setBodyDraftError] = useState("");
+  const [isDraftLoading, setIsDraftLoading] = useState(false);
+  const [isBodyDirty, setIsBodyDirty] = useState(false);
+  const salutationOptions = getLocalizedSalutationOptions(locale === "en" ? "en" : "zh");
 
   const [form, setForm] = useState({
     salutation: "",
@@ -143,15 +152,88 @@ export default function DashboardInvitationsPage() {
       notes: "",
       customMainContent: "",
     });
+    setBodyDraftText("");
+    setBodyDraftSource(null);
+    setBodyDraftError("");
+    setIsBodyDirty(false);
     setEditingId(null);
     setStep("form");
     setPreviewHtml("");
     setPreviewError("");
   };
 
+  const generateBodyDraft = useCallback(async (forceReplace = false) => {
+    if (!isDialogOpen || step !== "form") {
+      return;
+    }
+
+    if (!forceReplace && isBodyDirty) {
+      return;
+    }
+
+    setIsDraftLoading(true);
+    setBodyDraftError("");
+    try {
+      const res = await fetch("/api/invitations/body-draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          salutation: form.salutation || null,
+          guestName: form.guestName,
+          guestTitle: form.guestTitle || null,
+          guestOrg: form.guestOrg || null,
+          language: form.language,
+          eventId: form.eventId || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || t("form.draftFailed"));
+      }
+
+      setBodyDraftText(data.data?.draftText || "");
+      setBodyDraftSource((data.data?.source as "event" | "global" | undefined) || null);
+      if (forceReplace) {
+        setIsBodyDirty(false);
+        setForm((previous) => ({ ...previous, customMainContent: "" }));
+      }
+    } catch (err) {
+      setBodyDraftError(err instanceof Error ? err.message : t("form.draftFailed"));
+    } finally {
+      setIsDraftLoading(false);
+    }
+  }, [form.eventId, form.guestName, form.guestOrg, form.guestTitle, form.language, form.salutation, isBodyDirty, isDialogOpen, step, t]);
+
+  useEffect(() => {
+    if (!isDialogOpen || step !== "form" || isBodyDirty) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      void generateBodyDraft();
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [form.eventId, form.guestName, form.guestOrg, form.guestTitle, form.language, form.salutation, generateBodyDraft, isBodyDirty, isDialogOpen, step]);
+
+  const effectiveCustomMainContent = isBodyDirty ? form.customMainContent : null;
+  const displayedBodyContent = isBodyDirty ? form.customMainContent : bodyDraftText;
+  const bodyCharLimit = getInvitationRequestBodyCharLimit(
+    form.language === "en" ? "en" : "zh",
+    form.guestName,
+    form.guestTitle
+  );
+  const bodyCharCount = countInvitationBodyChars(displayedBodyContent);
+  const bodyCharRemaining = bodyCharLimit - bodyCharCount;
+  const isBodyOverLimit = bodyCharRemaining < 0;
+
   const handlePreview = async () => {
     if (!form.guestName.trim()) {
       setPreviewError(t("form.guestNameRequired"));
+      return;
+    }
+    if (isBodyOverLimit) {
+      setPreviewError(t("form.bodyExceeded", { count: Math.abs(bodyCharRemaining) }));
       return;
     }
     setPreviewError("");
@@ -163,9 +245,11 @@ export default function DashboardInvitationsPage() {
         body: JSON.stringify({
           salutation: form.salutation || null,
           guestName: form.guestName,
+          guestTitle: form.guestTitle || null,
+          guestOrg: form.guestOrg || null,
           language: form.language,
           eventId: form.eventId || null,
-          customMainContent: form.customMainContent || null,
+          customMainContent: effectiveCustomMainContent || null,
         }),
       });
       if (!res.ok) {
@@ -201,7 +285,7 @@ export default function DashboardInvitationsPage() {
         eventId: form.eventId || null,
         purpose: form.purpose || null,
         notes: form.notes || null,
-        customMainContent: form.customMainContent || null,
+        customMainContent: effectiveCustomMainContent || null,
       };
 
       const isEditing = !!editingId;
@@ -245,8 +329,12 @@ export default function DashboardInvitationsPage() {
       eventId: req.eventId || "",
       purpose: req.purpose || "",
       notes: req.notes || "",
-      customMainContent: (req as unknown as Record<string, unknown>).customMainContent as string || "",
+      customMainContent: req.customMainContent || "",
     });
+    setIsBodyDirty(Boolean(req.customMainContent));
+    setBodyDraftText("");
+    setBodyDraftSource(null);
+    setBodyDraftError("");
     setStep("form");
     setPreviewHtml("");
     setPreviewError("");
@@ -347,7 +435,7 @@ export default function DashboardInvitationsPage() {
                       </div>
                       <div>
                         <div className="flex flex-wrap items-center gap-2 mb-1">
-                          <span className="font-semibold text-slate-900">{req.salutation ? `${req.salutation} ` : ""}{req.guestName}</span>
+                          <span className="font-semibold text-slate-900">{req.salutation ? `${getLocalizedSalutationLabel(req.salutation, locale === "en" ? "en" : "zh")} ` : ""}{req.guestName}</span>
                           {req.guestTitle ? <span className="text-sm text-slate-500">{req.guestTitle}</span> : null}
                           <Badge className={cfg.color}>
                             <StatusIcon className="mr-1 h-3 w-3" />
@@ -422,12 +510,9 @@ export default function DashboardInvitationsPage() {
                     <SelectTrigger id="salutation"><SelectValue placeholder={t("form.salutationPlaceholder")} /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">{t("form.salutationPlaceholder")}</SelectItem>
-                      <SelectItem value="Dr.">Dr.</SelectItem>
-                      <SelectItem value="PhD">PhD</SelectItem>
-                      <SelectItem value="Mr.">Mr.</SelectItem>
-                      <SelectItem value="Ms.">Ms.</SelectItem>
-                      <SelectItem value="Mrs.">Mrs.</SelectItem>
-                      <SelectItem value="Prof.">Prof.</SelectItem>
+                      {salutationOptions.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -482,13 +567,35 @@ export default function DashboardInvitationsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="inv-custom-content">{t("form.customMainContent")}</Label>
                   <p className="text-xs text-slate-500">{t("form.customMainContentHint")}</p>
+                  <div className="flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                    {isDraftLoading ? <span>{t("form.draftLoading")}</span> : null}
+                    {!isDraftLoading && !isBodyDirty && bodyDraftSource === "event" ? <span>{t("form.draftSourceEvent")}</span> : null}
+                    {!isDraftLoading && !isBodyDirty && bodyDraftSource === "global" ? <span>{t("form.draftSourceGlobal")}</span> : null}
+                    <span>{t("form.bodyLimitHint", { count: bodyCharLimit })}</span>
+                    <span>{t("form.draftLength", { count: bodyCharCount })}</span>
+                    <span className={bodyCharRemaining >= 0 ? "text-slate-500" : "text-rose-600"}>
+                      {bodyCharRemaining >= 0
+                        ? t("form.bodyRemaining", { count: bodyCharRemaining })
+                        : t("form.bodyExceeded", { count: Math.abs(bodyCharRemaining) })}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" size="sm" onClick={() => void generateBodyDraft(true)}>
+                      {isBodyDirty ? t("form.draftRestore") : t("form.draftRefresh")}
+                    </Button>
+                  </div>
                   <Textarea
                     id="inv-custom-content"
-                    rows={5}
-                    value={form.customMainContent}
-                    onChange={(e) => setForm((p) => ({ ...p, customMainContent: e.target.value }))}
+                    rows={8}
+                    value={displayedBodyContent}
+                    maxLength={bodyCharLimit}
+                    onChange={(e) => {
+                      setIsBodyDirty(true);
+                      setForm((p) => ({ ...p, customMainContent: e.target.value }));
+                    }}
                     placeholder={t("form.customMainContentPlaceholder")}
                   />
+                  {bodyDraftError ? <p className="text-xs text-rose-600">{bodyDraftError}</p> : null}
                 </div>
                 {previewError ? (
                   <p className="text-sm text-red-600">{previewError}</p>
@@ -500,6 +607,7 @@ export default function DashboardInvitationsPage() {
                   className="bg-emerald-600 hover:bg-emerald-700"
                   onClick={() => void handlePreview()}
                   loading={isPreviewing}
+                  disabled={isBodyOverLimit}
                   loadingText={locale === "en" ? "Generating..." : "生成预览中..."}
                 >
                   <Eye className="mr-2 h-4 w-4" />

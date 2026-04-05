@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { generatePassCode, generateClimatePassportId } from "@/lib/utils";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
+import { normalizeSalutationValue } from "@/lib/user-form-options";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,6 +13,7 @@ export async function POST(req: NextRequest) {
       email,
       password,
       phone,
+      country,
       title,
       salutation,
       bio,
@@ -22,7 +24,7 @@ export async function POST(req: NextRequest) {
     const requestLocale = resolveRequestLocale(req, locale);
 
     // Validation
-    if (!name || !email || !password || !title) {
+    if (!name || !email || !password || !title || !country) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "registerRequired") },
         { status: 400 }
@@ -113,8 +115,9 @@ export async function POST(req: NextRequest) {
           email,
           password: hashedPassword,
           phone: phone || null,
+          country,
           title,
-          salutation: salutation || null,
+          salutation: normalizeSalutationValue(salutation),
           bio: bio || null,
           role,
           passCode,

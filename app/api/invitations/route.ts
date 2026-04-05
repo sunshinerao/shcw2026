@@ -3,8 +3,10 @@ import { getServerSession } from "next-auth/next";
 import { InvitationStatus, Prisma } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
+import { countInvitationBodyChars, getInvitationRequestBodyCharLimit } from "@/lib/invitation-content-limits";
 import { canManageEvents, isAdminRole } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import { normalizeSalutationValue } from "@/lib/user-form-options";
 
 async function requireSessionUser() {
   const session = await getServerSession(authOptions);
@@ -106,11 +108,39 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     requestLocale = resolveRequestLocale(req, body.locale);
 
-    const { salutation, guestName, guestTitle, guestOrg, guestEmail, language, eventId, purpose, notes } = body;
+    const {
+      salutation,
+      guestName,
+      guestTitle,
+      guestOrg,
+      guestEmail,
+      language,
+      eventId,
+      purpose,
+      notes,
+      customMainContent,
+    } = body;
 
     if (!guestName || typeof guestName !== "string" || !guestName.trim()) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "invitationGuestNameRequired") },
+        { status: 400 }
+      );
+    }
+
+    const normalizedLanguage = language === "en" ? "en" : "zh";
+    const trimmedCustomMainContent = customMainContent?.trim() || "";
+    if (
+      trimmedCustomMainContent &&
+      countInvitationBodyChars(trimmedCustomMainContent) > getInvitationRequestBodyCharLimit(normalizedLanguage, guestName, guestTitle)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: normalizedLanguage === "en"
+            ? "Custom body content exceeds the safe character limit"
+            : "自定义正文内容超出安全字数上限",
+        },
         { status: 400 }
       );
     }
@@ -132,15 +162,16 @@ export async function POST(req: NextRequest) {
     const invitation = await prisma.invitationRequest.create({
       data: {
         userId: currentUser.id,
-        salutation: salutation?.trim() || null,
+        salutation: normalizeSalutationValue(salutation),
         guestName: guestName.trim(),
         guestTitle: guestTitle?.trim() || null,
         guestOrg: guestOrg?.trim() || null,
         guestEmail: guestEmail?.trim() || null,
-        language: language === "en" ? "en" : "zh",
+        language: normalizedLanguage,
         eventId: eventId || null,
         purpose: purpose?.trim() || null,
         notes: notes?.trim() || null,
+        customMainContent: trimmedCustomMainContent || null,
       },
       include: {
         user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },

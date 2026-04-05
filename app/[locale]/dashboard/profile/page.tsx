@@ -34,8 +34,7 @@ import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { COUNTRIES } from "@/data/countries";
-
-const SALUTATION_OPTIONS = ["Dr.", "PhD", "Mr.", "Ms.", "Mrs.", "Prof."];
+import { combinePhoneNumber, getLocalizedSalutationOptions, getPhoneAreaByCountry, splitPhoneNumber } from "@/lib/user-form-options";
 
 interface UserProfile {
   id: string;
@@ -105,6 +104,9 @@ export default function ProfilePage() {
     confirmPassword: "",
   });
   const [passwordErrors, setPasswordErrors] = useState<Partial<PasswordForm>>({});
+  const [phoneArea, setPhoneArea] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const salutationOptions = getLocalizedSalutationOptions(locale === "en" ? "en" : "zh");
 
   const fetchProfile = useCallback(async () => {
     if (!session?.user) {
@@ -134,6 +136,9 @@ export default function ProfilePage() {
         climatePassportId: data.data.climatePassportId || "",
         country: data.data.country || "",
       });
+      const parsedPhone = splitPhoneNumber(data.data.phone || "");
+      setPhoneArea(parsedPhone.phoneArea || getPhoneAreaByCountry(data.data.country || ""));
+      setPhoneNumber(parsedPhone.phoneNumber);
       setOrganization(data.data.organization || {
         name: "",
         industry: "",
@@ -188,7 +193,7 @@ export default function ProfilePage() {
         body: JSON.stringify({
           locale,
           name: profile.name,
-          phone: profile.phone,
+          phone: combinePhoneNumber(phoneArea, phoneNumber),
           title: profile.title,
           bio: profile.bio,
           avatar: profile.avatar,
@@ -220,6 +225,9 @@ export default function ProfilePage() {
         salutation: data.data.salutation || "",
         country: data.data.country || "",
       }));
+      const parsedPhone = splitPhoneNumber(data.data.phone || "");
+      setPhoneArea(parsedPhone.phoneArea || getPhoneAreaByCountry(data.data.country || ""));
+      setPhoneNumber(parsedPhone.phoneNumber);
       setOrganization(data.data.organization || {
         name: "",
         industry: "",
@@ -388,8 +396,8 @@ export default function ProfilePage() {
                           <SelectValue placeholder={t("placeholders.salutation")} />
                         </SelectTrigger>
                         <SelectContent>
-                          {SALUTATION_OPTIONS.map((s) => (
-                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          {salutationOptions.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -424,7 +432,20 @@ export default function ProfilePage() {
                         <Phone className="w-4 h-4 inline mr-1" />
                         {t("fields.phone")}
                       </Label>
-                      <Input id="phone" value={profile.phone} onChange={(event) => setProfile((previous) => ({ ...previous, phone: event.target.value }))} placeholder={t("placeholders.phone")} />
+                      <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-3">
+                        <Input
+                          id="phoneArea"
+                          value={phoneArea}
+                          onChange={(event) => setPhoneArea(event.target.value)}
+                          placeholder={t("placeholders.phoneArea")}
+                        />
+                        <Input
+                          id="phone"
+                          value={phoneNumber}
+                          onChange={(event) => setPhoneNumber(event.target.value)}
+                          placeholder={t("placeholders.phone")}
+                        />
+                      </div>
                     </div>
 
                     <div className="space-y-2">
@@ -436,6 +457,7 @@ export default function ProfilePage() {
                         value={profile.country || ""}
                         onValueChange={(value) => {
                           setProfile((previous) => ({ ...previous, country: value }));
+                          setPhoneArea((previous) => previous || getPhoneAreaByCountry(value));
                           setCountrySearch("");
                         }}
                       >

@@ -288,6 +288,8 @@ export async function POST(req: NextRequest) {
       isPinned = false,
       eventDateSlots,
       managerUserId,
+      invitationContentHtml_zh,
+      invitationContentHtml_en,
     } = body;
 
     if (!title || !description || !startDate || !startTime || !endTime || !venue || !type) {
@@ -422,6 +424,8 @@ export async function POST(req: NextRequest) {
           create: normalizedEventDateSlots,
         },
         managerUserId: resolvedManagerUserId,
+        invitationContentHtml_zh: normalizeOptionalText(invitationContentHtml_zh),
+        invitationContentHtml_en: normalizeOptionalText(invitationContentHtml_en),
         eventLayer:
           canEditRestrictedEventFields && eventLayer && EVENT_LAYERS.has(eventLayer)
             ? (eventLayer as EventLayer)

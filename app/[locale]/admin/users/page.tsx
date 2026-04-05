@@ -57,6 +57,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { getLocalizedSalutationOptions } from "@/lib/user-form-options";
 import {
   Table,
   TableBody,
@@ -209,6 +210,7 @@ const initialFormState: UserFormState = {
 export default function AdminUsersPage() {
   const t = useTranslations("adminUsersPage");
   const locale = useLocale();
+  const salutationOptions = getLocalizedSalutationOptions(locale === "en" ? "en" : "zh");
   const [users, setUsers] = useState<ManagedUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -863,7 +865,7 @@ export default function AdminUsersPage() {
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader><DialogTitle>{editingUser ? t("form.editTitle") : t("form.createTitle")}</DialogTitle><DialogDescription>{editingUser ? t("form.editDescription") : t("form.createDescription")}</DialogDescription></DialogHeader>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div className="space-y-2"><Label>{t("form.salutation")}</Label><Select value={formState.salutation} onValueChange={(value) => setFormState((previous) => ({ ...previous, salutation: value }))}><SelectTrigger><SelectValue placeholder={t("form.salutationPlaceholder")} /></SelectTrigger><SelectContent>{["Dr.", "Mr.", "Ms.", "Mrs.", "Prof."].map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>{t("form.salutation")}</Label><Select value={formState.salutation} onValueChange={(value) => setFormState((previous) => ({ ...previous, salutation: value }))}><SelectTrigger><SelectValue placeholder={t("form.salutationPlaceholder")} /></SelectTrigger><SelectContent>{salutationOptions.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label htmlFor="user-name">{t("form.name")}</Label><Input id="user-name" value={formState.name} onChange={(event) => setFormState((previous) => ({ ...previous, name: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="user-email">{t("form.email")}</Label><Input id="user-email" type="email" value={formState.email} onChange={(event) => setFormState((previous) => ({ ...previous, email: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="user-password">{editingUser ? t("form.passwordOptional") : t("form.password")}</Label><Input id="user-password" type="password" value={formState.password} onChange={(event) => setFormState((previous) => ({ ...previous, password: event.target.value }))} /></div>

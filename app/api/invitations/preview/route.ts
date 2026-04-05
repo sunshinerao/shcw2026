@@ -1,13 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import { countInvitationBodyChars, getInvitationRequestBodyCharLimit } from "@/lib/invitation-content-limits";
 import { prisma } from "@/lib/prisma";
 import { getInvitationTemplateSettings } from "@/lib/invitation-settings";
 import {
   renderInvitationHtml,
   generateQrCodeDataUrl,
-  applyMainContentPlaceholders,
 } from "@/lib/invitation-renderer";
+import { buildInvitationResolvedContent } from "@/lib/invitation-template";
+import {
+  getDefaultSignaturePreset,
+  getSignaturePresetById,
+} from "@/lib/invitation-signature-presets";
+import { getLocalizedSalutationLabel } from "@/lib/user-form-options";
 
 function getBaseUrl(req: NextRequest): string {
   const proto = req.headers.get("x-forwarded-proto") || "https";
@@ -31,12 +37,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json() as {
       salutation?: string;
       guestName?: string;
+      guestTitle?: string;
+      guestOrg?: string;
       language?: string;
       eventId?: string;
       customMainContent?: string;
+      /** EN only: signature preset id to use for this preview */
+      signaturePresetId?: string;
     };
 
-    const { salutation, guestName, language, eventId, customMainContent } = body;
+    const { salutation, guestName, guestTitle, guestOrg, language, eventId, customMainContent, signaturePresetId } = body;
 
     if (!guestName?.trim()) {
       return NextResponse.json(
@@ -46,6 +56,20 @@ export async function POST(req: NextRequest) {
     }
 
     const lang = language === "en" ? "en" : "zh";
+    if (
+      customMainContent?.trim() &&
+      countInvitationBodyChars(customMainContent.trim()) > getInvitationRequestBodyCharLimit(lang, guestName, guestTitle)
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: lang === "en"
+            ? "Custom body content exceeds the safe character limit"
+            : "自定义正文内容超出安全字数上限",
+        },
+        { status: 400 }
+      );
+    }
 
     type EventRow = {
       id: string;
@@ -81,9 +105,6 @@ export async function POST(req: NextRequest) {
 
     const settings = await getInvitationTemplateSettings();
     const baseUrl = getBaseUrl(req);
-
-    const honoredGuestName =
-      [salutation?.trim(), guestName.trim()].filter(Boolean).join(" ") + "：";
 
     const eventTitle =
       lang === "en"
@@ -126,44 +147,47 @@ export async function POST(req: NextRequest) {
       : baseUrl;
 
     const qrCodeDataUrl = await generateQrCodeDataUrl(footerUrl);
+    const localizedSalutation = getLocalizedSalutationLabel(salutation, lang);
+    const resolved = buildInvitationResolvedContent({
+      settings,
+      language: lang,
+      vars: {
+        eventTitle,
+        guestName: guestName.trim(),
+        salutation: localizedSalutation,
+        guestTitle,
+        guestOrg,
+        eventDate: eventDateStr,
+        eventTime: timeStr,
+        eventVenue: eventVenueRaw,
+        eventUrl: footerUrl,
+      },
+      eventBodyTemplate:
+        lang === "en" ? event?.invitationContentHtml_en : event?.invitationContentHtml_zh,
+      customMainContent,
+    });
 
-    // Priority: user custom content > per-event content > global settings
-    const perEventContent = lang === "en"
-      ? (event?.invitationContentHtml_en || "")
-      : (event?.invitationContentHtml_zh || "");
-    const globalContent = lang === "en" ? settings.mainContentHtml_en : settings.mainContentHtml_zh;
-
-    let rawMainContent: string;
-    if (customMainContent?.trim()) {
-      // User-entered plain text: wrap in <p> tags (line breaks → separate paragraphs)
-      rawMainContent = customMainContent
-        .trim()
-        .split(/\n\n+/)
-        .map((para) => `<p>${para.replace(/\n/g, "<br />")}</p>`)
-        .join("\n");
-    } else if (perEventContent) {
-      rawMainContent = perEventContent;
-    } else {
-      rawMainContent = globalContent;
-    }
-
-    const mainContentHtml = customMainContent?.trim()
-      ? rawMainContent // already processed user plain text, no placeholder replacement needed
-      : applyMainContentPlaceholders(rawMainContent, {
-          eventTitle,
-          guestName: guestName.trim(),
-          eventDate: eventDateStr,
-        });
+    // Resolve signature preset for EN invitations
+    const signaturePreset =
+      lang === "en"
+        ? signaturePresetId
+          ? await getSignaturePresetById(signaturePresetId)
+          : await getDefaultSignaturePreset()
+        : null;
 
     const html = renderInvitationHtml({
       language: lang,
-      secondTitle: eventTitle,
-      honoredGuestName,
-      mainContentHtml,
-      eventDate: eventDateLabel,
-      eventTime: eventTimeLabel,
-      eventVenue: eventVenueLabel,
-      footerUrl,
+      secondTitle: resolved.secondTitle,
+      bodyContentHtml: resolved.bodyContentHtml,
+      eventInfoLabel: resolved.eventInfoLabel,
+      eventDateText: resolved.eventDateText || eventDateLabel,
+      eventTimeText: resolved.eventTimeText || eventTimeLabel,
+      eventVenueText: resolved.eventVenueText || eventVenueLabel,
+      closingText: resolved.closingText,
+      greetingText: resolved.greetingText,
+      signatureHtml: resolved.signatureHtml,
+      footerNoteText: resolved.footerNoteText,
+      footerLinkText: resolved.footerLinkText,
       qrCodeDataUrl,
       coverImageUrl:
         lang === "en" ? settings.coverImageUrl_en : settings.coverImageUrl_zh,
@@ -171,6 +195,7 @@ export async function POST(req: NextRequest) {
         lang === "en" ? settings.bodyBgImageUrl_en : settings.bodyBgImageUrl_zh,
       backBgImageUrl:
         lang === "en" ? settings.backBgImageUrl_en : settings.backBgImageUrl_zh,
+      signaturePreset,
     });
 
     return new NextResponse(html, {

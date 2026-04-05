@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import {
+  estimateInvitationTemplateVisibleChars,
+  getInvitationBodyCharLimit,
+} from "@/lib/invitation-content-limits";
 import { prisma } from "@/lib/prisma";
 import { isAdminRole } from "@/lib/permissions";
 import {
@@ -45,6 +49,20 @@ export async function PUT(req: NextRequest) {
   }
   try {
     const body = await req.json();
+    const zhBody = typeof body.bodyContentHtml_zh === "string" ? body.bodyContentHtml_zh : "";
+    const enBody = typeof body.bodyContentHtml_en === "string" ? body.bodyContentHtml_en : "";
+    if (estimateInvitationTemplateVisibleChars(zhBody, "zh") > getInvitationBodyCharLimit("zh")) {
+      return NextResponse.json(
+        { success: false, error: "Chinese body template exceeds the safe character limit" },
+        { status: 400 }
+      );
+    }
+    if (estimateInvitationTemplateVisibleChars(enBody, "en") > getInvitationBodyCharLimit("en")) {
+      return NextResponse.json(
+        { success: false, error: "English body template exceeds the safe character limit" },
+        { status: 400 }
+      );
+    }
     const updated = await updateInvitationTemplateSettings(body);
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {

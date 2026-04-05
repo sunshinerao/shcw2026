@@ -7,8 +7,13 @@ import { getInvitationTemplateSettings } from "@/lib/invitation-settings";
 import {
   renderInvitationHtml,
   generateQrCodeDataUrl,
-  applyMainContentPlaceholders,
 } from "@/lib/invitation-renderer";
+import { buildInvitationResolvedContent } from "@/lib/invitation-template";
+import {
+  getDefaultSignaturePreset,
+  getSignaturePresetById,
+} from "@/lib/invitation-signature-presets";
+import { getLocalizedSalutationLabel } from "@/lib/user-form-options";
 
 function getBaseUrl(req: NextRequest): string {
   const proto = req.headers.get("x-forwarded-proto") || "https";
@@ -79,11 +84,6 @@ export async function GET(
     const lang = invitation.language === "en" ? "en" : "zh";
     const event = invitation.event;
 
-    const honoredGuestName =
-      [invitation.salutation?.trim(), invitation.guestName.trim()]
-        .filter(Boolean)
-        .join(" ") + "：";
-
     const eventTitle =
       lang === "en"
         ? (event?.titleEn || event?.title || "")
@@ -124,44 +124,49 @@ export async function GET(
       ? `${baseUrl}/${lang}/events/${event.id}`
       : baseUrl;
     const qrCodeDataUrl = await generateQrCodeDataUrl(footerUrl);
-
-    // Priority: user custom content > per-event content > global settings
-    const perEventContent = lang === "en"
-      ? (event?.invitationContentHtml_en || "")
-      : (event?.invitationContentHtml_zh || "");
-    const globalContent = lang === "en" ? settings.mainContentHtml_en : settings.mainContentHtml_zh;
-
-    let mainContentHtml: string;
-    if (invitation.customMainContent?.trim()) {
-      // User-entered plain text: wrap in <p> tags
-      mainContentHtml = invitation.customMainContent
-        .trim()
-        .split(/\n\n+/)
-        .map((para) => `<p>${para.replace(/\n/g, "<br />")}</p>`)
-        .join("\n");
-    } else if (perEventContent) {
-      mainContentHtml = applyMainContentPlaceholders(perEventContent, {
+    const localizedSalutation = getLocalizedSalutationLabel(invitation.salutation, lang);
+    const resolved = buildInvitationResolvedContent({
+      settings,
+      language: lang,
+      vars: {
         eventTitle,
         guestName: invitation.guestName.trim(),
+        salutation: localizedSalutation,
+        guestTitle: invitation.guestTitle,
+        guestOrg: invitation.guestOrg,
         eventDate: eventDateStr,
-      });
-    } else {
-      mainContentHtml = applyMainContentPlaceholders(globalContent, {
-        eventTitle,
-        guestName: invitation.guestName.trim(),
-        eventDate: eventDateStr,
-      });
-    }
+        eventTime: timeStr,
+        eventVenue: eventVenueRaw,
+        eventUrl: footerUrl,
+      },
+      eventBodyTemplate:
+        lang === "en" ? event?.invitationContentHtml_en : event?.invitationContentHtml_zh,
+      customMainContent: invitation.customMainContent,
+    });
+
+    // Resolve signature preset for EN invitations
+    // ?presetId= query param overrides; falls back to the configured default.
+    const presetIdParam = req.nextUrl.searchParams.get("presetId");
+    const signaturePreset =
+      lang === "en"
+        ? presetIdParam
+          ? await getSignaturePresetById(presetIdParam)
+          : await getDefaultSignaturePreset()
+        : null;
 
     const html = renderInvitationHtml({
       language: lang,
-      secondTitle: eventTitle,
-      honoredGuestName,
-      mainContentHtml,
-      eventDate: eventDateLabel,
-      eventTime: eventTimeLabel,
-      eventVenue: eventVenueLabel,
-      footerUrl,
+      secondTitle: resolved.secondTitle,
+      bodyContentHtml: resolved.bodyContentHtml,
+      eventInfoLabel: resolved.eventInfoLabel,
+      eventDateText: resolved.eventDateText || eventDateLabel,
+      eventTimeText: resolved.eventTimeText || eventTimeLabel,
+      eventVenueText: resolved.eventVenueText || eventVenueLabel,
+      closingText: resolved.closingText,
+      greetingText: resolved.greetingText,
+      signatureHtml: resolved.signatureHtml,
+      footerNoteText: resolved.footerNoteText,
+      footerLinkText: resolved.footerLinkText,
       qrCodeDataUrl,
       coverImageUrl:
         lang === "en" ? settings.coverImageUrl_en : settings.coverImageUrl_zh,
@@ -169,6 +174,7 @@ export async function GET(
         lang === "en" ? settings.bodyBgImageUrl_en : settings.bodyBgImageUrl_zh,
       backBgImageUrl:
         lang === "en" ? settings.backBgImageUrl_en : settings.backBgImageUrl_zh,
+      signaturePreset,
     });
 
     return new NextResponse(html, {

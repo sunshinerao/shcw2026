@@ -3,8 +3,10 @@ import { getServerSession } from "next-auth/next";
 import { InvitationStatus } from "@prisma/client";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
+import { countInvitationBodyChars, getInvitationRequestBodyCharLimit } from "@/lib/invitation-content-limits";
 import { canManageEvents, isAdminRole } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import { normalizeSalutationValue } from "@/lib/user-form-options";
 
 async function requireSessionUser() {
   const session = await getServerSession(authOptions);
@@ -109,7 +111,7 @@ export async function PUT(
 
     const existing = await prisma.invitationRequest.findUnique({
       where: { id: params.id },
-      select: { id: true, userId: true, status: true, eventId: true },
+      select: { id: true, userId: true, status: true, eventId: true, language: true, guestName: true, guestTitle: true },
     });
 
     if (!existing) {
@@ -149,7 +151,21 @@ export async function PUT(
       }
     }
 
-    const { status, letterFileUrl, rejectReason, salutation, guestName, guestTitle, guestOrg, guestEmail, language, eventId, purpose, notes } = body;
+    const {
+      status,
+      letterFileUrl,
+      rejectReason,
+      salutation,
+      guestName,
+      guestTitle,
+      guestOrg,
+      guestEmail,
+      language,
+      eventId,
+      purpose,
+      notes,
+      customMainContent,
+    } = body;
 
     // Owner actions (non-admin)
     if (isOwner && !isManager) {
@@ -180,6 +196,30 @@ export async function PUT(
           );
         }
 
+        const normalizedLanguage = language !== undefined
+          ? (language === "en" ? "en" : "zh")
+          : existing.language === "en"
+            ? "en"
+            : "zh";
+        const effectiveGuestName = guestName !== undefined ? guestName : existing.guestName;
+        const effectiveGuestTitle = guestTitle !== undefined ? guestTitle : existing.guestTitle;
+        const trimmedCustomMainContent = customMainContent !== undefined ? customMainContent?.trim() || "" : undefined;
+        if (
+          trimmedCustomMainContent !== undefined &&
+          trimmedCustomMainContent &&
+          countInvitationBodyChars(trimmedCustomMainContent) > getInvitationRequestBodyCharLimit(normalizedLanguage, effectiveGuestName, effectiveGuestTitle)
+        ) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: normalizedLanguage === "en"
+                ? "Custom body content exceeds the safe character limit"
+                : "自定义正文内容超出安全字数上限",
+            },
+            { status: 400 }
+          );
+        }
+
         // Validate eventId if provided
         if (eventId) {
           const event = await prisma.event.findUnique({ where: { id: eventId }, select: { id: true } });
@@ -192,15 +232,16 @@ export async function PUT(
         }
 
         const editData: Record<string, unknown> = {};
-        if (salutation !== undefined) editData.salutation = salutation?.trim() || null;
+        if (salutation !== undefined) editData.salutation = normalizeSalutationValue(salutation);
         if (guestName !== undefined) editData.guestName = guestName.trim();
         if (guestTitle !== undefined) editData.guestTitle = guestTitle?.trim() || null;
         if (guestOrg !== undefined) editData.guestOrg = guestOrg?.trim() || null;
         if (guestEmail !== undefined) editData.guestEmail = guestEmail?.trim() || null;
-        if (language !== undefined) editData.language = language === "en" ? "en" : "zh";
+        if (language !== undefined) editData.language = normalizedLanguage;
         if (eventId !== undefined) editData.eventId = eventId || null;
         if (purpose !== undefined) editData.purpose = purpose?.trim() || null;
         if (notes !== undefined) editData.notes = notes?.trim() || null;
+        if (customMainContent !== undefined) editData.customMainContent = trimmedCustomMainContent || null;
         // Reset status to PENDING on resubmit (in case it was REJECTED)
         if (existing.status === InvitationStatus.REJECTED) {
           editData.status = InvitationStatus.PENDING;

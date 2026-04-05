@@ -68,6 +68,8 @@ type ManagedEvent = {
   eventDateSlots?: EventDateSlotForm[];
   partners?: string[];
   partnersEn?: string[];
+  invitationContentHtml_zh?: string | null;
+  invitationContentHtml_en?: string | null;
   isPublished: boolean;
   isFeatured: boolean;
   isPinned?: boolean;
@@ -494,8 +496,8 @@ export default function AdminEventsPage() {
       eventDateSlots: normalizedEventDateSlots,
       managerUserId: event.managerUserId || "",
       partners: Array.isArray(event.partners) ? event.partners : [],
-      invitationContentHtml_zh: (event as unknown as Record<string, unknown>).invitationContentHtml_zh as string || "",
-      invitationContentHtml_en: (event as unknown as Record<string, unknown>).invitationContentHtml_en as string || "",
+      invitationContentHtml_zh: event.invitationContentHtml_zh || "",
+      invitationContentHtml_en: event.invitationContentHtml_en || "",
     });
     setSponsorSearch("");
     setIsFormDialogOpen(true);

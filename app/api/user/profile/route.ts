@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyAuthDev } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
+import { normalizeSalutationValue } from "@/lib/user-form-options";
 
 export const dynamic = "force-dynamic";
 
@@ -125,7 +126,7 @@ export async function PUT(req: NextRequest) {
           ...(title !== undefined && { title: title || null }),
           ...(bio !== undefined && { bio: bio || null }),
           ...(avatar !== undefined && { avatar: avatar || null }),
-          ...(salutation !== undefined && { salutation: salutation || null }),
+          ...(salutation !== undefined && { salutation: normalizeSalutationValue(salutation) }),
           ...(country !== undefined && { country: country || null }),
         },
       });
