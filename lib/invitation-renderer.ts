@@ -179,8 +179,8 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
       height: 1444px;
       overflow: hidden;
       font-family: ${bodyFont};
-      font-size: 34px;
-      line-height: 1.28;
+      font-size: 40px;
+      line-height: 1.5;
       color: var(--text-main);
       text-align: justify;
       z-index: 2;
