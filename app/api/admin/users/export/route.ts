@@ -83,7 +83,10 @@ export async function GET(req: NextRequest) {
     const rows = users.map((user) => {
       const roleLabel = roleLabels[user.role]?.[requestLocale] ?? user.role;
       const statusLabel = statusLabels[user.status]?.[requestLocale] ?? user.status;
-      const registeredAt = user.createdAt.toISOString().replace("T", " ").slice(0, 19);
+      const registeredAt = user.createdAt.toLocaleString(
+        requestLocale === "zh" ? "zh-CN" : "en-US",
+        { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }
+      );
 
       if (requestLocale === "zh") {
         return {
@@ -145,7 +148,7 @@ export async function GET(req: NextRequest) {
   } catch (error) {
     console.error("Export users error:", error);
     return NextResponse.json(
-      { success: false, error: "Internal server error" },
+      { success: false, error: apiMessage(requestLocale, "internalServerError") },
       { status: 500 }
     );
   }
