@@ -143,15 +143,37 @@ export default function AdminSettingsPage() {
       const res = await fetch("/api/admin/invitation-template", { cache: "no-store" });
       const payload = await res.json();
       if (!res.ok || !payload.success) throw new Error(payload.error);
-      setTplForm(payload.data);
+      // Strip any data: URIs that may have been saved previously (they bloat the body)
+      const data = payload.data as Record<string, string>;
+      const imageFields = [
+        "coverImageUrl_zh", "coverImageUrl_en",
+        "bodyBgImageUrl_zh", "bodyBgImageUrl_en",
+        "backBgImageUrl_zh", "backBgImageUrl_en",
+      ];
+      let hadBlob = false;
+      for (const f of imageFields) {
+        if (typeof data[f] === "string" && data[f].startsWith("data:")) {
+          data[f] = "";
+          hadBlob = true;
+        }
+      }
+      setTplForm(data as typeof tplForm);
       setTplStatusMessage("");
+      if (hadBlob) {
+        setTplStatusTone("error");
+        setTplStatusMessage(
+          locale === "en"
+            ? "One or more images were stored as base64 data (not a URL). They have been cleared — please re-upload using the upload button and save."
+            : "一个或多个图片字段存储的是 base64 数据而非 URL，已自动清除，请重新使用上传按钮上传图片并保存。"
+        );
+      }
     } catch (error) {
       setTplStatusTone("error");
       setTplStatusMessage(error instanceof Error ? error.message : t("invitationTemplate.loadFailed"));
     } finally {
       setIsTplLoading(false);
     }
-  }, [t]);
+  }, [t, locale]);
 
   const loadSigPresets = useCallback(async () => {
     setIsSigLoading(true);
@@ -177,10 +199,24 @@ export default function AdminSettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ presets: nextPresets, defaultPresetId: nextDefaultId }),
       });
-      const result = await res.json();
+      // Guard against non-JSON responses (e.g. Vercel 413 "Request Entity Too Large")
+      const text = await res.text();
+      let result: { success: boolean; data?: { presets?: SignaturePreset[]; defaultPresetId?: string }; error?: string };
+      try {
+        result = JSON.parse(text) as typeof result;
+      } catch {
+        if (res.status === 413) {
+          throw new Error(
+            locale === "en"
+              ? "Request too large — signature images may contain embedded base64 data. Please re-upload images."
+              : "请求数据过大——签名图片可能含有 base64 数据，请使用上传按钮重新上传。"
+          );
+        }
+        throw new Error(`${locale === "en" ? "Server error" : "服务器错误"} (${res.status})`);
+      }
       if (!res.ok || !result.success) throw new Error(result.error ?? "Save failed");
-      setSigPresets(result.data.presets ?? []);
-      setSigDefaultId(result.data.defaultPresetId ?? "");
+      setSigPresets(result.data?.presets ?? []);
+      setSigDefaultId(result.data?.defaultPresetId ?? "");
       setSigStatusTone("success");
       setSigStatus(locale === "en" ? "Signature presets saved." : "签名预设已保存。");
     } catch (err) {
@@ -262,12 +298,46 @@ export default function AdminSettingsPage() {
 
     setIsTplSaving(true);
     try {
+      const bodyStr = JSON.stringify(tplForm);
+      // Pre-flight: body > 3 MB almost certainly means a data: URI is embedded in an image field.
+      if (bodyStr.length > 3 * 1024 * 1024) {
+        const imageFields = [
+          "coverImageUrl_zh", "coverImageUrl_en",
+          "bodyBgImageUrl_zh", "bodyBgImageUrl_en",
+          "backBgImageUrl_zh", "backBgImageUrl_en",
+        ] as const;
+        const hasBlobField = imageFields.some((k) => (tplForm[k] ?? "").startsWith("data:"));
+        throw new Error(
+          hasBlobField
+            ? (locale === "en"
+                ? "One or more image fields contain embedded base64 data instead of a URL. Please remove and re-upload the image using the upload button."
+                : "一个或多个图片字段包含内嵌的 base64 数据而非 URL，请点击「删除」按钮后重新使用上传按钮选择图片。")
+            : (locale === "en"
+                ? "Settings data is too large to save. Please shorten the template content."
+                : "设置数据过大，无法保存，请缩短模板内容后重试。")
+        );
+      }
+
       const res = await fetch("/api/admin/invitation-template", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(tplForm),
+        body: bodyStr,
       });
-      const result = await res.json();
+      // Guard against non-JSON responses (e.g. Vercel 413 "Request Entity Too Large")
+      const text = await res.text();
+      let result: { success: boolean; data?: unknown; error?: string };
+      try {
+        result = JSON.parse(text) as typeof result;
+      } catch {
+        if (res.status === 413) {
+          throw new Error(
+            locale === "en"
+              ? "Request too large — the settings data may contain embedded base64 images. Please re-upload images using the upload button."
+              : "请求数据过大——设置中可能含有 base64 图片。请使用上传按钮重新上传图片。"
+          );
+        }
+        throw new Error(`${locale === "en" ? "Server error" : "服务器错误"} (${res.status})`);
+      }
       if (!res.ok || !result.success) throw new Error(result.error || t("invitationTemplate.saveFailed"));
       setTplStatusTone("success");
       setTplStatusMessage(t("invitationTemplate.saveSuccess"));
