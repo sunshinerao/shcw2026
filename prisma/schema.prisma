@@ -632,6 +632,9 @@ model InvitationRequest {
   notes           String?          @db.Text // 备注
   customMainContent String?        @db.Text // 用户自定义邀请函正文（纯文本，优先级最高）
   
+  // 英文邀请函签名预设
+  signaturePresetId String?        // 英文邀请函签名预设ID（仅语言为 en 时生效）
+  
   // 状态与文件
   status          InvitationStatus @default(PENDING)
   letterFileUrl   String?          // 管理员上传的邀请函文件URL

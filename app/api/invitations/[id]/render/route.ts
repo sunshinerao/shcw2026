@@ -177,6 +177,7 @@ export async function GET(
         lang === "en" ? settings.backBgImageUrl_en : settings.backBgImageUrl_zh,
       signaturePreset,
       eventLanguageText: resolved.eventLanguageText,
+      guestName: invitation.guestName.trim(),
     });
 
     return new NextResponse(html, {

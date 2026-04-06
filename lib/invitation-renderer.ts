@@ -28,6 +28,8 @@ export type InvitationRenderData = {
   signaturePreset?: SignaturePreset | null;
   /** EN-only: language line text, e.g. "Language: English and Chinese" */
   eventLanguageText?: string;
+  /** Guest name used for the browser print/save filename via <title> */
+  guestName?: string;
 };
 
 const FIXED_TEXT = {
@@ -239,11 +241,11 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
     /* Single sig */
     .inside-en .v-invitation-sender {
       position: absolute;
-      right: 294px;
+      left: 294px;
       top: 2816px;
       width: 1774px;
       font-family: ${bodyFont};
-      text-align: right;
+      text-align: left;
       font-size: 34px;
       line-height: 1.2;
       color: var(--text-main);
@@ -254,7 +256,7 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
     /* Single sig with image: image sits at top, text shifted down by image height */
     .inside-en .v-sig-image-single {
       position: absolute;
-      right: 294px;
+      left: 294px;
       top: 2816px;
       max-width: 400px;
       max-height: 200px;
@@ -270,10 +272,10 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
     /* Dual sig */
     .inside-en .v-signed-b-en {
       position: absolute;
-      left: 404.61px;
-      top: 2816px;
-      width: 295.783px;
-      height: 298.443px;
+      left: 294px;
+      top: 2839.67px;
+      width: 208.051px;
+      height: 338.083px;
       object-fit: contain;
       display: block;
       z-index: 2;
@@ -366,12 +368,17 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
     ? `<img class="v-footer-qrcode" src="${data.qrCodeDataUrl}" alt="${escHtml(t.qrAlt)}" />`
     : "";
 
+  const name = data.guestName?.trim() || "";
+  const docTitle = isEnglish
+    ? name ? `Invitation SHCW (${name})` : "Invitation SHCW"
+    : name ? `上海气候周邀请函（${name}）` : "上海气候周邀请函";
+
   return `<!DOCTYPE html>
 <html lang="${langAttr}">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SHCW 2026 Invitation</title>
+  <title>${docTitle}</title>
   <style>
     :root {
       --page-width: 2362px;
@@ -590,14 +597,24 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
 
     ${enPageCss}
 
+    @page {
+      size: 2362px 3543px;
+      margin: 0;
+    }
+
     @media print {
-      body {
+      html, body {
         background: #fff;
         padding: 0;
+        margin: 0;
+        width: 2362px;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
 
       .stack {
         gap: 0;
+        align-items: flex-start;
       }
 
       .scaled {
@@ -607,7 +624,25 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
 
       .page {
         box-shadow: none;
+        width: 2362px;
+        height: 3543px;
+        overflow: hidden;
         page-break-after: always;
+        break-after: page;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      .page:last-child {
+        page-break-after: avoid;
+        break-after: avoid;
+      }
+
+      * {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
       }
     }
   </style>

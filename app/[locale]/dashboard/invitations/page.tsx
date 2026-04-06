@@ -39,6 +39,7 @@ type InvitationRequest = {
   purpose?: string | null;
   notes?: string | null;
   customMainContent?: string | null;
+  signaturePresetId?: string | null;
   status: string;
   letterFileUrl?: string | null;
   rejectReason?: string | null;
@@ -49,6 +50,12 @@ type PublicEvent = {
   id: string;
   title: string;
   titleEn?: string | null;
+};
+
+type SignaturePreset = {
+  id: string;
+  label: string;
+  type: "single" | "dual";
 };
 
 const statusConfig: Record<string, { icon: typeof Clock; color: string }> = {
@@ -65,6 +72,8 @@ export default function DashboardInvitationsPage() {
   const { data: session, status: authStatus } = useSession();
   const [requests, setRequests] = useState<InvitationRequest[]>([]);
   const [events, setEvents] = useState<PublicEvent[]>([]);
+  const [signaturePresets, setSignaturePresets] = useState<SignaturePreset[]>([]);
+  const [defaultPresetId, setDefaultPresetId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -95,6 +104,7 @@ export default function DashboardInvitationsPage() {
     purpose: "",
     notes: "",
     customMainContent: "",
+    signaturePresetId: "",
   });
 
   useEffect(() => {
@@ -139,6 +149,24 @@ export default function DashboardInvitationsPage() {
     void loadEvents();
   }, [locale]);
 
+  useEffect(() => {
+    async function loadSignaturePresets() {
+      try {
+        const res = await fetch("/api/invitations/signature-presets");
+        const data = await res.json();
+        if (data.success) {
+          setSignaturePresets(data.data.presets || []);
+          setDefaultPresetId(data.data.defaultPresetId || "");
+        }
+      } catch (err) {
+        console.error("Load signature presets failed:", err);
+      }
+    }
+    if (authStatus === "authenticated") {
+      void loadSignaturePresets();
+    }
+  }, [authStatus]);
+
   const resetForm = () => {
     setForm({
       salutation: "",
@@ -151,6 +179,7 @@ export default function DashboardInvitationsPage() {
       purpose: "",
       notes: "",
       customMainContent: "",
+      signaturePresetId: "",
     });
     setBodyDraftText("");
     setBodyDraftSource(null);
@@ -250,6 +279,7 @@ export default function DashboardInvitationsPage() {
           language: form.language,
           eventId: form.eventId || null,
           customMainContent: effectiveCustomMainContent || null,
+          signaturePresetId: form.language === "en" && form.signaturePresetId ? form.signaturePresetId : null,
         }),
       });
       if (!res.ok) {
@@ -286,6 +316,7 @@ export default function DashboardInvitationsPage() {
         purpose: form.purpose || null,
         notes: form.notes || null,
         customMainContent: effectiveCustomMainContent || null,
+        signaturePresetId: form.language === "en" && form.signaturePresetId ? form.signaturePresetId : null,
       };
 
       const isEditing = !!editingId;
@@ -330,6 +361,7 @@ export default function DashboardInvitationsPage() {
       purpose: req.purpose || "",
       notes: req.notes || "",
       customMainContent: req.customMainContent || "",
+      signaturePresetId: req.signaturePresetId || "",
     });
     setIsBodyDirty(Boolean(req.customMainContent));
     setBodyDraftText("");
@@ -534,7 +566,7 @@ export default function DashboardInvitationsPage() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="inv-language">{t("form.language")}</Label>
-                  <Select value={form.language} onValueChange={(v) => setForm((p) => ({ ...p, language: v }))}>
+                  <Select value={form.language} onValueChange={(v) => setForm((p) => ({ ...p, language: v, signaturePresetId: "" }))}>
                     <SelectTrigger id="inv-language"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="zh">中文</SelectItem>
@@ -542,6 +574,25 @@ export default function DashboardInvitationsPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                {form.language === "en" && signaturePresets.length > 0 ? (
+                  <div className="space-y-2">
+                    <Label htmlFor="inv-sig-preset">{t("form.signaturePreset")}</Label>
+                    <Select
+                      value={form.signaturePresetId || "default"}
+                      onValueChange={(v) => setForm((p) => ({ ...p, signaturePresetId: v === "default" ? "" : v }))}
+                    >
+                      <SelectTrigger id="inv-sig-preset"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="default">{t("form.signaturePresetDefault")}</SelectItem>
+                        {signaturePresets.map((preset) => (
+                          <SelectItem key={preset.id} value={preset.id}>
+                            {preset.label}{preset.id === defaultPresetId ? ` (${locale === "en" ? "default" : "默认"})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
                 <div className="space-y-2">
                   <Label htmlFor="inv-event">{t("form.event")}</Label>
                   <Select value={form.eventId || "none"} onValueChange={(v) => setForm((p) => ({ ...p, eventId: v === "none" ? "" : v }))}>

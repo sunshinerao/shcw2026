@@ -200,6 +200,7 @@ export async function POST(req: NextRequest) {
         lang === "en" ? settings.backBgImageUrl_en : settings.backBgImageUrl_zh,
       signaturePreset,
       eventLanguageText: resolved.eventLanguageText,
+      guestName: guestName.trim(),
     });
 
     return new NextResponse(html, {

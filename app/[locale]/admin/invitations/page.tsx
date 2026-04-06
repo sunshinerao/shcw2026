@@ -34,10 +34,17 @@ type InvitationRequest = {
   user: { id: string; name: string; email: string; title?: string | null; organization?: { name: string } | null };
   purpose?: string | null;
   notes?: string | null;
+  signaturePresetId?: string | null;
   status: string;
   letterFileUrl?: string | null;
   rejectReason?: string | null;
   createdAt: string;
+};
+
+type SignaturePreset = {
+  id: string;
+  label: string;
+  type: "single" | "dual";
 };
 
 const statusConfig: Record<string, { icon: typeof Clock; color: string }> = {
@@ -63,10 +70,13 @@ export default function AdminInvitationsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [signaturePresets, setSignaturePresets] = useState<SignaturePreset[]>([]);
+  const [defaultPresetId, setDefaultPresetId] = useState<string>("");
   const [editForm, setEditForm] = useState({
     status: "",
     letterFileUrl: "",
     rejectReason: "",
+    signaturePresetId: "",
   });
 
   const loadRequests = useCallback(async () => {
@@ -94,6 +104,22 @@ export default function AdminInvitationsPage() {
     void loadRequests();
   }, [loadRequests]);
 
+  useEffect(() => {
+    async function loadSignaturePresets() {
+      try {
+        const res = await fetch("/api/invitations/signature-presets");
+        const data = await res.json();
+        if (data.success) {
+          setSignaturePresets(data.data.presets || []);
+          setDefaultPresetId(data.data.defaultPresetId || "");
+        }
+      } catch (err) {
+        console.error("Load signature presets failed:", err);
+      }
+    }
+    void loadSignaturePresets();
+  }, []);
+
   const filteredRequests = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return requests;
@@ -111,6 +137,7 @@ export default function AdminInvitationsPage() {
       status: req.status,
       letterFileUrl: req.letterFileUrl || "",
       rejectReason: req.rejectReason || "",
+      signaturePresetId: req.signaturePresetId || "",
     });
     setIsEditDialogOpen(true);
   };
@@ -142,7 +169,10 @@ export default function AdminInvitationsPage() {
     if (!editingRequest) return;
     setIsGenerating(true);
     try {
-      const renderUrl = `/api/invitations/${editingRequest.id}/render`;
+      const presetParam = editingRequest.language === "en" && editForm.signaturePresetId
+        ? `?presetId=${encodeURIComponent(editForm.signaturePresetId)}`
+        : "";
+      const renderUrl = `/api/invitations/${editingRequest.id}/render${presetParam}`;
       const res = await fetch(`/api/invitations/${editingRequest.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -351,6 +381,25 @@ export default function AdminInvitationsPage() {
               <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 space-y-3">
                 <p className="text-sm font-medium text-emerald-800">{t("editDialog.generateSection")}</p>
                 <p className="text-xs text-emerald-700">{t("editDialog.generateHint")}</p>
+                {editingRequest?.language === "en" && signaturePresets.length > 0 ? (
+                  <div className="space-y-1">
+                    <Label htmlFor="admin-sig-preset" className="text-xs text-emerald-800">{t("editDialog.signaturePreset")}</Label>
+                    <Select
+                      value={editForm.signaturePresetId || "default"}
+                      onValueChange={(v) => setEditForm((p) => ({ ...p, signaturePresetId: v === "default" ? "" : v }))}
+                    >
+                      <SelectTrigger id="admin-sig-preset" className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="default">{t("editDialog.signaturePresetDefault")}</SelectItem>
+                        {signaturePresets.map((preset) => (
+                          <SelectItem key={preset.id} value={preset.id}>
+                            {preset.label}{preset.id === defaultPresetId ? ` (${locale === "en" ? "default" : "默认"})` : ""}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : null}
                 <div className="flex items-center gap-2 flex-wrap">
                   <LoadingButton
                     size="sm"
@@ -364,7 +413,7 @@ export default function AdminInvitationsPage() {
                   </LoadingButton>
                   {editingRequest ? (
                     <a
-                      href={`/api/invitations/${editingRequest.id}/render`}
+                      href={`/api/invitations/${editingRequest.id}/render${editingRequest.language === "en" && editForm.signaturePresetId ? `?presetId=${encodeURIComponent(editForm.signaturePresetId)}` : ""}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 text-sm text-emerald-700 underline"
