@@ -154,10 +154,19 @@ export default function AdminNewsPage() {
     try {
       const url = editingId ? `/api/news/${editingId}` : "/api/news";
       const method = editingId ? "PUT" : "POST";
+      const bodyStr = JSON.stringify(form);
+      // Pre-flight: cover image is stored as base64 data URL; check it won't exceed Vercel's 4.5MB body limit.
+      if (bodyStr.length > 3.5 * 1024 * 1024) {
+        throw new Error(
+          locale === "en"
+            ? "The cover image is too large. Please delete it and re-upload a smaller image (max 1.5 MB)."
+            : "封面图片过大，请先删除后重新上传较小的图片（最大 1.5 MB）。"
+        );
+      }
       const res = await fetch(url, {
         method,
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(form),
+        body: bodyStr,
       });
       const data = await res.json();
       if (!res.ok || !data.success) {

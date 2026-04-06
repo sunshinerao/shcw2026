@@ -287,6 +287,28 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // Image fields that are saved immediately on upload/removal — NOT included in the text Save.
+  const TPL_IMAGE_FIELDS = new Set([
+    "coverImageUrl_zh", "coverImageUrl_en",
+    "bodyBgImageUrl_zh", "bodyBgImageUrl_en",
+    "backBgImageUrl_zh", "backBgImageUrl_en",
+  ]);
+
+  // Save a single image field immediately to the API (base64 body is ~2MB max, safe under Vercel limit)
+  const saveTplImageField = async (fieldKey: string, value: string) => {
+    const res = await fetch("/api/admin/invitation-template", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [fieldKey]: value }),
+    });
+    const text = await res.text();
+    let result: { success: boolean; error?: string };
+    try { result = JSON.parse(text) as typeof result; } catch {
+      throw new Error(`${locale === "en" ? "Server error" : "服务器错误"} (${res.status})`);
+    }
+    if (!res.ok || !result.success) throw new Error(result.error ?? (locale === "en" ? "Failed to save image" : "图片保存失败"));
+  };
+
   const saveTplSettings = async () => {
     const zhBodyCount = estimateInvitationTemplateVisibleChars(tplForm.bodyContentHtml_zh, "zh");
     const enBodyCount = estimateInvitationTemplateVisibleChars(tplForm.bodyContentHtml_en, "en");
@@ -298,30 +320,16 @@ export default function AdminSettingsPage() {
 
     setIsTplSaving(true);
     try {
-      const bodyStr = JSON.stringify(tplForm);
-      // Pre-flight: body > 3 MB almost certainly means a data: URI is embedded in an image field.
-      if (bodyStr.length > 3 * 1024 * 1024) {
-        const imageFields = [
-          "coverImageUrl_zh", "coverImageUrl_en",
-          "bodyBgImageUrl_zh", "bodyBgImageUrl_en",
-          "backBgImageUrl_zh", "backBgImageUrl_en",
-        ] as const;
-        const hasBlobField = imageFields.some((k) => (tplForm[k] ?? "").startsWith("data:"));
-        throw new Error(
-          hasBlobField
-            ? (locale === "en"
-                ? "One or more image fields contain embedded base64 data instead of a URL. Please remove and re-upload the image using the upload button."
-                : "一个或多个图片字段包含内嵌的 base64 数据而非 URL，请点击「删除」按钮后重新使用上传按钮选择图片。")
-            : (locale === "en"
-                ? "Settings data is too large to save. Please shorten the template content."
-                : "设置数据过大，无法保存，请缩短模板内容后重试。")
-        );
-      }
+      // Exclude image fields — they are saved immediately on upload/removal via saveTplImageField.
+      // This keeps the body small (text-only, a few KB) and avoids 413 errors.
+      const textOnlyForm = Object.fromEntries(
+        Object.entries(tplForm).filter(([k]) => !TPL_IMAGE_FIELDS.has(k))
+      );
 
       const res = await fetch("/api/admin/invitation-template", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: bodyStr,
+        body: JSON.stringify(textOnlyForm),
       });
       // Guard against non-JSON responses (e.g. Vercel 413 "Request Entity Too Large")
       const text = await res.text();
@@ -332,8 +340,8 @@ export default function AdminSettingsPage() {
         if (res.status === 413) {
           throw new Error(
             locale === "en"
-              ? "Request too large — the settings data may contain embedded base64 images. Please re-upload images using the upload button."
-              : "请求数据过大——设置中可能含有 base64 图片。请使用上传按钮重新上传图片。"
+              ? "Request too large — please shorten the template content."
+              : "请求数据过大，请缩短模板内容后重试。"
           );
         }
         throw new Error(`${locale === "en" ? "Server error" : "服务器错误"} (${res.status})`);
@@ -356,7 +364,10 @@ export default function AdminSettingsPage() {
     const res = await fetch("/api/upload/image", { method: "POST", body: fd });
     const result = await res.json();
     if (!res.ok || !result.success) throw new Error(result.error || "Upload failed");
-    setTplForm((f) => ({ ...f, [fieldKey]: result.data.url as string }));
+    const url = result.data.url as string;
+    // Immediately persist this single image field (body ~2MB max — one image only, safe under Vercel 4.5MB limit)
+    await saveTplImageField(fieldKey, url);
+    setTplForm((f) => ({ ...f, [fieldKey]: url }));
   };
 
   const localizedTemplateFields = [
@@ -654,7 +665,15 @@ export default function AdminSettingsPage() {
                                 <button
                                   type="button"
                                   className="text-xs text-slate-400 hover:text-rose-500"
-                                  onClick={() => setTplForm((f) => ({ ...f, [fieldKey]: "" }))}
+                                  onClick={async () => {
+                                    try {
+                                      await saveTplImageField(fieldKey, "");
+                                      setTplForm((f) => ({ ...f, [fieldKey]: "" }));
+                                    } catch (err) {
+                                      setTplStatusTone("error");
+                                      setTplStatusMessage(err instanceof Error ? err.message : t("invitationTemplate.uploadFailed"));
+                                    }
+                                  }}
                                 >
                                   {t("invitationTemplate.remove")}
                                 </button>

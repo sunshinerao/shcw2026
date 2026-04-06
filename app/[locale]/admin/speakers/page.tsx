@@ -524,15 +524,19 @@ export default function AdminSpeakersPage() {
 
     try {
       setIsSubmitting(true);
+      const bodyStr = JSON.stringify({ ...formData, locale });
+      // Pre-flight: avatar is stored as base64 data URL; check it won't exceed Vercel's 4.5MB body limit.
+      if (bodyStr.length > 3.5 * 1024 * 1024) {
+        throw new Error(
+          locale === "en"
+            ? "The speaker avatar image is too large. Please delete it and re-upload a smaller image (max 1.5 MB)."
+            : "嘉宾头像图片过大，请先删除后重新上传较小的图片（最大 1.5 MB）。"
+        );
+      }
       const response = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          locale,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: bodyStr,
       });
 
       const data = await response.json();
