@@ -237,7 +237,6 @@ export default function ProfilePage() {
 
       await update({
         name: data.data.name || "",
-        image: data.data.avatar || null,
       });
 
       setAlert({ type: "success", messageKey: "profileUpdated" });
