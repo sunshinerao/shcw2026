@@ -143,37 +143,15 @@ export default function AdminSettingsPage() {
       const res = await fetch("/api/admin/invitation-template", { cache: "no-store" });
       const payload = await res.json();
       if (!res.ok || !payload.success) throw new Error(payload.error);
-      // Strip any data: URIs that may have been saved previously (they bloat the body)
-      const data = payload.data as Record<string, string>;
-      const imageFields = [
-        "coverImageUrl_zh", "coverImageUrl_en",
-        "bodyBgImageUrl_zh", "bodyBgImageUrl_en",
-        "backBgImageUrl_zh", "backBgImageUrl_en",
-      ];
-      let hadBlob = false;
-      for (const f of imageFields) {
-        if (typeof data[f] === "string" && data[f].startsWith("data:")) {
-          data[f] = "";
-          hadBlob = true;
-        }
-      }
-      setTplForm(data as typeof tplForm);
+      setTplForm(payload.data);
       setTplStatusMessage("");
-      if (hadBlob) {
-        setTplStatusTone("error");
-        setTplStatusMessage(
-          locale === "en"
-            ? "One or more images were stored as base64 data (not a URL). They have been cleared — please re-upload using the upload button and save."
-            : "一个或多个图片字段存储的是 base64 数据而非 URL，已自动清除，请重新使用上传按钮上传图片并保存。"
-        );
-      }
     } catch (error) {
       setTplStatusTone("error");
       setTplStatusMessage(error instanceof Error ? error.message : t("invitationTemplate.loadFailed"));
     } finally {
       setIsTplLoading(false);
     }
-  }, [t, locale]);
+  }, [t]);
 
   const loadSigPresets = useCallback(async () => {
     setIsSigLoading(true);
