@@ -261,12 +261,17 @@ export default function DashboardInvitationsPage() {
     return () => clearTimeout(timer);
   }, [form.eventId, form.guestName, form.guestOrg, form.guestTitle, form.language, form.salutation, generateBodyDraft, isBodyDirty, isDialogOpen, step]);
 
-  // Sync bodyEditorHtml state → contenteditable DOM
+  // Sync bodyEditorHtml state → contenteditable DOM.
+  // Depends on `step` so that when the user returns from the preview step to the
+  // form step the contenteditable div is remounted with empty innerHTML — the
+  // effect must fire again to restore the saved HTML even if bodyEditorHtml itself
+  // did not change.
   useEffect(() => {
+    if (step !== "form") return;
     if (bodyEditorRef.current && bodyEditorRef.current.innerHTML !== bodyEditorHtml) {
       bodyEditorRef.current.innerHTML = bodyEditorHtml;
     }
-  }, [bodyEditorHtml]);
+  }, [bodyEditorHtml, step]);
 
   const effectiveCustomMainContent = isBodyDirty ? form.customMainContent : null;
   // Strip HTML before counting chars (handles both HTML and plain-text content)
