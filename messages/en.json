@@ -545,7 +545,8 @@
         },
         "actions": {
             "process": "Process",
-            "edit": "Edit"
+            "edit": "Edit",
+            "editInfo": "Edit request"
         },
         "editDialog": {
             "title": "Process Invitation",
@@ -569,6 +570,28 @@
             "signaturePreset": "Signature preset",
             "signaturePresetDefault": "Use default signature",
             "uploadSection": "Option 2: Upload file manually"
+        },
+        "infoEditDialog": {
+            "title": "Edit Request Info",
+            "description": "Edit the invitation request details for {name}.",
+            "salutation": "Salutation",
+            "salutationPlaceholder": "None",
+            "guestName": "Guest name",
+            "guestTitle": "Title / position",
+            "guestOrg": "Organization",
+            "guestEmail": "Email",
+            "language": "Letter language",
+            "signaturePreset": "Signature preset",
+            "signaturePresetDefault": "Use default signature",
+            "event": "Associated event",
+            "eventPlaceholder": "General",
+            "purpose": "Purpose",
+            "notes": "Notes",
+            "customMainContent": "Custom body content",
+            "cancel": "Cancel",
+            "save": "Save changes",
+            "saveSuccess": "Request info updated successfully.",
+            "saveFailed": "Failed to update request info."
         },
         "messages": {
             "updateSuccess": "Invitation updated successfully.",

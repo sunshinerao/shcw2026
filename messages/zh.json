@@ -545,7 +545,8 @@
         },
         "actions": {
             "process": "处理",
-            "edit": "编辑"
+            "edit": "编辑",
+            "editInfo": "修改申请"
         },
         "editDialog": {
             "title": "处理邀请函",
@@ -569,6 +570,28 @@
             "signaturePreset": "签名预设",
             "signaturePresetDefault": "使用默认签名",
             "uploadSection": "方式二：手动上传文件"
+        },
+        "infoEditDialog": {
+            "title": "修改申请信息",
+            "description": "修改 {name} 的邀请函申请信息。",
+            "salutation": "称谓",
+            "salutationPlaceholder": "无",
+            "guestName": "嘉宾姓名",
+            "guestTitle": "职称 / 头衔",
+            "guestOrg": "机构",
+            "guestEmail": "邮箱",
+            "language": "邀请函语言",
+            "signaturePreset": "签名预设",
+            "signaturePresetDefault": "使用默认签名",
+            "event": "关联活动",
+            "eventPlaceholder": "通用",
+            "purpose": "申请目的",
+            "notes": "备注",
+            "customMainContent": "自定义正文内容",
+            "cancel": "取消",
+            "save": "保存修改",
+            "saveSuccess": "申请信息已更新。",
+            "saveFailed": "更新申请信息失败。"
         },
         "messages": {
             "updateSuccess": "邀请函更新成功。",

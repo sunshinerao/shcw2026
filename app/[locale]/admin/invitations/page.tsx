@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { FileText, Search, Upload, XCircle, CheckCircle, Clock, Download, Loader2, Wand2, ExternalLink } from "lucide-react";
+import { FileText, Search, Upload, XCircle, CheckCircle, Clock, Download, Loader2, Wand2, ExternalLink, Pencil } from "lucide-react";
+import { getLocalizedSalutationOptions } from "@/lib/user-form-options";
 import { Badge } from "@/components/ui/badge";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 type InvitationRequest = {
   id: string;
+  salutation?: string | null;
   guestName: string;
   guestTitle?: string | null;
   guestOrg?: string | null;
@@ -34,6 +36,7 @@ type InvitationRequest = {
   user: { id: string; name: string; email: string; title?: string | null; organization?: { name: string } | null };
   purpose?: string | null;
   notes?: string | null;
+  customMainContent?: string | null;
   signaturePresetId?: string | null;
   status: string;
   letterFileUrl?: string | null;
@@ -79,6 +82,24 @@ export default function AdminInvitationsPage() {
     signaturePresetId: "",
   });
 
+  // Info edit dialog state
+  const [isInfoEditDialogOpen, setIsInfoEditDialogOpen] = useState(false);
+  const [isInfoEditSubmitting, setIsInfoEditSubmitting] = useState(false);
+  const [events, setEvents] = useState<{ id: string; title: string; titleEn?: string | null }[]>([]);
+  const [infoEditForm, setInfoEditForm] = useState({
+    salutation: "",
+    guestName: "",
+    guestTitle: "",
+    guestOrg: "",
+    guestEmail: "",
+    language: "zh",
+    signaturePresetId: "",
+    eventId: "",
+    purpose: "",
+    notes: "",
+    customMainContent: "",
+  });
+
   const loadRequests = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -120,6 +141,21 @@ export default function AdminInvitationsPage() {
     void loadSignaturePresets();
   }, []);
 
+  useEffect(() => {
+    async function loadEvents() {
+      try {
+        const res = await fetch(`/api/events?published=true&locale=${locale}&pageSize=100`);
+        const data = await res.json();
+        if (data.success) {
+          setEvents(data.data.events || []);
+        }
+      } catch (err) {
+        console.error("Load events failed:", err);
+      }
+    }
+    void loadEvents();
+  }, [locale]);
+
   const filteredRequests = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     if (!q) return requests;
@@ -140,6 +176,63 @@ export default function AdminInvitationsPage() {
       signaturePresetId: req.signaturePresetId || "",
     });
     setIsEditDialogOpen(true);
+  };
+
+  const openInfoEditDialog = (req: InvitationRequest) => {
+    setEditingRequest(req);
+    setInfoEditForm({
+      salutation: req.salutation || "",
+      guestName: req.guestName,
+      guestTitle: req.guestTitle || "",
+      guestOrg: req.guestOrg || "",
+      guestEmail: req.guestEmail || "",
+      language: req.language || "zh",
+      signaturePresetId: req.signaturePresetId || "",
+      eventId: req.eventId || "",
+      purpose: req.purpose || "",
+      notes: req.notes || "",
+      customMainContent: req.customMainContent || "",
+    });
+    setIsInfoEditDialogOpen(true);
+  };
+
+  const submitInfoEdit = async () => {
+    if (!editingRequest) return;
+    setIsInfoEditSubmitting(true);
+    try {
+      const res = await fetch(`/api/invitations/${editingRequest.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locale,
+          salutation: infoEditForm.salutation || null,
+          guestName: infoEditForm.guestName,
+          guestTitle: infoEditForm.guestTitle || null,
+          guestOrg: infoEditForm.guestOrg || null,
+          guestEmail: infoEditForm.guestEmail || null,
+          language: infoEditForm.language,
+          signaturePresetId: infoEditForm.signaturePresetId || null,
+          eventId: infoEditForm.eventId || null,
+          purpose: infoEditForm.purpose || null,
+          notes: infoEditForm.notes || null,
+          customMainContent: infoEditForm.customMainContent || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || t("infoEditDialog.saveFailed"));
+      setRequests((prev) =>
+        prev.map((r) => (r.id === editingRequest.id ? data.data : r))
+      );
+      setStatusTone("success");
+      setStatusMessage(t("infoEditDialog.saveSuccess"));
+      setIsInfoEditDialogOpen(false);
+      setEditingRequest(null);
+    } catch (err) {
+      setStatusTone("error");
+      setStatusMessage(err instanceof Error ? err.message : t("infoEditDialog.saveFailed"));
+    } finally {
+      setIsInfoEditSubmitting(false);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -336,6 +429,10 @@ export default function AdminInvitationsPage() {
                       </div>
 
                       <div className="flex items-center gap-2 lg:shrink-0">
+                        <Button size="sm" variant="outline" onClick={() => openInfoEditDialog(req)}>
+                          <Pencil className="mr-1 h-4 w-4" />
+                          {t("actions.editInfo")}
+                        </Button>
                         <Button size="sm" variant="outline" onClick={() => openEditDialog(req)}>
                           {req.status === "PENDING" ? (
                             <>
@@ -479,6 +576,115 @@ export default function AdminInvitationsPage() {
               <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>{t("editDialog.cancel")}</Button>
               <LoadingButton className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void submitEdit()} loading={isSubmitting} loadingText={locale === "en" ? "Saving..." : "保存中..."}>
                 {t("editDialog.save")}
+              </LoadingButton>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Info Edit Dialog */}
+        <Dialog open={isInfoEditDialogOpen} onOpenChange={(open) => { setIsInfoEditDialogOpen(open); if (!open) setEditingRequest(null); }}>
+          <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{t("infoEditDialog.title")}</DialogTitle>
+              <DialogDescription>
+                {t("infoEditDialog.description", { name: editingRequest?.guestName || "" })}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="info-salutation">{t("infoEditDialog.salutation")}</Label>
+                <Select value={infoEditForm.salutation || "none"} onValueChange={(v) => setInfoEditForm((p) => ({ ...p, salutation: v === "none" ? "" : v }))}>
+                  <SelectTrigger id="info-salutation"><SelectValue placeholder={t("infoEditDialog.salutationPlaceholder")} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("infoEditDialog.salutationPlaceholder")}</SelectItem>
+                    {getLocalizedSalutationOptions(locale === "en" ? "en" : "zh").map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="info-guest-name">{t("infoEditDialog.guestName")} *</Label>
+                <Input id="info-guest-name" value={infoEditForm.guestName} onChange={(e) => setInfoEditForm((p) => ({ ...p, guestName: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="info-guest-title">{t("infoEditDialog.guestTitle")}</Label>
+                <Input id="info-guest-title" value={infoEditForm.guestTitle} onChange={(e) => setInfoEditForm((p) => ({ ...p, guestTitle: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="info-guest-org">{t("infoEditDialog.guestOrg")}</Label>
+                <Input id="info-guest-org" value={infoEditForm.guestOrg} onChange={(e) => setInfoEditForm((p) => ({ ...p, guestOrg: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="info-guest-email">{t("infoEditDialog.guestEmail")}</Label>
+                <Input id="info-guest-email" type="email" value={infoEditForm.guestEmail} onChange={(e) => setInfoEditForm((p) => ({ ...p, guestEmail: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="info-language">{t("infoEditDialog.language")}</Label>
+                <Select value={infoEditForm.language} onValueChange={(v) => setInfoEditForm((p) => ({ ...p, language: v, signaturePresetId: "" }))}>
+                  <SelectTrigger id="info-language"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="zh">中文</SelectItem>
+                    <SelectItem value="en">English</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              {infoEditForm.language === "en" && signaturePresets.length > 0 ? (
+                <div className="space-y-2">
+                  <Label htmlFor="info-sig-preset">{t("infoEditDialog.signaturePreset")}</Label>
+                  <Select
+                    value={infoEditForm.signaturePresetId || "default"}
+                    onValueChange={(v) => setInfoEditForm((p) => ({ ...p, signaturePresetId: v === "default" ? "" : v }))}
+                  >
+                    <SelectTrigger id="info-sig-preset"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="default">{t("infoEditDialog.signaturePresetDefault")}</SelectItem>
+                      {signaturePresets.map((preset) => (
+                        <SelectItem key={preset.id} value={preset.id}>
+                          {preset.label}{preset.id === defaultPresetId ? ` (${locale === "en" ? "default" : "默认"})` : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : null}
+              <div className="space-y-2">
+                <Label htmlFor="info-event">{t("infoEditDialog.event")}</Label>
+                <Select value={infoEditForm.eventId || "none"} onValueChange={(v) => setInfoEditForm((p) => ({ ...p, eventId: v === "none" ? "" : v }))}>
+                  <SelectTrigger id="info-event"><SelectValue placeholder={t("infoEditDialog.eventPlaceholder")} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">{t("infoEditDialog.eventPlaceholder")}</SelectItem>
+                    {events.map((ev) => (
+                      <SelectItem key={ev.id} value={ev.id}>
+                        {locale === "en" ? ev.titleEn || ev.title : ev.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="info-purpose">{t("infoEditDialog.purpose")}</Label>
+                <Textarea id="info-purpose" rows={2} value={infoEditForm.purpose} onChange={(e) => setInfoEditForm((p) => ({ ...p, purpose: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="info-notes">{t("infoEditDialog.notes")}</Label>
+                <Textarea id="info-notes" rows={2} value={infoEditForm.notes} onChange={(e) => setInfoEditForm((p) => ({ ...p, notes: e.target.value }))} />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="info-custom-content">{t("infoEditDialog.customMainContent")}</Label>
+                <Textarea id="info-custom-content" rows={6} value={infoEditForm.customMainContent} onChange={(e) => setInfoEditForm((p) => ({ ...p, customMainContent: e.target.value }))} />
+              </div>
+            </div>
+            <DialogFooter className="mt-4">
+              <Button variant="outline" onClick={() => setIsInfoEditDialogOpen(false)}>{t("infoEditDialog.cancel")}</Button>
+              <LoadingButton
+                className="bg-emerald-600 hover:bg-emerald-700"
+                onClick={() => void submitInfoEdit()}
+                loading={isInfoEditSubmitting}
+                loadingText={locale === "en" ? "Saving..." : "保存中..."}
+                disabled={!infoEditForm.guestName.trim()}
+              >
+                {t("infoEditDialog.save")}
               </LoadingButton>
             </DialogFooter>
           </DialogContent>

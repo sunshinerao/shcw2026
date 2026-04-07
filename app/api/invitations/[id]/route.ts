@@ -272,7 +272,7 @@ export async function PUT(
       );
     }
 
-    // Admin/EventManager can update status and upload letter
+    // Admin/EventManager can update status, upload letter, and edit guest info
     const validStatuses = new Set(Object.values(InvitationStatus));
     if (status && !validStatuses.has(status)) {
       return NextResponse.json(
@@ -281,10 +281,38 @@ export async function PUT(
       );
     }
 
+    // Validate eventId if provided
+    if (eventId) {
+      const event = await prisma.event.findUnique({ where: { id: eventId }, select: { id: true } });
+      if (!event) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "eventNotFound") },
+          { status: 400 }
+        );
+      }
+    }
+
     const updateData: Record<string, unknown> = {};
     if (status) updateData.status = status;
     if (letterFileUrl !== undefined) updateData.letterFileUrl = letterFileUrl || null;
     if (rejectReason !== undefined) updateData.rejectReason = rejectReason || null;
+
+    // Admin can also update guest info fields
+    const normalizedLanguage = language !== undefined ? (language === "en" ? "en" : "zh") : undefined;
+    if (salutation !== undefined) updateData.salutation = normalizeSalutationValue(salutation);
+    if (guestName !== undefined && guestName?.trim()) updateData.guestName = guestName.trim();
+    if (guestTitle !== undefined) updateData.guestTitle = guestTitle?.trim() || null;
+    if (guestOrg !== undefined) updateData.guestOrg = guestOrg?.trim() || null;
+    if (guestEmail !== undefined) updateData.guestEmail = guestEmail?.trim() || null;
+    if (normalizedLanguage !== undefined) updateData.language = normalizedLanguage;
+    if (eventId !== undefined) updateData.eventId = eventId || null;
+    if (purpose !== undefined) updateData.purpose = purpose?.trim() || null;
+    if (notes !== undefined) updateData.notes = notes?.trim() || null;
+    if (customMainContent !== undefined) updateData.customMainContent = customMainContent?.trim() || null;
+    if (signaturePresetId !== undefined) {
+      const effectiveLang = normalizedLanguage ?? existing.language;
+      updateData.signaturePresetId = effectiveLang === "en" ? (signaturePresetId?.trim() || null) : null;
+    }
 
     const updated = await prisma.invitationRequest.update({
       where: { id: params.id },
