@@ -591,7 +591,9 @@
             "cancel": "Cancel",
             "save": "Save changes",
             "saveSuccess": "Request info updated successfully.",
-            "saveFailed": "Failed to update request info."
+            "saveFailed": "Failed to update request info.",
+            "useStamp": "Apply official seal",
+            "useStampHint": "Stamp the official seal at the signature of the Chinese invitation letter"
         },
         "messages": {
             "updateSuccess": "Invitation updated successfully.",
@@ -1284,7 +1286,9 @@
             "draftLength": "Current length: {count}",
             "bodyLimitHint": "For this layout, keep the body within {count} characters.",
             "bodyRemaining": "{count} characters remaining.",
-            "bodyExceeded": "Over the limit by {count} characters. Please shorten the body."
+            "bodyExceeded": "Over the limit by {count} characters. Please shorten the body.",
+            "useStamp": "Apply official seal",
+            "useStampHint": "Stamp the official seal at the signature of the Chinese invitation letter"
         },
         "preview": {
             "title": "Preview Invitation Letter",
@@ -2431,7 +2435,9 @@
             "loading": "Loading...",
             "saveSuccess": "Invitation template settings saved.",
             "saveFailed": "Failed to save invitation template settings.",
-            "loadFailed": "Failed to load invitation template settings."
+            "loadFailed": "Failed to load invitation template settings.",
+            "stampImage": "Official seal image (Chinese invitation)",
+            "stampImageHint": "The seal will appear at the signature position. A transparent-background PNG is recommended."
         }
     },
     "adminSiteContent": {

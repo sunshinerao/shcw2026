@@ -166,6 +166,7 @@ export async function PUT(
       notes,
       customMainContent,
       signaturePresetId,
+      useStamp,
     } = body;
 
     // Owner actions (non-admin)
@@ -244,6 +245,7 @@ export async function PUT(
         if (notes !== undefined) editData.notes = notes?.trim() || null;
         if (customMainContent !== undefined) editData.customMainContent = trimmedCustomMainContent || null;
         if (signaturePresetId !== undefined) editData.signaturePresetId = normalizedLanguage === "en" ? (signaturePresetId?.trim() || null) : null;
+        if (useStamp !== undefined) editData.useStamp = normalizedLanguage === "zh" ? Boolean(useStamp) : false;
         // Reset status to PENDING on resubmit (in case it was REJECTED)
         if (existing.status === InvitationStatus.REJECTED) {
           editData.status = InvitationStatus.PENDING;
@@ -312,6 +314,10 @@ export async function PUT(
     if (signaturePresetId !== undefined) {
       const effectiveLang = normalizedLanguage ?? existing.language;
       updateData.signaturePresetId = effectiveLang === "en" ? (signaturePresetId?.trim() || null) : null;
+    }
+    if (useStamp !== undefined) {
+      const effectiveLang = normalizedLanguage ?? existing.language;
+      updateData.useStamp = effectiveLang === "zh" ? Boolean(useStamp) : false;
     }
 
     const updated = await prisma.invitationRequest.update({

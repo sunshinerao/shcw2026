@@ -46,9 +46,11 @@ export async function POST(req: NextRequest) {
       signaturePresetId?: string;
       /** EN only: language line text, e.g. "English and Chinese" */
       eventLanguage?: string;
+      /** ZH only: show stamp at signature position */
+      useStamp?: boolean;
     };
 
-    const { salutation, guestName, guestTitle, guestOrg, language, eventId, customMainContent, signaturePresetId, eventLanguage } = body;
+    const { salutation, guestName, guestTitle, guestOrg, language, eventId, customMainContent, signaturePresetId, eventLanguage, useStamp } = body;
 
     if (!guestName?.trim()) {
       return NextResponse.json(
@@ -177,6 +179,7 @@ export async function POST(req: NextRequest) {
           ? await getSignaturePresetById(signaturePresetId)
           : await getDefaultSignaturePreset()
         : null;
+    const isEnglish = lang === "en";
 
     const html = renderInvitationHtml({
       language: lang,
@@ -201,6 +204,7 @@ export async function POST(req: NextRequest) {
       signaturePreset,
       eventLanguageText: resolved.eventLanguageText,
       guestName: guestName.trim(),
+      stampImageUrl: !isEnglish && useStamp ? (settings.stampImageUrl_zh || undefined) : undefined,
     });
 
     return new NextResponse(html, {

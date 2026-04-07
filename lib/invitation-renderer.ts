@@ -30,6 +30,11 @@ export type InvitationRenderData = {
   eventLanguageText?: string;
   /** Guest name used for the browser print/save filename via <title> */
   guestName?: string;
+  /**
+   * ZH-only: when provided, renders the official seal image at the signature
+   * position of the Chinese invitation letter.
+   */
+  stampImageUrl?: string | null;
 };
 
 const FIXED_TEXT = {
@@ -368,6 +373,11 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
     ? `<img class="v-footer-qrcode" src="${data.qrCodeDataUrl}" alt="${escHtml(t.qrAlt)}" />`
     : "";
 
+  const stampSection =
+    !isEnglish && data.stampImageUrl
+      ? `<img class="v-cn-stamp" src="${escHtml(data.stampImageUrl)}" alt="" />`
+      : "";
+
   const name = data.guestName?.trim() || "";
   const docTitle = isEnglish
     ? name ? `Invitation SHCW (${name})` : "Invitation SHCW"
@@ -595,6 +605,20 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
       z-index: 2;
     }
 
+    .inside .v-cn-stamp {
+      position: absolute;
+      left: 1550px;
+      top: 2732px;
+      width: 547px;
+      height: 532px;
+      object-fit: contain;
+      display: block;
+      transform: rotate(-1.06deg);
+      z-index: 3;
+      opacity: 0.95;
+      pointer-events: none;
+    }
+
     ${enPageCss}
 
     @page {
@@ -668,6 +692,7 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
       <div class="v-invitation-end">${closingText}</div>
       <div class="v-invitation-sincerely">${greetingText}</div>
       ${signatureSection}
+      ${stampSection}
       <div class="v-footer-notes">${footerNoteText}</div>
       <div class="v-footer-confirm-webaddress">${footerLinkText}</div>
 

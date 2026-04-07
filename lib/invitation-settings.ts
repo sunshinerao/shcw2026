@@ -33,6 +33,7 @@ export type InvitationTemplateSettings = {
   footerNoteText_en: string;
   footerLinkTemplate_zh: string;
   footerLinkTemplate_en: string;
+  stampImageUrl_zh: string;
 };
 
 const DEFAULTS: InvitationTemplateSettings = {
@@ -67,6 +68,7 @@ const DEFAULTS: InvitationTemplateSettings = {
   footerNoteText_en: "Please confirm your attendance via the link below or by scanning the QR code:",
   footerLinkTemplate_zh: "{eventUrl}",
   footerLinkTemplate_en: "{eventUrl}",
+  stampImageUrl_zh: "",
 };
 
 function normalizeSettings(raw: unknown): InvitationTemplateSettings {
@@ -120,6 +122,7 @@ function normalizeSettings(raw: unknown): InvitationTemplateSettings {
     footerNoteText_en: valueOf("footerNoteText_en"),
     footerLinkTemplate_zh: valueOf("footerLinkTemplate_zh"),
     footerLinkTemplate_en: valueOf("footerLinkTemplate_en"),
+    stampImageUrl_zh: valueOf("stampImageUrl_zh"),
   };
 }
 

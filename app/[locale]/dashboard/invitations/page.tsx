@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { countInvitationBodyChars, getInvitationRequestBodyCharLimit } from "@/lib/invitation-content-limits";
@@ -41,6 +42,7 @@ type InvitationRequest = {
   notes?: string | null;
   customMainContent?: string | null;
   signaturePresetId?: string | null;
+  useStamp?: boolean;
   status: string;
   letterFileUrl?: string | null;
   rejectReason?: string | null;
@@ -110,6 +112,7 @@ export default function DashboardInvitationsPage() {
     notes: "",
     customMainContent: "",
     signaturePresetId: "",
+    useStamp: false,
   });
 
   useEffect(() => {
@@ -185,6 +188,7 @@ export default function DashboardInvitationsPage() {
       notes: "",
       customMainContent: "",
       signaturePresetId: "",
+      useStamp: false,
     });
     setBodyDraftText("");
     setBodyDraftHtml("");
@@ -302,6 +306,7 @@ export default function DashboardInvitationsPage() {
           eventId: form.eventId || null,
           customMainContent: effectiveCustomMainContent || null,
           signaturePresetId: form.language === "en" && form.signaturePresetId ? form.signaturePresetId : null,
+          useStamp: form.language === "zh" ? form.useStamp : false,
         }),
       });
       if (!res.ok) {
@@ -339,6 +344,7 @@ export default function DashboardInvitationsPage() {
         notes: form.notes || null,
         customMainContent: effectiveCustomMainContent || null,
         signaturePresetId: form.language === "en" && form.signaturePresetId ? form.signaturePresetId : null,
+        useStamp: form.language === "zh" ? form.useStamp : false,
       };
 
       const isEditing = !!editingId;
@@ -384,6 +390,7 @@ export default function DashboardInvitationsPage() {
       notes: req.notes || "",
       customMainContent: req.customMainContent || "",
       signaturePresetId: req.signaturePresetId || "",
+      useStamp: req.useStamp ?? false,
     });
     setIsBodyDirty(Boolean(req.customMainContent));
     setBodyEditorHtml(req.customMainContent || "");
@@ -615,6 +622,18 @@ export default function DashboardInvitationsPage() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                ) : null}
+                {form.language === "zh" ? (
+                  <div className="flex items-center justify-between rounded-lg border px-4 py-3">
+                    <div>
+                      <Label className="text-sm font-medium">{t("form.useStamp")}</Label>
+                      <p className="text-xs text-slate-500 mt-0.5">{t("form.useStampHint")}</p>
+                    </div>
+                    <Switch
+                      checked={form.useStamp}
+                      onCheckedChange={(v) => setForm((p) => ({ ...p, useStamp: v }))}
+                    />
                   </div>
                 ) : null}
                 <div className="space-y-2">

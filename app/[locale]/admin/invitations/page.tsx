@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -38,6 +39,7 @@ type InvitationRequest = {
   notes?: string | null;
   customMainContent?: string | null;
   signaturePresetId?: string | null;
+  useStamp?: boolean;
   status: string;
   letterFileUrl?: string | null;
   rejectReason?: string | null;
@@ -98,6 +100,7 @@ export default function AdminInvitationsPage() {
     purpose: "",
     notes: "",
     customMainContent: "",
+    useStamp: false,
   });
 
   const loadRequests = useCallback(async () => {
@@ -192,6 +195,7 @@ export default function AdminInvitationsPage() {
       purpose: req.purpose || "",
       notes: req.notes || "",
       customMainContent: req.customMainContent || "",
+      useStamp: req.useStamp ?? false,
     });
     setIsInfoEditDialogOpen(true);
   };
@@ -216,6 +220,7 @@ export default function AdminInvitationsPage() {
           purpose: infoEditForm.purpose || null,
           notes: infoEditForm.notes || null,
           customMainContent: infoEditForm.customMainContent || null,
+          useStamp: infoEditForm.language === "zh" ? infoEditForm.useStamp : false,
         }),
       });
       const data = await res.json();
@@ -646,6 +651,18 @@ export default function AdminInvitationsPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              ) : null}
+              {infoEditForm.language === "zh" ? (
+                <div className="flex items-center justify-between rounded-lg border px-4 py-3">
+                  <div>
+                    <Label className="text-sm font-medium">{t("infoEditDialog.useStamp")}</Label>
+                    <p className="text-xs text-slate-500 mt-0.5">{t("infoEditDialog.useStampHint")}</p>
+                  </div>
+                  <Switch
+                    checked={infoEditForm.useStamp}
+                    onCheckedChange={(v) => setInfoEditForm((p) => ({ ...p, useStamp: v }))}
+                  />
                 </div>
               ) : null}
               <div className="space-y-2">

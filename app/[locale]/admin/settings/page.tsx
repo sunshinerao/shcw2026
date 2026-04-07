@@ -82,6 +82,7 @@ export default function AdminSettingsPage() {
     footerNoteText_en: "",
     footerLinkTemplate_zh: "",
     footerLinkTemplate_en: "",
+    stampImageUrl_zh: "",
   });
 
   // ---- Signature Presets ----
@@ -274,6 +275,7 @@ export default function AdminSettingsPage() {
     "coverImageUrl_zh", "coverImageUrl_en",
     "bodyBgImageUrl_zh", "bodyBgImageUrl_en",
     "backBgImageUrl_zh", "backBgImageUrl_en",
+    "stampImageUrl_zh",
   ]);
 
   // Save a single image field immediately to the API (base64 body is ~2MB max, safe under Vercel limit)
@@ -706,6 +708,59 @@ export default function AdminSettingsPage() {
                     </div>
                   </div>
                 ))}
+
+                {/* Stamp image (ZH only) */}
+                <div>
+                  <p className="mb-2 text-sm font-medium text-slate-700">{t("invitationTemplate.stampImage")}</p>
+                  <p className="mb-2 text-xs text-slate-500">{t("invitationTemplate.stampImageHint")}</p>
+                  <div className="flex items-center gap-2">
+                    {tplForm.stampImageUrl_zh && (
+                      <img
+                        src={tplForm.stampImageUrl_zh}
+                        alt=""
+                        className="h-12 w-12 rounded border border-slate-200 object-contain flex-shrink-0 bg-slate-50"
+                      />
+                    )}
+                    <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 disabled:opacity-50">
+                      <Upload className="h-3.5 w-3.5" />
+                      {tplForm.stampImageUrl_zh ? t("invitationTemplate.reupload") : t("invitationTemplate.upload")}
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        className="sr-only"
+                        disabled={isTplSaving}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            await uploadTplImage("stampImageUrl_zh", file);
+                          } catch (err) {
+                            setTplStatusTone("error");
+                            setTplStatusMessage(err instanceof Error ? err.message : t("invitationTemplate.uploadFailed"));
+                          }
+                          e.target.value = "";
+                        }}
+                      />
+                    </label>
+                    {tplForm.stampImageUrl_zh && (
+                      <button
+                        type="button"
+                        className="text-xs text-slate-400 hover:text-rose-500"
+                        onClick={async () => {
+                          try {
+                            await saveTplImageField("stampImageUrl_zh", "");
+                            setTplForm((f) => ({ ...f, stampImageUrl_zh: "" }));
+                          } catch (err) {
+                            setTplStatusTone("error");
+                            setTplStatusMessage(err instanceof Error ? err.message : t("invitationTemplate.uploadFailed"));
+                          }
+                        }}
+                      >
+                        {t("invitationTemplate.remove")}
+                      </button>
+                    )}
+                  </div>
+                </div>
 
                 {localizedTemplateFields.map((field) => (
                   <div key={field.base}>

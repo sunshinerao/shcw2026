@@ -634,7 +634,8 @@ model InvitationRequest {
   
   // 英文邀请函签名预设
   signaturePresetId String?        // 英文邀请函签名预设ID（仅语言为 en 时生效）
-  
+  useStamp          Boolean        @default(false) // 是否在落款处加盖公章（仅中文邀请函）
+
   // 状态与文件
   status          InvitationStatus @default(PENDING)
   letterFileUrl   String?          // 管理员上传的邀请函文件URL

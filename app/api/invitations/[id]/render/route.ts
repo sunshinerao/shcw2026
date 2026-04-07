@@ -155,6 +155,11 @@ export async function GET(
           : await getDefaultSignaturePreset()
         : null;
 
+    const stampImageUrl =
+      lang === "zh" && invitation.useStamp && settings.stampImageUrl_zh
+        ? settings.stampImageUrl_zh
+        : undefined;
+
     const html = renderInvitationHtml({
       language: lang,
       secondTitle: resolved.secondTitle,
@@ -178,6 +183,7 @@ export async function GET(
       signaturePreset,
       eventLanguageText: resolved.eventLanguageText,
       guestName: invitation.guestName.trim(),
+      stampImageUrl,
     });
 
     return new NextResponse(html, {

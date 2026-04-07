@@ -120,6 +120,7 @@ export async function POST(req: NextRequest) {
       notes,
       customMainContent,
       signaturePresetId,
+      useStamp,
     } = body;
 
     if (!guestName || typeof guestName !== "string" || !guestName.trim()) {
@@ -174,6 +175,7 @@ export async function POST(req: NextRequest) {
         notes: notes?.trim() || null,
         customMainContent: trimmedCustomMainContent || null,
         signaturePresetId: normalizedLanguage === "en" ? (signaturePresetId?.trim() || null) : null,
+        useStamp: normalizedLanguage === "zh" ? Boolean(useStamp) : false,
       },
       include: {
         user: { select: { id: true, name: true, email: true, title: true, organization: { select: { name: true } } } },
