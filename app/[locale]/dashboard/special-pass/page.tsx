@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useSession } from "next-auth/react";
+import { useRouter } from "@/i18n/routing";
 import { motion } from "framer-motion";
 import {
   Shield,
@@ -158,7 +159,8 @@ const initialForm: SpecialPassApplication = {
 export default function SpecialPassPage() {
   const t = useTranslations("specialPass");
   const locale = useLocale();
-  const { data: session } = useSession();
+  const router = useRouter();
+  const { data: session, status: authStatus } = useSession();
 
   const [step, setStep] = useState<"list" | "choose" | "form">("list");
   const [form, setForm] = useState<SpecialPassApplication>(initialForm);
@@ -223,16 +225,22 @@ export default function SpecialPassPage() {
   }, [profileLoaded]);
 
   useEffect(() => {
-    if (session?.user) fetchPasses();
-    else setIsLoading(false);
-  }, [session, fetchPasses]);
+    if (authStatus === "unauthenticated") {
+      router.push("/auth/login");
+    }
+  }, [authStatus, router]);
+
+  useEffect(() => {
+    if (authStatus === "authenticated") fetchPasses();
+    else if (authStatus === "unauthenticated") setIsLoading(false);
+  }, [authStatus, fetchPasses]);
 
   // 进入表单时自动从用户资料填充
   useEffect(() => {
-    if (step === "form" && session?.user) {
+    if (step === "form" && authStatus === "authenticated") {
       fetchProfile();
     }
-  }, [step, session, fetchProfile]);
+  }, [step, authStatus, fetchProfile]);
 
   useEffect(() => {
     if (alert) {
