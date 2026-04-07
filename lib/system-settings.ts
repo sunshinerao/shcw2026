@@ -11,6 +11,7 @@ type StoredSettingsExtra = {
   aiHighlightsEnabled?: boolean;
   autoGenerateHighlightsOnSave?: boolean;
   highlightCount?: number;
+  newsEnabled?: boolean;
 };
 
 export type SystemSettings = {
@@ -19,6 +20,7 @@ export type SystemSettings = {
   aiHighlightsEnabled: boolean;
   autoGenerateHighlightsOnSave: boolean;
   highlightCount: number;
+  newsEnabled: boolean;
 };
 
 export type AdminSystemSettings = Omit<SystemSettings, "openaiApiKey"> & {
@@ -117,6 +119,7 @@ function normalizeExtra(extra: unknown): StoredSettingsExtra {
     aiHighlightsEnabled: raw.aiHighlightsEnabled === true,
     autoGenerateHighlightsOnSave: raw.autoGenerateHighlightsOnSave !== false,
     highlightCount: normalizeHighlightCount(raw.highlightCount),
+    newsEnabled: raw.newsEnabled !== false,
   };
 }
 
@@ -195,6 +198,7 @@ export async function getSystemSettingsForServer(): Promise<SystemSettings> {
     aiHighlightsEnabled: extra.aiHighlightsEnabled === true,
     autoGenerateHighlightsOnSave: extra.autoGenerateHighlightsOnSave !== false,
     highlightCount: normalizeHighlightCount(extra.highlightCount),
+    newsEnabled: extra.newsEnabled !== false,
   };
 }
 
@@ -208,6 +212,7 @@ export async function getSystemSettingsForAdmin(): Promise<AdminSystemSettings> 
     aiHighlightsEnabled: serverSettings.aiHighlightsEnabled,
     autoGenerateHighlightsOnSave: serverSettings.autoGenerateHighlightsOnSave,
     highlightCount: serverSettings.highlightCount,
+    newsEnabled: serverSettings.newsEnabled,
   };
 }
 
@@ -217,6 +222,7 @@ export type UpdateSystemSettingsInput = {
   aiHighlightsEnabled?: boolean;
   autoGenerateHighlightsOnSave?: boolean;
   highlightCount?: number;
+  newsEnabled?: boolean;
 };
 
 export async function updateSystemSettings(input: UpdateSystemSettingsInput) {
@@ -259,6 +265,10 @@ export async function updateSystemSettings(input: UpdateSystemSettingsInput) {
 
   if (input.highlightCount !== undefined) {
     next.highlightCount = normalizeHighlightCount(input.highlightCount);
+  }
+
+  if (input.newsEnabled !== undefined) {
+    next.newsEnabled = Boolean(input.newsEnabled);
   }
 
   await prisma.siteContent.upsert({

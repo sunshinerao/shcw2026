@@ -25,7 +25,7 @@ import { isAdminConsoleRole } from "@/lib/permissions";
 /** Pages with light background where the navbar needs dark text/logo */
 const LIGHT_BG_PREFIXES = ["/dashboard", "/admin", "/auth", "/events"];
 
-export function Navbar() {
+export function Navbar({ newsEnabled = true }: { newsEnabled?: boolean }) {
   const t = useTranslations();
   const { data: session, status } = useSession();
   const locale = useLocale();
@@ -38,7 +38,7 @@ export function Navbar() {
   const isLightBgPage = LIGHT_BG_PREFIXES.some((prefix) => pathname?.startsWith(prefix));
   const useDarkStyle = isScrolled || isLightBgPage;
 
-  const navItems = [
+  const allNavItems = [
     { name: t("nav.home"), href: "/" },
     { name: t("nav.events"), href: "/events" },
     { name: t("nav.speakers"), href: "/speakers" },
@@ -46,6 +46,7 @@ export function Navbar() {
     { name: t("nav.about"), href: "/about" },
     { name: t("nav.contact"), href: "/contact" },
   ];
+  const navItems = allNavItems.filter((item) => item.href !== "/news" || newsEnabled);
 
   useEffect(() => {
     const handleScroll = () => {

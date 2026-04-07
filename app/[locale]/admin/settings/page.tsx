@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useId, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
-import { KeyRound, Loader2, Pencil, Plus, Save, Sparkles, Trash2, FileImage, Upload, PenLine } from "lucide-react";
+import { KeyRound, Loader2, Newspaper, Pencil, Plus, Save, Sparkles, Trash2, FileImage, Upload, PenLine } from "lucide-react";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -25,6 +25,7 @@ type SettingsResponse = {
   aiHighlightsEnabled: boolean;
   autoGenerateHighlightsOnSave: boolean;
   highlightCount: number;
+  newsEnabled: boolean;
 };
 
 export default function AdminSettingsPage() {
@@ -45,6 +46,7 @@ export default function AdminSettingsPage() {
   const [aiHighlightsEnabled, setAiHighlightsEnabled] = useState(false);
   const [autoGenerateHighlightsOnSave, setAutoGenerateHighlightsOnSave] = useState(true);
   const [highlightCount, setHighlightCount] = useState(5);
+  const [newsEnabled, setNewsEnabled] = useState(true);
 
   // Invitation template settings
   const [isTplLoading, setIsTplLoading] = useState(true);
@@ -129,6 +131,7 @@ export default function AdminSettingsPage() {
       setAiHighlightsEnabled(Boolean(data.aiHighlightsEnabled));
       setAutoGenerateHighlightsOnSave(Boolean(data.autoGenerateHighlightsOnSave));
       setHighlightCount(data.highlightCount || 5);
+      setNewsEnabled(data.newsEnabled !== false);
       setStatusMessage("");
     } catch (error) {
       setMessage("error", error instanceof Error ? error.message : t("messages.loadFailed"));
@@ -230,6 +233,7 @@ export default function AdminSettingsPage() {
         aiHighlightsEnabled,
         autoGenerateHighlightsOnSave,
         highlightCount,
+        newsEnabled,
       };
 
       if (clearOpenaiApiKey) {
@@ -562,6 +566,45 @@ export default function AdminSettingsPage() {
                   </Button>
                 </div>
               </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Site Features */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Newspaper className="h-5 w-5 text-sky-600" />
+              {t("siteFeatures.title")}
+            </CardTitle>
+            <CardDescription>{t("siteFeatures.description")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-slate-500">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t("loading")}
+              </div>
+            ) : (
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <Label className="text-base">{t("siteFeatures.newsEnabled")}</Label>
+                  <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.newsEnabledHint")}</p>
+                </div>
+                <Switch checked={newsEnabled} onCheckedChange={async (val) => {
+                  setNewsEnabled(val);
+                  try {
+                    await fetch("/api/admin/settings", {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ newsEnabled: val }),
+                    });
+                  } catch {
+                    // revert on error
+                    setNewsEnabled(!val);
+                  }
+                }} />
+              </div>
             )}
           </CardContent>
         </Card>

@@ -65,6 +65,7 @@ export async function PUT(req: NextRequest) {
           ? body.autoGenerateHighlightsOnSave
           : undefined,
       highlightCount: typeof body.highlightCount === "number" ? body.highlightCount : undefined,
+      newsEnabled: typeof body.newsEnabled === "boolean" ? body.newsEnabled : undefined,
     });
 
     return NextResponse.json({ success: true, data: settings });

@@ -2369,6 +2369,12 @@
             "saveSuccess": "系统设置已保存。",
             "saveFailed": "保存系统设置失败。"
         },
+        "siteFeatures": {
+            "title": "内容功能开关",
+            "description": "控制前端各功能模块的显示与隐藏。",
+            "newsEnabled": "显示新闻模块",
+            "newsEnabledHint": "关闭后，导航菜单中的「新闻」链接将隐藏，直接访问 /news 页面将返回 404。"
+        },
         "invitationTemplate": {
             "title": "邀请函模板配置",
             "description": "配置邀请函三页图片，以及第2页除标题外的全部动态文案模板。",

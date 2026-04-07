@@ -2367,6 +2367,12 @@
             "saveSuccess": "System settings saved.",
             "saveFailed": "Failed to save system settings."
         },
+        "siteFeatures": {
+            "title": "Content Feature Toggles",
+            "description": "Show or hide front-end feature modules.",
+            "newsEnabled": "Show news module",
+            "newsEnabledHint": "When disabled, the News link is removed from the navigation menu and /news returns 404."
+        },
         "invitationTemplate": {
             "title": "Invitation Letter Template",
             "description": "Configure the three page images and every dynamic copy block on page 2 except the fixed title.",

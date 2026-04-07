@@ -12,6 +12,7 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { AppProviders } from "@/components/app-providers";
 import { routing } from "@/i18n/routing";
+import { getSystemSettingsForServer } from "@/lib/system-settings";
 
 export async function generateMetadata({
   params: { locale },
@@ -54,10 +55,11 @@ export default async function LocaleLayout({
 
   setRequestLocale(locale);
 
-  const [messages, now, timeZone] = await Promise.all([
+  const [messages, now, timeZone, siteSettings] = await Promise.all([
     getMessages(),
     getNow(),
     getTimeZone(),
+    getSystemSettingsForServer().catch(() => null),
   ]);
 
   return (
@@ -70,7 +72,7 @@ export default async function LocaleLayout({
           timeZone={timeZone}
         >
           <div className="flex flex-col min-h-screen">
-            <Navbar />
+            <Navbar newsEnabled={siteSettings?.newsEnabled !== false} />
             <main className="flex-1">{children}</main>
             <Footer />
           </div>
