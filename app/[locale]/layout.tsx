@@ -74,7 +74,7 @@ export default async function LocaleLayout({
           <div className="flex flex-col min-h-screen">
             <Navbar newsEnabled={siteSettings?.newsEnabled !== false} />
             <main className="flex-1">{children}</main>
-            <Footer />
+            <Footer newsEnabled={siteSettings?.newsEnabled !== false} />
           </div>
         </AppProviders>
       </body>

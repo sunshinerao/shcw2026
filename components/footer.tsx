@@ -6,7 +6,7 @@ import { useTranslations } from "next-intl";
 import { LanguageSwitcherSimple } from "@/components/language-switcher";
 import { Link } from "@/i18n/routing";
 
-export function Footer() {
+export function Footer({ newsEnabled = true }: { newsEnabled?: boolean }) {
   const t = useTranslations();
 
   const footerLinks = {
@@ -26,7 +26,7 @@ export function Footer() {
     ],
     support: [
       { name: t("footer.nav.about"), href: "/about" },
-      { name: t("footer.nav.news"), href: "/news" },
+      ...(newsEnabled ? [{ name: t("footer.nav.news"), href: "/news" }] : []),
       { name: t("footer.nav.faq"), href: "/faq" },
       { name: t("footer.nav.contact"), href: "/contact" },
     ],
