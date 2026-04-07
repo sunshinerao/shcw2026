@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { countInvitationBodyChars, getInvitationRequestBodyCharLimit } from "@/lib/invitation-content-limits";
+import { invitationHtmlToPlainText } from "@/lib/invitation-template";
 import { getLocalizedSalutationLabel, getLocalizedSalutationOptions } from "@/lib/user-form-options";
 
 type InvitationRequest = {
@@ -87,10 +88,14 @@ export default function DashboardInvitationsPage() {
   const [previewError, setPreviewError] = useState<string>("");
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [bodyDraftText, setBodyDraftText] = useState("");
+  const [bodyDraftHtml, setBodyDraftHtml] = useState("");
   const [bodyDraftSource, setBodyDraftSource] = useState<"event" | "global" | null>(null);
   const [bodyDraftError, setBodyDraftError] = useState("");
   const [isDraftLoading, setIsDraftLoading] = useState(false);
   const [isBodyDirty, setIsBodyDirty] = useState(false);
+  // Drives programmatic updates to the contenteditable editor
+  const [bodyEditorHtml, setBodyEditorHtml] = useState("");
+  const bodyEditorRef = useRef<HTMLDivElement>(null);
   const salutationOptions = getLocalizedSalutationOptions(locale === "en" ? "en" : "zh");
 
   const [form, setForm] = useState({
@@ -182,9 +187,11 @@ export default function DashboardInvitationsPage() {
       signaturePresetId: "",
     });
     setBodyDraftText("");
+    setBodyDraftHtml("");
     setBodyDraftSource(null);
     setBodyDraftError("");
     setIsBodyDirty(false);
+    setBodyEditorHtml("");
     setEditingId(null);
     setStep("form");
     setPreviewHtml("");
@@ -220,11 +227,16 @@ export default function DashboardInvitationsPage() {
         throw new Error(data.error || t("form.draftFailed"));
       }
 
+      const newDraftHtml = data.data?.draftHtml || "";
       setBodyDraftText(data.data?.draftText || "");
+      setBodyDraftHtml(newDraftHtml);
       setBodyDraftSource((data.data?.source as "event" | "global" | undefined) || null);
       if (forceReplace) {
         setIsBodyDirty(false);
+        setBodyEditorHtml(newDraftHtml);
         setForm((previous) => ({ ...previous, customMainContent: "" }));
+      } else if (!isBodyDirty) {
+        setBodyEditorHtml(newDraftHtml);
       }
     } catch (err) {
       setBodyDraftError(err instanceof Error ? err.message : t("form.draftFailed"));
@@ -245,14 +257,24 @@ export default function DashboardInvitationsPage() {
     return () => clearTimeout(timer);
   }, [form.eventId, form.guestName, form.guestOrg, form.guestTitle, form.language, form.salutation, generateBodyDraft, isBodyDirty, isDialogOpen, step]);
 
+  // Sync bodyEditorHtml state → contenteditable DOM
+  useEffect(() => {
+    if (bodyEditorRef.current && bodyEditorRef.current.innerHTML !== bodyEditorHtml) {
+      bodyEditorRef.current.innerHTML = bodyEditorHtml;
+    }
+  }, [bodyEditorHtml]);
+
   const effectiveCustomMainContent = isBodyDirty ? form.customMainContent : null;
-  const displayedBodyContent = isBodyDirty ? form.customMainContent : bodyDraftText;
+  // Strip HTML before counting chars (handles both HTML and plain-text content)
+  const charCountPlainText = isBodyDirty
+    ? invitationHtmlToPlainText(form.customMainContent)
+    : bodyDraftText;
   const bodyCharLimit = getInvitationRequestBodyCharLimit(
     form.language === "en" ? "en" : "zh",
     form.guestName,
     form.guestTitle
   );
-  const bodyCharCount = countInvitationBodyChars(displayedBodyContent);
+  const bodyCharCount = countInvitationBodyChars(charCountPlainText);
   const bodyCharRemaining = bodyCharLimit - bodyCharCount;
   const isBodyOverLimit = bodyCharRemaining < 0;
 
@@ -364,7 +386,9 @@ export default function DashboardInvitationsPage() {
       signaturePresetId: req.signaturePresetId || "",
     });
     setIsBodyDirty(Boolean(req.customMainContent));
+    setBodyEditorHtml(req.customMainContent || "");
     setBodyDraftText("");
+    setBodyDraftHtml("");
     setBodyDraftSource(null);
     setBodyDraftError("");
     setStep("form");
@@ -624,6 +648,7 @@ export default function DashboardInvitationsPage() {
                     {!isDraftLoading && !isBodyDirty && bodyDraftSource === "global" ? <span>{t("form.draftSourceGlobal")}</span> : null}
                     <span>{t("form.bodyLimitHint", { count: bodyCharLimit })}</span>
                     <span>{t("form.draftLength", { count: bodyCharCount })}</span>
+                    <span className="text-slate-400">{locale === "en" ? "(Rich text — formatting is preserved)" : "（富文本格式，支持加粗/换行）"}</span>
                     <span className={bodyCharRemaining >= 0 ? "text-slate-500" : "text-rose-600"}>
                       {bodyCharRemaining >= 0
                         ? t("form.bodyRemaining", { count: bodyCharRemaining })
@@ -635,16 +660,17 @@ export default function DashboardInvitationsPage() {
                       {isBodyDirty ? t("form.draftRestore") : t("form.draftRefresh")}
                     </Button>
                   </div>
-                  <Textarea
-                    id="inv-custom-content"
-                    rows={8}
-                    value={displayedBodyContent}
-                    maxLength={bodyCharLimit}
-                    onChange={(e) => {
+                  <div
+                    ref={bodyEditorRef}
+                    contentEditable
+                    suppressContentEditableWarning
+                    onInput={() => {
+                      if (!bodyEditorRef.current) return;
+                      const html = bodyEditorRef.current.innerHTML;
                       setIsBodyDirty(true);
-                      setForm((p) => ({ ...p, customMainContent: e.target.value }));
+                      setForm((p) => ({ ...p, customMainContent: html }));
                     }}
-                    placeholder={t("form.customMainContentPlaceholder")}
+                    className="min-h-[200px] max-h-[400px] overflow-y-auto w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&_p]:mb-2 [&_strong]:font-semibold [&_em]:italic"
                   />
                   {bodyDraftError ? <p className="text-xs text-rose-600">{bodyDraftError}</p> : null}
                 </div>

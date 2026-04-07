@@ -232,7 +232,9 @@ export function buildInvitationResolvedContent(params: {
   const effectiveBody = getEffectiveBodyTemplate(settings, language, eventBodyTemplate);
   const normalizedBodyTemplate = ensureBodyTemplateHasGuestBlock(effectiveBody.template, language, vars);
   const bodyContentHtml = customMainContent?.trim()
-    ? invitationPlainTextToHtml(customMainContent)
+    ? looksLikeHtml(customMainContent)
+      ? customMainContent
+      : invitationPlainTextToHtml(customMainContent)
     : applyInvitationTemplate(normalizedBodyTemplate, language, vars);
 
   return {
@@ -298,6 +300,11 @@ export function buildInvitationResolvedContent(params: {
   };
 }
 
+/** Returns true if the string appears to contain HTML markup. */
+function looksLikeHtml(text: string): boolean {
+  return /<[a-zA-Z]/.test(text.trimStart().slice(0, 200));
+}
+
 export function buildInvitationBodyDraft(params: {
   settings: InvitationTemplateSettings;
   language: InvitationTemplateLanguage;
@@ -311,6 +318,7 @@ export function buildInvitationBodyDraft(params: {
 
   return {
     source: effectiveBody.source,
+    html: renderedHtml,
     text: invitationHtmlToPlainText(renderedHtml),
   };
 }
