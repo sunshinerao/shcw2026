@@ -1242,7 +1242,7 @@
             "signaturePreset": "Signature preset",
             "signaturePresetDefault": "Use default signature",
             "event": "Associated event",
-            "eventPlaceholder": "No specific event",
+            "eventPlaceholder": "General",
             "purpose": "Purpose of attendance",
             "notes": "Notes",
             "cancel": "Cancel",

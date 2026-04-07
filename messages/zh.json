@@ -1242,7 +1242,7 @@
             "signaturePreset": "签名预设",
             "signaturePresetDefault": "使用默认签名",
             "event": "关联活动",
-            "eventPlaceholder": "不关联具体活动",
+            "eventPlaceholder": "通用",
             "purpose": "参会目的",
             "notes": "备注",
             "cancel": "取消",
