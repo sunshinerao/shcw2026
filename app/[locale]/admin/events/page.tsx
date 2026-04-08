@@ -771,10 +771,12 @@ export default function AdminEventsPage() {
           <h1 className="mb-2 text-2xl font-bold text-slate-900">{t("title")}</h1>
           <p className="text-slate-600">{t("subtitle")}</p>
         </div>
-        <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={openCreateDialog}>
-          <Plus className="mr-2 h-4 w-4" />
-          {t("create")}
-        </Button>
+        {canEditRestrictedEventFields ? (
+          <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={openCreateDialog}>
+            <Plus className="mr-2 h-4 w-4" />
+            {t("create")}
+          </Button>
+        ) : null}
       </motion.div>
 
       {statusMessage ? (
