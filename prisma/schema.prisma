@@ -642,6 +642,10 @@ model InvitationRequest {
   purpose         String?          @db.Text // 参会目的或说明
   notes           String?          @db.Text // 备注
   customMainContent String?        @db.Text // 用户自定义邀请函正文（纯文本，优先级最高）
+
+  // AI 优化后的邀请函正文缓存（仅在 purpose 填写时生成，customMainContent 优先）
+  aiEnhancedBodyZh String?         @db.Text
+  aiEnhancedBodyEn String?         @db.Text
   
   // 英文邀请函签名预设
   signaturePresetId String?        // 英文邀请函签名预设ID（仅语言为 en 时生效）
