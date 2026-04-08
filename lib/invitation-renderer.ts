@@ -668,7 +668,36 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
       }
+
+      .v-print-btn {
+        display: none !important;
+      }
     }
+
+  .v-print-btn {
+    position: fixed;
+    top: 20px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #059669;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.18);
+    transition: background 0.15s;
+  }
+
+  .v-print-btn:hover {
+    background: #047857;
+  }
   </style>
 </head>
 <body>
@@ -703,6 +732,11 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
       ${backBgSection}
     </section>
   </div>
+
+  <button class="v-print-btn" onclick="window.print()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    ${data.language === "en" ? "Print / Save as PDF" : "\u6253\u5370 / \u4fdd\u5b58\u4e3aPDF"}
+  </button>
 </body>
 </html>`;
 }
