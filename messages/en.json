@@ -1896,6 +1896,8 @@
                 "ceremony": "Ceremony",
                 "panel": "Panel",
                 "workshop": "Workshop",
+                "sharing": "Sharing",
+                "launch": "Launch",
                 "break": "Break",
                 "networking": "Networking",
                 "registration": "Registration"

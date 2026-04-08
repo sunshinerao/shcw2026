@@ -353,19 +353,22 @@ export default function EventDetailPage() {
     lineHeight: number,
     maxLines: number
   ) => {
-    const words = text.split(/\s+/);
+    // Split into tokens: Chinese chars are split individually, Latin words kept together
+    const tokens = text.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]|[^\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\s]+|\s+/g) || [text];
     const lines: string[] = [];
     let currentLine = "";
 
-    words.forEach((word) => {
-      const testLine = currentLine ? `${currentLine} ${word}` : word;
+    tokens.forEach((token) => {
+      if (/^\s+$/.test(token)) return; // skip pure whitespace tokens
+      const separator = currentLine && !/[\u4e00-\u9fff]/.test(token) && !/[\u4e00-\u9fff]/.test(currentLine.slice(-1)) ? " " : "";
+      const testLine = currentLine ? `${currentLine}${separator}${token}` : token;
       if (context.measureText(testLine).width <= maxWidth) {
         currentLine = testLine;
       } else {
         if (currentLine) {
           lines.push(currentLine);
         }
-        currentLine = word;
+        currentLine = token;
       }
     });
 
@@ -376,6 +379,29 @@ export default function EventDetailPage() {
     lines.slice(0, maxLines).forEach((line, index) => {
       context.fillText(line, x, y + index * lineHeight);
     });
+  };
+
+  // Returns estimated line count for text at current font settings
+  const estimateLineCount = (
+    context: CanvasRenderingContext2D,
+    text: string,
+    maxWidth: number
+  ) => {
+    const tokens = text.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]|[^\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\s]+|\s+/g) || [text];
+    let lines = 1;
+    let currentLine = "";
+    tokens.forEach((token) => {
+      if (/^\s+$/.test(token)) return;
+      const separator = currentLine && !/[\u4e00-\u9fff]/.test(token) && !/[\u4e00-\u9fff]/.test(currentLine.slice(-1)) ? " " : "";
+      const testLine = currentLine ? `${currentLine}${separator}${token}` : token;
+      if (context.measureText(testLine).width <= maxWidth) {
+        currentLine = testLine;
+      } else {
+        lines++;
+        currentLine = token;
+      }
+    });
+    return lines;
   };
 
   const buildPosterImage = async (shareUrl: string) => {
@@ -408,20 +434,39 @@ export default function EventDetailPage() {
     const scheduleLabel = getEventScheduleLabel(event, locale);
 
     context.fillStyle = "#ffffff";
-    context.font = "700 62px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    drawWrappedText(context, title, 130, 220, canvas.width - 260, 78, 2);
+    // Adaptive font size: reduce if title is long, allow more lines accordingly
+    const titleMaxWidth = canvas.width - 260;
+    let titleFontSize = 62;
+    let titleLineHeight = 78;
+    let titleMaxLines = 2;
+    context.font = `700 ${titleFontSize}px 'PingFang SC', 'Microsoft YaHei', sans-serif`;
+    const titleLineCount = estimateLineCount(context, title, titleMaxWidth);
+    if (titleLineCount > 2) {
+      titleFontSize = 48;
+      titleLineHeight = 62;
+      titleMaxLines = 3;
+      context.font = `700 ${titleFontSize}px 'PingFang SC', 'Microsoft YaHei', sans-serif`;
+    }
+    drawWrappedText(context, title, 130, 220, titleMaxWidth, titleLineHeight, titleMaxLines);
+
+    // Shift remaining content down if title takes extra lines
+    const titleBottomY = 220 + Math.min(titleMaxLines, titleLineCount) * titleLineHeight;
+    const descY = Math.max(400, titleBottomY + 40);
+    const scheduleY = descY + 48 * 3 + 40;
+    const venueY = scheduleY + 50;
+    const qrBoxY = venueY + 60;
 
     context.fillStyle = "rgba(255,255,255,0.9)";
     context.font = "400 36px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    drawWrappedText(context, description, 130, 400, canvas.width - 260, 48, 3);
+    drawWrappedText(context, description, 130, descY, canvas.width - 260, 48, 3);
 
     context.fillStyle = "#d1fae5";
     context.font = "600 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    drawWrappedText(context, scheduleLabel, 130, 600, canvas.width - 260, 44, 4);
-    context.fillText(venue, 130, 660);
+    drawWrappedText(context, scheduleLabel, 130, scheduleY, canvas.width - 260, 44, 4);
+    context.fillText(venue, 130, venueY);
 
     context.fillStyle = "#ffffff";
-    context.fillRect(300, 760, 480, 560);
+    context.fillRect(300, qrBoxY, 480, 560);
 
     const qrDataUrl = await QRCode.toDataURL(shareUrl, {
       width: 380,
@@ -429,12 +474,12 @@ export default function EventDetailPage() {
       color: { dark: "#0f172a", light: "#ffffff" },
     });
     const qrImage = await loadImageElement(qrDataUrl);
-    context.drawImage(qrImage, 350, 810, 380, 380);
+    context.drawImage(qrImage, 350, qrBoxY + 50, 380, 380);
 
     context.fillStyle = "#0f172a";
     context.font = "600 30px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     context.textAlign = "center";
-    context.fillText(t("register.sharePosterScan"), canvas.width / 2, 1260);
+    context.fillText(t("register.sharePosterScan"), canvas.width / 2, qrBoxY + 500);
     context.textAlign = "start";
 
     return canvas.toDataURL("image/png");
