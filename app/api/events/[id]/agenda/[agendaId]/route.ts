@@ -11,6 +11,7 @@ import {
   normalizeAgendaDateKey,
 } from "@/lib/agenda";
 import { prisma } from "@/lib/prisma";
+import { translateMissingEventFieldsToEnglish } from "@/lib/ai-translation";
 
 async function requireEventManager(requestLocale: "zh" | "en", eventId: string) {
   const session = await getServerSession(authOptions);
@@ -125,7 +126,7 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { agendaDate, title, description, startTime, endTime, type, venue, order, speakerIds, moderatorId, speakerMeta } = body;
+    const { agendaDate, title, description, titleEn: providedTitleEn, descriptionEn: providedDescriptionEn, startTime, endTime, type, venue, order, speakerIds, moderatorId, speakerMeta } = body;
 
     if (auth.role === "EVENT_MANAGER" && (speakerIds !== undefined || moderatorId !== undefined || speakerMeta !== undefined)) {
       return NextResponse.json(
@@ -205,12 +206,30 @@ export async function PUT(
       );
     }
 
+    // Auto-translate missing English fields
+    let finalTitleEn: string | null | undefined = providedTitleEn;
+    let finalDescriptionEn: string | null | undefined = providedDescriptionEn;
+    if ((title !== undefined && !finalTitleEn) || (description !== undefined && !finalDescriptionEn)) {
+      try {
+        const translated = await translateMissingEventFieldsToEnglish({
+          title: title !== undefined && !finalTitleEn ? title : undefined,
+          description: description !== undefined && !finalDescriptionEn ? description : undefined,
+        });
+        if (title !== undefined && !finalTitleEn) finalTitleEn = translated.titleEn || null;
+        if (description !== undefined && !finalDescriptionEn) finalDescriptionEn = translated.descriptionEn || null;
+      } catch {
+        // Translation failure is non-blocking
+      }
+    }
+
     const agendaItem = await prisma.agendaItem.update({
       where: { id: params.agendaId },
       data: {
         ...(agendaDate !== undefined && { agendaDate: agendaDateToUtcDate(nextAgendaDate)! }),
         ...(title !== undefined && { title }),
+        ...(finalTitleEn !== undefined && { titleEn: finalTitleEn || null }),
         ...(description !== undefined && { description: description || null }),
+        ...(finalDescriptionEn !== undefined && { descriptionEn: finalDescriptionEn || null }),
         ...(startTime !== undefined && { startTime }),
         ...(endTime !== undefined && { endTime }),
         ...(type !== undefined && { type }),

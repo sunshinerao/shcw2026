@@ -417,7 +417,9 @@ model AgendaItem {
   
   // 内容
   title       String
+  titleEn     String?
   description String?  @db.Text
+  descriptionEn String? @db.Text
   type        String   // keynote | panel | workshop | sharing | launch | break | networking
   
   // 地点

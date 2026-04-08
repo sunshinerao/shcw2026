@@ -66,7 +66,9 @@ type AgendaItem = {
   eventId: string;
   agendaDate: string;
   title: string;
+  titleEn?: string | null;
   description?: string | null;
+  descriptionEn?: string | null;
   startTime: string;
   endTime: string;
   type: string;
@@ -97,7 +99,9 @@ const AGENDA_TYPES = ["keynote", "panel", "workshop", "sharing", "launch", "brea
 
 type AgendaFormState = {
   title: string;
+  titleEn: string;
   description: string;
+  descriptionEn: string;
   agendaDate: string;
   startTime: string;
   endTime: string;
@@ -111,7 +115,9 @@ type AgendaFormState = {
 
 const initialAgendaForm: AgendaFormState = {
   title: "",
+  titleEn: "",
   description: "",
+  descriptionEn: "",
   agendaDate: "",
   startTime: "09:00",
   endTime: "09:30",
@@ -361,7 +367,9 @@ export default function EventAgendaPage({
       : item.speakers.map((s) => s.id);
     setForm({
       title: item.title,
+      titleEn: item.titleEn || "",
       description: item.description || "",
+      descriptionEn: item.descriptionEn || "",
       agendaDate: normalizeAgendaDateKey(item.agendaDate),
       startTime: item.startTime,
       endTime: item.endTime,
@@ -453,7 +461,9 @@ export default function EventAgendaPage({
     try {
       const payload = {
         title: form.title,
+        titleEn: form.titleEn || null,
         description: form.description || null,
+        descriptionEn: form.descriptionEn || null,
         agendaDate: form.agendaDate,
         startTime: form.startTime,
         endTime: form.endTime,
@@ -768,23 +778,27 @@ export default function EventAgendaPage({
                                     return (
                                       <div
                                         key={speaker.id}
-                                        className="flex items-center gap-2"
+                                        className="flex items-start gap-2"
                                       >
-                                        <Avatar className="h-5 w-5 shrink-0">
+                                        <Avatar className="h-5 w-5 shrink-0 mt-0.5">
                                           <AvatarImage src={speaker.avatar || undefined} />
                                           <AvatarFallback className="text-[10px]">
                                             {getSpeakerName(speaker).charAt(0)}
                                           </AvatarFallback>
                                         </Avatar>
-                                        <span className="text-xs font-medium text-slate-700 shrink-0">
-                                          {getSpeakerName(speaker)}
-                                        </span>
-                                        <span className="text-xs text-slate-400">
-                                          {getSpeakerTitle(speaker)} · {getSpeakerOrg(speaker)}
-                                        </span>
-                                        {topic && (
-                                          <span className="text-xs font-bold text-slate-600">{topic}</span>
-                                        )}
+                                        <div>
+                                          <div className="flex items-center gap-1.5">
+                                            <span className="text-xs font-medium text-slate-700">
+                                              {getSpeakerName(speaker)}
+                                            </span>
+                                            <span className="text-xs text-slate-400">
+                                              {getSpeakerTitle(speaker)} · {getSpeakerOrg(speaker)}
+                                            </span>
+                                          </div>
+                                          {topic && (
+                                            <div className="text-xs font-bold text-slate-600 mt-0.5">{topic}</div>
+                                          )}
+                                        </div>
                                       </div>
                                     );
                                   })}
@@ -882,6 +896,24 @@ export default function EventAgendaPage({
                 />
               </div>
 
+              {/* Title EN */}
+              <div className="space-y-2">
+                <Label htmlFor="agenda-title-en">
+                  {locale === "zh" ? "英文标题" : "English Title"}
+                  <span className="ml-2 text-xs text-slate-400 font-normal">
+                    {locale === "zh" ? "（留空则自动翻译）" : "(auto-translated if blank)"}
+                  </span>
+                </Label>
+                <Input
+                  id="agenda-title-en"
+                  value={form.titleEn}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, titleEn: e.target.value }))
+                  }
+                  placeholder={locale === "zh" ? "English title..." : "English title..."}
+                />
+              </div>
+
               {/* Description */}
               <div className="space-y-2">
                 <Label htmlFor="agenda-desc">{t("description")}</Label>
@@ -896,6 +928,28 @@ export default function EventAgendaPage({
                     }))
                   }
                   placeholder={t("descriptionPlaceholder")}
+                />
+              </div>
+
+              {/* Description EN */}
+              <div className="space-y-2">
+                <Label htmlFor="agenda-desc-en">
+                  {locale === "zh" ? "英文描述" : "English Description"}
+                  <span className="ml-2 text-xs text-slate-400 font-normal">
+                    {locale === "zh" ? "（留空则自动翻译）" : "(auto-translated if blank)"}
+                  </span>
+                </Label>
+                <Textarea
+                  id="agenda-desc-en"
+                  rows={2}
+                  value={form.descriptionEn}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      descriptionEn: e.target.value,
+                    }))
+                  }
+                  placeholder="English description..."
                 />
               </div>
 

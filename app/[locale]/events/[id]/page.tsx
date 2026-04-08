@@ -63,7 +63,9 @@ type AgendaSpeaker = {
 type AgendaItem = {
   id: string;
   title: string;
+  titleEn?: string | null;
   description?: string | null;
+  descriptionEn?: string | null;
   agendaDate: string;
   startTime: string;
   endTime: string;
@@ -738,13 +740,17 @@ export default function EventDetailPage() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                                    <h4 className="font-semibold text-slate-900">{item.title}</h4>
+                                    <h4 className="font-semibold text-slate-900">
+                                      {locale === "en" && item.titleEn ? item.titleEn : item.title}
+                                    </h4>
                                     <Badge variant="outline" className="shrink-0 text-xs">
                                       {t.has(`agenda.types.${item.type}`) ? t(`agenda.types.${item.type}` as Parameters<typeof t>[0]) : item.type}
                                     </Badge>
                                   </div>
-                                  {item.description && (
-                                    <p className="text-sm text-slate-600 mb-2">{item.description}</p>
+                                  {(item.description || item.descriptionEn) && (
+                                    <p className="text-sm text-slate-600 mb-2">
+                                      {locale === "en" && item.descriptionEn ? item.descriptionEn : item.description}
+                                    </p>
                                   )}
                                   {item.venue && (
                                     <p className="text-xs text-slate-400 mb-2">
@@ -773,22 +779,26 @@ export default function EventDetailPage() {
                                             const org = locale === "en" && speaker.organizationEn ? speaker.organizationEn : speaker.organization;
                                             const topic = item.speakerMeta?.topics?.[speaker.id];
                                             return (
-                                              <div key={speaker.id} className="flex items-center gap-2">
-                                                <Avatar className="h-5 w-5 shrink-0">
+                                              <div key={speaker.id} className="flex items-start gap-2">
+                                                <Avatar className="h-5 w-5 shrink-0 mt-0.5">
                                                   <AvatarImage src={speaker.avatar || undefined} />
                                                   <AvatarFallback className="text-[10px]">
                                                     {name.charAt(0)}
                                                   </AvatarFallback>
                                                 </Avatar>
-                                                <span className="text-xs font-medium text-slate-700 shrink-0">
-                                                  {name}
-                                                </span>
-                                                <span className="text-xs text-slate-400">
-                                                  {title} · {org}
-                                                </span>
-                                                {topic && (
-                                                  <span className="text-xs font-bold text-slate-600">{topic}</span>
-                                                )}
+                                                <div>
+                                                  <div className="flex items-center gap-1.5">
+                                                    <span className="text-xs font-medium text-slate-700">
+                                                      {name}
+                                                    </span>
+                                                    <span className="text-xs text-slate-400">
+                                                      {title} · {org}
+                                                    </span>
+                                                  </div>
+                                                  {topic && (
+                                                    <div className="text-xs font-bold text-slate-600 mt-0.5">{topic}</div>
+                                                  )}
+                                                </div>
                                               </div>
                                             );
                                           })}

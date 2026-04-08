@@ -11,6 +11,7 @@ import {
   normalizeAgendaDateKey,
 } from "@/lib/agenda";
 import { prisma } from "@/lib/prisma";
+import { translateMissingEventFieldsToEnglish } from "@/lib/ai-translation";
 
 async function requireEventManager(requestLocale: "zh" | "en", eventId: string) {
   const session = await getServerSession(authOptions);
@@ -171,7 +172,7 @@ export async function POST(
     }
 
     const body = await req.json();
-    const { agendaDate, title, description, startTime, endTime, type, venue, order, speakerIds, moderatorId, speakerMeta } = body;
+    const { agendaDate, title, description, titleEn: providedTitleEn, descriptionEn: providedDescriptionEn, startTime, endTime, type, venue, order, speakerIds, moderatorId, speakerMeta } = body;
 
     if (auth.role === "EVENT_MANAGER" && (speakerIds !== undefined || moderatorId !== undefined || speakerMeta !== undefined)) {
       return NextResponse.json(
@@ -236,12 +237,30 @@ export async function POST(
 
     const parsedAgendaDate = agendaDateToUtcDate(agendaDate);
 
+    // Auto-translate if English fields not provided
+    let finalTitleEn = providedTitleEn || null;
+    let finalDescriptionEn = providedDescriptionEn || null;
+    if (!finalTitleEn || !finalDescriptionEn) {
+      try {
+        const translated = await translateMissingEventFieldsToEnglish({
+          title: !finalTitleEn ? title : undefined,
+          description: !finalDescriptionEn ? description : undefined,
+        });
+        if (!finalTitleEn) finalTitleEn = translated.titleEn || null;
+        if (!finalDescriptionEn) finalDescriptionEn = translated.descriptionEn || null;
+      } catch {
+        // Translation failure is non-blocking
+      }
+    }
+
     const agendaItem = await prisma.agendaItem.create({
       data: {
         eventId: params.id,
         agendaDate: parsedAgendaDate!,
         title,
+        titleEn: finalTitleEn || null,
         description: description || null,
+        descriptionEn: finalDescriptionEn || null,
         startTime,
         endTime,
         type: type || "keynote",
