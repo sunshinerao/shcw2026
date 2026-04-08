@@ -9,7 +9,6 @@ import {
   Clock,
   Edit2,
   MapPin,
-  Mic,
   Plus,
   Search,
   Trash2,
@@ -750,42 +749,46 @@ export default function EventAgendaPage({
                           )}
                           {/* Speakers */}
                           {item.speakers.length > 0 && (
-                            <div className="mt-1 space-y-1">
-                              <div className="flex items-center gap-1 mb-0.5">
-                                <Mic className="h-3.5 w-3.5 text-slate-400" />
+                            <div className="mt-1 flex gap-1.5">
+                              <span className="text-xs text-slate-400 shrink-0 pt-0.5">
+                                {locale === "zh" ? "嘉宾：" : "Speakers:"}
+                              </span>
+                              <div className="space-y-1">
+                                {item.speakers
+                                  .slice()
+                                  .sort((a, b) => {
+                                    const ids = item.speakerMeta?.orderedIds;
+                                    if (!ids) return 0;
+                                    const ia = ids.indexOf(a.id);
+                                    const ib = ids.indexOf(b.id);
+                                    return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+                                  })
+                                  .map((speaker) => {
+                                    const topic = item.speakerMeta?.topics?.[speaker.id];
+                                    return (
+                                      <div
+                                        key={speaker.id}
+                                        className="flex items-center gap-2"
+                                      >
+                                        <Avatar className="h-5 w-5 shrink-0">
+                                          <AvatarImage src={speaker.avatar || undefined} />
+                                          <AvatarFallback className="text-[10px]">
+                                            {getSpeakerName(speaker).charAt(0)}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-xs font-medium text-slate-700 shrink-0">
+                                          {getSpeakerName(speaker)}
+                                        </span>
+                                        <span className="text-xs text-slate-400">
+                                          {getSpeakerTitle(speaker)} · {getSpeakerOrg(speaker)}
+                                        </span>
+                                        {topic && (
+                                          <span className="text-xs font-bold text-slate-600">{topic}</span>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
                               </div>
-                              {item.speakers
-                                .slice()
-                                .sort((a, b) => {
-                                  const ids = item.speakerMeta?.orderedIds;
-                                  if (!ids) return 0;
-                                  const ia = ids.indexOf(a.id);
-                                  const ib = ids.indexOf(b.id);
-                                  return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
-                                })
-                                .map((speaker) => {
-                                  const topic = item.speakerMeta?.topics?.[speaker.id];
-                                  return (
-                                    <div
-                                      key={speaker.id}
-                                      className="flex items-center gap-2 pl-5"
-                                    >
-                                      <Avatar className="h-5 w-5 shrink-0">
-                                        <AvatarImage src={speaker.avatar || undefined} />
-                                        <AvatarFallback className="text-[10px]">
-                                          {getSpeakerName(speaker).charAt(0)}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                      <span className="text-xs font-medium text-slate-700 shrink-0">
-                                        {getSpeakerName(speaker)}
-                                      </span>
-                                      <span className="text-xs text-slate-400">
-                                        {getSpeakerTitle(speaker)} · {getSpeakerOrg(speaker)}
-                                        {topic ? ` · ${topic}` : ""}
-                                      </span>
-                                    </div>
-                                  );
-                                })}
                             </div>
                           )}
                           {/* Moderator */}
