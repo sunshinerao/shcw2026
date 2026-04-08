@@ -334,7 +334,7 @@ export default function AdminEventsPage() {
           return;
         }
 
-        const response = await fetch("/api/users?page=1&pageSize=100", {
+        const response = await fetch("/api/users?page=1&pageSize=100&role=ADMIN&role=EVENT_MANAGER", {
           cache: "no-store",
         });
         const payload = await response.json();

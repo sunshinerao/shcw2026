@@ -82,11 +82,11 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10));
     const pageSize = Math.min(
-      100,
+      50,
       Math.max(1, Number.parseInt(searchParams.get("pageSize") || "20", 10))
     );
     const search = (searchParams.get("search") || "").trim();
-    const roleParam = searchParams.get("role");
+    const roleParams = searchParams.getAll("role");
     const statusParam = searchParams.get("status");
     const sortBy = searchParams.get("sortBy") || "createdAt";
     const sortOrder = searchParams.get("sortOrder") === "asc" ? "asc" : "desc";
@@ -102,8 +102,11 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    if (roleParam && Object.values(UserRole).includes(roleParam as UserRole)) {
-      where.role = roleParam as UserRole;
+    const validRoles = roleParams.filter((r) => Object.values(UserRole).includes(r as UserRole)) as UserRole[];
+    if (validRoles.length === 1) {
+      where.role = validRoles[0];
+    } else if (validRoles.length > 1) {
+      where.role = { in: validRoles };
     }
 
     if (statusParam && Object.values(UserStatus).includes(statusParam as UserStatus)) {
@@ -117,7 +120,7 @@ export async function GET(req: NextRequest) {
         ? { organization: { name: sortOrder } }
         : { [resolvedSortBy]: sortOrder };
 
-    const [users, total] = await Promise.all([
+    const [users, total, statsTotal, statsActive, statsPending, statsSpeakers, statsVerifiers] = await Promise.all([
       prisma.user.findMany({
         where,
         select: {
@@ -178,6 +181,11 @@ export async function GET(req: NextRequest) {
         take: pageSize,
       }),
       prisma.user.count({ where }),
+      prisma.user.count(),
+      prisma.user.count({ where: { status: UserStatus.ACTIVE } }),
+      prisma.user.count({ where: { status: UserStatus.PENDING } }),
+      prisma.user.count({ where: { role: UserRole.SPEAKER } }),
+      prisma.user.count({ where: { role: UserRole.VERIFIER } }),
     ]);
 
     return NextResponse.json({
@@ -189,6 +197,13 @@ export async function GET(req: NextRequest) {
           pageSize,
           total,
           totalPages: Math.ceil(total / pageSize),
+        },
+        stats: {
+          total: statsTotal,
+          active: statsActive,
+          pending: statsPending,
+          speakers: statsSpeakers,
+          verifiers: statsVerifiers,
         },
       },
     });

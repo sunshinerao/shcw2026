@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
@@ -238,6 +238,12 @@ export default function AdminUsersPage() {
   const [userPoints, setUserPoints] = useState<{user: any; transactions: any[]} | null>(null);
   const [pointsLoading, setPointsLoading] = useState(false);
 
+  const [filteredTotal, setFilteredTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, speakers: 0, verifiers: 0 });
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const currentParamsRef = useRef(new URLSearchParams());
+
   const loadingLabel = locale === "en" ? "Loading users..." : "正在加载用户...";
   const verifierLabel = t("stats.verifiers");
 
@@ -246,11 +252,11 @@ export default function AdminUsersPage() {
     setStatusMessage(message);
   };
 
-  const loadUsers = useCallback(async () => {
+  const loadUsers = useCallback(async (params: URLSearchParams) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/users?page=1&pageSize=100&sortBy=createdAt&sortOrder=desc");
+      const response = await fetch(`/api/users?${params}`);
       const payload = await response.json();
 
       if (!response.ok) {
@@ -258,6 +264,9 @@ export default function AdminUsersPage() {
       }
 
       setUsers(payload.data.users || []);
+      setFilteredTotal(payload.data.pagination.total);
+      setTotalPages(payload.data.pagination.totalPages);
+      if (payload.data.stats) setStats(payload.data.stats);
       setStatusMessage("");
     } catch (error) {
       console.error("Load users failed:", error);
@@ -268,43 +277,29 @@ export default function AdminUsersPage() {
     }
   }, [t]);
 
+  // Debounce search: reset to page 1 after 300 ms of no input
   useEffect(() => {
-    void loadUsers();
-  }, [loadUsers]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  const filteredUsers = useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
-
-    return users.filter((user) => {
-      const fields = [
-        user.name,
-        user.email,
-        user.phone,
-        user.title,
-        user.organization?.name,
-        user.organization?.industry,
-      ]
-        .filter(Boolean)
-        .map((value) => String(value).toLowerCase());
-
-      const matchesSearch =
-        normalizedQuery.length === 0 || fields.some((field) => field.includes(normalizedQuery));
-      const matchesRole = roleFilter === "ALL" || user.role === roleFilter;
-      const matchesStatus = statusFilter === "ALL" || user.status === statusFilter;
-
-      return matchesSearch && matchesRole && matchesStatus;
+  // Reload whenever page, debounced search, role filter, or status filter changes
+  useEffect(() => {
+    const params = new URLSearchParams({
+      page: String(currentPage),
+      pageSize: String(ITEMS_PER_PAGE),
+      sortBy: "createdAt",
+      sortOrder: "desc",
     });
-  }, [roleFilter, searchQuery, statusFilter, users]);
-
-  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / ITEMS_PER_PAGE));
-  const paginatedUsers = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredUsers.slice(start, start + ITEMS_PER_PAGE);
-  }, [currentPage, filteredUsers]);
-
-  useEffect(() => {
-    setCurrentPage((page) => Math.min(page, totalPages));
-  }, [totalPages]);
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (roleFilter !== "ALL") params.set("role", roleFilter);
+    if (statusFilter !== "ALL") params.set("status", statusFilter);
+    currentParamsRef.current = params;
+    void loadUsers(params);
+  }, [currentPage, debouncedSearch, roleFilter, statusFilter, loadUsers]);
 
   const resetForm = () => {
     setEditingUser(null);
@@ -385,7 +380,7 @@ export default function AdminUsersPage() {
         throw new Error(payload.error || t(editingUser ? "messages.updateFailed" : "messages.createFailed"));
       }
 
-      upsertUser(payload.data);
+      void loadUsers(currentParamsRef.current);
       setMessage("success", payload.message || t(editingUser ? "messages.updateSuccess" : "messages.createSuccess"));
       setIsFormDialogOpen(false);
       resetForm();
@@ -412,12 +407,12 @@ export default function AdminUsersPage() {
         throw new Error(payload.error || t("messages.deleteFailed"));
       }
 
-      setUsers((previous) => previous.filter((user) => user.id !== userToDelete.id));
       setSelectedUsers((previous) => {
         const next = new Set(previous);
         next.delete(userToDelete.id);
         return next;
       });
+      void loadUsers(currentParamsRef.current);
       setMessage("success", payload.message || t("messages.deleteSuccess"));
       setUserToDelete(null);
       setIsDeleteDialogOpen(false);
@@ -444,7 +439,7 @@ export default function AdminUsersPage() {
         throw new Error(payload.error || t("messages.statusUpdateFailed"));
       }
 
-      upsertUser(payload.data);
+      void loadUsers(currentParamsRef.current);
       setMessage("success", payload.message || t("messages.statusUpdateSuccess"));
     } catch (error) {
       console.error("Status update failed:", error);
@@ -490,7 +485,6 @@ export default function AdminUsersPage() {
             if (!response.ok) {
               throw new Error(payload.error || t("messages.batchFailed"));
             }
-            setUsers((previous) => previous.filter((user) => user.id !== userId));
             return;
           }
 
@@ -511,6 +505,7 @@ export default function AdminUsersPage() {
       );
 
       setSelectedUsers(new Set());
+      void loadUsers(currentParamsRef.current);
       setIsBatchDialogOpen(false);
       setMessage("success", t("messages.batchSuccess"));
     } catch (error) {
@@ -592,7 +587,7 @@ export default function AdminUsersPage() {
         setPointsAmount(0);
         setPointsReason("");
         setPointsDialogOpen(false);
-        void loadUsers();
+        void loadUsers(currentParamsRef.current);
         void viewUserPoints(pointsUser);
       } else {
         toast.error(data.error || t("pointsDialog.adjust.failed"));
@@ -616,7 +611,7 @@ export default function AdminUsersPage() {
       const data = await response.json();
       if (data.success) {
         toast.success(data.message || t("messages.verifierAssigned", { name: user.name }));
-        upsertUser({ ...user, role: "VERIFIER" });
+        void loadUsers(currentParamsRef.current);
       } else {
         toast.error(data.error || t("messages.verifierAssignFailed"));
       }
@@ -625,11 +620,11 @@ export default function AdminUsersPage() {
     }
   };
 
-  const totalUsers = users.length;
-  const activeUsers = users.filter((user) => user.status === "ACTIVE").length;
-  const pendingUsers = users.filter((user) => user.status === "PENDING").length;
-  const speakersCount = users.filter((user) => user.role === "SPEAKER").length;
-  const verifiersCount = users.filter((user) => user.role === "VERIFIER").length;
+  const totalUsers = stats.total;
+  const activeUsers = stats.active;
+  const pendingUsers = stats.pending;
+  const speakersCount = stats.speakers;
+  const verifiersCount = stats.verifiers;
 
   return (
     <AdminSectionGuard section="users">
@@ -675,7 +670,7 @@ export default function AdminUsersPage() {
           <div className="flex flex-col gap-4 lg:flex-row">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-              <Input placeholder={t("searchPlaceholder")} value={searchQuery} onChange={(event) => { setSearchQuery(event.target.value); setCurrentPage(1); }} className="pl-10" />
+              <Input placeholder={t("searchPlaceholder")} value={searchQuery} onChange={(event) => { setSearchQuery(event.target.value); }} className="pl-10" />
             </div>
             <div className="flex gap-3">
               <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value as UserRole | "ALL"); setCurrentPage(1); }}>
@@ -715,13 +710,13 @@ export default function AdminUsersPage() {
       </AnimatePresence>
 
       <Card>
-        <CardHeader><CardTitle>{t("listTitle", { count: filteredUsers.length })}</CardTitle></CardHeader>
+        <CardHeader><CardTitle>{t("listTitle", { count: filteredTotal })}</CardTitle></CardHeader>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
-                  <TableHead className="w-[40px]"><Checkbox checked={paginatedUsers.length > 0 && paginatedUsers.every((user) => selectedUsers.has(user.id))} onCheckedChange={toggleSelectAll} /></TableHead>
+                  <TableHead className="w-[40px]"><Checkbox checked={users.length > 0 && users.every((user) => selectedUsers.has(user.id))} onCheckedChange={toggleSelectAll} /></TableHead>
                   <TableHead>{t("table.userInfo")}</TableHead>
                   <TableHead>{t("table.role")}</TableHead>
                   <TableHead>{t("table.status")}</TableHead>
@@ -732,9 +727,9 @@ export default function AdminUsersPage() {
               <TableBody>
                 {isLoading ? (
                   <TableRow><TableCell colSpan={6} className="py-12 text-center text-slate-500">{loadingLabel}</TableCell></TableRow>
-                ) : paginatedUsers.length === 0 ? (
+                ) : users.length === 0 ? (
                   <TableRow><TableCell colSpan={6} className="py-12 text-center text-slate-500">{t("empty")}</TableCell></TableRow>
-                ) : paginatedUsers.map((user) => (
+                ) : users.map((user) => (
                   <TableRow key={user.id} className="border-b transition-colors hover:bg-slate-50/50">
                     <TableCell><Checkbox checked={selectedUsers.has(user.id)} onCheckedChange={() => toggleSelectUser(user.id)} /></TableCell>
                     <TableCell>
