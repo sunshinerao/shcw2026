@@ -74,6 +74,12 @@ type AgendaItem = {
   venue?: string | null;
   order: number;
   speakers: AgendaSpeaker[];
+  moderatorId?: string | null;
+  moderator?: AgendaSpeaker | null;
+  speakerMeta?: {
+    orderedIds?: string[];
+    topics?: Record<string, string>;
+  } | null;
 };
 
 type EventInfo = {
@@ -88,7 +94,7 @@ type EventInfo = {
   venue: string;
 };
 
-const AGENDA_TYPES = ["keynote", "panel", "workshop", "break", "networking"] as const;
+const AGENDA_TYPES = ["keynote", "panel", "workshop", "sharing", "launch", "break", "networking"] as const;
 
 type AgendaFormState = {
   title: string;
@@ -100,6 +106,8 @@ type AgendaFormState = {
   venue: string;
   order: number;
   speakerIds: string[];
+  moderatorId: string;
+  speakerTopics: Record<string, string>;
 };
 
 const initialAgendaForm: AgendaFormState = {
@@ -112,6 +120,8 @@ const initialAgendaForm: AgendaFormState = {
   venue: "",
   order: 0,
   speakerIds: [],
+  moderatorId: "",
+  speakerTopics: {},
 };
 
 // New speaker inline form state
@@ -169,6 +179,7 @@ export default function EventAgendaPage({
   const [editingItem, setEditingItem] = useState<AgendaItem | null>(null);
   const [deletingItem, setDeletingItem] = useState<AgendaItem | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pickerTarget, setPickerTarget] = useState<"speakers" | "moderator">("speakers");
 
   const [form, setForm] = useState<AgendaFormState>(initialAgendaForm);
   const [speakerSearch, setSpeakerSearch] = useState("");
@@ -284,20 +295,31 @@ export default function EventAgendaPage({
     keynote: "bg-purple-100 text-purple-700",
     panel: "bg-blue-100 text-blue-700",
     workshop: "bg-amber-100 text-amber-700",
+    sharing: "bg-teal-100 text-teal-700",
+    launch: "bg-rose-100 text-rose-700",
     break: "bg-slate-100 text-slate-600",
     networking: "bg-emerald-100 text-emerald-700",
   };
 
-  // Selected speakers in form
+  // Selected speakers in form — ordered by speakerIds array
   const selectedSpeakers = useMemo(() => {
-    return allSpeakers.filter((s) => form.speakerIds.includes(s.id));
+    return form.speakerIds
+      .map((id) => allSpeakers.find((s) => s.id === id))
+      .filter((s): s is AgendaSpeaker => !!s);
   }, [allSpeakers, form.speakerIds]);
+
+  // Selected moderator in form
+  const selectedModerator = useMemo(() => {
+    if (!form.moderatorId) return null;
+    return allSpeakers.find((s) => s.id === form.moderatorId) || null;
+  }, [allSpeakers, form.moderatorId]);
 
   // Filtered speakers for picker
   const filteredSpeakers = useMemo(() => {
     const query = speakerSearch.toLowerCase().trim();
     return allSpeakers.filter((s) => {
-      if (form.speakerIds.includes(s.id)) return false; // already selected
+      if (pickerTarget === "speakers" && form.speakerIds.includes(s.id)) return false;
+      if (pickerTarget === "moderator" && form.moderatorId === s.id) return false;
       if (!query) return true;
       return (
         s.name.toLowerCase().includes(query) ||
@@ -306,20 +328,38 @@ export default function EventAgendaPage({
         (s.organizationEn?.toLowerCase().includes(query) ?? false)
       );
     });
-  }, [allSpeakers, speakerSearch, form.speakerIds]);
+  }, [allSpeakers, speakerSearch, form.speakerIds, form.moderatorId, pickerTarget]);
 
   const openCreateDialog = () => {
     setEditingItem(null);
+    const defaultDate = event ? normalizeAgendaDateKey(event.startDate) : "";
+    const sameDay = agendaItems.filter(
+      (a) => normalizeAgendaDateKey(a.agendaDate) === defaultDate
+    );
+    const lastEndTime = sameDay.length
+      ? sameDay.reduce(
+          (latest, a) => (a.endTime > latest ? a.endTime : latest),
+          "00:00"
+        )
+      : "09:00";
+    const [h, m] = lastEndTime.split(":").map(Number);
+    const endMinutes = h * 60 + m + 30;
+    const autoEnd = `${String(Math.floor(endMinutes / 60) % 24).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
     setForm({
       ...initialAgendaForm,
-      agendaDate: event ? normalizeAgendaDateKey(event.startDate) : "",
+      agendaDate: defaultDate,
       order: agendaItems.length,
+      startTime: lastEndTime,
+      endTime: autoEnd,
     });
     setIsAgendaDialogOpen(true);
   };
 
   const openEditDialog = (item: AgendaItem) => {
     setEditingItem(item);
+    const orderedIds = item.speakerMeta?.orderedIds?.length
+      ? item.speakerMeta.orderedIds.filter((id) => item.speakers.some((s) => s.id === id))
+      : item.speakers.map((s) => s.id);
     setForm({
       title: item.title,
       description: item.description || "",
@@ -329,25 +369,36 @@ export default function EventAgendaPage({
       type: item.type,
       venue: item.venue || "",
       order: item.order,
-      speakerIds: item.speakers.map((s) => s.id),
+      speakerIds: orderedIds,
+      moderatorId: item.moderatorId || "",
+      speakerTopics: item.speakerMeta?.topics || {},
     });
     setIsAgendaDialogOpen(true);
   };
 
   const toggleSpeaker = (id: string) => {
-    setForm((prev) => ({
-      ...prev,
-      speakerIds: prev.speakerIds.includes(id)
-        ? prev.speakerIds.filter((sid) => sid !== id)
-        : [...prev.speakerIds, id],
-    }));
+    if (pickerTarget === "moderator") {
+      setForm((prev) => ({ ...prev, moderatorId: id }));
+      setIsSpeakerPickerOpen(false);
+    } else {
+      setForm((prev) => ({
+        ...prev,
+        speakerIds: [...prev.speakerIds, id],
+        speakerTopics: { ...prev.speakerTopics, [id]: "" },
+      }));
+    }
   };
 
   const removeSpeaker = (id: string) => {
-    setForm((prev) => ({
-      ...prev,
-      speakerIds: prev.speakerIds.filter((sid) => sid !== id),
-    }));
+    setForm((prev) => {
+      const newTopics = { ...prev.speakerTopics };
+      delete newTopics[id];
+      return {
+        ...prev,
+        speakerIds: prev.speakerIds.filter((sid) => sid !== id),
+        speakerTopics: newTopics,
+      };
+    });
   };
 
   // Submit agenda item (create or update)
@@ -410,7 +461,14 @@ export default function EventAgendaPage({
         type: form.type,
         venue: form.venue || null,
         order: form.order,
-        ...(canManageSpeakers ? { speakerIds: form.speakerIds } : {}),
+        ...(canManageSpeakers ? {
+          speakerIds: form.speakerIds,
+          moderatorId: form.moderatorId || null,
+          speakerMeta: {
+            orderedIds: form.speakerIds,
+            topics: form.speakerTopics,
+          },
+        } : {}),
       };
 
       const url = editingItem
@@ -474,10 +532,37 @@ export default function EventAgendaPage({
     }
   };
 
+  function normalizeName(n: string) {
+    return n.toLowerCase().replace(/[\s\-.]/g, "");
+  }
+  function isSimilarName(a: string, b: string): boolean {
+    if (normalizeName(a) === normalizeName(b)) return true;
+    const ta = a.toLowerCase().split(/\s+/).sort().join("");
+    const tb = b.toLowerCase().split(/\s+/).sort().join("");
+    return ta === tb;
+  }
+
   // Create new speaker and add to form
   const submitNewSpeaker = async () => {
     if (!newSpeakerForm.name || !newSpeakerForm.title || !newSpeakerForm.organization) {
       return;
+    }
+
+    // Fuzzy duplicate check
+    const names = [newSpeakerForm.name, newSpeakerForm.nameEn].filter(Boolean);
+    const duplicates = allSpeakers.filter((s) =>
+      names.some(
+        (n) => isSimilarName(n, s.name) || (s.nameEn ? isSimilarName(n, s.nameEn) : false)
+      )
+    );
+    if (duplicates.length > 0) {
+      const dupNames = duplicates.map((d) => d.name).join(", ");
+      const confirmed = window.confirm(
+        locale === "zh"
+          ? `发现相似嘉宾：${dupNames}，确定要创建新嘉宾吗？`
+          : `Similar speaker(s) found: ${dupNames}. Continue to create new?`
+      );
+      if (!confirmed) return;
     }
 
     setIsSubmitting(true);
@@ -499,10 +584,15 @@ export default function EventAgendaPage({
       const newSpeaker = data.data as AgendaSpeaker;
       // Add to speakers library and select it
       setAllSpeakers((prev) => [...prev, newSpeaker]);
-      setForm((prev) => ({
-        ...prev,
-        speakerIds: [...prev.speakerIds, newSpeaker.id],
-      }));
+      if (pickerTarget === "moderator") {
+        setForm((prev) => ({ ...prev, moderatorId: newSpeaker.id }));
+      } else {
+        setForm((prev) => ({
+          ...prev,
+          speakerIds: [...prev.speakerIds, newSpeaker.id],
+          speakerTopics: { ...prev.speakerTopics, [newSpeaker.id]: "" },
+        }));
+      }
       setIsNewSpeakerDialogOpen(false);
       setNewSpeakerForm(initialNewSpeakerForm);
       setMessage("success", locale === "zh" ? "嘉宾已创建并添加" : "Speaker created and added");
@@ -662,25 +752,62 @@ export default function EventAgendaPage({
                           {item.speakers.length > 0 && (
                             <div className="flex flex-wrap items-center gap-2">
                               <Mic className="h-3.5 w-3.5 text-slate-400" />
-                              {item.speakers.map((speaker) => (
-                                <div
-                                  key={speaker.id}
-                                  className="flex items-center gap-1.5 rounded-full bg-slate-50 pl-1 pr-2.5 py-0.5"
-                                >
-                                  <Avatar className="h-5 w-5">
-                                    <AvatarImage src={speaker.avatar || undefined} />
-                                    <AvatarFallback className="text-[10px]">
-                                      {getSpeakerName(speaker).charAt(0)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span className="text-xs font-medium text-slate-700">
-                                    {getSpeakerName(speaker)}
-                                  </span>
-                                </div>
-                              ))}
+                              {item.speakers
+                                .slice()
+                                .sort((a, b) => {
+                                  const ids = item.speakerMeta?.orderedIds;
+                                  if (!ids) return 0;
+                                  const ia = ids.indexOf(a.id);
+                                  const ib = ids.indexOf(b.id);
+                                  return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+                                })
+                                .map((speaker) => {
+                                  const topic = item.speakerMeta?.topics?.[speaker.id];
+                                  return (
+                                    <div
+                                      key={speaker.id}
+                                      className="flex items-center gap-1.5 rounded-full bg-slate-50 pl-1 pr-2.5 py-0.5"
+                                    >
+                                      <Avatar className="h-5 w-5">
+                                        <AvatarImage src={speaker.avatar || undefined} />
+                                        <AvatarFallback className="text-[10px]">
+                                          {getSpeakerName(speaker).charAt(0)}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                      <span className="text-xs font-medium text-slate-700">
+                                        {getSpeakerName(speaker)}
+                                      </span>
+                                      {topic && (
+                                        <span className="text-xs text-slate-400 italic">
+                                          · {topic}
+                                        </span>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                            </div>
+                          )}
+                          {/* Moderator */}
+                          {item.moderator && (
+                            <div className="flex items-center gap-1.5 mt-1">
+                              <span className="text-xs text-slate-400 shrink-0">
+                                {locale === "zh" ? "主持：" : "Host:"}
+                              </span>
+                              <div className="flex items-center gap-1.5 rounded-full bg-amber-50 pl-1 pr-2.5 py-0.5">
+                                <Avatar className="h-5 w-5">
+                                  <AvatarImage src={item.moderator.avatar || undefined} />
+                                  <AvatarFallback className="text-[10px]">
+                                    {getSpeakerName(item.moderator).charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-xs font-medium text-amber-700">
+                                  {getSpeakerName(item.moderator)}
+                                </span>
+                              </div>
                             </div>
                           )}
                           {item.speakers.length === 0 &&
+                            !item.moderator &&
                             item.type !== "break" && (
                               <span className="text-xs text-slate-400">
                                 {t("noSpeakers")}
@@ -893,6 +1020,7 @@ export default function EventAgendaPage({
                       variant="outline"
                       size="sm"
                       onClick={() => {
+                        setPickerTarget("speakers");
                         setSpeakerSearch("");
                         setIsSpeakerPickerOpen(true);
                       }}
@@ -905,6 +1033,7 @@ export default function EventAgendaPage({
                       variant="outline"
                       size="sm"
                       onClick={() => {
+                        setPickerTarget("speakers");
                         setNewSpeakerForm(initialNewSpeakerForm);
                         setIsNewSpeakerDialogOpen(true);
                       }}
@@ -922,40 +1051,135 @@ export default function EventAgendaPage({
                   </p>
                 ) : null}
 
-                {/* Selected speakers chips */}
+                {/* Selected speakers as cards with topic input */}
                 {selectedSpeakers.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="space-y-2">
                     {selectedSpeakers.map((s) => (
                       <div
                         key={s.id}
-                        className="flex items-center gap-2 rounded-full border border-slate-200 bg-white pl-1 pr-2 py-1"
+                        className="rounded-lg border border-slate-200 bg-white p-2.5 space-y-2"
                       >
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src={s.avatar || undefined} />
-                          <AvatarFallback className="text-[10px]">
-                            {getSpeakerName(s).charAt(0)}
-                          </AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm font-medium text-slate-700">
-                          {getSpeakerName(s)}
-                        </span>
-                        <span className="text-xs text-slate-400">
-                          {getSpeakerOrg(s)}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-7 w-7 shrink-0">
+                            <AvatarImage src={s.avatar || undefined} />
+                            <AvatarFallback className="text-[10px]">
+                              {getSpeakerName(s).charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm font-medium text-slate-700">
+                              {getSpeakerName(s)}
+                            </span>
+                            <span className="text-xs text-slate-400 ml-1.5">
+                              {getSpeakerOrg(s)}
+                            </span>
+                          </div>
+                          {canManageSpeakers ? (
+                            <button
+                              type="button"
+                              className="ml-1 rounded-full p-0.5 hover:bg-red-50 text-slate-400 hover:text-red-500"
+                              onClick={() => removeSpeaker(s.id)}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          ) : null}
+                        </div>
                         {canManageSpeakers ? (
-                        <button
-                          type="button"
-                          className="ml-1 rounded-full p-0.5 hover:bg-red-50 text-slate-400 hover:text-red-500"
-                          onClick={() => removeSpeaker(s.id)}
-                        >
-                          <X className="h-3.5 w-3.5" />
-                        </button>
-                        ) : null}
+                          <Input
+                            value={form.speakerTopics[s.id] || ""}
+                            onChange={(e) =>
+                              setForm((prev) => ({
+                                ...prev,
+                                speakerTopics: {
+                                  ...prev.speakerTopics,
+                                  [s.id]: e.target.value,
+                                },
+                              }))
+                            }
+                            placeholder={t("speakerTopic")}
+                            className="h-7 text-xs"
+                          />
+                        ) : (
+                          form.speakerTopics[s.id] ? (
+                            <p className="text-xs text-slate-500 italic pl-0.5">
+                              {form.speakerTopics[s.id]}
+                            </p>
+                          ) : null
+                        )}
                       </div>
                     ))}
                   </div>
                 ) : (
                   <p className="text-sm text-slate-400">{t("noSpeakers")}</p>
+                )}
+              </div>
+
+              {/* ====== Moderator Section ====== */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-base font-medium">
+                    {t("moderator")}
+                  </Label>
+                  {canManageSpeakers ? (
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setPickerTarget("moderator");
+                          setSpeakerSearch("");
+                          setIsSpeakerPickerOpen(true);
+                        }}
+                      >
+                        <Users className="mr-1.5 h-3.5 w-3.5" />
+                        {t("selectModerator")}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setPickerTarget("moderator");
+                          setNewSpeakerForm(initialNewSpeakerForm);
+                          setIsNewSpeakerDialogOpen(true);
+                        }}
+                      >
+                        <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                        {t("createModerator")}
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+
+                {selectedModerator ? (
+                  <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white pl-1 pr-2 py-1 w-fit">
+                    <Avatar className="h-6 w-6">
+                      <AvatarImage src={selectedModerator.avatar || undefined} />
+                      <AvatarFallback className="text-[10px]">
+                        {getSpeakerName(selectedModerator).charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm font-medium text-slate-700">
+                      {getSpeakerName(selectedModerator)}
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      {getSpeakerOrg(selectedModerator)}
+                    </span>
+                    {canManageSpeakers ? (
+                      <button
+                        type="button"
+                        className="ml-1 rounded-full p-0.5 hover:bg-red-50 text-slate-400 hover:text-red-500"
+                        onClick={() =>
+                          setForm((prev) => ({ ...prev, moderatorId: "" }))
+                        }
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    ) : null}
+                  </div>
+                ) : (
+                  <p className="text-sm text-slate-400">{t("noModerator")}</p>
                 )}
               </div>
             </div>

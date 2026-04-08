@@ -418,10 +418,17 @@ model AgendaItem {
   // 内容
   title       String
   description String?  @db.Text
-  type        String   // keynote | panel | workshop | break | networking
+  type        String   // keynote | panel | workshop | sharing | launch | break | networking
   
   // 地点
   venue       String?
+  
+  // 嘉宾元数据（演讲主题、显示顺序等）
+  speakerMeta Json?
+  
+  // 主持人
+  moderatorId String?
+  moderator   Speaker? @relation("AgendaModerator", fields: [moderatorId], references: [id], onDelete: SetNull)
   
   // 关联
   event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
@@ -434,6 +441,7 @@ model AgendaItem {
   
   @@index([eventId])
   @@index([eventId, agendaDate])
+  @@index([moderatorId])
   @@map("agenda_items")
 }
 
@@ -461,6 +469,7 @@ model Speaker {
   
   // 关联
   agendaItems     AgendaItem[]
+  moderatedItems  AgendaItem[] @relation("AgendaModerator")
   
   order           Int      @default(0)
   

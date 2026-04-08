@@ -125,9 +125,9 @@ export async function PUT(
     }
 
     const body = await req.json();
-    const { agendaDate, title, description, startTime, endTime, type, venue, order, speakerIds } = body;
+    const { agendaDate, title, description, startTime, endTime, type, venue, order, speakerIds, moderatorId, speakerMeta } = body;
 
-    if (auth.role === "EVENT_MANAGER" && speakerIds !== undefined) {
+    if (auth.role === "EVENT_MANAGER" && (speakerIds !== undefined || moderatorId !== undefined || speakerMeta !== undefined)) {
       return NextResponse.json(
         {
           success: false,
@@ -221,9 +221,24 @@ export async function PUT(
             set: speakerIds.map((id: string) => ({ id })),
           },
         }),
+        ...(auth.role === "ADMIN" && moderatorId !== undefined && { moderatorId: moderatorId || null }),
+        ...(auth.role === "ADMIN" && speakerMeta !== undefined && { speakerMeta }),
       },
       include: {
         speakers: {
+          select: {
+            id: true,
+            name: true,
+            nameEn: true,
+            avatar: true,
+            title: true,
+            titleEn: true,
+            organization: true,
+            organizationEn: true,
+            isKeynote: true,
+          },
+        },
+        moderator: {
           select: {
             id: true,
             name: true,
