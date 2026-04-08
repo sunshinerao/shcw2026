@@ -448,12 +448,12 @@ export default function AdminUsersPage() {
   };
 
   const toggleSelectAll = () => {
-    if (paginatedUsers.length > 0 && paginatedUsers.every((user) => selectedUsers.has(user.id))) {
+    if (users.length > 0 && users.every((user) => selectedUsers.has(user.id))) {
       setSelectedUsers(new Set());
       return;
     }
 
-    setSelectedUsers(new Set(paginatedUsers.map((user) => user.id)));
+    setSelectedUsers(new Set(users.map((user) => user.id)));
   };
 
   const toggleSelectUser = (userId: string) => {
