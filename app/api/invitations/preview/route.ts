@@ -127,17 +127,19 @@ export async function POST(req: NextRequest) {
             month: "long",
             day: "numeric",
           })
-      : "";
+      : (lang === "en" ? "April 20 \u2013 April 28, 2026" : "2026年4月20日 - 2026年4月28日");
 
-    const eventVenueRaw =
-      lang === "en"
-        ? (event?.venueEn || event?.venue || "")
-        : (event?.venue || "");
+    const eventVenueRaw = event
+      ? lang === "en"
+        ? (event.venueEn || event.venue || "")
+        : (event.venue || "")
+      : (lang === "en" ? "See event information on our website" : "详见网站活动信息");
 
-    const timeStr =
-      event?.startTime && event?.endTime
+    const timeStr = event
+      ? (event.startTime && event.endTime
         ? `${event.startTime} \u2013 ${event.endTime}`
-        : (event?.startTime || "");
+        : (event.startTime || ""))
+      : (lang === "en" ? "See event information on our website" : "详见网站活动信息");
 
     const eventDateLabel =
       lang === "en" ? `Date: ${eventDateStr}` : `日期：${eventDateStr}`;
