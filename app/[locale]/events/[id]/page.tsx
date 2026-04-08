@@ -78,6 +78,7 @@ type AgendaItem = {
   speakerMeta?: {
     orderedIds?: string[];
     topics?: Record<string, string>;
+    topicsEn?: Record<string, string>;
   } | null;
 };
 
@@ -456,7 +457,6 @@ export default function EventDetailPage() {
     const descY = Math.max(400, titleBottomY + 40);
     const scheduleY = descY + 48 * 3 + 40;
     const venueY = scheduleY + 50;
-    const qrBoxY = venueY + 60;
 
     context.fillStyle = "rgba(255,255,255,0.9)";
     context.font = "400 36px 'PingFang SC', 'Microsoft YaHei', sans-serif";
@@ -465,7 +465,13 @@ export default function EventDetailPage() {
     context.fillStyle = "#d1fae5";
     context.font = "600 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     drawWrappedText(context, scheduleLabel, 130, scheduleY, canvas.width - 260, 44, 4);
-    context.fillText(venue, 130, venueY);
+
+    context.fillStyle = "rgba(255,255,255,0.85)";
+    context.font = "400 32px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    const venueLineHeight = 42;
+    const venueActualLines = Math.min(2, estimateLineCount(context, venue, canvas.width - 260));
+    drawWrappedText(context, venue, 130, venueY, canvas.width - 260, venueLineHeight, 2);
+    const qrBoxY = venueY + venueActualLines * venueLineHeight + 30;
 
     context.fillStyle = "#ffffff";
     context.fillRect(300, qrBoxY, 480, 560);
@@ -777,7 +783,9 @@ export default function EventDetailPage() {
                                             const name = locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name;
                                             const title = locale === "en" && speaker.titleEn ? speaker.titleEn : speaker.title;
                                             const org = locale === "en" && speaker.organizationEn ? speaker.organizationEn : speaker.organization;
-                                            const topic = item.speakerMeta?.topics?.[speaker.id];
+                                            const topic = locale === "en"
+                                              ? item.speakerMeta?.topicsEn?.[speaker.id] || item.speakerMeta?.topics?.[speaker.id]
+                                              : item.speakerMeta?.topics?.[speaker.id];
                                             return (
                                               <div key={speaker.id} className="flex items-start gap-2">
                                                 <Avatar className="h-5 w-5 shrink-0 mt-0.5">

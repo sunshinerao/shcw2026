@@ -11,7 +11,7 @@ import {
   normalizeAgendaDateKey,
 } from "@/lib/agenda";
 import { prisma } from "@/lib/prisma";
-import { translateMissingEventFieldsToEnglish } from "@/lib/ai-translation";
+import { translateMissingEventFieldsToEnglish, translateRecordValuesToEnglish } from "@/lib/ai-translation";
 
 async function requireEventManager(requestLocale: "zh" | "en", eventId: string) {
   const session = await getServerSession(authOptions);
@@ -241,7 +241,19 @@ export async function PUT(
           },
         }),
         ...(auth.role === "ADMIN" && moderatorId !== undefined && { moderatorId: moderatorId || null }),
-        ...(auth.role === "ADMIN" && speakerMeta !== undefined && { speakerMeta }),
+        ...(auth.role === "ADMIN" && speakerMeta !== undefined && {
+          speakerMeta: await (async () => {
+            if (!speakerMeta?.topics || Object.keys(speakerMeta.topics).length === 0) return speakerMeta;
+            const topicsToTranslate: Record<string, string> = {};
+            Object.entries(speakerMeta.topics as Record<string, string>).forEach(([k, v]) => {
+              if (v && !speakerMeta.topicsEn?.[k]) topicsToTranslate[k] = v;
+            });
+            const translatedTopics = Object.keys(topicsToTranslate).length > 0
+              ? await translateRecordValuesToEnglish(topicsToTranslate).catch(() => ({}))
+              : {};
+            return { ...speakerMeta, topicsEn: { ...(speakerMeta.topicsEn || {}), ...translatedTopics } };
+          })(),
+        }),
       },
       include: {
         speakers: {

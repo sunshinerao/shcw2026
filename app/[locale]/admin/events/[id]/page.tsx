@@ -80,6 +80,7 @@ type AgendaItem = {
   speakerMeta?: {
     orderedIds?: string[];
     topics?: Record<string, string>;
+    topicsEn?: Record<string, string>;
   } | null;
 };
 

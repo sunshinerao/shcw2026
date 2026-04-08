@@ -146,3 +146,72 @@ export async function translateMissingEventFieldsToEnglish(
 
   return output;
 }
+
+/**
+ * Translate a record of string values (e.g. speaker topics) from Chinese to English.
+ * Keys are preserved as-is in the output.
+ */
+export async function translateRecordValuesToEnglish(
+  record: Record<string, string>
+): Promise<Record<string, string>> {
+  const entries = Object.entries(record).filter(([, v]) => v && v.trim());
+  if (entries.length === 0) return {};
+
+  const settings = await getSystemSettingsForServer();
+  const apiKey = settings.openaiApiKey || process.env.OPENAI_API_KEY || "";
+  if (!apiKey) return {};
+
+  // Use numeric indices as keys to avoid confusion with UUIDs
+  const indexToKey: Record<string, string> = {};
+  const payload: Record<string, string> = {};
+  entries.forEach(([key, value], i) => {
+    indexToKey[String(i)] = key;
+    payload[String(i)] = value;
+  });
+
+  const model = settings.openaiModel;
+  const prompt = [
+    "Translate the JSON values from Chinese to natural English.",
+    "Keep proper nouns and brand names accurate.",
+    "Return JSON only with the same numeric keys.",
+    "Input JSON:",
+    JSON.stringify(payload),
+  ].join("\n");
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        messages: [
+          { role: "system", content: "You are a professional bilingual editor. Output valid JSON only." },
+          { role: "user", content: prompt },
+        ],
+      }),
+      cache: "no-store",
+    });
+
+    if (!response.ok) return {};
+    const completion = await response.json();
+    const content = completion?.choices?.[0]?.message?.content;
+    if (typeof content !== "string") return {};
+    const parsed = extractJsonObject(content);
+    if (!parsed) return {};
+
+    const out: Record<string, string> = {};
+    Object.entries(parsed).forEach(([idx, val]) => {
+      const originalKey = indexToKey[idx];
+      if (originalKey && typeof val === "string" && val.trim()) {
+        out[originalKey] = val.trim();
+      }
+    });
+    return out;
+  } catch {
+    return {};
+  }
+}
