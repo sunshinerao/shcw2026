@@ -72,6 +72,12 @@ type AgendaItem = {
   venue?: string | null;
   order: number;
   speakers: AgendaSpeaker[];
+  moderatorId?: string | null;
+  moderator?: AgendaSpeaker | null;
+  speakerMeta?: {
+    orderedIds?: string[];
+    topics?: Record<string, string>;
+  } | null;
 };
 
 type PublicEvent = {
@@ -703,21 +709,63 @@ export default function EventDetailPage() {
                                     </p>
                                   )}
                                   {item.speakers.length > 0 && (
-                                    <div className="flex flex-wrap items-center gap-2 mt-2">
-                                      <Mic className="h-3.5 w-3.5 text-slate-400" />
-                                      {item.speakers.map((speaker) => (
-                                        <div key={speaker.id} className="flex items-center gap-1.5 rounded-full bg-white pl-1 pr-2.5 py-0.5 border border-slate-200">
-                                          <Avatar className="h-5 w-5">
-                                            <AvatarImage src={speaker.avatar || undefined} />
-                                            <AvatarFallback className="text-[10px]">
-                                              {(locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name).charAt(0)}
-                                            </AvatarFallback>
-                                          </Avatar>
-                                          <span className="text-xs font-medium text-slate-700">
-                                            {locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name}
-                                          </span>
-                                        </div>
-                                      ))}
+                                    <div className="mt-2 space-y-1">
+                                      <div className="flex items-center gap-1 mb-0.5">
+                                        <Mic className="h-3.5 w-3.5 text-slate-400" />
+                                      </div>
+                                      {item.speakers
+                                        .slice()
+                                        .sort((a, b) => {
+                                          const ids = item.speakerMeta?.orderedIds;
+                                          if (!ids) return 0;
+                                          const ia = ids.indexOf(a.id);
+                                          const ib = ids.indexOf(b.id);
+                                          return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
+                                        })
+                                        .map((speaker) => {
+                                          const name = locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name;
+                                          const title = locale === "en" && speaker.titleEn ? speaker.titleEn : speaker.title;
+                                          const org = locale === "en" && speaker.organizationEn ? speaker.organizationEn : speaker.organization;
+                                          const topic = item.speakerMeta?.topics?.[speaker.id];
+                                          return (
+                                            <div key={speaker.id} className="flex items-center gap-2 pl-5">
+                                              <Avatar className="h-5 w-5 shrink-0">
+                                                <AvatarImage src={speaker.avatar || undefined} />
+                                                <AvatarFallback className="text-[10px]">
+                                                  {name.charAt(0)}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                              <span className="text-xs font-medium text-slate-700 shrink-0">
+                                                {name}
+                                              </span>
+                                              <span className="text-xs text-slate-400">
+                                                {title} · {org}
+                                                {topic ? ` · ${topic}` : ""}
+                                              </span>
+                                            </div>
+                                          );
+                                        })}
+                                    </div>
+                                  )}
+                                  {item.moderator && (
+                                    <div className="flex items-center gap-2 mt-1 pl-0">
+                                      <span className="text-xs text-slate-400 shrink-0">
+                                        {locale === "zh" ? "主持：" : "Host:"}
+                                      </span>
+                                      <div className="flex items-center gap-2">
+                                        <Avatar className="h-5 w-5 shrink-0">
+                                          <AvatarImage src={item.moderator.avatar || undefined} />
+                                          <AvatarFallback className="text-[10px]">
+                                            {(locale === "en" && item.moderator.nameEn ? item.moderator.nameEn : item.moderator.name).charAt(0)}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-xs font-medium text-amber-700">
+                                          {locale === "en" && item.moderator.nameEn ? item.moderator.nameEn : item.moderator.name}
+                                        </span>
+                                        <span className="text-xs text-slate-400">
+                                          {locale === "en" && item.moderator.titleEn ? item.moderator.titleEn : item.moderator.title} · {locale === "en" && item.moderator.organizationEn ? item.moderator.organizationEn : item.moderator.organization}
+                                        </span>
+                                      </div>
                                     </div>
                                   )}
                                 </div>

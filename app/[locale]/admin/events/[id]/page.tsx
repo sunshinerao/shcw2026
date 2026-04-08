@@ -750,8 +750,10 @@ export default function EventAgendaPage({
                           )}
                           {/* Speakers */}
                           {item.speakers.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-2">
-                              <Mic className="h-3.5 w-3.5 text-slate-400" />
+                            <div className="mt-1 space-y-1">
+                              <div className="flex items-center gap-1 mb-0.5">
+                                <Mic className="h-3.5 w-3.5 text-slate-400" />
+                              </div>
                               {item.speakers
                                 .slice()
                                 .sort((a, b) => {
@@ -766,22 +768,21 @@ export default function EventAgendaPage({
                                   return (
                                     <div
                                       key={speaker.id}
-                                      className="flex items-center gap-1.5 rounded-full bg-slate-50 pl-1 pr-2.5 py-0.5"
+                                      className="flex items-center gap-2 pl-5"
                                     >
-                                      <Avatar className="h-5 w-5">
+                                      <Avatar className="h-5 w-5 shrink-0">
                                         <AvatarImage src={speaker.avatar || undefined} />
                                         <AvatarFallback className="text-[10px]">
                                           {getSpeakerName(speaker).charAt(0)}
                                         </AvatarFallback>
                                       </Avatar>
-                                      <span className="text-xs font-medium text-slate-700">
+                                      <span className="text-xs font-medium text-slate-700 shrink-0">
                                         {getSpeakerName(speaker)}
                                       </span>
-                                      {topic && (
-                                        <span className="text-xs text-slate-400 italic">
-                                          · {topic}
-                                        </span>
-                                      )}
+                                      <span className="text-xs text-slate-400">
+                                        {getSpeakerTitle(speaker)} · {getSpeakerOrg(speaker)}
+                                        {topic ? ` · ${topic}` : ""}
+                                      </span>
                                     </div>
                                   );
                                 })}
@@ -1205,24 +1206,24 @@ export default function EventAgendaPage({
 
         {/* ====== Speaker Picker Dialog ====== */}
         <Dialog open={isSpeakerPickerOpen} onOpenChange={setIsSpeakerPickerOpen}>
-          <DialogContent className="max-h-[80vh] max-w-lg overflow-y-auto">
-            <DialogHeader>
+          <DialogContent className="flex flex-col max-h-[80vh] max-w-lg">
+            <DialogHeader className="shrink-0">
               <DialogTitle>{t("selectFromLibrary")}</DialogTitle>
               <DialogDescription>{t("assignSpeakers")}</DialogDescription>
             </DialogHeader>
 
-            <div className="space-y-4">
-              <div className="relative">
+            <div className="flex flex-col min-h-0 flex-1 gap-4 overflow-hidden">
+              <div className="relative shrink-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                 <Input
                   value={speakerSearch}
                   onChange={(e) => setSpeakerSearch(e.target.value)}
                   placeholder={t("searchSpeakers")}
-                  className="pl-9"
+                  className="pl-9 w-full"
                 />
               </div>
 
-              <div className="max-h-[50vh] space-y-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto space-y-1">
                 {filteredSpeakers.length === 0 ? (
                   <p className="py-8 text-center text-sm text-slate-400">
                     {t("noSpeakers")}
@@ -1263,7 +1264,7 @@ export default function EventAgendaPage({
               </div>
             </div>
 
-            <DialogFooter>
+            <DialogFooter className="shrink-0">
               <Button
                 variant="outline"
                 onClick={() => setIsSpeakerPickerOpen(false)}
