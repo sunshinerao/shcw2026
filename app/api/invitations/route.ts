@@ -44,12 +44,15 @@ export async function GET(req: NextRequest) {
       // Regular user: only own requests
       where.userId = currentUser.id;
     } else if (!isAdminRole(currentUser.role)) {
-      // EVENT_MANAGER: only invitations linked to their managed events
+      // EVENT_MANAGER: own requests + invitations linked to their managed events
       const managedEvents = await prisma.event.findMany({
         where: { managerUserId: currentUser.id },
         select: { id: true },
       });
-      where.eventId = { in: managedEvents.map((e) => e.id) };
+      where.OR = [
+        { userId: currentUser.id },
+        { eventId: { in: managedEvents.map((e) => e.id) } },
+      ];
     }
     // ADMIN: no filter — sees everything
 
