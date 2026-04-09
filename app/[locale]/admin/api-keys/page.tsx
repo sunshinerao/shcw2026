@@ -55,19 +55,6 @@ interface ApiKey {
   createdAt: string;
 }
 
-interface CreateApiKeyResponse {
-  id: string;
-  name: string;
-  keyPrefix: string;
-  rawKey: string;
-  permissions: ApiKeyPermission[];
-  ipAllowlist: string[] | null;
-  isActive: boolean;
-  lastUsedAt: null;
-  usageCount: number;
-  note: string | null;
-  createdAt: string;
-}
 
 const PERMISSION_GROUPS: { group: string; permissions: ApiKeyPermission[] }[] = [
   { group: "Events", permissions: ["events:read", "events:write"] },
@@ -230,7 +217,7 @@ export default function AdminApiKeysPage() {
       const res = await fetch("/api/admin/api-keys");
       if (!res.ok) throw new Error("load failed");
       const data = await res.json();
-      setKeys(data.keys ?? []);
+      setKeys(data.data ?? []);
     } catch {
       toast.error(t("messages.loadFailed"));
     } finally {
@@ -268,8 +255,8 @@ export default function AdminApiKeysPage() {
         const e = await res.json().catch(() => ({}));
         throw new Error(e.error ?? "create failed");
       }
-      const data: CreateApiKeyResponse = await res.json();
-      setRawKey(data.rawKey);
+      const data = await res.json();
+      setRawKey(data.data?.rawKey ?? null);
       setShowCreate(false);
       setCreateForm(EMPTY_FORM);
       await loadKeys();
