@@ -85,6 +85,7 @@ export async function GET(
         salutation: true,
         role: true,
         status: true,
+        staffPermissions: true,
         passCode: true,
         climatePassportId: true,
         emailVerified: true,
@@ -207,6 +208,7 @@ export async function PUT(
       avatar,
       password,
       organization,
+      staffPermissions,
     } = body;
 
     // 检查目标用户是否存在
@@ -240,7 +242,7 @@ export async function PUT(
         );
       }
 
-      if (role !== undefined || status !== undefined) {
+      if (role !== undefined || status !== undefined || staffPermissions !== undefined) {
         return NextResponse.json(
           { success: false, error: apiMessage(requestLocale, "adminOnlyRoleStatus") },
           { status: 403 }
@@ -329,6 +331,9 @@ export async function PUT(
           ...(status !== undefined && { status }),
           ...(avatar !== undefined && { avatar }),
           ...(hashedPassword && { password: hashedPassword }),
+          ...(staffPermissions !== undefined && isAdmin && {
+            staffPermissions: Array.isArray(staffPermissions) ? JSON.stringify(staffPermissions) : null,
+          }),
         },
       });
 
@@ -390,6 +395,7 @@ export async function PUT(
         salutation: true,
         role: true,
         status: true,
+        staffPermissions: true,
         passCode: true,
         climatePassportId: true,
         emailVerified: true,

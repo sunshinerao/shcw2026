@@ -20,7 +20,7 @@ export default async function AdminLayout({
 
   const currentUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { role: true, staffPermissions: true },
   });
 
   if (!currentUser || !isAdminConsoleRole(currentUser.role)) {
@@ -28,6 +28,6 @@ export default async function AdminLayout({
   }
 
   return (
-    <AdminLayoutShell role={currentUser.role as AppUserRole}>{children}</AdminLayoutShell>
+    <AdminLayoutShell role={currentUser.role as AppUserRole} staffPermissions={currentUser.staffPermissions}>{children}</AdminLayoutShell>
   );
 }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { canManageFaq } from "@/lib/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -42,9 +43,9 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { role: true, staffPermissions: true },
     });
-    if (user?.role !== "ADMIN") {
+    if (!canManageFaq(user?.role, user?.staffPermissions)) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 

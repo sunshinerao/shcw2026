@@ -17,7 +17,8 @@ export function AdminSectionGuard({
   const router = useRouter();
   const { data: session, status } = useSession();
   const role = session?.user?.role;
-  const canAccess = canAccessAdminSection(role, section);
+  const staffPermissions = session?.user?.staffPermissions;
+  const canAccess = canAccessAdminSection(role, section, staffPermissions);
 
   useEffect(() => {
     if (status !== "authenticated") {
@@ -25,9 +26,9 @@ export function AdminSectionGuard({
     }
 
     if (!canAccess) {
-      router.replace(getAdminLandingPath(role));
+      router.replace(getAdminLandingPath(role, staffPermissions));
     }
-  }, [canAccess, role, router, status]);
+  }, [canAccess, role, staffPermissions, router, status]);
 
   if (status !== "authenticated" || !canAccess) {
     return (

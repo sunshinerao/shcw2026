@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { defaultFaqItems } from "@/lib/default-faq-items";
 import { prisma } from "@/lib/prisma";
+import { canManageFaq } from "@/lib/permissions";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,10 +14,10 @@ export async function POST(request: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { role: true, staffPermissions: true },
     });
 
-    if (user?.role !== "ADMIN") {
+    if (!canManageFaq(user?.role, user?.staffPermissions)) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 

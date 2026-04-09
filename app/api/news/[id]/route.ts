@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+import { canManageNews } from "@/lib/permissions";
+
 /**
  * GET /api/news/[id] — Public: get single news by id (or slug).
  * PUT /api/news/[id] — Admin only: update news.
@@ -14,9 +16,9 @@ async function requireAdmin() {
   if (!session?.user?.id) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true },
+    select: { id: true, role: true, staffPermissions: true },
   });
-  return user?.role === "ADMIN" ? user : null;
+  return user && canManageNews(user.role, user.staffPermissions) ? user : null;
 }
 
 export async function GET(

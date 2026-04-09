@@ -54,6 +54,8 @@ export async function GET(req: NextRequest) {
   }
 }
 
+import { canManageNews } from "@/lib/permissions";
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -63,9 +65,9 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { role: true, staffPermissions: true },
     });
-    if (user?.role !== "ADMIN") {
+    if (!canManageNews(user?.role, user?.staffPermissions)) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 

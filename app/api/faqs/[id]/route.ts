@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { canManageFaq } from "@/lib/permissions";
 
 interface Params {
   id: string;
@@ -32,10 +33,10 @@ async function requireAdmin() {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { role: true, staffPermissions: true },
   });
 
-  if (user?.role !== "ADMIN") {
+  if (!canManageFaq(user?.role, user?.staffPermissions)) {
     return { ok: false as const, response: NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 }) };
   }
 

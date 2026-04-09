@@ -100,6 +100,7 @@ export const authOptions: NextAuthOptions = {
             // 8 KB header limit (494 REQUEST_HEADER_TOO_LARGE).
             role: user.role,
             passCode: user.passCode,
+            staffPermissions: user.staffPermissions ?? null,
           };
           
           logAuthDebug("Returning user:", userData.email);
@@ -119,6 +120,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.role = user.role;
         token.passCode = user.passCode;
+        token.staffPermissions = user.staffPermissions ?? null;
         token.sub = user.id; // 确保 sub 设置为 user.id
         token.name = user.name;
         // avatar is intentionally NOT stored in the JWT token —
@@ -146,10 +148,11 @@ export const authOptions: NextAuthOptions = {
           try {
             const freshUser = await prisma.user.findUnique({
               where: { id: token.sub },
-              select: { role: true, status: true },
+              select: { role: true, status: true, staffPermissions: true },
             });
             if (freshUser) {
               token.role = freshUser.role;
+              token.staffPermissions = freshUser.staffPermissions ?? null;
               if (freshUser.status !== "ACTIVE") {
                 token.id = undefined;
                 token.sub = undefined;
@@ -171,6 +174,7 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub as string || token.id as string;
         session.user.role = token.role as string;
         session.user.passCode = token.passCode as string;
+        session.user.staffPermissions = (token.staffPermissions as string) ?? null;
         session.user.name = (token.name as string) || session.user.name;
         // image is not populated from JWT — fetched separately via /api/user/profile
       }

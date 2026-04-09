@@ -176,6 +176,7 @@ export default function EventAgendaPage({
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"success" | "error">("success");
   const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const [currentUserStaffPermissions, setCurrentUserStaffPermissions] = useState<string | null>(null);
 
   // Dialog state
   const [isAgendaDialogOpen, setIsAgendaDialogOpen] = useState(false);
@@ -190,7 +191,7 @@ export default function EventAgendaPage({
   const [form, setForm] = useState<AgendaFormState>(initialAgendaForm);
   const [speakerSearch, setSpeakerSearch] = useState("");
   const [newSpeakerForm, setNewSpeakerForm] = useState<NewSpeakerForm>(initialNewSpeakerForm);
-  const canManageSpeakers = currentUserRole === "ADMIN";
+  const canManageSpeakersFlag = currentUserRole === "ADMIN" || (currentUserRole === "STAFF" && currentUserStaffPermissions?.includes("speakers"));
 
   const setMessage = (tone: "success" | "error", msg: string) => {
     setStatusTone(tone);
@@ -264,10 +265,12 @@ export default function EventAgendaPage({
         const data = await res.json();
         if (!cancelled) {
           setCurrentUserRole(data?.user?.role || null);
+          setCurrentUserStaffPermissions(data?.user?.staffPermissions || null);
         }
       } catch {
         if (!cancelled) {
           setCurrentUserRole(null);
+          setCurrentUserStaffPermissions(null);
         }
       }
     }
@@ -471,7 +474,7 @@ export default function EventAgendaPage({
         type: form.type,
         venue: form.venue || null,
         order: form.order,
-        ...(canManageSpeakers ? {
+        ...(canManageSpeakersFlag ? {
           speakerIds: form.speakerIds,
           moderatorId: form.moderatorId || null,
           speakerMeta: {
@@ -1072,7 +1075,7 @@ export default function EventAgendaPage({
                   <Label className="text-base font-medium">
                     {t("speakers")}
                   </Label>
-                  {canManageSpeakers ? (
+                  {canManageSpeakersFlag ? (
                   <div className="flex gap-2">
                     <Button
                       type="button"
@@ -1104,7 +1107,7 @@ export default function EventAgendaPage({
                   ) : null}
                 </div>
 
-                {!canManageSpeakers ? (
+                {!canManageSpeakersFlag ? (
                   <p className="text-sm text-slate-500">
                     {locale === "zh" ? "活动管理员仅可查看议程嘉宾，不能设置或新增嘉宾。" : "Event managers can view agenda speakers but cannot assign or create speakers."}
                   </p>
@@ -1133,7 +1136,7 @@ export default function EventAgendaPage({
                               {getSpeakerOrg(s)}
                             </span>
                           </div>
-                          {canManageSpeakers ? (
+                          {canManageSpeakersFlag ? (
                             <button
                               type="button"
                               className="ml-1 rounded-full p-0.5 hover:bg-red-50 text-slate-400 hover:text-red-500"
@@ -1143,7 +1146,7 @@ export default function EventAgendaPage({
                             </button>
                           ) : null}
                         </div>
-                        {canManageSpeakers ? (
+                        {canManageSpeakersFlag ? (
                           <Input
                             value={form.speakerTopics[s.id] || ""}
                             onChange={(e) =>
@@ -1179,7 +1182,7 @@ export default function EventAgendaPage({
                   <Label className="text-base font-medium">
                     {t("moderator")}
                   </Label>
-                  {canManageSpeakers ? (
+                  {canManageSpeakersFlag ? (
                     <div className="flex gap-2">
                       <Button
                         type="button"
@@ -1225,7 +1228,7 @@ export default function EventAgendaPage({
                     <span className="text-xs text-slate-400">
                       {getSpeakerOrg(selectedModerator)}
                     </span>
-                    {canManageSpeakers ? (
+                    {canManageSpeakersFlag ? (
                       <button
                         type="button"
                         className="ml-1 rounded-full p-0.5 hover:bg-red-50 text-slate-400 hover:text-red-500"

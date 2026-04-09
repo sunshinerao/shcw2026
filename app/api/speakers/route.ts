@@ -9,14 +9,14 @@ import { canManageSpeakers } from "@/lib/permissions";
 async function checkSpeakerPermission(sessionUserId: string, locale: "zh" | "en") {
   const currentUser = await prisma.user.findUnique({
     where: { id: sessionUserId },
-    select: { role: true },
+    select: { role: true, staffPermissions: true },
   });
 
   if (!currentUser) {
     return { allowed: false, status: 401, error: apiMessage(locale, "userNotFound") };
   }
 
-  if (!canManageSpeakers(currentUser.role)) {
+  if (!canManageSpeakers(currentUser.role, currentUser.staffPermissions)) {
     return { allowed: false, status: 403, error: apiMessage(locale, "adminOnly") };
   }
 

@@ -160,7 +160,7 @@ export async function GET(req: NextRequest) {
 
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { role: true },
+    select: { role: true, staffPermissions: true },
   });
   if (!user) {
     return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 });
@@ -241,7 +241,7 @@ export async function GET(req: NextRequest) {
 
   // ── speakers ──────────────────────────────────────────────────────────────
   } else if (type === "speakers") {
-    if (!canManageSpeakers(user.role)) {
+    if (!canManageSpeakers(user.role, user.staffPermissions)) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 

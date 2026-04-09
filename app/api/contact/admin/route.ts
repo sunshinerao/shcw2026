@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { apiMessage, resolveRequestLocale, type ApiLocale } from "@/lib/api-i18n";
+import { canManageMessages } from "@/lib/permissions";
 
 async function requireAdmin(locale: ApiLocale) {
   const session = await getServerSession(authOptions);
@@ -11,9 +12,9 @@ async function requireAdmin(locale: ApiLocale) {
   }
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, role: true, name: true },
+    select: { id: true, role: true, name: true, staffPermissions: true },
   });
-  if (!user || !["ADMIN", "STAFF"].includes(user.role)) {
+  if (!user || !canManageMessages(user.role, user.staffPermissions)) {
     return { error: NextResponse.json({ success: false, error: apiMessage(locale, "adminOnly") }, { status: 403 }) };
   }
   return { user };

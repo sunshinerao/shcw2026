@@ -100,6 +100,9 @@ model User {
   role          UserRole  @default(ATTENDEE)
   status        UserStatus @default(ACTIVE)
   
+  // STAFF 角色功能权限（JSON 数组，如 ["speakers","news","messages","faq"]）
+  staffPermissions String?   @db.Text
+  
   // 通行证相关
   passCode      String    @unique @default(uuid()) // 二维码唯一标识
   

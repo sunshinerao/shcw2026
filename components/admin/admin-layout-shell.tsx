@@ -33,9 +33,11 @@ type NavItem = {
 export function AdminLayoutShell({
   children,
   role,
+  staffPermissions,
 }: {
   children: React.ReactNode;
   role: AppUserRole;
+  staffPermissions?: string | null;
 }) {
   const t = useTranslations("adminLayout");
   const pathname = usePathname();
@@ -56,7 +58,7 @@ export function AdminLayoutShell({
     { key: "settings", name: t("nav.settings"), href: "/admin/settings", icon: Settings },
   ] satisfies NavItem[];
 
-  const visibleNavItems = navItems.filter((item) => canAccessAdminSection(role, item.key));
+  const visibleNavItems = navItems.filter((item) => canAccessAdminSection(role, item.key, staffPermissions));
 
   return (
     <div className="min-h-screen bg-slate-50">

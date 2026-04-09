@@ -134,6 +134,7 @@ export async function GET(req: NextRequest) {
           salutation: true,
           role: true,
           status: true,
+          staffPermissions: true,
           passCode: true,
           climatePassportId: true,
           emailVerified: true,

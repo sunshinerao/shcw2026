@@ -179,10 +179,10 @@ export async function POST(
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { role: true },
+      select: { role: true, staffPermissions: true },
     });
 
-    if (!user || !canManageSpeakers(user.role)) {
+    if (!user || !canManageSpeakers(user.role, user.staffPermissions)) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 

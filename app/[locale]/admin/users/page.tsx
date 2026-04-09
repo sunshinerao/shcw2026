@@ -68,6 +68,7 @@ import {
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
+import { STAFF_PERMISSION_OPTIONS, type StaffPermissionKey } from "@/lib/permissions";
 
 type UserRole =
   | "VISITOR"
@@ -105,6 +106,7 @@ type ManagedUser = {
   salutation?: string | null;
   role: UserRole;
   status: UserStatus;
+  staffPermissions?: string | null;
   points: number;
   climatePassportId?: string | null;
   passCode: string;
@@ -138,6 +140,7 @@ type UserFormState = {
   role: UserRole;
   status: UserStatus;
   avatar: string;
+  staffPermissions: StaffPermissionKey[];
   organizationName: string;
   organizationLogo: string;
   organizationIndustry: string;
@@ -196,6 +199,7 @@ const initialFormState: UserFormState = {
   role: "ATTENDEE",
   status: "ACTIVE",
   avatar: "",
+  staffPermissions: [],
   organizationName: "",
   organizationLogo: "",
   organizationIndustry: "",
@@ -359,6 +363,7 @@ export default function AdminUsersPage() {
           role: formState.role,
           status: formState.status,
           avatar: formState.avatar || null,
+          ...(formState.role === "STAFF" ? { staffPermissions: formState.staffPermissions } : { staffPermissions: null }),
           organization: formState.organizationName
             ? {
                 name: formState.organizationName,
@@ -529,6 +534,7 @@ export default function AdminUsersPage() {
       role: user.role,
       status: user.status,
       avatar: user.avatar || "",
+      staffPermissions: user.staffPermissions ? (() => { try { return JSON.parse(user.staffPermissions); } catch { return []; } })() : [],
       organizationName: user.organization?.name || "",
       organizationLogo: user.organization?.logo || "",
       organizationIndustry: user.organization?.industry || "",
@@ -866,8 +872,32 @@ export default function AdminUsersPage() {
             <div className="space-y-2"><Label htmlFor="user-password">{editingUser ? t("form.passwordOptional") : t("form.password")}</Label><Input id="user-password" type="password" value={formState.password} onChange={(event) => setFormState((previous) => ({ ...previous, password: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="user-phone">{t("form.phone")}</Label><Input id="user-phone" value={formState.phone} onChange={(event) => setFormState((previous) => ({ ...previous, phone: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="user-title">{t("form.title")}</Label><Input id="user-title" value={formState.title} onChange={(event) => setFormState((previous) => ({ ...previous, title: event.target.value }))} /></div>
-            <div className="space-y-2"><Label>{t("form.role")}</Label><Select value={formState.role} onValueChange={(value) => setFormState((previous) => ({ ...previous, role: value as UserRole }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ROLE_OPTIONS.map((role) => <SelectItem key={role} value={role}>{t(`roles.${role}`)}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>{t("form.role")}</Label><Select value={formState.role} onValueChange={(value) => setFormState((previous) => ({ ...previous, role: value as UserRole, staffPermissions: value === "STAFF" ? previous.staffPermissions : [] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ROLE_OPTIONS.map((role) => <SelectItem key={role} value={role}>{t(`roles.${role}`)}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>{t("form.status")}</Label><Select value={formState.status} onValueChange={(value) => setFormState((previous) => ({ ...previous, status: value as UserStatus }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map((status) => <SelectItem key={status} value={status}>{t(`statuses.${status}`)}</SelectItem>)}</SelectContent></Select></div>
+            {formState.role === "STAFF" && (
+              <div className="space-y-3 md:col-span-2 rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <Label className="text-blue-800 font-semibold">{locale === "en" ? "Staff Permissions" : "员工权限"}</Label>
+                <p className="text-sm text-blue-600">{locale === "en" ? "Select the sections this staff member can manage:" : "选择该员工可以管理的功能模块："}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {STAFF_PERMISSION_OPTIONS.map((option) => (
+                    <label key={option.key} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={formState.staffPermissions.includes(option.key)}
+                        onCheckedChange={(checked) => {
+                          setFormState((previous) => ({
+                            ...previous,
+                            staffPermissions: checked
+                              ? [...previous.staffPermissions, option.key]
+                              : previous.staffPermissions.filter((k) => k !== option.key),
+                          }));
+                        }}
+                      />
+                      <span className="text-sm">{locale === "en" ? option.labelEn : option.labelZh}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="space-y-2 md:col-span-2">
               <Label>{t("form.avatar")}</Label>
               <div className="flex items-center gap-4">
