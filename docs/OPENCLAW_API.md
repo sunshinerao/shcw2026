@@ -15,8 +15,9 @@
 5. [嘉宾 Speakers](#5-嘉宾-speakers)
 6. [新闻 News](#6-新闻-news)
 7. [合作伙伴 Partners](#7-合作伙伴-partners)
-8. [错误码参考](#8-错误码参考)
-9. [权限说明](#9-权限说明)
+8. [用户密码重置 Users](#8-用户密码重置-users)
+9. [错误码参考](#9-错误码参考)
+10. [权限说明](#10-权限说明)
 
 ---
 
@@ -592,7 +593,67 @@ DELETE /api/v1/partners/{id}
 
 ---
 
-## 8. 错误码参考
+## 8. 用户密码重置 Users
+
+### 8.1 重置用户密码
+
+```
+POST /api/v1/users/reset-password
+Content-Type: application/json
+```
+
+**所需权限：** `users:write`
+
+直接将指定用户的密码设置为新密码，**无需提供原密码**。操作成功后，该用户此前通过忘记密码流程获取的邮件重置链接将同时失效。
+
+> ⚠️  此接口为高权限操作，仅应在受控场景下使用（如 AI Agent 代运营维护、后台批量管理）。API 密钥的 IP 白名单建议配置以限制调用来源。
+
+**请求体：**
+
+```json
+{
+  "email": "user@example.com",
+  "newPassword": "NewSecurePass123"
+}
+```
+
+**字段说明：**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `email` | string | ✅ | 用户注册邮箱（大小写不敏感） |
+| `newPassword` | string | ✅ | 新密码，至少 8 个字符 |
+
+**验证规则：**
+- `email` 必须已存在于数据库
+- `newPassword` 长度 ≥ 8 个字符
+- 已被停用（`SUSPENDED`）的账号无法重置密码（返回 `403`）
+
+**成功响应（HTTP 200）：**
+
+```json
+{
+  "success": true,
+  "message": "Password for user@example.com has been reset successfully.",
+  "data": {
+    "userId": "clxyz123",
+    "email": "user@example.com",
+    "name": "张三"
+  }
+}
+```
+
+**失败响应示例：**
+
+```json
+{ "success": false, "error": "newPassword must be at least 8 characters" }
+{ "success": false, "error": "No user found with that email address" }
+{ "success": false, "error": "Cannot reset password for a suspended account" }
+```
+
+---
+
+## 9. 错误码参考
 
 | HTTP 状态码 | 含义 |
 |------------|------|
@@ -613,7 +674,7 @@ DELETE /api/v1/partners/{id}
 
 ---
 
-## 9. 权限说明
+## 10. 权限说明
 
 每个 API 密钥可授予以下权限的任意组合：
 
@@ -627,6 +688,7 @@ DELETE /api/v1/partners/{id}
 | `news:write` | 创建/更新/删除新闻 |
 | `partners:read` | 读取合作伙伴列表和详情 |
 | `partners:write` | 创建/更新/删除合作伙伴 |
+| `users:write` | 重置任意用户密码 |
 
 ---
 
@@ -672,4 +734,4 @@ httpx.post(f"{BASE_URL}/api/v1/events/{event_id}/agenda", json={
 
 ---
 
-*文档版本：v1.0 · 2026-04-09*
+*文档版本：v1.1 · 2026-04-10*

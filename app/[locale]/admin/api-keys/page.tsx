@@ -61,6 +61,7 @@ const PERMISSION_GROUPS: { group: string; permissions: ApiKeyPermission[] }[] = 
   { group: "Speakers", permissions: ["speakers:read", "speakers:write"] },
   { group: "News", permissions: ["news:read", "news:write"] },
   { group: "Partners", permissions: ["partners:read", "partners:write"] },
+  { group: "Users", permissions: ["users:write"] },
 ];
 
 const PERMISSION_LABEL_MAP: Record<ApiKeyPermission, string> = {
@@ -72,6 +73,7 @@ const PERMISSION_LABEL_MAP: Record<ApiKeyPermission, string> = {
   "news:write": "News (write)",
   "partners:read": "Partners (read)",
   "partners:write": "Partners (write)",
+  "users:write": "Users (reset password)",
 };
 
 function formatDate(iso: string | null): string {

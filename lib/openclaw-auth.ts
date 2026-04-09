@@ -11,6 +11,7 @@ export const ALL_PERMISSIONS = [
   "news:write",
   "partners:read",
   "partners:write",
+  "users:write",
 ] as const;
 
 export type ApiKeyPermission = (typeof ALL_PERMISSIONS)[number];
