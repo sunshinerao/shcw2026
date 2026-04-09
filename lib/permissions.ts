@@ -118,26 +118,26 @@ export function canAccessAdminSection(
   section: AdminSectionKey,
   staffPermissions?: string | null
 ): boolean {
+  const perms = parseStaffPermissions(staffPermissions);
+
   if (isAdminRole(role)) {
     return true;
   }
 
   if (isEventManagerRole(role)) {
-    return EVENT_MANAGER_SECTIONS.includes(section);
+    return EVENT_MANAGER_SECTIONS.includes(section) || (section === "dashboard" && perms.length > 0) || perms.includes(section as StaffPermissionKey);
   }
 
   if (isSpecialPassManagerRole(role)) {
-    return SPECIAL_PASS_MANAGER_SECTIONS.includes(section);
+    return SPECIAL_PASS_MANAGER_SECTIONS.includes(section) || (section === "dashboard" && perms.length > 0) || perms.includes(section as StaffPermissionKey);
   }
 
   if (isStaffRole(role)) {
-    const perms = parseStaffPermissions(staffPermissions);
     if (section === "dashboard" && perms.length > 0) return true;
     return perms.includes(section as StaffPermissionKey);
   }
 
   // Any role: grant access to sections listed in staffPermissions
-  const perms = parseStaffPermissions(staffPermissions);
   if (perms.length > 0) {
     if (section === "dashboard") return true;
     if (perms.includes(section as StaffPermissionKey)) return true;
