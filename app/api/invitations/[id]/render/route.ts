@@ -14,8 +14,6 @@ import {
   getSignaturePresetById,
 } from "@/lib/invitation-signature-presets";
 import { getLocalizedSalutationLabel } from "@/lib/user-form-options";
-import { generateAiEnhancedInvitationBody } from "@/lib/invitation-ai-enhancer";
-import { getInvitationRequestBodyCharLimit } from "@/lib/invitation-content-limits";
 
 function getBaseUrl(req: NextRequest): string {
   const proto = req.headers.get("x-forwarded-proto") || "https";
@@ -155,62 +153,6 @@ export async function GET(
         lang === "en" ? event?.invitationContentHtml_en : event?.invitationContentHtml_zh,
       customMainContent: invitation.customMainContent,
     });
-
-    // AI-enhanced body: generated when purpose is filled and customMainContent is absent.
-    // Uses cached aiEnhancedBodyZh/En if already computed.
-    if (
-      invitation.purpose?.trim() &&
-      !invitation.customMainContent?.trim() &&
-      resolved.bodySource !== "custom"
-    ) {
-      const cacheField = lang === "zh" ? "aiEnhancedBodyZh" : "aiEnhancedBodyEn";
-      let cachedBody: string | null = (invitation[cacheField] as string | null) ?? null;
-
-      if (!cachedBody) {
-        const charLimit = getInvitationRequestBodyCharLimit(
-          lang,
-          invitation.guestName,
-          invitation.guestTitle
-        );
-        const guestBio =
-          (invitation.user as { bio?: string | null } | null)?.bio ?? null;
-        const eventDesc =
-          lang === "zh"
-            ? (event?.description ?? null)
-            : (event?.descriptionEn ?? event?.description ?? null);
-        const eventShort =
-          lang === "zh"
-            ? (event?.shortDesc ?? null)
-            : (event?.shortDescEn ?? event?.shortDesc ?? null);
-
-        const aiBody = await generateAiEnhancedInvitationBody({
-          language: lang,
-          templateBodyHtml: resolved.bodyContentHtml,
-          guestName: invitation.guestName.trim(),
-          guestTitle: invitation.guestTitle,
-          guestOrg: invitation.guestOrg,
-          guestBio,
-          purpose: invitation.purpose.trim(),
-          eventTitle,
-          eventDescription: eventDesc,
-          eventShortDesc: eventShort,
-          charLimit,
-        });
-
-        if (aiBody) {
-          cachedBody = aiBody;
-          // Cache the result so subsequent renders are instant.
-          await prisma.invitationRequest.update({
-            where: { id: params.id },
-            data: { [cacheField]: aiBody },
-          });
-        }
-      }
-
-      if (cachedBody) {
-        resolved.bodyContentHtml = cachedBody;
-      }
-    }
 
     // Resolve signature preset for EN invitations
     // ?presetId= query param overrides; falls back to the configured default.
