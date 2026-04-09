@@ -242,6 +242,11 @@ export async function PUT(
         if (language !== undefined) editData.language = normalizedLanguage;
         if (eventId !== undefined) editData.eventId = eventId || null;
         if (purpose !== undefined) editData.purpose = purpose?.trim() || null;
+        if (purpose !== undefined) {
+          // Clear AI cache so the next render regenerates with the updated purpose.
+          editData.aiEnhancedBodyZh = null;
+          editData.aiEnhancedBodyEn = null;
+        }
         if (notes !== undefined) editData.notes = notes?.trim() || null;
         if (customMainContent !== undefined) editData.customMainContent = trimmedCustomMainContent || null;
         if (signaturePresetId !== undefined) editData.signaturePresetId = normalizedLanguage === "en" ? (signaturePresetId?.trim() || null) : null;
@@ -309,6 +314,11 @@ export async function PUT(
     if (normalizedLanguage !== undefined) updateData.language = normalizedLanguage;
     if (eventId !== undefined) updateData.eventId = eventId || null;
     if (purpose !== undefined) updateData.purpose = purpose?.trim() || null;
+    if (purpose !== undefined) {
+      // Clear AI cache so the next render regenerates with the updated purpose.
+      updateData.aiEnhancedBodyZh = null;
+      updateData.aiEnhancedBodyEn = null;
+    }
     if (notes !== undefined) updateData.notes = notes?.trim() || null;
     if (customMainContent !== undefined) updateData.customMainContent = customMainContent?.trim() || null;
     if (signaturePresetId !== undefined) {

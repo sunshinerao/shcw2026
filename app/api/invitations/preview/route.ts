@@ -9,11 +9,11 @@ import {
   generateQrCodeDataUrl,
 } from "@/lib/invitation-renderer";
 import { buildInvitationResolvedContent } from "@/lib/invitation-template";
-import {
-  getDefaultSignaturePreset,
+import { getDefaultSignaturePreset,
   getSignaturePresetById,
 } from "@/lib/invitation-signature-presets";
 import { getLocalizedSalutationLabel } from "@/lib/user-form-options";
+import { generateAiEnhancedInvitationBody } from "@/lib/invitation-ai-enhancer";
 
 function getBaseUrl(req: NextRequest): string {
   const proto = req.headers.get("x-forwarded-proto") || "https";
@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
       language?: string;
       eventId?: string;
       customMainContent?: string;
+      purpose?: string;
       /** EN only: signature preset id to use for this preview */
       signaturePresetId?: string;
       /** EN only: language line text, e.g. "English and Chinese" */
@@ -50,7 +51,7 @@ export async function POST(req: NextRequest) {
       useStamp?: boolean;
     };
 
-    const { salutation, guestName, guestTitle, guestOrg, language, eventId, customMainContent, signaturePresetId, eventLanguage, useStamp } = body;
+    const { salutation, guestName, guestTitle, guestOrg, language, eventId, customMainContent, purpose, signaturePresetId, eventLanguage, useStamp } = body;
 
     if (!guestName?.trim()) {
       return NextResponse.json(
@@ -86,6 +87,10 @@ export async function POST(req: NextRequest) {
       endTime: string;
       invitationContentHtml_zh: string | null;
       invitationContentHtml_en: string | null;
+      description: string | null;
+      descriptionEn: string | null;
+      shortDesc: string | null;
+      shortDescEn: string | null;
     };
 
     let event: EventRow | null = null;
@@ -103,6 +108,10 @@ export async function POST(req: NextRequest) {
           endTime: true,
           invitationContentHtml_zh: true,
           invitationContentHtml_en: true,
+          description: true,
+          descriptionEn: true,
+          shortDesc: true,
+          shortDescEn: true,
         },
       });
     }
@@ -173,6 +182,40 @@ export async function POST(req: NextRequest) {
         lang === "en" ? event?.invitationContentHtml_en : event?.invitationContentHtml_zh,
       customMainContent,
     });
+
+    // AI-enhanced body: when purpose is provided and customMainContent is absent, use AI.
+    // Preview is stateless (no caching), so we call OpenAI each time.
+    if (purpose?.trim() && !customMainContent?.trim() && resolved.bodySource !== "custom") {
+      const userBioRecord = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { bio: true },
+      });
+      const charLimit = getInvitationRequestBodyCharLimit(lang, guestName, guestTitle);
+      const eventDesc =
+        lang === "en"
+          ? (event?.descriptionEn ?? event?.description ?? null)
+          : (event?.description ?? null);
+      const eventShort =
+        lang === "en"
+          ? (event?.shortDescEn ?? event?.shortDesc ?? null)
+          : (event?.shortDesc ?? null);
+      const aiBody = await generateAiEnhancedInvitationBody({
+        language: lang,
+        templateBodyHtml: resolved.bodyContentHtml,
+        guestName: guestName.trim(),
+        guestTitle,
+        guestOrg,
+        guestBio: userBioRecord?.bio ?? null,
+        purpose: purpose.trim(),
+        eventTitle,
+        eventDescription: eventDesc,
+        eventShortDesc: eventShort,
+        charLimit,
+      });
+      if (aiBody) {
+        resolved.bodyContentHtml = aiBody;
+      }
+    }
 
     // Resolve signature preset for EN invitations
     const signaturePreset =

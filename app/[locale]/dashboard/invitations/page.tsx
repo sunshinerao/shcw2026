@@ -310,6 +310,7 @@ export default function DashboardInvitationsPage() {
           language: form.language,
           eventId: form.eventId || null,
           customMainContent: effectiveCustomMainContent || null,
+          purpose: form.purpose || null,
           signaturePresetId: form.language === "en" && form.signaturePresetId ? form.signaturePresetId : null,
           useStamp: form.language === "zh" ? form.useStamp : false,
         }),
