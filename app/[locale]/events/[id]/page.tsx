@@ -500,7 +500,15 @@ export default function EventDetailPage() {
 
     try {
       const shareUrl = getShareUrl();
-      const baseName = `event-${event.id}-${mode}`;
+      const dateSlug = event.startDate
+        ? event.startDate.slice(0, 10).replace(/-/g, "")
+        : "nodate";
+      const titleSlug = (locale === "en" ? event.titleEn || event.title : event.title)
+        .toLowerCase()
+        .replace(/[^\w\u4e00-\u9fff]+/g, "-")
+        .replace(/^-|-$/g, "")
+        .slice(0, 40);
+      const baseName = `event-${dateSlug}-${titleSlug}-${mode}`;
 
       if (mode === "poster") {
         const poster = await buildPosterImage(shareUrl);
