@@ -35,6 +35,12 @@ export type InvitationRenderData = {
    * position of the Chinese invitation letter.
    */
   stampImageUrl?: string | null;
+  /**
+   * Whether to render the floating print/save-as-PDF button.
+   * Should be true only for admin/download renders, not user preview.
+   * Defaults to false.
+   */
+  showPrintButton?: boolean;
 };
 
 const FIXED_TEXT = {
@@ -733,10 +739,10 @@ export function renderInvitationHtml(data: InvitationRenderData): string {
     </section>
   </div>
 
-  <button class="v-print-btn" onclick="window.print()">
+  ${data.showPrintButton ? `<button class="v-print-btn" onclick="window.print()">
     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
     ${data.language === "en" ? "Print / Save as PDF" : "\u6253\u5370 / \u4fdd\u5b58\u4e3aPDF"}
-  </button>
+  </button>` : ""}
 </body>
 </html>`;
 }

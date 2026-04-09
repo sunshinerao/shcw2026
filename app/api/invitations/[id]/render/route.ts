@@ -251,6 +251,7 @@ export async function GET(
       eventLanguageText: resolved.eventLanguageText,
       guestName: invitation.guestName.trim(),
       stampImageUrl,
+      showPrintButton: true,
     });
 
     return new NextResponse(html, {
