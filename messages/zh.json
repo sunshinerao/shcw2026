@@ -263,8 +263,72 @@
             "news": "新闻管理",
             "content": "内容管理",
             "messages": "留言管理",
-            "settings": "系统设置"
+            "settings": "系统设置",
+            "apiKeys": "API 密鑰"
         }
+    },
+    "adminApiKeysPage": {
+        "title": "API 密鑰管理",
+        "subtitle": "管理供 OpenClaw AI Agent 调用的 API 密鑰，支持读写权限和 IP 白名单控制。",
+        "createKey": "创建新密鑰",
+        "noKeys": "暂无 API 密鑰，点击“创建新密鑰”开始。",
+        "table": {
+            "name": "名称",
+            "prefix": "前缀",
+            "permissions": "权限",
+            "ipAllowlist": "IP 白名单",
+            "status": "状态",
+            "lastUsed": "最近使用",
+            "usageCount": "调用次数",
+            "actions": "操作"
+        },
+        "status": {
+            "active": "启用",
+            "revoked": "已吐销"
+        },
+        "ipAllowlist": {
+            "any": "不限制",
+            "hint": "每行一个 IP，留空表示不限制来源 IP。"
+        },
+        "permissions": {
+            "label": "权限",
+            "hint": "请至少勾选一项权限。"
+        },
+        "form": {
+            "name": "密鑰名称",
+            "namePlaceholder": "如 OpenClaw Production",
+            "note": "备注（可选）",
+            "notePlaceholder": "用途说明…",
+            "ipAllowlist": "IP 白名单",
+            "ipAllowlistPlaceholder": "每行一个 IP，留空不限制来源。如: 1.2.3.4",
+            "isActive": "启用状态"
+        },
+        "create": {
+            "title": "创建 API 密鑰",
+            "success": "API 密鑰已创建！请立即复制并保存，密鑰不会再次显示。",
+            "copyKey": "复制 API 密鑰",
+            "copied": "已复制",
+            "warning": "这是唯一一次显示密鑰明文，请将其保存到安全地方。"
+        },
+        "edit": {
+            "title": "编辑 API 密鑰",
+            "success": "API 密鑰已更新。"
+        },
+        "delete": {
+            "title": "删除 API 密鑰",
+            "confirm": "确定要永久删除密鑰 {name}？此操作不可撤销。",
+            "success": "API 密鑰已删除。"
+        },
+        "messages": {
+            "loadFailed": "加载 API 密鑰失败。",
+            "saveFailed": "保存失败，请重试。"
+        },
+        "cancel": "取消",
+        "save": "保存",
+        "revoke": "吐销",
+        "enable": "启用",
+        "delete": "删除",
+        "neverUsed": "从未使用"
     },
     "adminMessagesPage": {
         "title": "联系留言",

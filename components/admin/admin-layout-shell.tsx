@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Newspaper,
   PanelTop,
+  Key,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, usePathname } from "@/i18n/routing";
@@ -56,6 +57,7 @@ export function AdminLayoutShell({
     { key: "content", name: t("nav.content"), href: "/admin/content", icon: PanelTop },
     { key: "messages", name: t("nav.messages"), href: "/admin/messages", icon: MessageSquare },
     { key: "settings", name: t("nav.settings"), href: "/admin/settings", icon: Settings },
+    { key: "apiKeys", name: t("nav.apiKeys"), href: "/admin/api-keys", icon: Key },
   ] satisfies NavItem[];
 
   const visibleNavItems = navItems.filter((item) => canAccessAdminSection(role, item.key, staffPermissions));

@@ -766,3 +766,24 @@ model SpecialPass {
   @@index([entryType])
   @@map("special_passes")
 }
+
+// OpenClaw API 密钥表
+model ApiKey {
+  id          String    @id @default(uuid())
+  name        String    // 名称，如 "OpenClaw Production"
+  keyHash     String    @unique // SHA-256 哈希值（原始 key 不落库）
+  keyPrefix   String    // 前8位明文，用于展示识别，如 "sk_oc_ab"
+  permissions Json      // 权限数组: ["events:read","events:write","speakers:read",...]
+  ipAllowlist Json?     // IP 白名单数组，null = 不限制
+  isActive    Boolean   @default(true)
+  lastUsedAt  DateTime?
+  usageCount  Int       @default(0)
+  note        String?   // 备注说明
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([keyHash])
+  @@index([isActive])
+  @@map("api_keys")
+}

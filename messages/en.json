@@ -263,8 +263,72 @@
             "news": "News",
             "content": "Content",
             "messages": "Messages",
-            "settings": "Settings"
+            "settings": "Settings",
+            "apiKeys": "API Keys"
         }
+    },
+    "adminApiKeysPage": {
+        "title": "API Key Management",
+        "subtitle": "Manage API keys for OpenClaw AI Agent integrations. Control read/write permissions and IP allowlists.",
+        "createKey": "Create New Key",
+        "noKeys": "No API keys yet. Click \"Create New Key\" to get started.",
+        "table": {
+            "name": "Name",
+            "prefix": "Prefix",
+            "permissions": "Permissions",
+            "ipAllowlist": "IP Allowlist",
+            "status": "Status",
+            "lastUsed": "Last Used",
+            "usageCount": "Calls",
+            "actions": "Actions"
+        },
+        "status": {
+            "active": "Active",
+            "revoked": "Revoked"
+        },
+        "ipAllowlist": {
+            "any": "Any IP",
+            "hint": "One IP per line. Leave blank to allow any IP."
+        },
+        "permissions": {
+            "label": "Permissions",
+            "hint": "At least one permission must be selected."
+        },
+        "form": {
+            "name": "Key Name",
+            "namePlaceholder": "e.g. OpenClaw Production",
+            "note": "Note (optional)",
+            "notePlaceholder": "Describe the purpose...",
+            "ipAllowlist": "IP Allowlist",
+            "ipAllowlistPlaceholder": "One IP per line, leave blank to allow any. e.g. 1.2.3.4",
+            "isActive": "Active"
+        },
+        "create": {
+            "title": "Create API Key",
+            "success": "API key created! Copy and save it now — it will not be shown again.",
+            "copyKey": "Copy API Key",
+            "copied": "Copied",
+            "warning": "This is the only time the full key will be displayed. Store it in a secure location."
+        },
+        "edit": {
+            "title": "Edit API Key",
+            "success": "API key updated."
+        },
+        "delete": {
+            "title": "Delete API Key",
+            "confirm": "Permanently delete key {name}? This cannot be undone.",
+            "success": "API key deleted."
+        },
+        "messages": {
+            "loadFailed": "Failed to load API keys.",
+            "saveFailed": "Save failed, please try again."
+        },
+        "cancel": "Cancel",
+        "save": "Save",
+        "revoke": "Revoke",
+        "enable": "Enable",
+        "delete": "Delete",
+        "neverUsed": "Never used"
     },
     "adminMessagesPage": {
         "title": "Contact Messages",

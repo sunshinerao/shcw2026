@@ -25,7 +25,8 @@ export type AdminSectionKey =
   | "messages"
   | "news"
   | "content"
-  | "settings";
+  | "settings"
+  | "apiKeys";
 
 /** Sections that can be granted to any user via staffPermissions (role-independent). */
 export type StaffPermissionKey = "speakers" | "news" | "messages" | "faq";
@@ -47,6 +48,7 @@ const ADMIN_ONLY_SECTIONS: AdminSectionKey[] = [
   "news",
   "content",
   "settings",
+  "apiKeys",
 ];
 
 const EVENT_MANAGER_SECTIONS: AdminSectionKey[] = ["events", "invitations"];
