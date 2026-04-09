@@ -23,7 +23,7 @@ export default async function AdminLayout({
     select: { role: true, staffPermissions: true },
   });
 
-  if (!currentUser || !isAdminConsoleRole(currentUser.role)) {
+  if (!currentUser || !isAdminConsoleRole(currentUser.role, currentUser.staffPermissions)) {
     redirect(`/${locale}`);
   }
 

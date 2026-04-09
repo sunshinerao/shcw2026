@@ -363,7 +363,7 @@ export default function AdminUsersPage() {
           role: formState.role,
           status: formState.status,
           avatar: formState.avatar || null,
-          ...(formState.role === "STAFF" ? { staffPermissions: formState.staffPermissions } : { staffPermissions: null }),
+          ...(formState.role !== "ADMIN" && formState.staffPermissions.length > 0 ? { staffPermissions: formState.staffPermissions } : { staffPermissions: null }),
           organization: formState.organizationName
             ? {
                 name: formState.organizationName,
@@ -872,12 +872,12 @@ export default function AdminUsersPage() {
             <div className="space-y-2"><Label htmlFor="user-password">{editingUser ? t("form.passwordOptional") : t("form.password")}</Label><Input id="user-password" type="password" value={formState.password} onChange={(event) => setFormState((previous) => ({ ...previous, password: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="user-phone">{t("form.phone")}</Label><Input id="user-phone" value={formState.phone} onChange={(event) => setFormState((previous) => ({ ...previous, phone: event.target.value }))} /></div>
             <div className="space-y-2"><Label htmlFor="user-title">{t("form.title")}</Label><Input id="user-title" value={formState.title} onChange={(event) => setFormState((previous) => ({ ...previous, title: event.target.value }))} /></div>
-            <div className="space-y-2"><Label>{t("form.role")}</Label><Select value={formState.role} onValueChange={(value) => setFormState((previous) => ({ ...previous, role: value as UserRole, staffPermissions: value === "STAFF" ? previous.staffPermissions : [] }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ROLE_OPTIONS.map((role) => <SelectItem key={role} value={role}>{t(`roles.${role}`)}</SelectItem>)}</SelectContent></Select></div>
+            <div className="space-y-2"><Label>{t("form.role")}</Label><Select value={formState.role} onValueChange={(value) => setFormState((previous) => ({ ...previous, role: value as UserRole }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{ROLE_OPTIONS.map((role) => <SelectItem key={role} value={role}>{t(`roles.${role}`)}</SelectItem>)}</SelectContent></Select></div>
             <div className="space-y-2"><Label>{t("form.status")}</Label><Select value={formState.status} onValueChange={(value) => setFormState((previous) => ({ ...previous, status: value as UserStatus }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{STATUS_OPTIONS.map((status) => <SelectItem key={status} value={status}>{t(`statuses.${status}`)}</SelectItem>)}</SelectContent></Select></div>
-            {formState.role === "STAFF" && (
+            {formState.role !== "ADMIN" && (
               <div className="space-y-3 md:col-span-2 rounded-lg border border-blue-200 bg-blue-50 p-4">
                 <Label className="text-blue-800 font-semibold">{locale === "en" ? "Staff Permissions" : "员工权限"}</Label>
-                <p className="text-sm text-blue-600">{locale === "en" ? "Select the sections this staff member can manage:" : "选择该员工可以管理的功能模块："}</p>
+                <p className="text-sm text-blue-600">{locale === "en" ? "Select the admin sections this user can additionally manage:" : "选择该用户可以额外管理的功能模块："}</p>
                 <div className="grid grid-cols-2 gap-3">
                   {STAFF_PERMISSION_OPTIONS.map((option) => (
                     <label key={option.key} className="flex items-center gap-2 cursor-pointer">

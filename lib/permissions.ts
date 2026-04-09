@@ -27,7 +27,7 @@ export type AdminSectionKey =
   | "content"
   | "settings";
 
-/** Sections that can be granted to STAFF users via staffPermissions. */
+/** Sections that can be granted to any user via staffPermissions (role-independent). */
 export type StaffPermissionKey = "speakers" | "news" | "messages" | "faq";
 
 export const STAFF_PERMISSION_OPTIONS: { key: StaffPermissionKey; labelZh: string; labelEn: string }[] = [
@@ -81,8 +81,8 @@ export function parseStaffPermissions(raw?: string | null): StaffPermissionKey[]
   return [];
 }
 
-export function isAdminConsoleRole(role?: string | null): role is AppUserRole {
-  return isAdminRole(role) || isEventManagerRole(role) || isSpecialPassManagerRole(role) || isStaffRole(role);
+export function isAdminConsoleRole(role?: string | null, staffPermissions?: string | null): role is AppUserRole {
+  return isAdminRole(role) || isEventManagerRole(role) || isSpecialPassManagerRole(role) || isStaffRole(role) || parseStaffPermissions(staffPermissions).length > 0;
 }
 
 export function canManageEvents(role?: string | null): boolean {
@@ -98,19 +98,19 @@ export function canManageTracks(role?: string | null): boolean {
 }
 
 export function canManageSpeakers(role?: string | null, staffPermissions?: string | null): boolean {
-  return isAdminRole(role) || (isStaffRole(role) && parseStaffPermissions(staffPermissions).includes("speakers"));
+  return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("speakers");
 }
 
 export function canManageNews(role?: string | null, staffPermissions?: string | null): boolean {
-  return isAdminRole(role) || (isStaffRole(role) && parseStaffPermissions(staffPermissions).includes("news"));
+  return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("news");
 }
 
 export function canManageMessages(role?: string | null, staffPermissions?: string | null): boolean {
-  return isAdminRole(role) || (isStaffRole(role) && parseStaffPermissions(staffPermissions).includes("messages"));
+  return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("messages");
 }
 
 export function canManageFaq(role?: string | null, staffPermissions?: string | null): boolean {
-  return isAdminRole(role) || (isStaffRole(role) && parseStaffPermissions(staffPermissions).includes("faq"));
+  return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("faq");
 }
 
 export function canAccessAdminSection(
@@ -132,9 +132,15 @@ export function canAccessAdminSection(
 
   if (isStaffRole(role)) {
     const perms = parseStaffPermissions(staffPermissions);
-    // STAFF always gets dashboard if they have at least one permission
     if (section === "dashboard" && perms.length > 0) return true;
     return perms.includes(section as StaffPermissionKey);
+  }
+
+  // Any role: grant access to sections listed in staffPermissions
+  const perms = parseStaffPermissions(staffPermissions);
+  if (perms.length > 0) {
+    if (section === "dashboard") return true;
+    if (perms.includes(section as StaffPermissionKey)) return true;
   }
 
   return false;
@@ -145,18 +151,29 @@ export function isAdminOnlySection(section: AdminSectionKey): boolean {
 }
 
 export function getAdminLandingPath(role?: string | null, staffPermissions?: string | null): string {
+  if (isAdminRole(role)) return "/admin";
+
   if (isSpecialPassManagerRole(role)) {
     return "/admin/special-pass";
+  }
+
+  if (isEventManagerRole(role)) {
+    return "/admin/events";
   }
 
   if (isStaffRole(role)) {
     const perms = parseStaffPermissions(staffPermissions);
     if (perms.length > 0) {
-      // Land on the first granted section
       return `/admin/${perms[0] === "faq" ? "faq" : perms[0]}`;
     }
     return "/admin";
   }
 
-  return isEventManagerRole(role) ? "/admin/events" : "/admin";
+  // Non-admin role with staffPermissions => land on first granted section
+  const perms = parseStaffPermissions(staffPermissions);
+  if (perms.length > 0) {
+    return `/admin/${perms[0] === "faq" ? "faq" : perms[0]}`;
+  }
+
+  return "/admin";
 }

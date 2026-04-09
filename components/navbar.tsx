@@ -197,7 +197,7 @@ export function Navbar({ newsEnabled = true }: { newsEnabled?: boolean }) {
                             <User className="w-4 h-4 mr-2" />
                             {t("userMenu.profile")}
                           </Link>
-                          {isAdminConsoleRole(user.role) && (
+                          {isAdminConsoleRole(user.role, (user as any).staffPermissions) && (
                             <Link
                               href="/admin"
                               className="flex items-center px-4 py-2 text-sm text-primary-600 hover:bg-primary-50"

@@ -191,7 +191,7 @@ export default function EventAgendaPage({
   const [form, setForm] = useState<AgendaFormState>(initialAgendaForm);
   const [speakerSearch, setSpeakerSearch] = useState("");
   const [newSpeakerForm, setNewSpeakerForm] = useState<NewSpeakerForm>(initialNewSpeakerForm);
-  const canManageSpeakersFlag = currentUserRole === "ADMIN" || (currentUserRole === "STAFF" && currentUserStaffPermissions?.includes("speakers"));
+  const canManageSpeakersFlag = currentUserRole === "ADMIN" || (currentUserStaffPermissions?.includes("speakers") ?? false);
 
   const setMessage = (tone: "success" | "error", msg: string) => {
     setStatusTone(tone);
