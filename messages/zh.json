@@ -723,6 +723,10 @@
         "title": "用户管理",
         "subtitle": "管理平台所有用户账号。",
         "addUser": "添加用户",
+        "exportUsers": "导出用户",
+        "exportUsersLoading": "导出中...",
+        "exportSuccess": "用户数据已导出",
+        "exportFailed": "导出失败，请重试",
         "stats": {
             "total": "总用户数",
             "active": "已激活",
