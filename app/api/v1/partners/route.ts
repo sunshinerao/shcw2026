@@ -20,6 +20,8 @@ export async function GET(req: NextRequest) {
   if (!auth.ok) return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
 
   const { searchParams } = new URL(req.url);
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const pageSize = Math.min(100, Math.max(1, parseInt(searchParams.get("pageSize") || "20", 10)));
   const tier = searchParams.get("tier");
   const activeOnly = searchParams.get("activeOnly") !== "false"; // default true
 
@@ -27,12 +29,21 @@ export async function GET(req: NextRequest) {
   if (tier && VALID_TIERS.has(tier)) where.tier = tier;
   if (activeOnly) where.isActive = true;
 
-  const partners = await prisma.sponsor.findMany({
-    where,
-    orderBy: [{ tier: "asc" }, { order: "asc" }],
-  });
+  const [partners, total] = await Promise.all([
+    prisma.sponsor.findMany({
+      where,
+      orderBy: [{ tier: "asc" }, { order: "asc" }],
+      skip: (page - 1) * pageSize,
+      take: pageSize,
+    }),
+    prisma.sponsor.count({ where }),
+  ]);
 
-  return NextResponse.json({ success: true, data: partners, count: partners.length });
+  return NextResponse.json({
+    success: true,
+    data: partners,
+    pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
+  });
 }
 
 export async function POST(req: NextRequest) {
