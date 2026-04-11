@@ -74,33 +74,34 @@ export function SpeakersSection() {
             const title = locale === "en" ? (speaker.titleEn || speaker.title) : speaker.title;
             const org = locale === "en" ? (speaker.organizationEn || speaker.organization) : speaker.organization;
             return (
-              <motion.div
-                key={speaker.id}
-                initial={{ opacity: 0, y: 30 }}
-                animate={isInView ? { opacity: 1, y: 0 } : {}}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="text-center group"
-              >
-                <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-slate-200 ring-4 ring-white shadow-lg group-hover:ring-emerald-100 transition-all relative">
-                  {speaker.avatar ? (
-                    <Image
-                      src={speaker.avatar}
-                      alt={name}
-                      fill
-                      unoptimized
-                      sizes="128px"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <User className="w-12 h-12 text-slate-400" />
-                    </div>
-                  )}
-                </div>
-                <h3 className="text-lg font-bold text-slate-900">{displayName}</h3>
-                {title && <p className="text-sm text-emerald-600 font-medium">{title}</p>}
-                {org && <p className="text-sm text-slate-500 mt-1">{org}</p>}
-              </motion.div>
+              <Link href={`/speakers/${speaker.id}`} key={speaker.id} className="block">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  className="text-center group"
+                >
+                  <div className="w-32 h-32 mx-auto mb-4 rounded-full overflow-hidden bg-slate-200 ring-4 ring-white shadow-lg group-hover:ring-emerald-100 transition-all relative">
+                    {speaker.avatar ? (
+                      <Image
+                        src={speaker.avatar}
+                        alt={name}
+                        fill
+                        unoptimized
+                        sizes="128px"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <User className="w-12 h-12 text-slate-400" />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className="text-lg font-bold text-slate-900">{displayName}</h3>
+                  {title && <p className="text-sm text-emerald-600 font-medium">{title}</p>}
+                  {org && <p className="text-sm text-slate-500 mt-1">{org}</p>}
+                </motion.div>
+              </Link>
             );
           })}
         </div>

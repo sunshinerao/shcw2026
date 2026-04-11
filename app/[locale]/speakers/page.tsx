@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from "@/i18n/routing";
 
 type Speaker = {
   id: string;
@@ -148,27 +149,29 @@ function SpeakerCard({
   const bio = localize(speaker.bio, speaker.bioEn);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.05 }}
-      className={`bg-white rounded-2xl overflow-hidden border transition-all hover:shadow-lg ${featured ? "border-amber-200 shadow-md" : "border-slate-100"}`}
-    >
-      <div className={`h-24 ${featured ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-teal-500"}`} />
-      <div className="px-6 pb-6">
-        <div className="-mt-12 mb-4">
-          <Avatar className="w-24 h-24 border-4 border-white shadow-md">
-            <AvatarImage src={speaker.avatar ?? undefined} />
-            <AvatarFallback className="bg-slate-100 text-slate-600 text-2xl">{speaker.name.charAt(0)}</AvatarFallback>
-          </Avatar>
+    <Link href={`/speakers/${speaker.id}`} className="block h-full">
+      <motion.div
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: index * 0.05 }}
+        className={`h-full bg-white rounded-2xl overflow-hidden border transition-all hover:-translate-y-1 hover:shadow-lg ${featured ? "border-amber-200 shadow-md" : "border-slate-100"}`}
+      >
+        <div className={`h-24 ${featured ? "bg-gradient-to-r from-amber-500 to-orange-500" : "bg-gradient-to-r from-emerald-500 to-teal-500"}`} />
+        <div className="px-6 pb-6">
+          <div className="-mt-12 mb-4">
+            <Avatar className="w-24 h-24 border-4 border-white shadow-md">
+              <AvatarImage src={speaker.avatar ?? undefined} />
+              <AvatarFallback className="bg-slate-100 text-slate-600 text-2xl">{speaker.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+          </div>
+          <div className="mb-4">
+            <h3 className="text-xl font-bold text-slate-900">{displayName}</h3>
+            {title && <p className="text-emerald-600 font-medium">{title}</p>}
+            {org && <p className="text-slate-500 text-sm">{org}</p>}
+          </div>
+          {bio && <p className="text-slate-600 text-sm line-clamp-3">{bio}</p>}
         </div>
-        <div className="mb-4">
-          <h3 className="text-xl font-bold text-slate-900">{displayName}</h3>
-          {title && <p className="text-emerald-600 font-medium">{title}</p>}
-          {org && <p className="text-slate-500 text-sm">{org}</p>}
-        </div>
-        {bio && <p className="text-slate-600 text-sm line-clamp-3">{bio}</p>}
-      </div>
-    </motion.div>
+      </motion.div>
+    </Link>
   );
 }
