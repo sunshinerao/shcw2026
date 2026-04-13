@@ -13,7 +13,7 @@ const ALLOWED_TYPES = new Set([
 // Keep base64-encoded body safely under Vercel's 4.5MB serverless limit.
 // 1.5MB raw → ~2MB base64, leaving room for other JSON fields.
 const MAX_SIZE = 1.5 * 1024 * 1024; // 1.5MB
-const ALLOWED_CATEGORIES = new Set(["speakers", "sponsors", "news", "invitation_template", "invitation_signature"]);
+const ALLOWED_CATEGORIES = new Set(["speakers", "sponsors", "news", "insights", "invitation_template", "invitation_signature"]);
 
 /**
  * POST /api/upload/image

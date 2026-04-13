@@ -258,13 +258,265 @@
             "invitations": "Invitations",
             "users": "Users",
             "partners": "Partners",
+            "institutions": "Institutions",
             "cooperationPlans": "Cooperation Plans",
             "faq": "FAQ",
             "news": "News",
+            "insights": "Knowledge Hub",
+            "posters": "Poster Engine",
             "content": "Content",
             "messages": "Messages",
             "settings": "Settings",
             "apiKeys": "API Keys"
+        }
+    },
+    "adminInsightsPage": {
+        "title": "Knowledge Hub",
+        "subtitle": "Manage climate assets in Knowledge Hub",
+        "list": {
+            "title": "Assets",
+            "loading": "Loading...",
+            "empty": "No insights yet"
+        },
+        "dialog": {
+            "createTitle": "Create Insight",
+            "editTitle": "Edit Insight"
+        },
+        "fields": {
+            "titleZh": "Title (Chinese)",
+            "titleEn": "Title (English)",
+            "subtitleZh": "Subtitle (Chinese)",
+            "subtitleEn": "Subtitle (English)",
+            "slug": "Slug",
+            "type": "Type",
+            "status": "Status",
+            "access": "Access",
+            "coverImage": "Upload cover image",
+            "publishDate": "Publish date",
+            "summary": "Summary",
+            "content": "Content",
+            "uploadFile": "Upload file",
+            "uploadCoreFile": "Upload formatted MD (core content)",
+            "uploadPublishFile": "Upload publish file (final release file)",
+            "fileUrl": "File URL",
+            "format": "Format",
+            "formalTemplate": "Formal document template",
+            "selectFormalTemplate": "Select a formal document template",
+            "webTemplate": "Webpage template",
+            "selectWebTemplate": "Select a webpage template",
+            "relatedEvents": "Related Events",
+            "relatedInstitutions": "Related Institutions",
+            "relatedSpeakers": "Related Speakers",
+            "relatedTracks": "Related Tracks",
+            "uploadZhMd": "Chinese MD file (content source)",
+            "uploadEnMd": "English MD file (English version)",
+            "author": "Author(s)",
+            "tags": "Tags",
+            "summaryEn": "Summary (English)",
+            "contentEn": "Content (English)",
+            "pullQuote": "Pull Quote",
+            "pullQuoteCaption": "Quote Attribution",
+            "pullQuoteCaptionEn": "Quote Attribution (English)",
+            "references": "References",
+            "recommendations": "Recommended Reading",
+            "recommendationsEn": "Recommended Reading (English)"
+        },
+        "actions": {
+            "new": "New",
+            "cancel": "Cancel",
+            "save": "Save",
+            "clearCoreContent": "Clear core content",
+            "clearPublishFile": "Delete publish file",
+            "specZh": "Download MD Spec (ZH)",
+            "specEn": "Download MD Spec (EN)"
+        },
+        "messages": {
+            "saved": "Saved successfully",
+            "failed": "Failed",
+            "uploaded": "File uploaded and extracted successfully",
+            "uploadedCore": "Chinese core content uploaded and extracted",
+            "uploadedCoreEn": "English core content uploaded and extracted",
+            "uploadedCover": "Cover image uploaded successfully",
+            "uploadFailed": "Failed to upload file",
+            "uploadCoverFailed": "Failed to upload cover image",
+            "slugRequired": "Please provide title or slug",
+            "confirmDelete": "Delete this insight?",
+            "coreContentCleared": "Core content cleared",
+            "publishFileCleared": "Publish file deleted"
+        }
+    },
+    "adminPostersPage": {
+        "title": "Poster Engine",
+        "subtitle": "Template-driven timeline poster generation",
+        "queue": {
+            "title": "Queue Status",
+            "pending": "PENDING",
+            "running": "RUNNING",
+            "completed": "COMPLETED",
+            "failed": "FAILED"
+        },
+        "template": {
+            "title": "Create Template",
+            "name": "Name",
+            "type": "Type",
+            "aspectRatio": "Aspect ratio",
+            "background": "Background",
+            "accent": "Accent",
+            "titleScale": "Title scale",
+            "timelineDensity": "Timeline density",
+            "compact": "compact",
+            "balanced": "balanced",
+            "airy": "airy"
+        },
+        "job": {
+            "title": "Create Poster Job",
+            "template": "Template",
+            "selectTemplate": "Select template",
+            "eventIdOptional": "Event ID (optional)",
+            "knowledgeAssetIdOptional": "KnowledgeAsset ID (optional)",
+            "speakerIdOptional": "Speaker ID (optional)",
+            "enqueue": "Enqueue Job"
+        },
+        "recentJobs": {
+            "title": "Recent Jobs",
+            "retries": "Retries",
+            "openPreview": "Open preview",
+            "batchExport": "Batch Export",
+            "downloadZip": "Download ZIP",
+            "processNow": "Process Now",
+            "retry": "Retry",
+            "downloadSvg": "Download SVG",
+            "downloadPng": "Download PNG",
+            "downloadPdf": "Download PDF",
+            "storedOutput": "Stored output file",
+            "portrait": "Portrait 4:5 PNG",
+            "square": "Square 1:1 PNG",
+            "landscape": "Landscape 16:9 PNG",
+            "retryLimitReached": "Retry limit reached for this job."
+        },
+        "actions": {
+            "refresh": "Refresh",
+            "running": "Running...",
+            "runWorker": "Run Worker (3)",
+            "retrying": "Retrying...",
+            "retryFailed": "Retry Failed (20)",
+            "autoRefresh": "Auto refresh",
+            "create": "Create"
+        }
+    },
+    "adminInstitutionsPage": {
+        "title": "Institution Management",
+        "total": "Total {count} institutions",
+        "searchPlaceholder": "Search by institution name or slug...",
+        "noInstitutions": "No institutions",
+        "inactive": "Inactive",
+        "dialog": {
+            "addTitle": "Add institution",
+            "editTitle": "Edit institution",
+            "addDescription": "Create institution and configure relationships",
+            "editDescription": "Update institution details and relationships",
+            "confirmDeleteTitle": "Confirm delete",
+            "confirmDeleteDescription": "Deleting \"{name}\" will also delete all its relationship records. This cannot be undone."
+        },
+        "fields": {
+            "slug": "Slug",
+            "nameZh": "Name (Chinese)",
+            "nameEn": "Name (English)",
+            "shortNameZh": "Short name (Chinese)",
+            "shortNameEn": "Short name (English)",
+            "logo": "Logo",
+            "logoPlaceholder": "https://... or click upload",
+            "website": "Official website",
+            "orgType": "Organization type",
+            "selectType": "Select type",
+            "countryZh": "Country/Region (Chinese)",
+            "countryEn": "Country/Region (English)",
+            "descriptionZh": "Description (Chinese)",
+            "descriptionEn": "Description (English)",
+            "collabZh": "Collaboration background (Chinese)",
+            "collabEn": "Collaboration background (English)",
+            "order": "Order",
+            "active": "Active",
+            "relationships": "Relationships",
+            "emptyRelationships": "No relationships yet. Click Add.",
+            "relationshipType": "Relationship type",
+            "scope": "Scope",
+            "sponsorLevel": "Sponsor level",
+            "selectLevel": "Select level",
+            "relatedTrack": "Related track",
+            "selectTrack": "Select track",
+            "displaySection": "Display section",
+            "selectSection": "Select section",
+            "showOnHomepage": "Show on homepage",
+            "priority": "Priority",
+            "startYear": "Start year",
+            "endYear": "End year",
+            "current": "Current",
+            "note": "Note",
+            "notePlaceholder": "Internal note (not public)"
+        },
+        "actions": {
+            "add": "Add institution",
+            "generate": "Generate",
+            "addRelationship": "Add relationship",
+            "cancel": "Cancel",
+            "saveChanges": "Save changes",
+            "create": "Create institution",
+            "delete": "Delete"
+        },
+        "messages": {
+            "loadFailed": "Failed to load institutions",
+            "logoUploaded": "Logo uploaded",
+            "uploadFailed": "Upload failed",
+            "uploadError": "Upload error",
+            "nameRequired": "Institution name is required",
+            "slugRequired": "Slug is required",
+            "updated": "Institution updated",
+            "created": "Institution created",
+            "saveFailed": "Save failed",
+            "deleted": "Institution deleted",
+            "deleteFailed": "Delete failed"
+        },
+        "options": {
+            "orgType": {
+                "ngo": "NGO",
+                "gov": "Government",
+                "corp": "Corporation",
+                "academic": "Academic",
+                "media": "Media",
+                "community": "Community",
+                "foundation": "Foundation",
+                "intergovernmental": "Intergovernmental"
+            },
+            "relationType": {
+                "organizer": "Organizer",
+                "co_organizer": "Co-organizer",
+                "knowledge_partner": "Knowledge Partner",
+                "strategic_partner": "Strategic Partner",
+                "sponsor": "Sponsor",
+                "track_leader": "Track Leader",
+                "venue_partner": "Venue Partner",
+                "media_partner": "Media Partner",
+                "community_partner": "Community Partner",
+                "supporting_org": "Supporting Organization"
+            },
+            "scope": {
+                "annual": "Annual",
+                "track": "Track",
+                "event": "Event"
+            },
+            "sponsorLevel": {
+                "platinum": "Platinum",
+                "gold": "Gold",
+                "silver": "Silver",
+                "bronze": "Bronze"
+            },
+            "displaySection": {
+                "strategic": "Strategic",
+                "knowledge": "Knowledge",
+                "sponsor": "Sponsor",
+                "none": "Hidden"
+            }
         }
     },
     "adminApiKeysPage": {
@@ -1124,12 +1376,17 @@
             "typePlaceholder": "Filter by type",
             "allTypes": "All types",
             "keynote": "Keynote speakers",
-            "regular": "Regular speakers"
+            "regular": "Regular speakers",
+            "visibilityPlaceholder": "Filter by frontend visibility",
+            "allVisibility": "All visibility states",
+            "visible": "Visible on frontend",
+            "hidden": "Hidden on frontend"
         },
         "listTitle": "Speaker list ({count})",
         "summary": "Keynote: {keynote} / Total: {total}",
         "badges": {
-            "keynote": "Keynote"
+            "keynote": "Keynote",
+            "hidden": "Hidden on frontend"
         },
         "links": {
             "linkedin": "LinkedIn",
@@ -1173,7 +1430,8 @@
             "websitePlaceholder": "Personal website",
             "order": "Display order",
             "orderPlaceholder": "Lower numbers appear first",
-            "keynote": "Mark as keynote speaker"
+            "keynote": "Mark as keynote speaker",
+            "visible": "Show on frontend"
         },
         "delete": {
             "title": "Confirm deletion",

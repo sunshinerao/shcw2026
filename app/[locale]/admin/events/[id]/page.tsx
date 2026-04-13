@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import {
   ArrowLeft,
+  Building2,
   Calendar,
   Clock,
   Edit2,
@@ -97,6 +98,38 @@ type EventInfo = {
 };
 
 const AGENDA_TYPES = ["keynote", "panel", "workshop", "sharing", "launch", "break", "networking"] as const;
+
+const EVENT_INSTITUTION_ROLES = [
+  "organizer",
+  "co_organizer",
+  "supporter",
+  "knowledge_partner",
+  "media_partner",
+] as const;
+
+type EventInstitutionItem = {
+  eventId: string;
+  institutionId: string;
+  role: string | null;
+  order: number;
+  institution: {
+    id: string;
+    slug: string;
+    name: string;
+    nameEn: string | null;
+    logo: string | null;
+    orgType: string | null;
+  };
+};
+
+type InstitutionOption = {
+  id: string;
+  slug: string;
+  name: string;
+  nameEn: string | null;
+  logo: string | null;
+  orgType: string | null;
+};
 
 type AgendaFormState = {
   title: string;
@@ -193,6 +226,13 @@ export default function EventAgendaPage({
   const [newSpeakerForm, setNewSpeakerForm] = useState<NewSpeakerForm>(initialNewSpeakerForm);
   const canManageSpeakersFlag = currentUserRole === "ADMIN" || (currentUserStaffPermissions?.includes("speakers") ?? false);
 
+  // Institution association state
+  const [eventInstitutions, setEventInstitutions] = useState<EventInstitutionItem[]>([]);
+  const [allInstitutions, setAllInstitutions] = useState<InstitutionOption[]>([]);
+  const [isInstitutionPickerOpen, setIsInstitutionPickerOpen] = useState(false);
+  const [institutionSearch, setInstitutionSearch] = useState("");
+  const [institutionRoleMap, setInstitutionRoleMap] = useState<Record<string, string>>({});
+
   const setMessage = (tone: "success" | "error", msg: string) => {
     setStatusTone(tone);
     setStatusMessage(msg);
@@ -249,12 +289,38 @@ export default function EventAgendaPage({
     }
   }, []);
 
+  // Load institutions linked to this event
+  const loadEventInstitutions = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/events/${eventId}/institutions`);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEventInstitutions(data.data as EventInstitutionItem[]);
+      }
+    } catch {
+      // ignore
+    }
+  }, [eventId]);
+
+  // Load full institution library for picker
+  const loadAllInstitutions = useCallback(async () => {
+    try {
+      const res = await fetch("/api/institutions?limit=200&isActive=true");
+      const data = await res.json();
+      if (res.ok && data.data) {
+        setAllInstitutions(data.data as InstitutionOption[]);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([loadEvent(), loadAgenda(), loadSpeakers()]).finally(() =>
+    Promise.all([loadEvent(), loadAgenda(), loadSpeakers(), loadEventInstitutions(), loadAllInstitutions()]).finally(() =>
       setIsLoading(false)
     );
-  }, [loadEvent, loadAgenda, loadSpeakers]);
+  }, [loadEvent, loadAgenda, loadSpeakers, loadEventInstitutions, loadAllInstitutions]);
 
   useEffect(() => {
     let cancelled = false;
@@ -338,6 +404,58 @@ export default function EventAgendaPage({
       );
     });
   }, [allSpeakers, speakerSearch, form.speakerIds, form.moderatorId, pickerTarget]);
+
+  // Filtered institutions for picker (exclude already-linked ones)
+  const filteredInstitutions = useMemo(() => {
+    const linkedIds = new Set(eventInstitutions.map((ei) => ei.institutionId));
+    const query = institutionSearch.toLowerCase().trim();
+    return allInstitutions.filter((inst) => {
+      if (linkedIds.has(inst.id)) return false;
+      if (!query) return true;
+      return (
+        inst.name.toLowerCase().includes(query) ||
+        (inst.nameEn?.toLowerCase().includes(query) ?? false) ||
+        (inst.slug.toLowerCase().includes(query) ?? false)
+      );
+    });
+  }, [allInstitutions, eventInstitutions, institutionSearch]);
+
+  const addEventInstitution = async (institutionId: string) => {
+    const role = institutionRoleMap[institutionId] ?? null;
+    try {
+      const res = await fetch(`/api/events/${eventId}/institutions`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ institutionId, role, order: eventInstitutions.length }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setEventInstitutions((prev) => [...prev, data.data as EventInstitutionItem]);
+        setInstitutionRoleMap((prev) => ({ ...prev, [institutionId]: "" }));
+        setMessage("success", locale === "zh" ? "机构已关联" : "Institution linked");
+      } else {
+        setMessage("error", data.error || "Failed");
+      }
+    } catch {
+      setMessage("error", "Failed to link institution");
+    }
+  };
+
+  const removeEventInstitution = async (institutionId: string) => {
+    try {
+      const res = await fetch(`/api/events/${eventId}/institutions`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ institutionId }),
+      });
+      if (res.ok) {
+        setEventInstitutions((prev) => prev.filter((ei) => ei.institutionId !== institutionId));
+        setMessage("success", locale === "zh" ? "机构已移除" : "Institution removed");
+      }
+    } catch {
+      setMessage("error", "Failed to remove institution");
+    }
+  };
 
   const openCreateDialog = () => {
     setEditingItem(null);
@@ -865,6 +983,185 @@ export default function EventAgendaPage({
             </CardContent>
           </Card>
         </motion.div>
+
+        {/* ====== Institution Associations Card ====== */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-slate-500" />
+                  {locale === "zh" ? `关联机构 (${eventInstitutions.length})` : `Institutions (${eventInstitutions.length})`}
+                </CardTitle>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setInstitutionSearch("");
+                    setIsInstitutionPickerOpen(true);
+                  }}
+                >
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
+                  {locale === "zh" ? "添加机构" : "Add Institution"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {eventInstitutions.length === 0 ? (
+                <p className="py-6 text-center text-sm text-slate-400">
+                  {locale === "zh" ? "暂无关联机构" : "No institutions linked yet"}
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {eventInstitutions.map((ei) => (
+                    <div
+                      key={ei.institutionId}
+                      className="flex items-center gap-3 rounded-lg border border-slate-100 p-3 hover:border-emerald-200 transition-colors"
+                    >
+                      {ei.institution.logo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={ei.institution.logo}
+                          alt={ei.institution.name}
+                          className="h-9 w-9 rounded object-contain border border-slate-100"
+                        />
+                      ) : (
+                        <div className="h-9 w-9 rounded bg-slate-100 flex items-center justify-center">
+                          <Building2 className="h-4 w-4 text-slate-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm text-slate-900 truncate">
+                          {locale === "en" && ei.institution.nameEn
+                            ? ei.institution.nameEn
+                            : ei.institution.name}
+                        </div>
+                        <div className="flex items-center gap-2 mt-0.5">
+                          {ei.role && (
+                            <Badge className="bg-emerald-50 text-emerald-700 text-[10px] px-1.5 py-0">
+                              {ei.role}
+                            </Badge>
+                          )}
+                          {ei.institution.orgType && (
+                            <span className="text-xs text-slate-400">{ei.institution.orgType}</span>
+                          )}
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        className="rounded-full p-1 hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors"
+                        onClick={() => void removeEventInstitution(ei.institutionId)}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ====== Institution Picker Dialog ====== */}
+        <Dialog open={isInstitutionPickerOpen} onOpenChange={setIsInstitutionPickerOpen}>
+          <DialogContent className="flex flex-col max-h-[80vh] max-w-lg">
+            <DialogHeader className="shrink-0">
+              <DialogTitle>
+                {locale === "zh" ? "选择关联机构" : "Select Institution"}
+              </DialogTitle>
+              <DialogDescription>
+                {locale === "zh" ? "从机构库中选择并关联到此活动" : "Link an institution from the library to this event"}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="flex flex-col min-h-0 flex-1 gap-3 overflow-hidden">
+              <div className="relative shrink-0">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  value={institutionSearch}
+                  onChange={(e) => setInstitutionSearch(e.target.value)}
+                  placeholder={locale === "zh" ? "搜索机构名称..." : "Search institutions..."}
+                  className="pl-9 w-full"
+                />
+              </div>
+
+              <div className="flex-1 overflow-y-auto space-y-1">
+                {filteredInstitutions.length === 0 ? (
+                  <p className="py-8 text-center text-sm text-slate-400">
+                    {locale === "zh" ? "无可用机构" : "No institutions available"}
+                  </p>
+                ) : (
+                  filteredInstitutions.map((inst) => (
+                    <div
+                      key={inst.id}
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 hover:bg-emerald-50 transition-colors"
+                    >
+                      {inst.logo ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={inst.logo}
+                          alt={inst.name}
+                          className="h-8 w-8 rounded object-contain border border-slate-100 shrink-0"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 rounded bg-slate-100 flex items-center justify-center shrink-0">
+                          <Building2 className="h-3.5 w-3.5 text-slate-400" />
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm text-slate-900 truncate">
+                          {locale === "en" && inst.nameEn ? inst.nameEn : inst.name}
+                        </div>
+                        {inst.orgType && (
+                          <div className="text-xs text-slate-400">{inst.orgType}</div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <Select
+                          value={institutionRoleMap[inst.id] ?? ""}
+                          onValueChange={(v) =>
+                            setInstitutionRoleMap((prev) => ({ ...prev, [inst.id]: v }))
+                          }
+                        >
+                          <SelectTrigger className="h-7 text-xs w-36">
+                            <SelectValue placeholder={locale === "zh" ? "选择角色" : "Role"} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {EVENT_INSTITUTION_ROLES.map((r) => (
+                              <SelectItem key={r} value={r} className="text-xs">
+                                {r}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          size="sm"
+                          className="h-7 px-2 bg-emerald-600 hover:bg-emerald-700"
+                          onClick={() => {
+                            void addEventInstitution(inst.id);
+                            setIsInstitutionPickerOpen(false);
+                          }}
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <DialogFooter className="shrink-0">
+              <Button variant="outline" onClick={() => setIsInstitutionPickerOpen(false)}>
+                {locale === "zh" ? "关闭" : "Close"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* ====== Agenda Item Create/Edit Dialog ====== */}
         <Dialog

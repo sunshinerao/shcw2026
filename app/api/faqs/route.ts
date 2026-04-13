@@ -17,8 +17,23 @@ export async function GET(req: NextRequest) {
     const limitParam = searchParams.get("limit");
     const limit = limitParam ? Math.max(1, Math.min(50, Number.parseInt(limitParam, 10) || 0)) : undefined;
 
+    // Determine if the caller can see unpublished items
+    const session = await getServerSession(authOptions);
+    let sessionUser = null;
+    if (session?.user?.id) {
+      sessionUser = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { role: true, staffPermissions: true },
+      });
+    }
+    const isManager = canManageFaq(sessionUser?.role, sessionUser?.staffPermissions);
+    // Non-managers always see published items only
+    const whereFilter = isManager
+      ? publishedOnly !== undefined ? { isPublished: publishedOnly } : undefined
+      : { isPublished: true };
+
     const items = await prisma.faqItem.findMany({
-      where: publishedOnly === undefined ? undefined : { isPublished: publishedOnly },
+      where: whereFilter,
       orderBy: [
         { isPinned: "desc" },
         { sortOrder: "asc" },

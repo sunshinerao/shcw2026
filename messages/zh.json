@@ -258,13 +258,265 @@
             "invitations": "邀请函管理",
             "users": "用户管理",
             "partners": "合作伙伴",
+            "institutions": "机构管理",
             "cooperationPlans": "合作方案",
             "faq": "常见问题",
             "news": "新闻管理",
+            "insights": "Knowledge Hub",
+            "posters": "海报引擎",
             "content": "内容管理",
             "messages": "留言管理",
             "settings": "系统设置",
             "apiKeys": "API 密鑰"
+        }
+    },
+    "adminInsightsPage": {
+        "title": "Knowledge Hub",
+        "subtitle": "Manage climate assets in Knowledge Hub",
+        "list": {
+            "title": "成果列表",
+            "loading": "加载中...",
+            "empty": "暂无成果"
+        },
+        "dialog": {
+            "createTitle": "创建成果",
+            "editTitle": "编辑成果"
+        },
+        "fields": {
+            "titleZh": "标题（中文）",
+            "titleEn": "标题（英文）",
+            "subtitleZh": "副标题（中文）",
+            "subtitleEn": "副标题（英文）",
+            "slug": "标识（Slug）",
+            "type": "类型",
+            "status": "状态",
+            "access": "访问权限",
+            "coverImage": "上传封面图",
+            "publishDate": "发布日期",
+            "summary": "摘要",
+            "content": "正文",
+            "uploadFile": "上传文件",
+            "uploadCoreFile": "上传格式化MD（核心内容）",
+            "uploadPublishFile": "上传发布文件（正式可发布文件）",
+            "fileUrl": "文件地址",
+            "format": "文件格式",
+            "formalTemplate": "正式文档模板",
+            "selectFormalTemplate": "选择正式文档模板",
+            "webTemplate": "网页展示模板",
+            "selectWebTemplate": "选择网页展示模板",
+            "relatedEvents": "关联活动",
+            "relatedInstitutions": "关联机构",
+            "relatedSpeakers": "关联嘉宾",
+            "relatedTracks": "关联赛道",
+            "uploadZhMd": "中文 MD 文件（内容来源）",
+            "uploadEnMd": "英文 MD 文件（英文版本）",
+            "author": "作者署名",
+            "tags": "标签",
+            "summaryEn": "摘要（英文）",
+            "contentEn": "正文（英文）",
+            "pullQuote": "精选引语",
+            "pullQuoteCaption": "引语署名",
+            "pullQuoteCaptionEn": "引语署名（英文）",
+            "references": "参考文献",
+            "recommendations": "推荐阅读",
+            "recommendationsEn": "推荐阅读（英文）"
+        },
+        "actions": {
+            "new": "新建",
+            "cancel": "取消",
+            "save": "保存",
+            "clearCoreContent": "清空核心内容",
+            "clearPublishFile": "删除正式文件",
+            "specZh": "下载MD规范（中）",
+            "specEn": "下载MD规范（英）"
+        },
+        "messages": {
+            "saved": "保存成功",
+            "failed": "操作失败",
+            "uploaded": "文件上传并提取成功",
+            "uploadedCore": "中文核心内容已上传并提取成功",
+            "uploadedCoreEn": "英文核心内容已上传并提取成功",
+            "uploadedCover": "封面图片上传成功",
+            "uploadFailed": "文件上传失败",
+            "uploadCoverFailed": "封面上传失败",
+            "slugRequired": "请先填写标题或 slug",
+            "confirmDelete": "确认删除该成果？",
+            "coreContentCleared": "核心内容已清空",
+            "publishFileCleared": "正式文件已删除"
+        }
+    },
+    "adminPostersPage": {
+        "title": "海报引擎",
+        "subtitle": "基于模板与结构化数据的时间线海报生成",
+        "queue": {
+            "title": "队列状态",
+            "pending": "待处理",
+            "running": "处理中",
+            "completed": "已完成",
+            "failed": "失败"
+        },
+        "template": {
+            "title": "创建模板",
+            "name": "模板名称",
+            "type": "模板类型",
+            "aspectRatio": "宽高比",
+            "background": "背景色",
+            "accent": "强调色",
+            "titleScale": "标题缩放",
+            "timelineDensity": "时间线密度",
+            "compact": "紧凑",
+            "balanced": "均衡",
+            "airy": "宽松"
+        },
+        "job": {
+            "title": "创建生成任务",
+            "template": "模板",
+            "selectTemplate": "选择模板",
+            "eventIdOptional": "活动 ID（可选）",
+            "knowledgeAssetIdOptional": "成果 ID（可选）",
+            "speakerIdOptional": "嘉宾 ID（可选）",
+            "enqueue": "加入队列"
+        },
+        "recentJobs": {
+            "title": "最近任务",
+            "retries": "重试次数",
+            "openPreview": "打开预览",
+            "batchExport": "批量导出",
+            "downloadZip": "下载 ZIP",
+            "processNow": "立即处理",
+            "retry": "重试",
+            "downloadSvg": "下载 SVG",
+            "downloadPng": "下载 PNG",
+            "downloadPdf": "下载 PDF",
+            "storedOutput": "已存储输出文件",
+            "portrait": "竖版 4:5 PNG",
+            "square": "方版 1:1 PNG",
+            "landscape": "横版 16:9 PNG",
+            "retryLimitReached": "该任务已达到重试上限。"
+        },
+        "actions": {
+            "refresh": "刷新",
+            "running": "处理中...",
+            "runWorker": "执行 Worker（3个）",
+            "retrying": "重试中...",
+            "retryFailed": "重试失败任务（20）",
+            "autoRefresh": "自动刷新",
+            "create": "创建"
+        }
+    },
+    "adminInstitutionsPage": {
+        "title": "机构管理",
+        "total": "共 {count} 个机构",
+        "searchPlaceholder": "搜索机构名称或 Slug...",
+        "noInstitutions": "暂无机构",
+        "inactive": "已停用",
+        "dialog": {
+            "addTitle": "添加机构",
+            "editTitle": "编辑机构",
+            "addDescription": "创建新机构并配置合作关系",
+            "editDescription": "修改机构信息和合作关系",
+            "confirmDeleteTitle": "确认删除",
+            "confirmDeleteDescription": "删除机构“{name}”将同时删除其所有合作关系记录，此操作不可撤销。"
+        },
+        "fields": {
+            "slug": "Slug",
+            "nameZh": "机构名称（中文）",
+            "nameEn": "机构名称（英文）",
+            "shortNameZh": "简称（中文）",
+            "shortNameEn": "简称（英文）",
+            "logo": "Logo",
+            "logoPlaceholder": "https://... 或点击上传",
+            "website": "官方网站",
+            "orgType": "机构类型",
+            "selectType": "选择类型",
+            "countryZh": "国家/地区（中文）",
+            "countryEn": "国家/地区（英文）",
+            "descriptionZh": "机构简介（中文）",
+            "descriptionEn": "机构简介（英文）",
+            "collabZh": "合作背景（中文）",
+            "collabEn": "合作背景（英文）",
+            "order": "排序",
+            "active": "启用中",
+            "relationships": "合作关系",
+            "emptyRelationships": "暂无合作关系，点击添加",
+            "relationshipType": "关系类型",
+            "scope": "合作范围",
+            "sponsorLevel": "赞助级别",
+            "selectLevel": "选择级别",
+            "relatedTrack": "关联赛道",
+            "selectTrack": "选择赛道",
+            "displaySection": "展示区块",
+            "selectSection": "选择区块",
+            "showOnHomepage": "首页展示",
+            "priority": "优先级",
+            "startYear": "开始年份",
+            "endYear": "结束年份",
+            "current": "当前",
+            "note": "备注",
+            "notePlaceholder": "内部备注（不公开）"
+        },
+        "actions": {
+            "add": "添加机构",
+            "generate": "生成",
+            "addRelationship": "添加关系",
+            "cancel": "取消",
+            "saveChanges": "保存修改",
+            "create": "创建机构",
+            "delete": "确认删除"
+        },
+        "messages": {
+            "loadFailed": "加载机构列表失败",
+            "logoUploaded": "Logo 上传成功",
+            "uploadFailed": "上传失败",
+            "uploadError": "上传出错",
+            "nameRequired": "机构名称不能为空",
+            "slugRequired": "Slug 不能为空",
+            "updated": "机构信息已更新",
+            "created": "机构已创建",
+            "saveFailed": "保存失败",
+            "deleted": "机构已删除",
+            "deleteFailed": "删除失败"
+        },
+        "options": {
+            "orgType": {
+                "ngo": "非政府组织",
+                "gov": "政府机构",
+                "corp": "企业",
+                "academic": "学术机构",
+                "media": "媒体",
+                "community": "社区组织",
+                "foundation": "基金会",
+                "intergovernmental": "国际/政府间组织"
+            },
+            "relationType": {
+                "organizer": "主办方",
+                "co_organizer": "联合主办",
+                "knowledge_partner": "知识合作伙伴",
+                "strategic_partner": "战略合作伙伴",
+                "sponsor": "赞助商",
+                "track_leader": "赛道领袖",
+                "venue_partner": "场地合作伙伴",
+                "media_partner": "媒体合作伙伴",
+                "community_partner": "社区合作伙伴",
+                "supporting_org": "支持机构"
+            },
+            "scope": {
+                "annual": "年度合作",
+                "track": "赛道合作",
+                "event": "专项活动"
+            },
+            "sponsorLevel": {
+                "platinum": "白金级",
+                "gold": "金级",
+                "silver": "银级",
+                "bronze": "铜级"
+            },
+            "displaySection": {
+                "strategic": "战略合作区",
+                "knowledge": "知识合作区",
+                "sponsor": "赞助商区",
+                "none": "不展示"
+            }
         }
     },
     "adminApiKeysPage": {
@@ -1124,12 +1376,17 @@
             "typePlaceholder": "筛选类型",
             "allTypes": "全部类型",
             "keynote": "Keynote 嘉宾",
-            "regular": "普通嘉宾"
+            "regular": "普通嘉宾",
+            "visibilityPlaceholder": "筛选前端显示",
+            "allVisibility": "全部显示状态",
+            "visible": "前端显示中",
+            "hidden": "前端已隐藏"
         },
         "listTitle": "嘉宾列表 ({count})",
         "summary": "Keynote: {keynote} / 总计: {total}",
         "badges": {
-            "keynote": "Keynote"
+            "keynote": "Keynote",
+            "hidden": "前端隐藏"
         },
         "links": {
             "linkedin": "LinkedIn",
@@ -1173,7 +1430,8 @@
             "websitePlaceholder": "个人网站",
             "order": "排序权重",
             "orderPlaceholder": "数字越小排序越靠前",
-            "keynote": "设为 Keynote 嘉宾"
+            "keynote": "设为 Keynote 嘉宾",
+            "visible": "在前端显示"
         },
         "delete": {
             "title": "确认删除",

@@ -1,0 +1,931 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SHCW2026 OpenClaw API V2",
+    "version": "2.1.0",
+    "description": "Machine-readable OpenAPI spec for SHCW2026 /api/v2 endpoints. V2 preserves V1 behavior and adds response header X-API-Version plus standardized error code field."
+  },
+  "servers": [
+    {
+      "url": "https://shcw2026.vercel.app",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    {
+      "bearerAuth": []
+    },
+    {
+      "xApiKeyAuth": []
+    }
+  ],
+  "tags": [
+    { "name": "Events" },
+    { "name": "Agenda" },
+    { "name": "Speakers" },
+    { "name": "News" },
+    { "name": "Partners" },
+    { "name": "Insights" },
+    { "name": "Institutions" },
+    { "name": "Users" }
+  ],
+  "paths": {
+    "/api/v2/events": {
+      "get": {
+        "tags": ["Events"],
+        "summary": "List events",
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
+          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } },
+          { "in": "query", "name": "search", "schema": { "type": "string" } },
+          { "in": "query", "name": "type", "schema": { "$ref": "#/components/schemas/EventType" } },
+          { "in": "query", "name": "trackId", "schema": { "type": "string" } },
+          { "in": "query", "name": "published", "schema": { "type": "string", "enum": ["true", "false", "all"], "default": "true" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events list",
+            "headers": {
+              "X-API-Version": { "$ref": "#/components/headers/XApiVersion" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaginatedSuccessResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "post": {
+        "tags": ["Events"],
+        "summary": "Create event",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EventUpsertRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": {
+              "X-API-Version": { "$ref": "#/components/headers/XApiVersion" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SuccessResponse" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/events/{id}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Events"],
+        "summary": "Get event detail",
+        "responses": {
+          "200": {
+            "description": "Event detail",
+            "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "put": {
+        "tags": ["Events"],
+        "summary": "Update event",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/EventUpsertRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "delete": {
+        "tags": ["Events"],
+        "summary": "Delete event",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/events/{id}/agenda": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Agenda"],
+        "summary": "List agenda items",
+        "responses": {
+          "200": {
+            "description": "Agenda list",
+            "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "post": {
+        "tags": ["Agenda"],
+        "summary": "Create agenda item",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AgendaUpsertRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/events/{id}/agenda/{aid}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } },
+        { "in": "path", "name": "aid", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Agenda"],
+        "summary": "Get agenda item",
+        "responses": {
+          "200": {
+            "description": "Agenda detail",
+            "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "put": {
+        "tags": ["Agenda"],
+        "summary": "Update agenda item",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AgendaUpsertRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated",
+            "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "delete": {
+        "tags": ["Agenda"],
+        "summary": "Delete agenda item",
+        "responses": {
+          "200": {
+            "description": "Deleted",
+            "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/speakers": {
+      "get": {
+        "tags": ["Speakers"],
+        "summary": "List speakers",
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
+          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } },
+          { "in": "query", "name": "search", "schema": { "type": "string" } },
+          { "in": "query", "name": "isKeynote", "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedSuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "post": {
+        "tags": ["Speakers"],
+        "summary": "Create speaker",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SpeakerUpsertRequest" } } } },
+        "responses": {
+          "201": { "description": "Created", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/speakers/{id}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Speakers"],
+        "summary": "Get speaker",
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "patch": {
+        "tags": ["Speakers"],
+        "summary": "Update speaker",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SpeakerUpsertRequest" } } } },
+        "responses": {
+          "200": { "description": "Updated", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "delete": {
+        "tags": ["Speakers"],
+        "summary": "Delete speaker",
+        "responses": {
+          "200": { "description": "Deleted", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/news": {
+      "get": {
+        "tags": ["News"],
+        "summary": "List news",
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
+          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } },
+          { "in": "query", "name": "published", "schema": { "type": "string", "enum": ["true", "false", "all"], "default": "true" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedSuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "post": {
+        "tags": ["News"],
+        "summary": "Create news",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NewsUpsertRequest" } } } },
+        "responses": {
+          "201": { "description": "Created", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/news/{id}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["News"],
+        "summary": "Get news",
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "patch": {
+        "tags": ["News"],
+        "summary": "Update news",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/NewsUpsertRequest" } } } },
+        "responses": {
+          "200": { "description": "Updated", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "delete": {
+        "tags": ["News"],
+        "summary": "Delete news",
+        "responses": {
+          "200": { "description": "Deleted", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/partners": {
+      "get": {
+        "tags": ["Partners"],
+        "summary": "List partners",
+        "parameters": [
+          { "in": "query", "name": "tier", "schema": { "$ref": "#/components/schemas/PartnerTier" } },
+          { "in": "query", "name": "activeOnly", "schema": { "type": "boolean", "default": true } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "post": {
+        "tags": ["Partners"],
+        "summary": "Create partner",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PartnerUpsertRequest" } } } },
+        "responses": {
+          "201": { "description": "Created", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/partners/{id}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Partners"],
+        "summary": "Get partner",
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "patch": {
+        "tags": ["Partners"],
+        "summary": "Update partner",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PartnerUpsertRequest" } } } },
+        "responses": {
+          "200": { "description": "Updated", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "delete": {
+        "tags": ["Partners"],
+        "summary": "Delete partner",
+        "responses": {
+          "200": { "description": "Deleted", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/insights": {
+      "get": {
+        "tags": ["Insights"],
+        "summary": "List insights",
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
+          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } },
+          { "in": "query", "name": "search", "schema": { "type": "string" } },
+          { "in": "query", "name": "type", "schema": { "$ref": "#/components/schemas/KnowledgeAssetType" } },
+          { "in": "query", "name": "status", "schema": { "$ref": "#/components/schemas/PublishStatus" } },
+          { "in": "query", "name": "accessType", "schema": { "$ref": "#/components/schemas/AccessType" } },
+          { "in": "query", "name": "includeRelations", "schema": { "type": "boolean" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedSuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "post": {
+        "tags": ["Insights"],
+        "summary": "Create insight",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InsightUpsertRequest" } } } },
+        "responses": {
+          "201": { "description": "Created", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/insights/{id}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Insights"],
+        "summary": "Get insight",
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "patch": {
+        "tags": ["Insights"],
+        "summary": "Update insight",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InsightUpsertRequest" } } } },
+        "responses": {
+          "200": { "description": "Updated", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "delete": {
+        "tags": ["Insights"],
+        "summary": "Delete insight",
+        "responses": {
+          "200": { "description": "Deleted", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/institutions": {
+      "get": {
+        "tags": ["Institutions"],
+        "summary": "List institutions",
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
+          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } },
+          { "in": "query", "name": "search", "schema": { "type": "string" } },
+          { "in": "query", "name": "orgType", "schema": { "$ref": "#/components/schemas/OrgType" } },
+          { "in": "query", "name": "activeOnly", "schema": { "type": "boolean", "default": true } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedSuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "post": {
+        "tags": ["Institutions"],
+        "summary": "Create institution",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InstitutionUpsertRequest" } } } },
+        "responses": {
+          "201": { "description": "Created", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/institutions/{id}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Institutions"],
+        "summary": "Get institution",
+        "responses": {
+          "200": { "description": "OK", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "patch": {
+        "tags": ["Institutions"],
+        "summary": "Update institution",
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/InstitutionUpsertRequest" } } } },
+        "responses": {
+          "200": { "description": "Updated", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "delete": {
+        "tags": ["Institutions"],
+        "summary": "Delete institution",
+        "responses": {
+          "200": { "description": "Deleted", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/users/reset-password": {
+      "post": {
+        "tags": ["Users"],
+        "summary": "Reset user password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "newPassword"],
+                "properties": {
+                  "email": { "type": "string", "format": "email" },
+                  "newPassword": { "type": "string", "minLength": 8 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Password reset", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Authorization: Bearer sk_oc_..."
+      },
+      "xApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "x-api-key: sk_oc_..."
+      }
+    },
+    "headers": {
+      "XApiVersion": {
+        "description": "API version marker",
+        "schema": {
+          "type": "string",
+          "enum": ["v2"]
+        }
+      }
+    },
+    "responses": {
+      "ErrorBadRequest": {
+        "description": "Bad Request",
+        "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "success": false, "error": "Invalid request", "code": "BAD_REQUEST" } } }
+      },
+      "ErrorUnauthorized": {
+        "description": "Unauthorized",
+        "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "success": false, "error": "Unauthorized", "code": "UNAUTHORIZED" } } }
+      },
+      "ErrorForbidden": {
+        "description": "Forbidden",
+        "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "success": false, "error": "Forbidden", "code": "FORBIDDEN" } } }
+      },
+      "ErrorNotFound": {
+        "description": "Not Found",
+        "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "success": false, "error": "Not found", "code": "NOT_FOUND" } } }
+      },
+      "ErrorConflict": {
+        "description": "Conflict",
+        "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "success": false, "error": "Conflict", "code": "CONFLICT" } } }
+      },
+      "ErrorInternal": {
+        "description": "Internal Server Error",
+        "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } },
+        "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponse" }, "example": { "success": false, "error": "Internal server error", "code": "INTERNAL_ERROR" } } }
+      }
+    },
+    "schemas": {
+      "SuccessResponse": {
+        "type": "object",
+        "required": ["success"],
+        "properties": {
+          "success": { "type": "boolean", "const": true },
+          "message": { "type": "string" },
+          "data": {}
+        },
+        "additionalProperties": true
+      },
+      "PaginatedSuccessResponse": {
+        "type": "object",
+        "required": ["success"],
+        "properties": {
+          "success": { "type": "boolean", "const": true },
+          "data": {},
+          "pagination": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "integer" },
+              "pageSize": { "type": "integer" },
+              "total": { "type": "integer" },
+              "totalPages": { "type": "integer" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["success", "error", "code"],
+        "properties": {
+          "success": { "type": "boolean", "const": false },
+          "error": { "type": "string" },
+          "code": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "EventType": {
+        "type": "string",
+        "enum": ["forum", "workshop", "ceremony", "conference", "networking"]
+      },
+      "PartnerTier": {
+        "type": "string",
+        "enum": ["platinum", "gold", "silver", "bronze", "partner"]
+      },
+      "KnowledgeAssetType": {
+        "type": "string",
+        "enum": ["WHITE_PAPER", "REPORT", "INITIATIVE", "POLICY_BRIEF", "GUIDE", "DECLARATION", "SUMMARY"]
+      },
+      "PublishStatus": {
+        "type": "string",
+        "enum": ["DRAFT", "PUBLISHED"]
+      },
+      "AccessType": {
+        "type": "string",
+        "enum": ["PUBLIC", "LOGIN_REQUIRED", "PAID", "HIDDEN"]
+      },
+      "OrgType": {
+        "type": "string",
+        "enum": ["ngo", "gov", "corp", "academic", "media", "community", "foundation", "intergovernmental"]
+      },
+      "EventUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "titleEn": { "type": "string" },
+          "description": { "type": "string" },
+          "descriptionEn": { "type": "string" },
+          "shortDesc": { "type": "string" },
+          "shortDescEn": { "type": "string" },
+          "startDate": { "type": "string", "format": "date" },
+          "endDate": { "type": "string", "format": "date" },
+          "startTime": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+          "endTime": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+          "venue": { "type": "string" },
+          "venueEn": { "type": "string" },
+          "address": { "type": "string" },
+          "addressEn": { "type": "string" },
+          "city": { "type": "string" },
+          "cityEn": { "type": "string" },
+          "type": { "$ref": "#/components/schemas/EventType" },
+          "trackId": { "type": "string" },
+          "maxAttendees": { "type": "integer" },
+          "isPublished": { "type": "boolean" },
+          "isFeatured": { "type": "boolean" },
+          "isPinned": { "type": "boolean" },
+          "requireApproval": { "type": "boolean" },
+          "isClosed": { "type": "boolean" },
+          "eventDateSlots": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "scheduleDate": { "type": "string", "format": "date" },
+                "startTime": { "type": "string" },
+                "endTime": { "type": "string" }
+              },
+              "required": ["scheduleDate", "startTime", "endTime"]
+            }
+          }
+        },
+        "additionalProperties": true
+      },
+      "AgendaUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "titleEn": { "type": "string" },
+          "description": { "type": "string" },
+          "descriptionEn": { "type": "string" },
+          "agendaDate": { "type": "string", "format": "date" },
+          "startTime": { "type": "string" },
+          "endTime": { "type": "string" },
+          "type": { "type": "string", "enum": ["keynote", "panel", "workshop", "sharing", "launch", "break", "networking"] },
+          "venue": { "type": "string" },
+          "order": { "type": "integer" },
+          "speakerIds": { "type": "array", "items": { "type": "string" } },
+          "moderatorId": { "type": "string" }
+        },
+        "additionalProperties": true
+      },
+      "SpeakerUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "nameEn": { "type": "string" },
+          "salutation": { "type": "string" },
+          "title": { "type": "string" },
+          "titleEn": { "type": "string" },
+          "organization": { "type": "string" },
+          "organizationEn": { "type": "string" },
+          "organizationLogo": { "type": "string" },
+          "bio": { "type": "string" },
+          "bioEn": { "type": "string" },
+          "avatar": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "linkedin": { "type": "string" },
+          "twitter": { "type": "string" },
+          "website": { "type": "string" },
+          "isKeynote": { "type": "boolean" },
+          "order": { "type": "integer" }
+        },
+        "additionalProperties": true
+      },
+      "NewsUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "titleEn": { "type": "string" },
+          "slug": { "type": "string" },
+          "excerpt": { "type": "string" },
+          "excerptEn": { "type": "string" },
+          "content": { "type": "string" },
+          "contentEn": { "type": "string" },
+          "coverImage": { "type": "string" },
+          "isPublished": { "type": "boolean" }
+        },
+        "additionalProperties": true
+      },
+      "PartnerUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "nameEn": { "type": "string" },
+          "logo": { "type": "string" },
+          "website": { "type": "string" },
+          "description": { "type": "string" },
+          "descriptionEn": { "type": "string" },
+          "tier": { "$ref": "#/components/schemas/PartnerTier" },
+          "order": { "type": "integer" },
+          "isActive": { "type": "boolean" },
+          "showOnHomepage": { "type": "boolean" }
+        },
+        "additionalProperties": true
+      },
+      "InsightUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "title": { "type": "string" },
+          "titleEn": { "type": "string" },
+          "slug": { "type": "string" },
+          "type": { "$ref": "#/components/schemas/KnowledgeAssetType" },
+          "status": { "$ref": "#/components/schemas/PublishStatus" },
+          "accessType": { "$ref": "#/components/schemas/AccessType" },
+          "publishDate": { "type": "string", "format": "date-time" },
+          "summary": { "type": "string" },
+          "summaryEn": { "type": "string" },
+          "content": { "type": "string" },
+          "contentEn": { "type": "string" },
+          "fileUrl": { "type": "string" },
+          "price": { "type": "number" },
+          "currency": { "type": "string" },
+          "relatedEventIds": { "type": "array", "items": { "type": "string" } },
+          "relatedInstitutionIds": { "type": "array", "items": { "type": "string" } },
+          "relatedSpeakerIds": { "type": "array", "items": { "type": "string" } },
+          "relatedTrackIds": { "type": "array", "items": { "type": "string" } }
+        },
+        "additionalProperties": true
+      },
+      "InstitutionUpsertRequest": {
+        "type": "object",
+        "properties": {
+          "slug": { "type": "string" },
+          "name": { "type": "string" },
+          "nameEn": { "type": "string" },
+          "shortName": { "type": "string" },
+          "shortNameEn": { "type": "string" },
+          "logo": { "type": "string" },
+          "website": { "type": "string" },
+          "orgType": { "$ref": "#/components/schemas/OrgType" },
+          "countryOrRegion": { "type": "string" },
+          "countryOrRegionEn": { "type": "string" },
+          "description": { "type": "string" },
+          "descriptionEn": { "type": "string" },
+          "collaborationBg": { "type": "string" },
+          "collaborationBgEn": { "type": "string" },
+          "isActive": { "type": "boolean" },
+          "order": { "type": "integer" }
+        },
+        "additionalProperties": true
+      }
+    }
+  }
+}

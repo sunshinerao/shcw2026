@@ -60,7 +60,9 @@ const PERMISSION_GROUPS: { group: string; permissions: ApiKeyPermission[] }[] = 
   { group: "Events", permissions: ["events:read", "events:write"] },
   { group: "Speakers", permissions: ["speakers:read", "speakers:write"] },
   { group: "News", permissions: ["news:read", "news:write"] },
+  { group: "Insights", permissions: ["insights:read", "insights:write"] },
   { group: "Partners", permissions: ["partners:read", "partners:write"] },
+  { group: "Institutions", permissions: ["institutions:read", "institutions:write"] },
   { group: "Users", permissions: ["users:write"] },
 ];
 
@@ -71,8 +73,12 @@ const PERMISSION_LABEL_MAP: Record<ApiKeyPermission, string> = {
   "speakers:write": "Speakers (write)",
   "news:read": "News (read)",
   "news:write": "News (write)",
+  "insights:read": "Insights (read)",
+  "insights:write": "Insights (write)",
   "partners:read": "Partners (read)",
   "partners:write": "Partners (write)",
+  "institutions:read": "Institutions (read)",
+  "institutions:write": "Institutions (write)",
   "users:write": "Users (reset password)",
 };
 

@@ -96,7 +96,8 @@ export async function GET(
     const currentUser = await requireSessionUser();
     const isAdmin = currentUser?.role === UserRole.ADMIN;
     const isStaff = currentUser?.role === UserRole.STAFF;
-    const canViewUnpublished = isAdmin || isStaff;
+    const isEventManager = currentUser?.role === UserRole.EVENT_MANAGER;
+    const canViewUnpublished = isAdmin || isStaff || isEventManager;
 
     const event = await prisma.event.findFirst({
       where: {
@@ -232,6 +233,7 @@ export async function PUT(
       select: {
         id: true,
         managerUserId: true,
+        isPublished: true,
         title: true,
         titleEn: true,
         description: true,
@@ -260,7 +262,8 @@ export async function PUT(
 
     const canManageThisEvent =
       currentUser.role === UserRole.ADMIN ||
-      (currentUser.role === UserRole.EVENT_MANAGER && existingEvent.managerUserId === currentUser.id);
+      (currentUser.role === UserRole.EVENT_MANAGER
+        && (existingEvent.managerUserId === currentUser.id || !existingEvent.isPublished));
     const canEditRestrictedEventFields = currentUser.role === UserRole.ADMIN;
 
     if (!canManageThisEvent) {

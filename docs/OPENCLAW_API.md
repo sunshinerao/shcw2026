@@ -1,5 +1,8 @@
 # SHCW2026 OpenClaw API 使用文档
 
+> 版本状态：`/api/v1` 继续可用（维护模式），推荐新接入统一使用 `/api/v2`。  
+> V2 文档见：`docs/OPENCLAW_API_V2.md`。
+
 > 供 AI Agent（如 OpenClaw、Dify、LangChain 等）调用的 REST API。  
 > Base URL（生产）：`https://shcw2026.vercel.app`  
 > 所有路径以 `/api/v1/` 开头。
@@ -15,9 +18,10 @@
 5. [嘉宾 Speakers](#5-嘉宾-speakers)
 6. [新闻 News](#6-新闻-news)
 7. [合作伙伴 Partners](#7-合作伙伴-partners)
-8. [用户密码重置 Users](#8-用户密码重置-users)
-9. [错误码参考](#9-错误码参考)
-10. [权限说明](#10-权限说明)
+8. [知识成果 Insights](#8-知识成果-insights)
+9. [用户密码重置 Users](#9-用户密码重置-users)
+10. [错误码参考](#10-错误码参考)
+11. [权限说明](#11-权限说明)
 
 ---
 
@@ -593,9 +597,57 @@ DELETE /api/v1/partners/{id}
 
 ---
 
-## 8. 用户密码重置 Users
+## 8. 知识成果 Insights
 
-### 8.1 重置用户密码
+### 8.1 获取成果列表
+
+```
+GET /api/v1/insights
+```
+
+**所需权限：** `insights:read`
+
+**Query 参数（可选）：** `page`、`pageSize`、`search`、`type`、`status`、`accessType`、`includeRelations`
+
+### 8.2 获取单个成果
+
+```
+GET /api/v1/insights/{id_or_slug}
+```
+
+**所需权限：** `insights:read`
+
+### 8.3 创建成果
+
+```
+POST /api/v1/insights
+Content-Type: application/json
+```
+
+**所需权限：** `insights:write`
+
+### 8.4 更新成果
+
+```
+PATCH /api/v1/insights/{id_or_slug}
+Content-Type: application/json
+```
+
+**所需权限：** `insights:write`
+
+### 8.5 删除成果
+
+```
+DELETE /api/v1/insights/{id_or_slug}
+```
+
+**所需权限：** `insights:write`
+
+---
+
+## 9. 用户密码重置 Users
+
+### 9.1 重置用户密码
 
 ```
 POST /api/v1/users/reset-password
@@ -653,7 +705,7 @@ Content-Type: application/json
 
 ---
 
-## 9. 错误码参考
+## 10. 错误码参考
 
 | HTTP 状态码 | 含义 |
 |------------|------|
@@ -674,7 +726,7 @@ Content-Type: application/json
 
 ---
 
-## 10. 权限说明
+## 11. 权限说明
 
 每个 API 密钥可授予以下权限的任意组合：
 
@@ -686,6 +738,8 @@ Content-Type: application/json
 | `speakers:write` | 创建/更新/删除嘉宾 |
 | `news:read` | 读取新闻列表和详情 |
 | `news:write` | 创建/更新/删除新闻 |
+| `insights:read` | 读取知识成果列表和详情 |
+| `insights:write` | 创建/更新/删除知识成果 |
 | `partners:read` | 读取合作伙伴列表和详情 |
 | `partners:write` | 创建/更新/删除合作伙伴 |
 | `users:write` | 重置任意用户密码 |
@@ -697,7 +751,7 @@ Content-Type: application/json
 ```python
 import httpx
 
-BASE_URL = "https://shcw2026.vercel.app"
+BASE_URL = "https://shcw2026.climateweekshanghai.org"
 API_KEY = "sk_oc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 headers = {"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"}

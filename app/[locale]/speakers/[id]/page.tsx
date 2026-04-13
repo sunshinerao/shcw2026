@@ -11,6 +11,7 @@ import {
   MapPin,
   Mic,
   Sparkles,
+  Tag,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -27,13 +28,6 @@ function formatDate(locale: string, value: Date) {
     month: "short",
     day: "numeric",
   }).format(value);
-}
-
-function buildSummary(text?: string | null) {
-  if (!text) return "";
-  const compact = text.replace(/\s+/g, " ").trim();
-  if (compact.length <= 140) return compact;
-  return `${compact.slice(0, 137).trim()}...`;
 }
 
 function splitBiography(text?: string | null) {
@@ -65,6 +59,7 @@ export default async function SpeakerProfilePage({
         summary: "Summary",
         relevance: "Why This Speaker Matters to SHCW",
         biography: "Biography",
+        career: "Career Highlights",
         currentRole: "Current Role",
         organization: "Organization",
         links: "Links & Media",
@@ -76,6 +71,9 @@ export default async function SpeakerProfilePage({
         featuredIn: "Featured in {count} event(s) at Shanghai Climate Week.",
         roleLabel: "Current Position",
         orgLabel: "Affiliation",
+        countryLabel: "Country / Region",
+        expertiseLabel: "Areas of Expertise",
+        presentLabel: "Present",
       }
     : {
         back: "返回嘉宾列表",
@@ -84,6 +82,7 @@ export default async function SpeakerProfilePage({
         summary: "摘要",
         relevance: "与上海气候周的关联",
         biography: "人物简介",
+        career: "职务履历",
         currentRole: "当前职务",
         organization: "所属机构",
         links: "链接与资料",
@@ -95,12 +94,19 @@ export default async function SpeakerProfilePage({
         featuredIn: "已参与上海气候周 {count} 场相关活动。",
         roleLabel: "当前职位",
         orgLabel: "所属机构",
+        countryLabel: "国家 / 地区",
+        expertiseLabel: "专业领域",
+        presentLabel: "至今",
       };
 
-  const speaker = await prisma.speaker.findUnique({
-    where: { id: params.id },
+  const speaker = await prisma.speaker.findFirst({
+    where: {
+      OR: [{ id: params.id }, { slug: params.id }],
+      isVisible: true,
+    },
     select: {
       id: true,
+      slug: true,
       salutation: true,
       name: true,
       nameEn: true,
@@ -112,10 +118,25 @@ export default async function SpeakerProfilePage({
       organizationLogo: true,
       bio: true,
       bioEn: true,
+      summary: true,
+      summaryEn: true,
+      countryOrRegion: true,
+      countryOrRegionEn: true,
+      relevanceToShcw: true,
+      relevanceToShcwEn: true,
+      expertiseTags: true,
       linkedin: true,
       twitter: true,
       website: true,
       isKeynote: true,
+      isVisible: true,
+      roles: {
+        orderBy: [
+          { isCurrent: "desc" },
+          { order: "asc" },
+          { startYear: "desc" },
+        ],
+      },
       agendaItems: {
         include: {
           event: {
@@ -160,8 +181,19 @@ export default async function SpeakerProfilePage({
   const title = localize(locale, speaker.title, speaker.titleEn);
   const organization = localize(locale, speaker.organization, speaker.organizationEn);
   const biography = localize(locale, speaker.bio, speaker.bioEn);
-  const summary = buildSummary(biography);
+  // Use explicit summary if available, otherwise fall back to the first 160 chars of bio
+  const summaryRaw = localize(locale, speaker.summary, speaker.summaryEn) || biography;
+  const summary = summaryRaw.length > 160
+    ? `${summaryRaw.slice(0, 157).trim()}...`
+    : summaryRaw;
+  const countryOrRegion = localize(locale, speaker.countryOrRegion, speaker.countryOrRegionEn);
+  const relevance = localize(locale, speaker.relevanceToShcw, speaker.relevanceToShcwEn);
+  const expertiseTags = Array.isArray(speaker.expertiseTags)
+    ? (speaker.expertiseTags as string[]).filter(Boolean)
+    : [];
   const bioBlocks = splitBiography(biography);
+  // Career roles (all, sorted isCurrent first)
+  const careerRoles = speaker.roles;
 
   const relatedEventsMap = new Map<string, {
     id: string;
@@ -190,8 +222,28 @@ export default async function SpeakerProfilePage({
     speaker.twitter ? { label: copy.twitter, href: speaker.twitter } : null,
   ].filter((item): item is { label: string; href: string } => Boolean(item));
 
+  // JSON-LD structured data
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: headingName,
+    jobTitle: title,
+    worksFor: { "@type": "Organization", name: organization },
+    description: biography.slice(0, 300) || undefined,
+    ...(speaker.avatar && { image: speaker.avatar }),
+    sameAs: [
+      speaker.linkedin,
+      speaker.website,
+    ].filter(Boolean),
+  };
+
   return (
-    <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eefbf5_34%,#ffffff_100%)] pt-16 lg:pt-20">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <div className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eefbf5_34%,#ffffff_100%)] pt-16 lg:pt-20">
       <section className="relative overflow-hidden border-b border-emerald-100 bg-slate-950 py-16 text-white sm:py-24">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_18%,rgba(16,185,129,0.26),transparent_28%),radial-gradient(circle_at_82%_12%,rgba(59,130,246,0.18),transparent_24%),linear-gradient(135deg,rgba(2,6,23,0.98),rgba(6,78,59,0.92))]" />
         <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -238,6 +290,12 @@ export default async function SpeakerProfilePage({
                   <Building2 className="mr-2 h-4 w-4 text-emerald-300" />
                   {organization}
                 </span>
+                {countryOrRegion ? (
+                  <span className="inline-flex items-center rounded-full bg-white/8 px-3 py-1.5">
+                    <Globe className="mr-2 h-4 w-4 text-emerald-300" />
+                    {countryOrRegion}
+                  </span>
+                ) : null}
                 {speaker.organizationLogo ? (
                   <span className="inline-flex items-center rounded-full bg-white/8 px-3 py-1.5">
                     <Sparkles className="mr-2 h-4 w-4 text-emerald-300" />
@@ -260,11 +318,11 @@ export default async function SpeakerProfilePage({
       <section className="py-14 sm:py-18">
         <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-8">
           <div className="space-y-8">
-            {relatedEvents.length > 0 ? (
+            {(relevance || relatedEvents.length > 0) ? (
               <section className="rounded-[28px] border border-emerald-100 bg-emerald-50/70 p-6 shadow-[0_20px_50px_-35px_rgba(16,185,129,0.35)]">
                 <p className="text-sm font-semibold uppercase tracking-[0.2em] text-emerald-700">{copy.relevance}</p>
                 <p className="mt-3 text-base leading-8 text-slate-700">
-                  {copy.featuredIn.replace("{count}", String(relatedEvents.length))}
+                  {relevance || copy.featuredIn.replace("{count}", String(relatedEvents.length))}
                 </p>
               </section>
             ) : null}
@@ -275,6 +333,47 @@ export default async function SpeakerProfilePage({
                 <div className="mt-5 space-y-5 text-base leading-8 text-slate-600">
                   {bioBlocks.map((block, index) => (
                     <p key={`${speaker.id}-bio-${index}`}>{block}</p>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            {expertiseTags.length > 0 ? (
+              <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-[0_20px_50px_-35px_rgba(15,23,42,0.35)]">
+                <h2 className="flex items-center gap-2 text-2xl font-semibold text-slate-900">
+                  <Tag className="h-5 w-5 text-emerald-600" />
+                  {copy.expertiseLabel}
+                </h2>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {expertiseTags.map((tag, i) => (
+                    <Badge
+                      key={i}
+                      className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-800 hover:bg-emerald-100"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            {careerRoles.length > 0 ? (
+              <section className="rounded-[28px] border border-slate-200 bg-white p-7 shadow-[0_20px_50px_-35px_rgba(15,23,42,0.35)]">
+                <h2 className="text-2xl font-semibold text-slate-900">{copy.career}</h2>
+                <div className="mt-6 space-y-0 border-l-2 border-emerald-200 pl-6">
+                  {careerRoles.map((role) => (
+                    <div key={role.id} className="relative pb-6 last:pb-0">
+                      <div className="absolute -left-[1.625rem] top-1.5 h-3.5 w-3.5 rounded-full border-2 border-emerald-500 bg-white" />
+                      <p className="text-sm font-semibold text-emerald-700">
+                        {role.startYear ?? "?"} — {role.isCurrent ? copy.presentLabel : (role.endYear ? String(role.endYear) : "?")}
+                      </p>
+                      <p className="mt-1 text-base font-semibold text-slate-900">
+                        {localize(locale, role.title, role.titleEn)}
+                      </p>
+                      <p className="mt-0.5 text-sm text-slate-500">
+                        {localize(locale, role.organization, role.organizationEn)}
+                      </p>
+                    </div>
                   ))}
                 </div>
               </section>
@@ -344,6 +443,12 @@ export default async function SpeakerProfilePage({
                     <p className="text-base font-semibold text-slate-900">{organization}</p>
                   </div>
                 </div>
+                {countryOrRegion ? (
+                  <div className="rounded-2xl bg-slate-50 p-4">
+                    <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{copy.countryLabel}</p>
+                    <p className="mt-2 text-base font-semibold text-slate-900">{countryOrRegion}</p>
+                  </div>
+                ) : null}
               </div>
             </section>
 
@@ -384,5 +489,6 @@ export default async function SpeakerProfilePage({
         </div>
       </section>
     </div>
+    </>
   );
 }

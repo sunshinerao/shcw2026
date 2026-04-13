@@ -31,15 +31,37 @@ export async function GET(req: NextRequest) {
     
     // 分页参数
     const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = Math.min(100, parseInt(searchParams.get("limit") || "10", 10));
+    const limit = Math.min(1000, parseInt(searchParams.get("limit") || "10", 10));
     const skip = (page - 1) * limit;
     
     // 搜索参数
     const search = searchParams.get("search") || "";
     const isKeynote = searchParams.get("isKeynote");
+    const includeHidden = searchParams.get("includeHidden") === "true";
     
+    // includeHidden=true 仅允许嘉宾管理权限用户查看隐藏嘉宾
+    if (includeHidden) {
+      const session = await getServerSession(authOptions);
+      if (!session?.user) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "unauthorized") },
+          { status: 401 }
+        );
+      }
+      const permission = await checkSpeakerPermission(session.user.id, requestLocale);
+      if (!permission.allowed) {
+        return NextResponse.json(
+          { success: false, error: permission.error },
+          { status: permission.status }
+        );
+      }
+    }
+
     // 构建查询条件
     const where: any = {};
+    if (!includeHidden) {
+      where.isVisible = true;
+    }
     
     if (search) {
       where.OR = [
@@ -67,6 +89,7 @@ export async function GET(req: NextRequest) {
       take: limit,
       select: {
         id: true,
+        slug: true,
         salutation: true,
         name: true,
         nameEn: true,
@@ -78,11 +101,23 @@ export async function GET(req: NextRequest) {
         organizationLogo: true,
         bio: true,
         bioEn: true,
+        summary: true,
+        summaryEn: true,
+        countryOrRegion: true,
+        countryOrRegionEn: true,
+        relevanceToShcw: true,
+        relevanceToShcwEn: true,
+        expertiseTags: true,
         linkedin: true,
         twitter: true,
         website: true,
         isKeynote: true,
+        isVisible: true,
         order: true,
+        institutionId: true,
+        institution: {
+          select: { id: true, slug: true, name: true, nameEn: true, logo: true },
+        },
         createdAt: true,
         updatedAt: true,
         _count: {
@@ -145,12 +180,23 @@ export async function POST(req: NextRequest) {
       organizationLogo,
       bio,
       bioEn,
+      summary,
+      summaryEn,
+      countryOrRegion,
+      countryOrRegionEn,
+      relevanceToShcw,
+      relevanceToShcwEn,
+      expertiseTags,
+      slug,
+      institutionId,
+      roles,
       email,
       linkedin,
       twitter,
       website,
       avatar,
       isKeynote,
+      isVisible,
       order,
     } = body;
     
@@ -160,6 +206,22 @@ export async function POST(req: NextRequest) {
         { success: false, error: apiMessage(requestLocale, "speakerRequired") },
         { status: 400 }
       );
+    }
+
+    if (slug?.trim()) {
+      const slugConflict = await prisma.speaker.findFirst({
+        where: { slug: slug.trim() },
+        select: { id: true, name: true },
+      });
+      if (slugConflict) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Slug "${slug.trim()}" is already used by speaker "${slugConflict.name}" (id: ${slugConflict.id})`,
+          },
+          { status: 409 }
+        );
+      }
     }
     
     // 创建嘉宾
@@ -175,15 +237,47 @@ export async function POST(req: NextRequest) {
         organizationLogo: organizationLogo || null,
         bio: bio || null,
         bioEn: bioEn || null,
+        summary: summary || null,
+        summaryEn: summaryEn || null,
+        countryOrRegion: countryOrRegion || null,
+        countryOrRegionEn: countryOrRegionEn || null,
+        relevanceToShcw: relevanceToShcw || null,
+        relevanceToShcwEn: relevanceToShcwEn || null,
+        expertiseTags: expertiseTags ?? null,
+        slug: slug?.trim() || null,
+        institutionId: institutionId || null,
         email: email || null,
         linkedin: linkedin || null,
         twitter: twitter || null,
         website: website || null,
         avatar: avatar || null,
         isKeynote: isKeynote || false,
+        isVisible: isVisible !== undefined ? Boolean(isVisible) : true,
         order: order || 0,
       },
     });
+
+    // 如果提供了 roles，创建历史职务
+    if (Array.isArray(roles) && roles.length > 0) {
+      const validRoles = (roles as Array<Record<string, unknown>>).filter(
+        (r) => typeof r.title === "string" && r.title.trim() && typeof r.organization === "string" && r.organization.trim()
+      );
+      if (validRoles.length > 0) {
+        await prisma.speakerRole.createMany({
+          data: validRoles.map((r, idx) => ({
+            speakerId: speaker.id,
+            title: (r.title as string).trim(),
+            titleEn: typeof r.titleEn === "string" ? r.titleEn.trim() || null : null,
+            organization: (r.organization as string).trim(),
+            organizationEn: typeof r.organizationEn === "string" ? r.organizationEn.trim() || null : null,
+            startYear: typeof r.startYear === "number" ? r.startYear : null,
+            endYear: typeof r.endYear === "number" && !r.isCurrent ? r.endYear : null,
+            isCurrent: !!r.isCurrent,
+            order: typeof r.order === "number" ? r.order : idx,
+          })),
+        });
+      }
+    }
     
     return NextResponse.json({
       success: true,

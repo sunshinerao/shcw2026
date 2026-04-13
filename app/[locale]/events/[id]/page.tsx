@@ -18,6 +18,7 @@ import {
   CheckCircle,
   AlertCircle,
   ExternalLink,
+  FileText,
   Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -112,6 +113,15 @@ type PublicEvent = {
   agendaItems?: AgendaItem[];
 };
 
+type RelatedInsight = {
+  id: string;
+  slug: string;
+  title: string;
+  titleEn?: string | null;
+  type: string;
+  publishDate?: string | null;
+};
+
 function parseHighlights(value: unknown): string[] {
   if (!Array.isArray(value)) {
     return [];
@@ -176,6 +186,7 @@ export default function EventDetailPage() {
   const [sharePreviewImage, setSharePreviewImage] = useState("");
   const [sharePreviewTitle, setSharePreviewTitle] = useState("");
   const [sharePreviewFileName, setSharePreviewFileName] = useState("event-qr.png");
+  const [relatedInsights, setRelatedInsights] = useState<RelatedInsight[]>([]);
 
   const highlights = useMemo(() => {
     if (event) {
@@ -227,6 +238,32 @@ export default function EventDetailPage() {
       cancelled = true;
     };
   }, [eventId, locale, t]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRelatedInsights() {
+      try {
+        const response = await fetch(`/api/public/insights?relatedEventId=${eventId}&pageSize=6`, {
+          cache: "no-store",
+        });
+        const payload = await response.json();
+        if (!cancelled && response.ok && payload.success) {
+          setRelatedInsights(payload.data?.items ?? []);
+        }
+      } catch {
+        if (!cancelled) {
+          setRelatedInsights([]);
+        }
+      }
+    }
+
+    void loadRelatedInsights();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [eventId]);
 
   useEffect(() => {
     let cancelled = false;
@@ -733,6 +770,34 @@ export default function EventDetailPage() {
                           </li>
                         ))}
                       </ul>
+
+                      {relatedInsights.length > 0 && (
+                        <div className="mt-8 rounded-xl border border-emerald-100 bg-emerald-50/40 p-5">
+                          <h3 className="text-lg font-bold text-slate-900 mb-3">
+                            {locale === "en" ? "Related Knowledge Outputs" : "相关知识成果"}
+                          </h3>
+                          <div className="space-y-2">
+                            {relatedInsights.map((insight) => (
+                              <Link key={insight.id} href={`/insights/${insight.slug}`}>
+                                <div className="flex items-center justify-between rounded-lg border border-emerald-100 bg-white px-4 py-3 transition-colors hover:border-emerald-300">
+                                  <div className="min-w-0">
+                                    <p className="truncate text-sm font-medium text-slate-900">
+                                      {locale === "en" && insight.titleEn ? insight.titleEn : insight.title}
+                                    </p>
+                                    <p className="text-xs text-slate-500">
+                                      {insight.type}
+                                      {insight.publishDate
+                                        ? ` · ${new Date(insight.publishDate).toLocaleDateString(locale === "en" ? "en-US" : "zh-CN")}`
+                                        : ""}
+                                    </p>
+                                  </div>
+                                  <FileText className="ml-3 h-4 w-4 shrink-0 text-emerald-600" />
+                                </div>
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </TabsContent>

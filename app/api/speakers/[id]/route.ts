@@ -32,10 +32,11 @@ export async function GET(
     const requestLocale = resolveRequestLocale(req);
     const { id } = params;
     
-    const speaker = await prisma.speaker.findUnique({
-      where: { id },
+    const speaker = await prisma.speaker.findFirst({
+      where: { OR: [{ id }, { slug: id }] },
       select: {
         id: true,
+        slug: true,
         salutation: true,
         name: true,
         nameEn: true,
@@ -43,11 +44,35 @@ export async function GET(
         titleEn: true,
         organization: true,
         organizationEn: true,
+        organizationLogo: true,
         bio: true,
         bioEn: true,
+        summary: true,
+        summaryEn: true,
+        countryOrRegion: true,
+        countryOrRegionEn: true,
+        relevanceToShcw: true,
+        relevanceToShcwEn: true,
+        expertiseTags: true,
+        email: true,
+        linkedin: true,
+        twitter: true,
+        website: true,
         avatar: true,
         isKeynote: true,
+        isVisible: true,
         order: true,
+        institutionId: true,
+        institution: {
+          select: { id: true, slug: true, name: true, nameEn: true, logo: true },
+        },
+        roles: {
+          orderBy: [
+            { isCurrent: "desc" },
+            { order: "asc" },
+            { startYear: "desc" },
+          ],
+        },
         agendaItems: {
           include: {
             event: {
@@ -124,13 +149,24 @@ export async function PUT(
       organizationLogo,
       bio,
       bioEn,
+      summary,
+      summaryEn,
+      countryOrRegion,
+      countryOrRegionEn,
+      relevanceToShcw,
+      relevanceToShcwEn,
+      expertiseTags,
+      slug,
       email,
       linkedin,
       twitter,
       website,
       avatar,
       isKeynote,
+      isVisible,
       order,
+      roles,
+      institutionId,
     } = body;
     
     // 检查嘉宾是否存在
@@ -153,8 +189,8 @@ export async function PUT(
       );
     }
     
-    // 更新嘉宾
-    const updatedSpeaker = await prisma.speaker.update({
+    // 更新嘉宾基本信息
+    await prisma.speaker.update({
       where: { id },
       data: {
         ...(salutation !== undefined && { salutation: salutation || null }),
@@ -167,20 +203,62 @@ export async function PUT(
         ...(organizationLogo !== undefined && { organizationLogo: organizationLogo || null }),
         ...(bio !== undefined && { bio: bio || null }),
         ...(bioEn !== undefined && { bioEn: bioEn || null }),
+        ...(summary !== undefined && { summary: summary || null }),
+        ...(summaryEn !== undefined && { summaryEn: summaryEn || null }),
+        ...(countryOrRegion !== undefined && { countryOrRegion: countryOrRegion || null }),
+        ...(countryOrRegionEn !== undefined && { countryOrRegionEn: countryOrRegionEn || null }),
+        ...(relevanceToShcw !== undefined && { relevanceToShcw: relevanceToShcw || null }),
+        ...(relevanceToShcwEn !== undefined && { relevanceToShcwEn: relevanceToShcwEn || null }),
+        ...(expertiseTags !== undefined && { expertiseTags: expertiseTags ?? null }),
+        ...(slug !== undefined && { slug: slug?.trim() || null }),
         ...(email !== undefined && { email: email || null }),
         ...(linkedin !== undefined && { linkedin: linkedin || null }),
         ...(twitter !== undefined && { twitter: twitter || null }),
         ...(website !== undefined && { website: website || null }),
         ...(avatar !== undefined && { avatar: avatar || null }),
         ...(isKeynote !== undefined && { isKeynote }),
+        ...(isVisible !== undefined && { isVisible: Boolean(isVisible) }),
         ...(order !== undefined && { order }),
+        ...(institutionId !== undefined && { institutionId: institutionId || null }),
       },
     });
-    
+
+    // 如果提供了 roles 数组，原子替换所有历史职务
+    if (Array.isArray(roles)) {
+      await prisma.$transaction([
+        prisma.speakerRole.deleteMany({ where: { speakerId: id } }),
+        ...((roles as Array<Record<string, unknown>>)
+          .filter((r) => typeof r.title === "string" && r.title.trim() && typeof r.organization === "string" && r.organization.trim())
+          .map((r, idx) =>
+            prisma.speakerRole.create({
+              data: {
+                speakerId: id,
+                title: (r.title as string).trim(),
+                titleEn: typeof r.titleEn === "string" ? r.titleEn.trim() || null : null,
+                organization: (r.organization as string).trim(),
+                organizationEn: typeof r.organizationEn === "string" ? r.organizationEn.trim() || null : null,
+                startYear: typeof r.startYear === "number" ? r.startYear : null,
+                endYear: typeof r.endYear === "number" && !r.isCurrent ? r.endYear : null,
+                isCurrent: !!r.isCurrent,
+                order: typeof r.order === "number" ? r.order : idx,
+              },
+            })
+          )),
+      ]);
+    }
+
+    // 返回包含 roles 的完整数据
+    const fullSpeaker = await prisma.speaker.findUnique({
+      where: { id },
+      include: {
+        roles: { orderBy: [{ isCurrent: "desc" }, { order: "asc" }] },
+      },
+    });
+
     return NextResponse.json({
       success: true,
       message: apiMessage(requestLocale, "speakerUpdateSuccess"),
-      data: updatedSpeaker,
+      data: fullSpeaker,
     });
   } catch (error) {
     console.error("Error updating speaker:", error);

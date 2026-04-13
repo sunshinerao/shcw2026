@@ -9,8 +9,12 @@ export const ALL_PERMISSIONS = [
   "speakers:write",
   "news:read",
   "news:write",
+  "insights:read",
+  "insights:write",
   "partners:read",
   "partners:write",
+  "institutions:read",
+  "institutions:write",
   "users:write",
 ] as const;
 

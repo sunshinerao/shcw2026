@@ -10,6 +10,7 @@ import { Link } from "@/i18n/routing";
 
 type Speaker = {
   id: string;
+  slug?: string | null;
   salutation?: string | null;
   name: string;
   nameEn?: string | null;
@@ -21,6 +22,7 @@ type Speaker = {
   bio?: string | null;
   bioEn?: string | null;
   isKeynote: boolean;
+  isVisible?: boolean;
 };
 
 export default function SpeakersPage() {
@@ -33,11 +35,23 @@ export default function SpeakersPage() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/speakers?limit=100");
-        const json = await res.json();
-        if (json.success) {
-          setSpeakers(json.data ?? []);
-        }
+        const pageSize = 200;
+        let page = 1;
+        let totalPages = 1;
+        const all: Speaker[] = [];
+
+        do {
+          const res = await fetch(`/api/speakers?page=${page}&limit=${pageSize}`);
+          const json = await res.json();
+          if (!json.success) {
+            break;
+          }
+          all.push(...(json.data ?? []));
+          totalPages = Number(json.pagination?.totalPages ?? 1);
+          page += 1;
+        } while (page <= totalPages);
+
+        setSpeakers(all);
       } catch {
         // silent
       } finally {
@@ -149,7 +163,7 @@ function SpeakerCard({
   const bio = localize(speaker.bio, speaker.bioEn);
 
   return (
-    <Link href={`/speakers/${speaker.id}`} className="block h-full">
+    <Link href={`/speakers/${speaker.slug ?? speaker.id}`} className="block h-full">
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}

@@ -23,7 +23,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { isAdminConsoleRole } from "@/lib/permissions";
 
 /** Pages with light background where the navbar needs dark text/logo */
-const LIGHT_BG_PREFIXES = ["/dashboard", "/admin", "/auth", "/events"];
+const LIGHT_BG_PREFIXES = ["/dashboard", "/admin", "/auth", "/events", "/tracks", "/speakers"];
 
 export function Navbar({ newsEnabled = true }: { newsEnabled?: boolean }) {
   const t = useTranslations();
@@ -42,6 +42,7 @@ export function Navbar({ newsEnabled = true }: { newsEnabled?: boolean }) {
     { name: t("nav.home"), href: "/" },
     { name: t("nav.events"), href: "/events" },
     { name: t("nav.speakers"), href: "/speakers" },
+    { name: "Knowledge Hub", href: "/insights" },
     { name: t("nav.news"), href: "/news" },
     { name: t("nav.about"), href: "/about" },
     { name: t("nav.contact"), href: "/contact" },

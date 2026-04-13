@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
     const isAdmin = currentUser?.role === UserRole.ADMIN;
     const isStaff = currentUser?.role === UserRole.STAFF;
     const isEventManager = currentUser?.role === UserRole.EVENT_MANAGER;
-    const canViewAllEvents = isAdmin || isStaff;
+    const canViewAllEvents = isAdmin || isStaff || isEventManager;
 
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10));
@@ -160,11 +160,6 @@ export async function GET(req: NextRequest) {
 
     if (!canViewAllEvents) {
       where.isPublished = true;
-    }
-
-    // Event managers should only see events assigned to them in admin contexts.
-    if (isEventManager && published !== "true" && currentUser?.id) {
-      where.managerUserId = currentUser.id;
     }
 
     const skip = (page - 1) * pageSize;

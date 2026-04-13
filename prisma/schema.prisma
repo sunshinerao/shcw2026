@@ -84,6 +84,55 @@ enum InvitationStatus {
   REJECTED     // 已拒绝
 }
 
+enum KnowledgeAssetType {
+  WHITE_PAPER
+  REPORT
+  INITIATIVE
+  POLICY_BRIEF
+  GUIDE
+  DECLARATION
+  SUMMARY
+}
+
+enum AccessType {
+  PUBLIC
+  LOGIN_REQUIRED
+  PAID
+  HIDDEN
+}
+
+enum PublishStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum PosterTemplateType {
+  EVENT
+  SPEAKER
+  AGENDA
+  SOCIAL_CARD
+  KNOWLEDGE
+}
+
+enum PosterJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+// 知识成果文档模格式
+enum KnowledgeDocumentFormat {
+  PDF
+  DOCX
+}
+
+// 知识成果模版类型
+enum KnowledgeTemplateType {
+  FORMAL_DOCUMENT    // 正式文档（PDF编订）
+  WEBPAGE_DISPLAY    // 网页展示
+}
+
 // 用户表
 model User {
   id            String    @id @default(uuid())
@@ -224,7 +273,9 @@ model Track {
   order       Int      @default(0) // 排序
   
   // 关联
-  events      Event[]
+  events        Event[]
+  relationships InstitutionRelationship[]
+  knowledgeAssets KnowledgeAssetTrack[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -284,6 +335,9 @@ model Event {
   wishlist      Wishlist[]
   pointTransactions PointTransaction[]
   invitationRequests InvitationRequest[]
+  institutions  EventInstitution[]
+  knowledgeAssets KnowledgeAssetEvent[]
+  posterJobs    PosterJob[]
   
   // 邀请函独立正文内容（可选，覆盖全局模板设置）
   invitationContentHtml_zh String?  @db.Text
@@ -453,6 +507,7 @@ model AgendaItem {
 // 嘉宾表
 model Speaker {
   id              String   @id @default(uuid())
+  slug            String?  @unique  // URL 友好标识符，如 "wu-changhua"
   salutation      String?  // 称谓: Dr. / Mr. / Ms. / Prof. 等
   name            String
   nameEn          String?
@@ -464,6 +519,17 @@ model Speaker {
   organizationLogo String?
   bio             String?  @db.Text
   bioEn           String?  @db.Text
+  // 人物摘要（显示在 Hero 区域的精简描述，区别于完整 bio）
+  summary         String?  @db.Text
+  summaryEn       String?  @db.Text
+  // 国家/地区
+  countryOrRegion   String?
+  countryOrRegionEn String?
+  // 与上海气候周的关联描述
+  relevanceToShcw   String?  @db.Text
+  relevanceToShcwEn String?  @db.Text
+  // 专业领域标签，JSON 数组存储，如 ["气候金融","绿色供应链"]
+  expertiseTags   Json?
   email           String?
   linkedin        String?
   twitter         String?
@@ -471,10 +537,19 @@ model Speaker {
   
   // 是否为Keynote
   isKeynote       Boolean  @default(false)
+  // 是否在前端公开展示
+  isVisible       Boolean  @default(true)
   
+  // 关联机构（可选，链接到 Institution 表）
+  institutionId   String?
+  institution     Institution? @relation(fields: [institutionId], references: [id], onDelete: SetNull)
+
   // 关联
   agendaItems     AgendaItem[]
   moderatedItems  AgendaItem[] @relation("AgendaModerator")
+  roles           SpeakerRole[]
+  knowledgeAssets KnowledgeAssetSpeaker[]
+  posterJobs      PosterJob[]
   
   order           Int      @default(0)
   
@@ -482,6 +557,25 @@ model Speaker {
   updatedAt       DateTime @updatedAt
   
   @@map("speakers")
+}
+
+// 嘉宾历史职务表
+model SpeakerRole {
+  id             String   @id @default(uuid())
+  speakerId      String
+  speaker        Speaker  @relation(fields: [speakerId], references: [id], onDelete: Cascade)
+  title          String
+  titleEn        String?
+  organization   String
+  organizationEn String?
+  startYear      Int?     // 开始年份
+  endYear        Int?     // 结束年份，isCurrent=true 时为 null
+  isCurrent      Boolean  @default(false)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("speaker_roles")
 }
 
 // 入场记录表
@@ -765,6 +859,354 @@ model SpecialPass {
   @@index([status])
   @@index([entryType])
   @@map("special_passes")
+}
+
+// 机构/伙伴表（公开展示用，与 Organization 用户注册表无关）
+model Institution {
+  id              String   @id @default(uuid())
+  slug            String   @unique  // URL 友好唯一标识
+  name            String
+  nameEn          String?
+  shortName       String?
+  shortNameEn     String?
+  logo            String?  // Logo URL
+  website         String?
+  // 机构类型: ngo | gov | corp | academic | media | community | foundation | intergovernmental
+  orgType         String?
+  countryOrRegion   String?
+  countryOrRegionEn String?
+  description     String?  @db.Text
+  descriptionEn   String?  @db.Text
+  collaborationBg   String?  @db.Text  // 合作背景（中）
+  collaborationBgEn String?  @db.Text  // 合作背景（英）
+
+  isActive        Boolean  @default(true)
+  order           Int      @default(0)
+
+  // 关联
+  relationships   InstitutionRelationship[]
+  events          EventInstitution[]
+  speakers        Speaker[]
+  knowledgeAssets KnowledgeAssetInstitution[]
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([isActive, order])
+  @@map("institutions")
+}
+
+// 机构合作关系表（年度/赛道/专项合作记录）
+model InstitutionRelationship {
+  id            String      @id @default(uuid())
+  institutionId String
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  // 关系类型: organizer | co_organizer | knowledge_partner | strategic_partner |
+  //           sponsor | track_leader | venue_partner | media_partner |
+  //           community_partner | supporting_org
+  type          String
+
+  // 合作范围: annual | track | event
+  scope         String      @default("annual")
+
+  // 赞助级别（仅 type=sponsor 时有意义）
+  sponsorLevel  String?     // platinum | gold | silver | bronze
+
+  // 关联赛道（scope=track 时）
+  trackId       String?
+  track         Track?      @relation(fields: [trackId], references: [id], onDelete: SetNull)
+
+  // 展示控制
+  // displaySection: strategic | knowledge | sponsor | none
+  displaySection  String?
+  showOnHomepage  Boolean   @default(false)
+  priority        Int       @default(0)
+
+  // 合作期
+  startYear       Int?
+  endYear         Int?
+  isCurrent       Boolean   @default(true)
+
+  // 权益内容（JSON 快速存储）
+  benefitsJson    Json?
+
+  // 备注
+  note            String?   @db.Text
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([institutionId])
+  @@index([type])
+  @@index([scope])
+  @@index([trackId])
+  @@index([showOnHomepage, priority])
+  @@map("institution_relationships")
+}
+
+// 活动-机构 多对多关联表
+model EventInstitution {
+  eventId       String
+  institutionId String
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  institution   Institution @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  role          String?     // organizer | co_organizer | supporter 等
+  order         Int         @default(0)
+
+  @@id([eventId, institutionId])
+  @@index([eventId])
+  @@index([institutionId])
+  @@map("event_institutions")
+}
+
+model KnowledgeAsset {
+  id              String            @id @default(uuid())
+  title           String
+  titleEn         String?
+  subtitle        String?
+  subtitleEn      String?
+  slug            String            @unique
+  type            KnowledgeAssetType
+  language        String            @default("zh") // zh | en | bilingual
+  coverImage      String?
+  publishDate     DateTime?
+
+  summary         String?           @db.Text
+  summaryEn       String?           @db.Text
+  content         String?           @db.Text
+  contentEn       String?           @db.Text
+  keyPoints       Json?
+  keyPointsEn     Json?
+  references      Json?
+
+  // 扩展字段：章节划分和推荐信息
+  chapters        Json?             // [{title, subtitle, content, keyPoints, pageStart, pageEnd}, ...]
+  chaptersEn      Json?
+  recommendations String?           @db.Text // 推荐阅读/相关资源
+  recommendationsEn String?         @db.Text
+  tags            String?           // 逗号分隔的标签
+  tagsEn          String?
+  author          String?           // 作者文字署名（补充 speakers 关联）
+
+  // 精选引语
+  pullQuote       String?           @db.Text
+  pullQuoteEn     String?           @db.Text
+  pullQuoteCaption String?
+  pullQuoteCaptionEn String?
+
+  // 封底关于我们（可选，优先走全局 SiteContent）
+  aboutUs         String?           @db.Text
+  aboutUsEn       String?           @db.Text
+
+  fileUrl         String?
+  fileFormat      String?
+  fileSize        Int?
+  accessType      AccessType        @default(PUBLIC)
+  price           Decimal?          @db.Decimal(10, 2)
+  currency        String?           @default("CNY")
+  downloadEnabled Boolean           @default(true)
+  previewEnabled  Boolean           @default(true)
+  previewPages    Int?
+  watermark       Boolean           @default(false)
+
+  doi             String?
+  citation        String?           @db.Text
+
+  isFeatured      Boolean           @default(false)
+  isHighlight     Boolean           @default(false)
+  sortOrder       Int               @default(0)
+  status          PublishStatus     @default(DRAFT)
+
+  // 文档生成配置
+  primaryTemplateId String?         // 关联的正式文档模板
+  webTemplateId     String?         // 关联的网页展示模板
+
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  events          KnowledgeAssetEvent[]
+  institutions    KnowledgeAssetInstitution[]
+  speakers        KnowledgeAssetSpeaker[]
+  tracks          KnowledgeAssetTrack[]
+  versions        KnowledgeAssetVersion[]
+  posterJobs      PosterJob[]
+  generationJobs  KnowledgeGenerationJob[]
+
+  @@index([slug])
+  @@index([status, publishDate])
+  @@index([type, sortOrder])
+  @@map("knowledge_assets")
+}
+
+model KnowledgeAssetVersion {
+  id               String         @id @default(uuid())
+  knowledgeAssetId String
+  knowledgeAsset   KnowledgeAsset @relation(fields: [knowledgeAssetId], references: [id], onDelete: Cascade)
+
+  versionLabel     String
+  changeLog        String?        @db.Text
+  contentSnapshot  String?        @db.Text
+  fileUrl          String?
+
+  createdAt        DateTime       @default(now())
+
+  @@index([knowledgeAssetId])
+  @@map("knowledge_asset_versions")
+}
+
+model KnowledgeAssetEvent {
+  knowledgeAssetId String
+  eventId          String
+  knowledgeAsset   KnowledgeAsset @relation(fields: [knowledgeAssetId], references: [id], onDelete: Cascade)
+  event            Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@id([knowledgeAssetId, eventId])
+  @@index([eventId])
+  @@map("knowledge_asset_events")
+}
+
+model KnowledgeAssetInstitution {
+  knowledgeAssetId String
+  institutionId    String
+  knowledgeAsset   KnowledgeAsset @relation(fields: [knowledgeAssetId], references: [id], onDelete: Cascade)
+  institution      Institution    @relation(fields: [institutionId], references: [id], onDelete: Cascade)
+
+  @@id([knowledgeAssetId, institutionId])
+  @@index([institutionId])
+  @@map("knowledge_asset_institutions")
+}
+
+model KnowledgeAssetSpeaker {
+  knowledgeAssetId String
+  speakerId        String
+  knowledgeAsset   KnowledgeAsset @relation(fields: [knowledgeAssetId], references: [id], onDelete: Cascade)
+  speaker          Speaker        @relation(fields: [speakerId], references: [id], onDelete: Cascade)
+
+  @@id([knowledgeAssetId, speakerId])
+  @@index([speakerId])
+  @@map("knowledge_asset_speakers")
+}
+
+model KnowledgeAssetTrack {
+  knowledgeAssetId String
+  trackId          String
+  knowledgeAsset   KnowledgeAsset @relation(fields: [knowledgeAssetId], references: [id], onDelete: Cascade)
+  track            Track          @relation(fields: [trackId], references: [id], onDelete: Cascade)
+
+  @@id([knowledgeAssetId, trackId])
+  @@index([trackId])
+  @@map("knowledge_asset_tracks")
+}
+
+// 知识成果文档模板配置
+model KnowledgeTemplate {
+  id              String                  @id @default(uuid())
+  name            String                  // 模板名称
+  nameEn          String?
+  description     String?                 @db.Text
+  code            String                  @unique  // 模板代码，如 formal_doc_v1
+  templateType    KnowledgeTemplateType   // FORMAL_DOCUMENT | WEBPAGE_DISPLAY
+  isActive        Boolean                 @default(true)
+  isDefault       Boolean                 @default(false)
+  sortOrder       Int                     @default(0)
+
+  // 模板配置（JSON格式）
+  config          Json                    // 包含样式、布局、字段映射等配置
+  
+  // 对于正式文档模板
+  documentFormat  String?                 // pdf | docx
+  includeElements Json?                   // {includeCover, includeTableOfContents, includeWatermark, etc}
+  
+  // 对于网页展示模板
+  componentType   String?                 // standard | minimal | detailed
+  
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  generationJobs  KnowledgeGenerationJob[]
+
+  @@index([templateType, isActive, isDefault])
+  @@map("knowledge_templates")
+}
+
+// 知识成果生成任务
+model KnowledgeGenerationJob {
+  id               String                @id @default(uuid())
+  knowledgeAssetId String
+  knowledgeAsset   KnowledgeAsset        @relation(fields: [knowledgeAssetId], references: [id], onDelete: Cascade)
+  
+  templateId       String
+  template         KnowledgeTemplate     @relation(fields: [templateId], references: [id], onDelete: Restrict)
+  
+  jobType          String                // document | webpage | both
+  status           String                @default("PENDING")  // PENDING | RUNNING | COMPLETED | FAILED
+  progress         Int                   @default(0)  // 0-100
+  
+  outputUrl        String?               // 生成文件的URL或页面链接
+  outputFormat     String?               // PDF | DOCX | HTML
+  
+  errorMessage     String?               @db.Text
+  
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  completedAt      DateTime?
+
+  @@index([knowledgeAssetId, templateId])
+  @@index([status, createdAt])
+  @@map("knowledge_generation_jobs")
+}
+
+model PosterTemplate {
+  id            String             @id @default(uuid())
+  templateName  String
+  templateType  PosterTemplateType
+  aspectRatio   String             // 1:1 | 4:5 | 16:9
+  layoutJson    Json
+  background    String?
+  fontConfig    Json?
+  isActive      Boolean            @default(true)
+  sortOrder     Int                @default(0)
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  jobs          PosterJob[]
+
+  @@index([templateType, isActive, sortOrder])
+  @@map("poster_templates")
+}
+
+model PosterJob {
+  id               String         @id @default(uuid())
+  templateId       String
+  template         PosterTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  knowledgeAssetId String?
+  knowledgeAsset   KnowledgeAsset? @relation(fields: [knowledgeAssetId], references: [id], onDelete: SetNull)
+
+  eventId          String?
+  event            Event?         @relation(fields: [eventId], references: [id], onDelete: SetNull)
+
+  speakerId        String?
+  speaker          Speaker?       @relation(fields: [speakerId], references: [id], onDelete: SetNull)
+
+  locale           String         @default("zh")
+  outputFormat     String         @default("png") // png | pdf
+  outputUrl        String?
+  status           PosterJobStatus @default(PENDING)
+  errorMessage     String?
+
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([templateId])
+  @@index([knowledgeAssetId])
+  @@index([eventId])
+  @@index([speakerId])
+  @@index([status, createdAt])
+  @@map("poster_jobs")
 }
 
 // OpenClaw API 密钥表

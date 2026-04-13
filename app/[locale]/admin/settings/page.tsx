@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useId, useState } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
@@ -657,9 +658,13 @@ export default function AdminSettingsPage() {
                             </label>
                             <div className="flex items-center gap-2">
                               {currentUrl && (
-                                <img
+                                <Image
                                   src={currentUrl}
                                   alt=""
+                                  width={48}
+                                  height={48}
+                                  unoptimized
+                                  sizes="48px"
                                   className="h-12 w-12 rounded border border-slate-200 object-cover flex-shrink-0"
                                 />
                               )}
@@ -715,9 +720,13 @@ export default function AdminSettingsPage() {
                   <p className="mb-2 text-xs text-slate-500">{t("invitationTemplate.stampImageHint")}</p>
                   <div className="flex items-center gap-2">
                     {tplForm.stampImageUrl_zh && (
-                      <img
+                      <Image
                         src={tplForm.stampImageUrl_zh}
                         alt=""
+                        width={48}
+                        height={48}
+                        unoptimized
+                        sizes="48px"
                         className="h-12 w-12 rounded border border-slate-200 object-contain flex-shrink-0 bg-slate-50"
                       />
                     )}
@@ -976,7 +985,15 @@ export default function AdminSettingsPage() {
                             </Label>
                             <div className="flex items-center gap-2">
                               {sigEditForm.singleImageUrl && (
-                                <img src={sigEditForm.singleImageUrl} alt="" className="h-10 w-auto rounded border" />
+                                <Image
+                                  src={sigEditForm.singleImageUrl}
+                                  alt=""
+                                  width={120}
+                                  height={40}
+                                  unoptimized
+                                  sizes="120px"
+                                  className="h-10 w-auto rounded border object-contain"
+                                />
                               )}
                               <label className={`flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 ${sigUploadingField === "singleImageUrl" ? "opacity-50 pointer-events-none" : ""}`}>
                                 {sigUploadingField === "singleImageUrl"
@@ -1039,7 +1056,15 @@ export default function AdminSettingsPage() {
                               <Label className="text-xs">{locale === "en" ? "Signature image" : "签名图片"}</Label>
                               <div className="flex items-center gap-2">
                                 {sigEditForm.signatoryBImageUrl && (
-                                  <img src={sigEditForm.signatoryBImageUrl} alt="" className="h-10 w-auto rounded border" />
+                                  <Image
+                                    src={sigEditForm.signatoryBImageUrl}
+                                    alt=""
+                                    width={120}
+                                    height={40}
+                                    unoptimized
+                                    sizes="120px"
+                                    className="h-10 w-auto rounded border object-contain"
+                                  />
                                 )}
                                 <label className={`flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 ${sigUploadingField === "signatoryBImageUrl" ? "opacity-50 pointer-events-none" : ""}`}>
                                   {sigUploadingField === "signatoryBImageUrl"
@@ -1100,7 +1125,15 @@ export default function AdminSettingsPage() {
                               <Label className="text-xs">{locale === "en" ? "Signature image" : "签名图片"}</Label>
                               <div className="flex items-center gap-2">
                                 {sigEditForm.signatoryAImageUrl && (
-                                  <img src={sigEditForm.signatoryAImageUrl} alt="" className="h-10 w-auto rounded border" />
+                                  <Image
+                                    src={sigEditForm.signatoryAImageUrl}
+                                    alt=""
+                                    width={120}
+                                    height={40}
+                                    unoptimized
+                                    sizes="120px"
+                                    className="h-10 w-auto rounded border object-contain"
+                                  />
                                 )}
                                 <label className={`flex cursor-pointer items-center gap-1.5 rounded-md border border-slate-300 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50 ${sigUploadingField === "signatoryAImageUrl" ? "opacity-50 pointer-events-none" : ""}`}>
                                   {sigUploadingField === "signatoryAImageUrl"

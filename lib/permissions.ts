@@ -17,9 +17,12 @@ export type AdminSectionKey =
   | "specialPass"
   | "tracks"
   | "speakers"
+  | "insights"
+  | "posters"
   | "invitations"
   | "users"
   | "partners"
+  | "institutions"
   | "cooperationPlans"
   | "faq"
   | "messages"
@@ -29,11 +32,14 @@ export type AdminSectionKey =
   | "apiKeys";
 
 /** Sections that can be granted to any user via staffPermissions (role-independent). */
-export type StaffPermissionKey = "speakers" | "news" | "messages" | "faq";
+export type StaffPermissionKey = "speakers" | "news" | "insights" | "posters" | "institutions" | "messages" | "faq";
 
 export const STAFF_PERMISSION_OPTIONS: { key: StaffPermissionKey; labelZh: string; labelEn: string }[] = [
   { key: "speakers", labelZh: "嘉宾管理", labelEn: "Speaker Management" },
   { key: "news", labelZh: "新闻管理", labelEn: "News Management" },
+  { key: "insights", labelZh: "知识成果管理", labelEn: "Insights Management" },
+  { key: "posters", labelZh: "海报引擎管理", labelEn: "Poster Engine Management" },
+  { key: "institutions", labelZh: "机构管理", labelEn: "Institution Management" },
   { key: "messages", labelZh: "留言管理", labelEn: "Message Management" },
   { key: "faq", labelZh: "常见问题管理", labelEn: "FAQ Management" },
 ];
@@ -42,10 +48,13 @@ const ADMIN_ONLY_SECTIONS: AdminSectionKey[] = [
   "dashboard",
   "users",
   "partners",
+  "institutions",
   "cooperationPlans",
   "faq",
   "messages",
   "news",
+  "insights",
+  "posters",
   "content",
   "settings",
   "apiKeys",
@@ -105,6 +114,18 @@ export function canManageSpeakers(role?: string | null, staffPermissions?: strin
 
 export function canManageNews(role?: string | null, staffPermissions?: string | null): boolean {
   return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("news");
+}
+
+export function canManageInsights(role?: string | null, staffPermissions?: string | null): boolean {
+  return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("insights");
+}
+
+export function canManagePosters(role?: string | null, staffPermissions?: string | null): boolean {
+  return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("posters");
+}
+
+export function canManageInstitutions(role?: string | null, staffPermissions?: string | null): boolean {
+  return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("institutions");
 }
 
 export function canManageMessages(role?: string | null, staffPermissions?: string | null): boolean {

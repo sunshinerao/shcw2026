@@ -10,6 +10,7 @@ import { Link } from "@/i18n/routing";
 
 type Speaker = {
   id: string;
+  slug?: string | null;
   salutation?: string | null;
   name: string;
   nameEn?: string | null;
@@ -74,7 +75,7 @@ export function SpeakersSection() {
             const title = locale === "en" ? (speaker.titleEn || speaker.title) : speaker.title;
             const org = locale === "en" ? (speaker.organizationEn || speaker.organization) : speaker.organization;
             return (
-              <Link href={`/speakers/${speaker.id}`} key={speaker.id} className="block">
+              <Link href={`/speakers/${speaker.slug ?? speaker.id}`} key={speaker.id} className="block">
                 <motion.div
                   initial={{ opacity: 0, y: 30 }}
                   animate={isInView ? { opacity: 1, y: 0 } : {}}

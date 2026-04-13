@@ -86,7 +86,6 @@ export async function GET(
         role: true,
         status: true,
         staffPermissions: true,
-        passCode: true,
         climatePassportId: true,
         emailVerified: true,
         createdAt: true,

@@ -9,10 +9,14 @@ function normalizeText(value: unknown): string | null {
 }
 
 const SPEAKER_FIELDS = {
-  id: true, salutation: true, name: true, nameEn: true, avatar: true,
+  id: true, slug: true, salutation: true, name: true, nameEn: true, avatar: true,
   title: true, titleEn: true, organization: true, organizationEn: true,
   organizationLogo: true, bio: true, bioEn: true,
-  linkedin: true, twitter: true, website: true, isKeynote: true, order: true,
+  summary: true, summaryEn: true,
+  countryOrRegion: true, countryOrRegionEn: true,
+  relevanceToShcw: true, relevanceToShcwEn: true,
+  expertiseTags: true,
+  linkedin: true, twitter: true, website: true, isKeynote: true, isVisible: true, order: true,
   createdAt: true, updatedAt: true,
   // email is intentionally omitted from public API for privacy
 };
@@ -68,8 +72,11 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { name, nameEn, title, titleEn, organization, organizationEn,
-          organizationLogo, salutation, bio, bioEn, linkedin, twitter,
-          website, isKeynote, order, email } = body;
+          organizationLogo, salutation, bio, bioEn,
+          summary, summaryEn, countryOrRegion, countryOrRegionEn,
+          relevanceToShcw, relevanceToShcwEn, expertiseTags,
+          slug, linkedin, twitter,
+          website, isKeynote, isVisible, order, email } = body;
 
   // Required fields
   if (!name?.trim()) return NextResponse.json({ success: false, error: "name is required" }, { status: 400 });
@@ -103,11 +110,20 @@ export async function POST(req: NextRequest) {
       salutation: normalizeText(salutation),
       bio: normalizeText(bio),
       bioEn: normalizeText(bioEn),
+      summary: normalizeText(summary),
+      summaryEn: normalizeText(summaryEn),
+      countryOrRegion: normalizeText(countryOrRegion),
+      countryOrRegionEn: normalizeText(countryOrRegionEn),
+      relevanceToShcw: normalizeText(relevanceToShcw),
+      relevanceToShcwEn: normalizeText(relevanceToShcwEn),
+      expertiseTags: Array.isArray(expertiseTags) ? expertiseTags : undefined,
+      slug: normalizeText(slug),
       email: normalizeText(email),
       linkedin: normalizeText(linkedin),
       twitter: normalizeText(twitter),
       website: normalizeText(website),
       isKeynote: isKeynote === true,
+      isVisible: isVisible !== undefined ? isVisible === true : true,
       order: typeof order === "number" ? order : 0,
     },
     select: SPEAKER_FIELDS,

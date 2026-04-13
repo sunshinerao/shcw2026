@@ -18,6 +18,20 @@ type EventTranslationOutput = {
   cityEn?: string;
 };
 
+type InsightTranslationInput = {
+  title?: string | null;
+  subtitle?: string | null;
+  summary?: string | null;
+  content?: string | null;
+};
+
+type InsightTranslationOutput = {
+  titleEn?: string;
+  subtitleEn?: string;
+  summaryEn?: string;
+  contentEn?: string;
+};
+
 function normalizeText(value: string | null | undefined): string | null {
   if (typeof value !== "string") {
     return null;
@@ -211,6 +225,97 @@ export async function translateRecordValuesToEnglish(
       }
     });
     return out;
+  } catch {
+    return {};
+  }
+}
+
+export async function translateMissingInsightFieldsToEnglish(
+  input: InsightTranslationInput
+): Promise<InsightTranslationOutput> {
+  const payload: Record<string, string> = {};
+
+  const title = normalizeText(input.title);
+  const subtitle = normalizeText(input.subtitle);
+  const summary = normalizeText(input.summary);
+  const content = normalizeText(input.content);
+
+  if (title) payload.title = title;
+  if (subtitle) payload.subtitle = subtitle;
+  if (summary) payload.summary = summary;
+  if (content) payload.content = content;
+
+  if (Object.keys(payload).length === 0) {
+    return {};
+  }
+
+  const settings = await getSystemSettingsForServer();
+  const apiKey = settings.openaiApiKey || process.env.OPENAI_API_KEY || "";
+  if (!apiKey) {
+    return {};
+  }
+
+  const model = settings.openaiModel;
+  const prompt = [
+    "Translate the JSON values from Chinese to natural English.",
+    "Keep proper nouns and brand names accurate.",
+    "If a value already appears to be English, keep it as-is.",
+    "Return JSON only with the same keys.",
+    "Input JSON:",
+    JSON.stringify(payload),
+  ].join("\n");
+
+  try {
+    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.2,
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional bilingual editor. Output valid JSON only.",
+          },
+          {
+            role: "user",
+            content: prompt,
+          },
+        ],
+      }),
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      return {};
+    }
+
+    const completion = await response.json();
+    const contentRaw = completion?.choices?.[0]?.message?.content;
+    if (typeof contentRaw !== "string" || !contentRaw.trim()) {
+      return {};
+    }
+
+    const parsed = extractJsonObject(contentRaw);
+    if (!parsed) {
+      return {};
+    }
+
+    const output: InsightTranslationOutput = {};
+    const titleEn = normalizeText(typeof parsed.title === "string" ? parsed.title : null);
+    const subtitleEn = normalizeText(typeof parsed.subtitle === "string" ? parsed.subtitle : null);
+    const summaryEn = normalizeText(typeof parsed.summary === "string" ? parsed.summary : null);
+    const contentEn = normalizeText(typeof parsed.content === "string" ? parsed.content : null);
+
+    if (titleEn) output.titleEn = titleEn;
+    if (subtitleEn) output.subtitleEn = subtitleEn;
+    if (summaryEn) output.summaryEn = summaryEn;
+    if (contentEn) output.contentEn = contentEn;
+
+    return output;
   } catch {
     return {};
   }

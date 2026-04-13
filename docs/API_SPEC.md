@@ -1,6 +1,18 @@
 # API 说明
 
-> 最后更新: 2026-03-23
+> 最后更新: 2026-04-12
+
+## V2 版本化说明
+
+- OpenClaw Agent API 已提供 `v2` 路径，推荐新接入使用 `/api/v2/**`。
+- 目前 `v2` 与 `v1` 行为一致，便于平滑迁移与后续无破坏迭代。
+- `v2` 响应统一携带 `X-API-Version: v2` 响应头，便于版本审计与流量观测。
+- `v2` JSON 错误响应统一包含 `code` 字段（缺失时自动补齐）。
+- 详细文档：
+  - `docs/OPENCLAW_API_V2.md`（推荐）
+  - `docs/OPENCLAW_API.md`（v1，维护模式）
+  - `docs/openapi.v2.json`（OpenAPI 3.1 机器可读规范）
+  - `docs/OPENAPI_V2_USAGE.md`（SDK 与工具接入说明）
 
 ## 1. 约定
 
