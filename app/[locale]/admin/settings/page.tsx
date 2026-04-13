@@ -597,65 +597,67 @@ export default function AdminSettingsPage() {
                 {t("loading")}
               </div>
             ) : (
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <Label className="text-base">{t("siteFeatures.newsEnabled")}</Label>
-                  <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.newsEnabledHint")}</p>
+              <>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">{t("siteFeatures.newsEnabled")}</Label>
+                    <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.newsEnabledHint")}</p>
+                  </div>
+                  <Switch checked={newsEnabled} onCheckedChange={async (val) => {
+                    setNewsEnabled(val);
+                    try {
+                      await fetch("/api/admin/settings", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ newsEnabled: val }),
+                      });
+                    } catch {
+                      // revert on error
+                      setNewsEnabled(!val);
+                    }
+                  }} />
                 </div>
-                <Switch checked={newsEnabled} onCheckedChange={async (val) => {
-                  setNewsEnabled(val);
-                  try {
-                    await fetch("/api/admin/settings", {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ newsEnabled: val }),
-                    });
-                  } catch {
-                    // revert on error
-                    setNewsEnabled(!val);
-                  }
-                }} />
-              </div>
 
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <Label className="text-base">{t("siteFeatures.speakersEnabled")}</Label>
-                  <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.speakersEnabledHint")}</p>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">{t("siteFeatures.speakersEnabled")}</Label>
+                    <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.speakersEnabledHint")}</p>
+                  </div>
+                  <Switch checked={speakersEnabled} onCheckedChange={async (val) => {
+                    setSpeakersEnabled(val);
+                    try {
+                      await fetch("/api/admin/settings", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ speakersEnabled: val }),
+                      });
+                    } catch {
+                      // revert on error
+                      setSpeakersEnabled(!val);
+                    }
+                  }} />
                 </div>
-                <Switch checked={speakersEnabled} onCheckedChange={async (val) => {
-                  setSpeakersEnabled(val);
-                  try {
-                    await fetch("/api/admin/settings", {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ speakersEnabled: val }),
-                    });
-                  } catch {
-                    // revert on error
-                    setSpeakersEnabled(!val);
-                  }
-                }} />
-              </div>
 
-              <div className="flex items-center justify-between rounded-lg border p-4">
-                <div>
-                  <Label className="text-base">{t("siteFeatures.partnersEnabled")}</Label>
-                  <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.partnersEnabledHint")}</p>
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">{t("siteFeatures.partnersEnabled")}</Label>
+                    <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.partnersEnabledHint")}</p>
+                  </div>
+                  <Switch checked={partnersEnabled} onCheckedChange={async (val) => {
+                    setPartnersEnabled(val);
+                    try {
+                      await fetch("/api/admin/settings", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ partnersEnabled: val }),
+                      });
+                    } catch {
+                      // revert on error
+                      setPartnersEnabled(!val);
+                    }
+                  }} />
                 </div>
-                <Switch checked={partnersEnabled} onCheckedChange={async (val) => {
-                  setPartnersEnabled(val);
-                  try {
-                    await fetch("/api/admin/settings", {
-                      method: "PUT",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ partnersEnabled: val }),
-                    });
-                  } catch {
-                    // revert on error
-                    setPartnersEnabled(!val);
-                  }
-                }} />
-              </div>
+              </>
             )}
           </CardContent>
         </Card>
