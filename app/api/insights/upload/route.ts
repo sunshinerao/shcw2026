@@ -750,7 +750,6 @@ export async function POST(req: NextRequest) {
             url,
             filename: file.name,
             mode: "publish",
-            mode: "publish",
             extracted: {
               title: aiDraft.title || inferredTitle,
               subtitle: compactSubtitle(aiDraft.summary || summary, 80),

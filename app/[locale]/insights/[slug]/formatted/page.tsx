@@ -128,12 +128,18 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
   const subtitle = isEnglish ? asset.subtitleEn : asset.subtitle;
   const summary = isEnglish ? asset.summaryEn : asset.summary;
   const content = isEnglish ? asset.contentEn : asset.content;
-  const keyPoints = (isEnglish ? asset.keyPointsEn : asset.keyPoints) || [];
-  const recommendations = isEnglish
+  const keyPointsRaw = isEnglish ? asset.keyPointsEn : asset.keyPoints;
+  const keyPoints = Array.isArray(keyPointsRaw)
+    ? keyPointsRaw.filter((point): point is string => typeof point === "string")
+    : [];
+  const recommendationsRaw = isEnglish
     ? asset.recommendationsEn
     : asset.recommendations;
-  const references = asset.references || [];
-  const chapters = isEnglish ? asset.chaptersEn : asset.chapters;
+  const recommendations = typeof recommendationsRaw === "string" ? recommendationsRaw : "";
+  const referencesRaw = asset.references;
+  const references = Array.isArray(referencesRaw) ? referencesRaw : [];
+  const chaptersRaw = isEnglish ? asset.chaptersEn : asset.chapters;
+  const chapters = Array.isArray(chaptersRaw) ? chaptersRaw : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -156,7 +162,7 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
               {asset.coverImage && (
                 <img
                   src={asset.coverImage}
-                  alt={title}
+                  alt={title ?? "Knowledge cover image"}
                   className="w-full max-w-md h-48 object-cover rounded-lg mb-6 opacity-90"
                 />
               )}

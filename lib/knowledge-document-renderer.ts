@@ -107,7 +107,7 @@ function renderCover(doc: PDFKit.PDFDocument, data: PDFRenderData) {
     .fill("#ffffff")
     .fontSize(32)
     .font("Helvetica-Bold")
-    .text(title, { align: "center", y: pageHeight * 0.15, width: pageWidth - 100 });
+    .text(title, 50, pageHeight * 0.15, { align: "center", width: pageWidth - 100 });
 
   // 副标题
   if (subtitle) {
@@ -115,7 +115,7 @@ function renderCover(doc: PDFKit.PDFDocument, data: PDFRenderData) {
       .fill("#e0e7ff")
       .fontSize(14)
       .font("Helvetica")
-      .text(subtitle, { align: "center", y: pageHeight * 0.3, width: pageWidth - 100 });
+      .text(subtitle, 50, pageHeight * 0.3, { align: "center", width: pageWidth - 100 });
   }
 
   // 下半部分 - 基本信息
@@ -447,11 +447,13 @@ export function addWatermarkText(
   // 注意：完整的水印实现可能需要外部库或后处理
   doc
     .fontSize(config.watermarkFontSize || 60)
-    .fill("#999999", opacity)
+    .fillColor("#999999")
+    .fillOpacity(opacity)
     .rotate(angle);
 
   const diagonalY = doc.page.height / 2;
   doc.text(text, 0, diagonalY, { align: "center" });
 
   doc.rotate(-angle);
+  doc.fillOpacity(1);
 }

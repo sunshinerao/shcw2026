@@ -5,6 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import type { KnowledgeTemplateType, KnowledgeTemplateConfig } from "@/lib/knowledge-template";
 import { DEFAULT_TEMPLATES } from "@/lib/knowledge-template";
+import type { Prisma } from "@prisma/client";
 
 /**
  * 初始化默认模板（首次运行时）
@@ -26,10 +27,10 @@ export async function initializeDefaultTemplates() {
           isActive: true,
           isDefault: template.isDefault,
           sortOrder: 0,
-          config: template.config,
+          config: template.config as unknown as Prisma.InputJsonValue,
           documentFormat: (template as any).documentFormat,
           includeElements: template.templateType === "FORMAL_DOCUMENT"
-            ? (template.config.formal || {})
+            ? ((template.config.formal || {}) as unknown as Prisma.InputJsonValue)
             : undefined,
           componentType: template.templateType === "WEBPAGE_DISPLAY"
             ? (template.config.webpage?.layout || "standard")
@@ -135,7 +136,7 @@ export async function createTemplate(data: {
       nameEn: nameEn || name,
       description: description || `${name} template`,
       templateType,
-      config,
+      config: config as unknown as Prisma.InputJsonValue,
       isDefault: isDefault || false,
       isActive: true,
       sortOrder: 0,
@@ -171,10 +172,15 @@ export async function updateTemplate(
     }
   }
 
+  const { config, ...restData } = data;
+
   return prisma.knowledgeTemplate.update({
     where: { id },
     data: {
-      ...data,
+      ...restData,
+      ...(config !== undefined
+        ? { config: config as unknown as Prisma.InputJsonValue }
+        : {}),
       updatedAt: new Date(),
     },
   });
