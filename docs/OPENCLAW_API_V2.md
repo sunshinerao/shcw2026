@@ -114,7 +114,7 @@ GET /api/v2/events
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `page` | number | `1` | 页码 |
-| `pageSize` | number | `20` | 每页数量，最大 100 |
+| `pageSize` | number | `100` | 每页数量，最大 100 |
 | `search` | string | — | 按标题/场地模糊搜索 |
 | `type` | string | — | 活动类型，见下方枚举 |
 | `trackId` | string | — | 按专题轨道 ID 过滤 |
@@ -369,7 +369,7 @@ GET /api/v2/speakers
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `page` | number | `1` | 页码 |
-| `pageSize` | number | `20` | 每页数量，最大 100 |
+| `pageSize` | number | `100` | 每页数量，最大 100 |
 | `search` | string | — | 按姓名/机构搜索 |
 | `isKeynote` | boolean | — | `true` 只返回主旨嘉宾 |
 
@@ -772,6 +772,72 @@ Content-Type: application/json
 ---
 
 ## 附：AI Agent 调用示例（Python）
+
+### 全量拉取标准模板（性能优先）
+
+适用场景：客户端需要稳定拉取 events/speakers 全量数据，并兼顾性能。
+
+- 首次请求使用 `pageSize=100`（当前允许上限），显著减少往返次数。
+- 依据返回的 `pagination.totalPages` 顺序翻页，直到取完。
+- events 若需“全部状态”，显式传 `published=all`，否则默认仅已发布。
+- 单次全量流程建议使用短超时重试（最多 2-3 次）与串行翻页，避免并发放大数据库压力。
+
+```python
+import time
+import httpx
+
+BASE_URL = "https://shcw2026.climateweekshanghai.org"
+API_KEY = "sk_oc_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+headers = {"Authorization": f"Bearer {API_KEY}"}
+
+
+def fetch_all(path: str, extra_params: dict | None = None) -> list[dict]:
+  params = {"page": 1, "pageSize": 100}
+  if extra_params:
+    params.update(extra_params)
+
+  all_items: list[dict] = []
+  timeout = httpx.Timeout(12.0)
+
+  with httpx.Client(timeout=timeout, headers=headers) as client:
+    while True:
+      # 轻量重试：网络抖动/瞬时 5xx 时最多重试 2 次
+      for attempt in range(3):
+        try:
+          resp = client.get(f"{BASE_URL}{path}", params=params)
+          resp.raise_for_status()
+          payload = resp.json()
+          if not payload.get("success"):
+            raise RuntimeError(payload.get("error", "Unknown API error"))
+          break
+        except Exception:
+          if attempt == 2:
+            raise
+          time.sleep(0.4 * (attempt + 1))
+
+      data = payload.get("data", [])
+      pagination = payload.get("pagination", {})
+      all_items.extend(data)
+
+      page = int(pagination.get("page", params["page"]))
+      total_pages = int(pagination.get("totalPages", page))
+      if page >= total_pages:
+        return all_items
+
+      params["page"] = page + 1
+
+
+# 1) 全量活动（含未发布）
+all_events = fetch_all("/api/v2/events", {"published": "all"})
+
+# 2) 全量嘉宾
+all_speakers = fetch_all("/api/v2/speakers")
+
+print("events:", len(all_events), "speakers:", len(all_speakers))
+```
+
+---
 
 ```python
 import httpx

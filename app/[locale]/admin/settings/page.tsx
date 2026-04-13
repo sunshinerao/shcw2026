@@ -27,6 +27,8 @@ type SettingsResponse = {
   autoGenerateHighlightsOnSave: boolean;
   highlightCount: number;
   newsEnabled: boolean;
+  speakersEnabled: boolean;
+  partnersEnabled: boolean;
 };
 
 export default function AdminSettingsPage() {
@@ -48,6 +50,8 @@ export default function AdminSettingsPage() {
   const [autoGenerateHighlightsOnSave, setAutoGenerateHighlightsOnSave] = useState(true);
   const [highlightCount, setHighlightCount] = useState(5);
   const [newsEnabled, setNewsEnabled] = useState(true);
+  const [speakersEnabled, setSpeakersEnabled] = useState(true);
+  const [partnersEnabled, setPartnersEnabled] = useState(true);
 
   // Invitation template settings
   const [isTplLoading, setIsTplLoading] = useState(true);
@@ -134,6 +138,8 @@ export default function AdminSettingsPage() {
       setAutoGenerateHighlightsOnSave(Boolean(data.autoGenerateHighlightsOnSave));
       setHighlightCount(data.highlightCount || 5);
       setNewsEnabled(data.newsEnabled !== false);
+      setSpeakersEnabled(data.speakersEnabled !== false);
+      setPartnersEnabled(data.partnersEnabled !== false);
       setStatusMessage("");
     } catch (error) {
       setMessage("error", error instanceof Error ? error.message : t("messages.loadFailed"));
@@ -236,6 +242,8 @@ export default function AdminSettingsPage() {
         autoGenerateHighlightsOnSave,
         highlightCount,
         newsEnabled,
+        speakersEnabled,
+        partnersEnabled,
       };
 
       if (clearOpenaiApiKey) {
@@ -605,6 +613,46 @@ export default function AdminSettingsPage() {
                   } catch {
                     // revert on error
                     setNewsEnabled(!val);
+                  }
+                }} />
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <Label className="text-base">{t("siteFeatures.speakersEnabled")}</Label>
+                  <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.speakersEnabledHint")}</p>
+                </div>
+                <Switch checked={speakersEnabled} onCheckedChange={async (val) => {
+                  setSpeakersEnabled(val);
+                  try {
+                    await fetch("/api/admin/settings", {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ speakersEnabled: val }),
+                    });
+                  } catch {
+                    // revert on error
+                    setSpeakersEnabled(!val);
+                  }
+                }} />
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <Label className="text-base">{t("siteFeatures.partnersEnabled")}</Label>
+                  <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.partnersEnabledHint")}</p>
+                </div>
+                <Switch checked={partnersEnabled} onCheckedChange={async (val) => {
+                  setPartnersEnabled(val);
+                  try {
+                    await fetch("/api/admin/settings", {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ partnersEnabled: val }),
+                    });
+                  } catch {
+                    // revert on error
+                    setPartnersEnabled(!val);
                   }
                 }} />
               </div>

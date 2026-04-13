@@ -6,7 +6,13 @@ import { useTranslations } from "next-intl";
 import { LanguageSwitcherSimple } from "@/components/language-switcher";
 import { Link } from "@/i18n/routing";
 
-export function Footer({ newsEnabled = true }: { newsEnabled?: boolean }) {
+export function Footer({
+  newsEnabled = true,
+  speakersEnabled = true,
+}: {
+  newsEnabled?: boolean;
+  speakersEnabled?: boolean;
+}) {
   const t = useTranslations();
 
   const footerLinks = {
@@ -14,7 +20,7 @@ export function Footer({ newsEnabled = true }: { newsEnabled?: boolean }) {
       { name: t("footer.nav.home"), href: "/" },
       { name: t("footer.nav.events"), href: "/events" },
       { name: t("footer.nav.tracks"), href: "/#tracks" },
-      { name: t("footer.nav.speakers"), href: "/speakers" },
+      ...(speakersEnabled ? [{ name: t("footer.nav.speakers"), href: "/speakers" }] : []),
       { name: t("footer.nav.partners"), href: "/partners" },
     ],
     participate: [

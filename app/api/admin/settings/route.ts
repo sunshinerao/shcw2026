@@ -66,6 +66,8 @@ export async function PUT(req: NextRequest) {
           : undefined,
       highlightCount: typeof body.highlightCount === "number" ? body.highlightCount : undefined,
       newsEnabled: typeof body.newsEnabled === "boolean" ? body.newsEnabled : undefined,
+      speakersEnabled: typeof body.speakersEnabled === "boolean" ? body.speakersEnabled : undefined,
+      partnersEnabled: typeof body.partnersEnabled === "boolean" ? body.partnersEnabled : undefined,
     });
 
     return NextResponse.json({ success: true, data: settings });

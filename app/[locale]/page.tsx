@@ -12,6 +12,8 @@ import { getSystemSettingsForServer } from "@/lib/system-settings";
 export default async function Home() {
   const settings = await getSystemSettingsForServer().catch(() => null);
   const newsEnabled = settings?.newsEnabled !== false;
+  const speakersEnabled = settings?.speakersEnabled !== false;
+  const partnersEnabled = settings?.partnersEnabled !== false;
 
   return (
     <>
@@ -19,10 +21,10 @@ export default async function Home() {
       <StatsSection />
       <NarrativeSection />
       <TracksSection />
-      <SpeakersSection />
+      {speakersEnabled && <SpeakersSection />}
       <EventsPreviewSection />
       {newsEnabled && <NewsSection />}
-      <PartnersSection />
+      {partnersEnabled && <PartnersSection />}
       <CTASection />
     </>
   );

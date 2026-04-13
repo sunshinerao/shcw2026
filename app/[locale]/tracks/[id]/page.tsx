@@ -121,10 +121,10 @@ export default async function TrackDetailPage({
                   <Icon className="h-8 w-8" style={{ color: track.color }} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium uppercase tracking-[0.22em] text-slate-400">{track.code}</p>
-                  <h1 className="mt-2 text-4xl font-bold tracking-tight sm:text-5xl">
+                  <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
                     {locale === "en" ? track.nameEn || track.name : track.name}
                   </h1>
+                  <p className="mt-3 text-sm font-medium uppercase tracking-[0.22em] text-slate-400">{track.code}</p>
                   <p className="mt-3 text-sm font-medium text-emerald-200">
                     {globalT(`tracks.tabs.${track.category}`)}
                   </p>
@@ -159,21 +159,22 @@ export default async function TrackDetailPage({
       </section>
 
       <section className="py-14 sm:py-18">
-        <div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:px-8">
-          <div>
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium uppercase tracking-[0.22em] text-emerald-700">{t("eventsTitle")}</p>
-                <h2 className="mt-2 text-3xl font-semibold text-slate-900">{t("eventsSubtitle")}</h2>
-              </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium uppercase tracking-[0.22em] text-emerald-700">{t("eventsTitle")}</p>
+              <h2 className="mt-2 text-3xl font-semibold text-slate-900">{t("eventsSubtitle")}</h2>
             </div>
+          </div>
 
+          <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-start">
+          <div>
             {track.events.length === 0 ? (
-              <div className="mt-8 rounded-[28px] border border-dashed border-slate-300 bg-white/80 p-10 text-center text-slate-600 shadow-sm">
+              <div className="rounded-[28px] border border-dashed border-slate-300 bg-white/80 p-10 text-center text-slate-600 shadow-sm">
                 {t("emptyEvents")}
               </div>
             ) : (
-              <div className="mt-8 grid gap-5">
+              <div className="grid gap-5">
                 {track.events.map((event) => (
                   <article key={event.id} className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-[0_20px_50px_-35px_rgba(15,23,42,0.35)]">
                     {(() => {
@@ -228,19 +229,6 @@ export default async function TrackDetailPage({
           </div>
 
           <aside className="space-y-6">
-            <div className="rounded-[28px] border border-emerald-100 bg-white/90 p-6 shadow-[0_18px_50px_-36px_rgba(16,185,129,0.4)]">
-              <h2 className="text-lg font-semibold text-slate-900">{t("partnersTitle")}</h2>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {partnerNames.length > 0 ? partnerNames.map((partner) => (
-                  <span key={partner} className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm text-emerald-800">
-                    {partner}
-                  </span>
-                )) : (
-                  <span className="text-sm text-slate-500">-</span>
-                )}
-              </div>
-            </div>
-
             <div className="rounded-[28px] border border-slate-200 bg-slate-900 p-6 text-white shadow-[0_18px_50px_-30px_rgba(15,23,42,0.5)]">
               <p className="text-sm uppercase tracking-[0.2em] text-emerald-200">{globalT(`tracks.tabs.${track.category}`)}</p>
               <h2 className="mt-3 text-2xl font-semibold">{locale === "en" ? track.nameEn || track.name : track.name}</h2>
@@ -258,7 +246,21 @@ export default async function TrackDetailPage({
                 </Link>
               </div>
             </div>
+
+            <div className="rounded-[28px] border border-emerald-100 bg-white/90 p-6 shadow-[0_18px_50px_-36px_rgba(16,185,129,0.4)]">
+              <h2 className="text-lg font-semibold text-slate-900">{t("partnersTitle")}</h2>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {partnerNames.length > 0 ? partnerNames.map((partner) => (
+                  <span key={partner} className="rounded-full bg-emerald-50 px-3 py-1.5 text-sm text-emerald-800">
+                    {partner}
+                  </span>
+                )) : (
+                  <span className="text-sm text-slate-500">-</span>
+                )}
+              </div>
+            </div>
           </aside>
+        </div>
         </div>
       </section>
     </div>

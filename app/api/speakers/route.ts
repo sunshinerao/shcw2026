@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
@@ -36,8 +37,11 @@ export async function GET(req: NextRequest) {
     
     // 搜索参数
     const search = searchParams.get("search") || "";
+    const organization = (searchParams.get("organization") || "").trim();
     const isKeynote = searchParams.get("isKeynote");
+    const isVisible = searchParams.get("isVisible");
     const includeHidden = searchParams.get("includeHidden") === "true";
+    const includeFilterOptions = searchParams.get("includeFilterOptions") === "true";
     
     // includeHidden=true 仅允许嘉宾管理权限用户查看隐藏嘉宾
     if (includeHidden) {
@@ -58,23 +62,44 @@ export async function GET(req: NextRequest) {
     }
 
     // 构建查询条件
-    const where: any = {};
+    const where: Prisma.SpeakerWhereInput = {};
+    const andConditions: Prisma.SpeakerWhereInput[] = [];
+
     if (!includeHidden) {
-      where.isVisible = true;
+      andConditions.push({ isVisible: true });
     }
-    
+
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { nameEn: { contains: search, mode: "insensitive" } },
-        { organization: { contains: search, mode: "insensitive" } },
-      ];
+      andConditions.push({
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { nameEn: { contains: search, mode: "insensitive" } },
+          { organization: { contains: search, mode: "insensitive" } },
+          { organizationEn: { contains: search, mode: "insensitive" } },
+        ],
+      });
     }
-    
+    if (organization) {
+      andConditions.push({
+        OR: [
+          { organization: { equals: organization, mode: "insensitive" } },
+          { organizationEn: { equals: organization, mode: "insensitive" } },
+        ],
+      });
+    }
+
     if (isKeynote !== null && isKeynote !== undefined) {
-      where.isKeynote = isKeynote === "true";
+      andConditions.push({ isKeynote: isKeynote === "true" });
     }
-    
+
+    if (isVisible !== null && isVisible !== undefined) {
+      andConditions.push({ isVisible: isVisible === "true" });
+    }
+
+    if (andConditions.length > 0) {
+      where.AND = andConditions;
+    }
+
     // 获取总数
     const total = await prisma.speaker.count({ where });
     
@@ -128,6 +153,22 @@ export async function GET(req: NextRequest) {
       },
     });
     
+    const filterOptions = includeFilterOptions
+      ? {
+          organizations: await prisma.speaker.findMany({
+            where: includeHidden ? undefined : { isVisible: true },
+            select: {
+              organization: true,
+              organizationEn: true,
+            },
+            distinct: ["organization"],
+            orderBy: {
+              organization: "asc",
+            },
+          }),
+        }
+      : undefined;
+
     return NextResponse.json({
       success: true,
       data: speakers,
@@ -137,6 +178,7 @@ export async function GET(req: NextRequest) {
         total,
         totalPages: Math.ceil(total / limit),
       },
+      ...(filterOptions ? { filterOptions } : {}),
     });
   } catch (error) {
     console.error("Error fetching speakers:", error);

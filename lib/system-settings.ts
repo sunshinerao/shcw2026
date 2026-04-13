@@ -12,6 +12,8 @@ type StoredSettingsExtra = {
   autoGenerateHighlightsOnSave?: boolean;
   highlightCount?: number;
   newsEnabled?: boolean;
+  speakersEnabled?: boolean;
+  partnersEnabled?: boolean;
 };
 
 export type SystemSettings = {
@@ -21,6 +23,8 @@ export type SystemSettings = {
   autoGenerateHighlightsOnSave: boolean;
   highlightCount: number;
   newsEnabled: boolean;
+  speakersEnabled: boolean;
+  partnersEnabled: boolean;
 };
 
 export type AdminSystemSettings = Omit<SystemSettings, "openaiApiKey"> & {
@@ -120,6 +124,8 @@ function normalizeExtra(extra: unknown): StoredSettingsExtra {
     autoGenerateHighlightsOnSave: raw.autoGenerateHighlightsOnSave !== false,
     highlightCount: normalizeHighlightCount(raw.highlightCount),
     newsEnabled: raw.newsEnabled !== false,
+    speakersEnabled: raw.speakersEnabled !== false,
+    partnersEnabled: raw.partnersEnabled !== false,
   };
 }
 
@@ -199,6 +205,8 @@ export async function getSystemSettingsForServer(): Promise<SystemSettings> {
     autoGenerateHighlightsOnSave: extra.autoGenerateHighlightsOnSave !== false,
     highlightCount: normalizeHighlightCount(extra.highlightCount),
     newsEnabled: extra.newsEnabled !== false,
+    speakersEnabled: extra.speakersEnabled !== false,
+    partnersEnabled: extra.partnersEnabled !== false,
   };
 }
 
@@ -213,6 +221,8 @@ export async function getSystemSettingsForAdmin(): Promise<AdminSystemSettings> 
     autoGenerateHighlightsOnSave: serverSettings.autoGenerateHighlightsOnSave,
     highlightCount: serverSettings.highlightCount,
     newsEnabled: serverSettings.newsEnabled,
+    speakersEnabled: serverSettings.speakersEnabled,
+    partnersEnabled: serverSettings.partnersEnabled,
   };
 }
 
@@ -223,6 +233,8 @@ export type UpdateSystemSettingsInput = {
   autoGenerateHighlightsOnSave?: boolean;
   highlightCount?: number;
   newsEnabled?: boolean;
+  speakersEnabled?: boolean;
+  partnersEnabled?: boolean;
 };
 
 export async function updateSystemSettings(input: UpdateSystemSettingsInput) {
@@ -269,6 +281,14 @@ export async function updateSystemSettings(input: UpdateSystemSettingsInput) {
 
   if (input.newsEnabled !== undefined) {
     next.newsEnabled = Boolean(input.newsEnabled);
+  }
+
+  if (input.speakersEnabled !== undefined) {
+    next.speakersEnabled = Boolean(input.speakersEnabled);
+  }
+
+  if (input.partnersEnabled !== undefined) {
+    next.partnersEnabled = Boolean(input.partnersEnabled);
   }
 
   await prisma.siteContent.upsert({

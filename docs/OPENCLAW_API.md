@@ -89,7 +89,7 @@ GET /api/v1/events
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `page` | number | `1` | 页码 |
-| `pageSize` | number | `20` | 每页数量，最大 100 |
+| `pageSize` | number | `100` | 每页数量，最大 100 |
 | `search` | string | — | 按标题/场地模糊搜索 |
 | `type` | string | — | 活动类型，见下方枚举 |
 | `trackId` | string | — | 按专题轨道 ID 过滤 |
@@ -344,7 +344,7 @@ GET /api/v1/speakers
 | 参数 | 类型 | 默认值 | 说明 |
 |------|------|--------|------|
 | `page` | number | `1` | 页码 |
-| `pageSize` | number | `20` | 每页数量，最大 100 |
+| `pageSize` | number | `100` | 每页数量，最大 100 |
 | `search` | string | — | 按姓名/机构搜索 |
 | `isKeynote` | boolean | — | `true` 只返回主旨嘉宾 |
 

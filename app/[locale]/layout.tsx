@@ -72,9 +72,15 @@ export default async function LocaleLayout({
           timeZone={timeZone}
         >
           <div className="flex flex-col min-h-screen">
-            <Navbar newsEnabled={siteSettings?.newsEnabled !== false} />
+            <Navbar
+              newsEnabled={siteSettings?.newsEnabled !== false}
+              speakersEnabled={siteSettings?.speakersEnabled !== false}
+            />
             <main className="flex-1">{children}</main>
-            <Footer newsEnabled={siteSettings?.newsEnabled !== false} />
+            <Footer
+              newsEnabled={siteSettings?.newsEnabled !== false}
+              speakersEnabled={siteSettings?.speakersEnabled !== false}
+            />
           </div>
         </AppProviders>
       </body>

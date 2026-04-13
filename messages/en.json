@@ -1028,6 +1028,7 @@
             "setVerifier": "Set as verifier"
         },
         "pagination": "Page {current} of {total}",
+        "perPage": "Per page",
         "detail": {
             "title": "User details",
             "description": "Review the user's profile and registration history.",
@@ -1384,6 +1385,8 @@
         },
         "listTitle": "Speaker list ({count})",
         "summary": "Keynote: {keynote} / Total: {total}",
+        "pagination": "Page {current} of {total}",
+        "perPage": "Per page",
         "badges": {
             "keynote": "Keynote",
             "hidden": "Hidden on frontend"
@@ -2729,7 +2732,11 @@
             "title": "Content Feature Toggles",
             "description": "Show or hide front-end feature modules.",
             "newsEnabled": "Show news module",
-            "newsEnabledHint": "When disabled, the News link is removed from the navigation menu and /news returns 404."
+            "newsEnabledHint": "When disabled, the News link is removed from the navigation menu and /news returns 404.",
+            "speakersEnabled": "Show speakers module",
+            "speakersEnabledHint": "When disabled, the homepage speakers section and Speakers navigation link are hidden, and /speakers returns 404.",
+            "partnersEnabled": "Show partners module",
+            "partnersEnabledHint": "When disabled, the partners section on the homepage is hidden."
         },
         "invitationTemplate": {
             "title": "Invitation Letter Template",

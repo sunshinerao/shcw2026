@@ -8,6 +8,8 @@ import {
   Mic,
   Plus,
   Search,
+  ChevronLeft,
+  ChevronRight,
   Edit2,
   Trash2,
   Star,
@@ -103,6 +105,11 @@ interface InstitutionOption {
   orgType?: string | null;
 }
 
+interface SpeakerFilterOption {
+  organization: string;
+  organizationEn?: string | null;
+}
+
 interface SpeakerRoleForm {
   id?: string;
   title: string;
@@ -125,140 +132,6 @@ type AutoUpdateSuggestion = {
   avatarUrl?: string | null;
 };
 
-// Mock speakers data
-const mockSpeakers: Speaker[] = [
-  {
-    id: "1",
-    name: "吴昌华",
-    nameEn: "Wu Changhua",
-    title: "院长",
-    titleEn: "Dean",
-    organization: "全球气候学院",
-    organizationEn: "Global Climate Institute",
-    bio: "全球气候学院院长，曾任气候组织大中华区总裁。环境与发展政策分析专家，近二十年专注中国可持续发展事务。",
-    bioEn: "Dean of the Global Climate Institute and former China CEO of The Climate Group. An expert in environment and development policy with nearly two decades of focus on China's sustainable development.",
-    email: "wuchanghua@example.com",
-    linkedin: "https://linkedin.com/in/wuchanghua",
-    isKeynote: true,
-    order: 1,
-    events: ["盛大开幕仪式"],
-    eventsEn: ["Grand Opening Ceremony"],
-  },
-  {
-    id: "2",
-    name: "Shahbaz Khan",
-    title: "主任兼代表",
-    titleEn: "Director and Representative",
-    organization: "UNESCO东亚地区办事处",
-    organizationEn: "UNESCO Regional Office for East Asia",
-    bio: "联合国教科文组织东亚地区办事处主任兼代表。亚太水论坛治理委员会成员，水资源和可持续发展领域国际专家。",
-    bioEn: "Director and Representative of UNESCO's Regional Office for East Asia. A member of the Asia-Pacific Water Forum governance committee and an international expert in water resources and sustainable development.",
-    email: "s.khan@unesco.org",
-    isKeynote: true,
-    order: 2,
-    events: ["水安全论坛"],
-    eventsEn: ["Water Security Forum"],
-  },
-  {
-    id: "3",
-    name: "张庆丰",
-    nameEn: "Zhang Qingfeng",
-    title: "局长",
-    titleEn: "Director General",
-    organization: "亚洲开发银行",
-    organizationEn: "Asian Development Bank",
-    bio: "亚开行农业、粮食、自然和农村发展分局局长，负责管理亚开行260亿美元食品系统转型投资框架。",
-    bioEn: "Director General of the Agriculture, Food, Nature, and Rural Development Sector Office at ADB, overseeing a USD 26 billion food systems transformation investment framework.",
-    linkedin: "https://linkedin.com/in/zhangqingfeng",
-    isKeynote: true,
-    order: 3,
-    events: ["未来食物系统", "水安全论坛"],
-    eventsEn: ["Future Food System", "Water Security Forum"],
-  },
-  {
-    id: "4",
-    name: "Nick Mabey",
-    title: "创始人兼CEO",
-    titleEn: "Founder and CEO",
-    organization: "E3G / 伦敦气候行动周",
-    organizationEn: "E3G / London Climate Action Week",
-    bio: "E3G创始董事兼CEO，伦敦气候行动周创始人。曾任英国首相气候变化顾问，全球气候行动知名领导者。",
-    bioEn: "Founding Director and CEO of E3G and founder of London Climate Action Week. Former climate adviser to the UK Prime Minister and a recognized global climate action leader.",
-    twitter: "@nickmabey",
-    isKeynote: true,
-    order: 4,
-    events: ["城市合作平台", "可持续金融"],
-    eventsEn: ["City Cooperation Platform", "Sustainable Finance"],
-  },
-  {
-    id: "5",
-    name: "Bernice Lee",
-    title: "研究总监",
-    titleEn: "Research Director",
-    organization: "查塔姆研究所",
-    organizationEn: "Chatham House",
-    bio: "查塔姆研究所研究总监，霍夫曼可持续发展与资源经济项目创始负责人。Chapter Zero Alliance核心成员。",
-    bioEn: "Research Director at Chatham House and founding head of the Hoffmann Centre for Sustainable Resource Economy. A core member of the Chapter Zero Alliance.",
-    isKeynote: false,
-    order: 5,
-    events: ["董事会治理转型"],
-    eventsEn: ["Board Governance Transformation"],
-  },
-  {
-    id: "6",
-    name: "马军",
-    nameEn: "Ma Jun",
-    title: "创始人兼主任",
-    titleEn: "Founder and Director",
-    organization: "公众环境研究中心",
-    organizationEn: "Institute of Public & Environmental Affairs",
-    bio: "公众环境研究中心创始人。2006年被《时代周刊》评为全球最具影响力100人之一，中国环境信息公开先驱者。",
-    bioEn: "Founder of the Institute of Public & Environmental Affairs. Named by Time in 2006 as one of the world's 100 most influential people and a pioneer of environmental transparency in China.",
-    email: "majun@ipe.org.cn",
-    website: "https://www.ipe.org.cn",
-    isKeynote: true,
-    order: 6,
-    events: ["绿色供应链", "百品领航"],
-    eventsEn: ["Green Supply Chain", "Flagship 100"],
-  },
-  {
-    id: "7",
-    name: "周敏",
-    nameEn: "Zhou Min",
-    title: "创始人兼CEO",
-    titleEn: "Founder and CEO",
-    organization: "遨问创投",
-    organizationEn: "Aowen Ventures",
-    bio: "遨问创投创始合伙人兼CEO，硬科技投资专家，福布斯中国最具影响力华人精英TOP100，专注气候科技投资。",
-    bioEn: "Founding partner and CEO of Aowen Ventures, a deep-tech investor and Forbes China Top 100 Chinese elites honoree focused on climate technology investment.",
-    linkedin: "https://linkedin.com/in/zhoumin",
-    isKeynote: false,
-    order: 7,
-    events: ["气候投资风向标"],
-    eventsEn: ["Climate Investment Outlook"],
-  },
-  {
-    id: "8",
-    name: "邹荣",
-    nameEn: "Zou Rong",
-    title: "联席主任",
-    titleEn: "Co-Director",
-    organization: "上海气候周执委会",
-    organizationEn: "Shanghai Climate Week Executive Committee",
-    bio: "上海气候周执委会联席主任，秉持中国行动、亚洲声音、世界标准理念，推动气候跨界合作网络。",
-    bioEn: "Co-Director of the Shanghai Climate Week Executive Committee, advancing cross-sector climate collaboration through the vision of China action, Asian voices, and global standards.",
-    isKeynote: true,
-    order: 8,
-    events: ["盛大开幕仪式"],
-    eventsEn: ["Grand Opening Ceremony"],
-  },
-];
-
-// Get unique organizations for filter
-const getOrganizations = (speakers: Speaker[]) => {
-  const orgs = Array.from(new Set(speakers.map((s) => s.organization)));
-  return orgs.sort();
-};
 
 export default function AdminSpeakersPage() {
   const t = useTranslations("adminSpeakersPage");
@@ -268,9 +141,16 @@ export default function AdminSpeakersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [statusMessage, setStatusMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [orgFilter, setOrgFilter] = useState<string>("all");
   const [keynoteFilter, setKeynoteFilter] = useState<string>("all");
   const [visibleFilter, setVisibleFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
+  const [filteredTotal, setFilteredTotal] = useState(0);
+  const [organizationOptions, setOrganizationOptions] = useState<SpeakerFilterOption[]>([]);
+  const currentParamsRef = useRef(new URLSearchParams());
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -367,44 +247,40 @@ export default function AdminSpeakersPage() {
   const loadingLabel = t("loading");
   const genericLoadError = t("loadError");
 
-  const loadSpeakers = useCallback(async () => {
+  const loadSpeakers = useCallback(async (params: URLSearchParams) => {
     setIsLoading(true);
 
     try {
-      const pageSize = 200;
-      let page = 1;
-      let totalPages = 1;
-      const allRecords: Array<Record<string, unknown>> = [];
+      const response = await fetch(`/api/speakers?${params.toString()}`, {
+        method: "GET",
+      });
 
-      do {
-        const response = await fetch(`/api/speakers?page=${page}&limit=${pageSize}&includeHidden=true`, {
-          method: "GET",
-        });
+      const data = await response.json();
 
-        const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || genericLoadError);
+      }
 
-        if (!response.ok) {
-          throw new Error(data.error || genericLoadError);
-        }
-
-        allRecords.push(...((data.data as Array<Record<string, unknown>>) ?? []));
-        totalPages = Number(data.pagination?.totalPages ?? 1);
-        page += 1;
-      } while (page <= totalPages);
-
-      const nextSpeakers = allRecords.map((speaker) => ({
+      const nextSpeakers = (((data.data as Array<Record<string, unknown>>) ?? []).map((speaker) => ({
         ...speaker,
         isVisible: typeof speaker.isVisible === "boolean" ? speaker.isVisible : true,
         agendaItemsCount:
           typeof (speaker._count as { agendaItems?: number } | undefined)?.agendaItems === "number"
             ? (speaker._count as { agendaItems: number }).agendaItems
             : 0,
-      })) as Speaker[];
+      })) as Speaker[]);
 
       setSpeakers(nextSpeakers);
+      setFilteredTotal(Number(data.pagination?.total ?? 0));
+      setTotalPages(Math.max(1, Number(data.pagination?.totalPages ?? 1)));
+      if (Array.isArray(data.filterOptions?.organizations)) {
+        setOrganizationOptions(data.filterOptions.organizations as SpeakerFilterOption[]);
+      }
       setStatusMessage("");
     } catch (error) {
-      setSpeakers(mockSpeakers);
+      setSpeakers([]);
+      setFilteredTotal(0);
+      setTotalPages(1);
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
     } finally {
       setIsLoading(false);
@@ -412,8 +288,31 @@ export default function AdminSpeakersPage() {
   }, [genericLoadError]);
 
   useEffect(() => {
-    void loadSpeakers();
-  }, [loadSpeakers]);
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [orgFilter, keynoteFilter, visibleFilter]);
+
+  useEffect(() => {
+    const params = new URLSearchParams({
+      page: String(currentPage),
+      limit: String(itemsPerPage),
+      includeHidden: "true",
+    });
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    if (orgFilter !== "all") params.set("organization", orgFilter);
+    if (keynoteFilter !== "all") params.set("isKeynote", keynoteFilter === "keynote" ? "true" : "false");
+    if (visibleFilter !== "all") params.set("isVisible", visibleFilter === "visible" ? "true" : "false");
+    if (organizationOptions.length === 0) params.set("includeFilterOptions", "true");
+    currentParamsRef.current = params;
+    void loadSpeakers(params);
+  }, [currentPage, itemsPerPage, debouncedSearch, orgFilter, keynoteFilter, visibleFilter, organizationOptions.length, loadSpeakers]);
 
   // 当编辑对话框打开时，获取完整嘉宾数据（包含历任职务）
   useEffect(() => {
@@ -443,38 +342,10 @@ export default function AdminSpeakersPage() {
       .finally(() => setIsFetchingRoles(false));
   }, [isEditDialogOpen, selectedSpeaker]);
 
-  // Filter speakers
-  const filteredSpeakers = useMemo(() => {
-    return speakers.filter((speaker) => {
-      const matchesSearch =
-        speaker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        speaker.nameEn?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        speaker.organization.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        speaker.organizationEn?.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesOrg =
-        orgFilter === "all" || speaker.organization === orgFilter;
-
-      const matchesKeynote =
-        keynoteFilter === "all" ||
-        (keynoteFilter === "keynote" && speaker.isKeynote) ||
-        (keynoteFilter === "regular" && !speaker.isKeynote);
-
-      const matchesVisible =
-        visibleFilter === "all" ||
-        (visibleFilter === "visible" && (speaker.isVisible ?? true)) ||
-        (visibleFilter === "hidden" && !(speaker.isVisible ?? true));
-
-      return matchesSearch && matchesOrg && matchesKeynote && matchesVisible;
-    });
-  }, [speakers, searchQuery, orgFilter, keynoteFilter, visibleFilter]);
-
-  // Sort speakers by order
-  const sortedSpeakers = useMemo(() => {
-    return [...filteredSpeakers].sort((a, b) => a.order - b.order);
-  }, [filteredSpeakers]);
-
-  const organizations = getOrganizations(speakers);
+  const organizations = useMemo(
+    () => organizationOptions.map((item) => item.organization),
+    [organizationOptions]
+  );
 
   const getPrimaryName = (speaker: Speaker) =>
     locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name;
@@ -497,12 +368,10 @@ export default function AdminSpeakersPage() {
     (getPrimaryName(speaker).trim().charAt(0) || "S").toUpperCase();
 
   const getOrganizationLabel = (organization: string) => {
-    const matchingSpeaker = speakers.find(
-      (speaker) => speaker.organization === organization
-    );
+    const matchingOrg = organizationOptions.find((item) => item.organization === organization);
 
     return locale === "en"
-      ? matchingSpeaker?.organizationEn || organization
+      ? matchingOrg?.organizationEn || organization
       : organization;
   };
 
@@ -540,18 +409,6 @@ export default function AdminSpeakersPage() {
     } finally {
       setIsExportingAvatars(false);
     }
-  };
-
-  const upsertSpeakerInState = (speaker: Speaker) => {
-    setSpeakers((previous) => {
-      const idx = previous.findIndex((s) => s.id === speaker.id);
-      if (idx >= 0) {
-        const next = [...previous];
-        next[idx] = speaker;
-        return next;
-      }
-      return [speaker, ...previous];
-    });
   };
 
   const handleAutoUpdate = async (speaker: Speaker) => {
@@ -670,10 +527,7 @@ export default function AdminSpeakersPage() {
       setIsCreateDialogOpen(false);
       setIsEditDialogOpen(false);
       resetForm();
-      const saved = (data.data ?? data) as Speaker;
-      if (saved?.id) {
-        upsertSpeakerInState({ ...saved, agendaItemsCount: saved.agendaItemsCount ?? 0 });
-      }
+      void loadSpeakers(currentParamsRef.current);
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
     } finally {
@@ -700,7 +554,7 @@ export default function AdminSpeakersPage() {
 
       setStatusMessage(data.message || "");
       setIsDeleteDialogOpen(false);
-      setSpeakers((previous) => previous.filter((s) => s.id !== selectedSpeaker.id));
+      void loadSpeakers(currentParamsRef.current);
       setSelectedSpeaker(null);
     } catch (error) {
       setStatusMessage(error instanceof Error ? error.message : genericLoadError);
@@ -888,6 +742,7 @@ export default function AdminSpeakersPage() {
                     setOrgFilter("all");
                     setKeynoteFilter("all");
                     setVisibleFilter("all");
+                    setCurrentPage(1);
                   }}
                 >
                   <X className="w-4 h-4" />
@@ -906,26 +761,26 @@ export default function AdminSpeakersPage() {
       >
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>{t("listTitle", { count: sortedSpeakers.length })}</CardTitle>
+            <CardTitle>{t("listTitle", { count: filteredTotal })}</CardTitle>
             <div className="flex items-center gap-2 text-sm text-slate-500">
               <Filter className="w-4 h-4" />
               <span>
                 {t("summary", {
                   keynote: speakers.filter((s) => s.isKeynote).length,
-                  total: speakers.length,
+                  total: filteredTotal,
                 })}
               </span>
             </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {isLoading && sortedSpeakers.length === 0 && (
+              {isLoading && speakers.length === 0 && (
                 <div className="rounded-xl border border-slate-100 bg-slate-50 px-4 py-6 text-sm text-slate-500">
                   {loadingLabel}
                 </div>
               )}
               <AnimatePresence mode="popLayout">
-                {sortedSpeakers.map((speaker, index) => (
+                {speakers.map((speaker, index) => (
                   <motion.div
                     key={speaker.id}
                     initial={{ opacity: 0, y: 20 }}
@@ -1045,7 +900,7 @@ export default function AdminSpeakersPage() {
                 ))}
               </AnimatePresence>
 
-              {sortedSpeakers.length === 0 && (
+              {speakers.length === 0 && (
                 <div className="text-center py-12">
                   <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Mic className="w-8 h-8 text-slate-400" />
@@ -1058,6 +913,43 @@ export default function AdminSpeakersPage() {
                   </p>
                 </div>
               )}
+
+              {filteredTotal > 0 ? (
+                <div className="flex items-center justify-between border-t border-slate-100 px-2 pt-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-slate-500">{t("perPage")}</span>
+                    <Select value={String(itemsPerPage)} onValueChange={(v) => { setItemsPerPage(Number(v)); setCurrentPage(1); }}>
+                      <SelectTrigger className="h-8 w-[70px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10</SelectItem>
+                        <SelectItem value="20">20</SelectItem>
+                        <SelectItem value="50">50</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {totalPages > 1 ? <p className="text-sm text-slate-500">{t("pagination", { current: currentPage, total: totalPages })}</p> : null}
+                  </div>
+                  {totalPages > 1 ? (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                        disabled={currentPage === 1}
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                        disabled={currentPage === totalPages}
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
             </div>
           </CardContent>
         </Card>

@@ -36,7 +36,7 @@
         "summary": "List events",
         "parameters": [
           { "in": "query", "name": "page", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
-          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } },
+          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 100 } },
           { "in": "query", "name": "search", "schema": { "type": "string" } },
           { "in": "query", "name": "type", "schema": { "$ref": "#/components/schemas/EventType" } },
           { "in": "query", "name": "trackId", "schema": { "type": "string" } },
@@ -261,7 +261,7 @@
         "summary": "List speakers",
         "parameters": [
           { "in": "query", "name": "page", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
-          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } },
+          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 100 } },
           { "in": "query", "name": "search", "schema": { "type": "string" } },
           { "in": "query", "name": "isKeynote", "schema": { "type": "boolean" } }
         ],

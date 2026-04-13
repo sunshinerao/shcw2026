@@ -9,6 +9,7 @@ import {
   generateQrCodeDataUrl,
 } from "@/lib/invitation-renderer";
 import { buildInvitationResolvedContent } from "@/lib/invitation-template";
+import { formatInvitationEventSchedule } from "@/lib/invitation-event-schedule";
 import { getDefaultSignaturePreset,
   getSignaturePresetById,
 } from "@/lib/invitation-signature-presets";
@@ -80,10 +81,16 @@ export async function POST(req: NextRequest) {
       title: string;
       titleEn: string | null;
       startDate: Date;
+      endDate: Date;
       venue: string;
       venueEn: string | null;
       startTime: string;
       endTime: string;
+      eventDateSlots?: Array<{
+        scheduleDate: Date;
+        startTime: string;
+        endTime: string;
+      }>;
       invitationContentHtml_zh: string | null;
       invitationContentHtml_en: string | null;
       description: string | null;
@@ -101,10 +108,18 @@ export async function POST(req: NextRequest) {
           title: true,
           titleEn: true,
           startDate: true,
+          endDate: true,
           venue: true,
           venueEn: true,
           startTime: true,
           endTime: true,
+          eventDateSlots: {
+            select: {
+              scheduleDate: true,
+              startTime: true,
+              endTime: true,
+            },
+          },
           invitationContentHtml_zh: true,
           invitationContentHtml_en: true,
           description: true,
@@ -123,30 +138,19 @@ export async function POST(req: NextRequest) {
         ? (event?.titleEn || event?.title || "")
         : (event?.title || "");
 
-    const eventDateStr = event?.startDate
-      ? lang === "en"
-        ? new Date(event.startDate).toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-        : new Date(event.startDate).toLocaleDateString("zh-CN", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })
-      : (lang === "en" ? "April 20 \u2013 April 28, 2026" : "2026年4月20日 - 2026年4月28日");
+    const { eventDateText: eventDateStr, eventTimeText: timeStr } = formatInvitationEventSchedule({
+      language: lang,
+      startDate: event?.startDate,
+      endDate: event?.endDate,
+      startTime: event?.startTime,
+      endTime: event?.endTime,
+      eventDateSlots: event?.eventDateSlots,
+    });
 
     const eventVenueRaw = event
       ? lang === "en"
         ? (event.venueEn || event.venue || "")
         : (event.venue || "")
-      : (lang === "en" ? "See event information on our website" : "详见网站活动信息");
-
-    const timeStr = event
-      ? (event.startTime && event.endTime
-        ? `${event.startTime} \u2013 ${event.endTime}`
-        : (event.startTime || ""))
       : (lang === "en" ? "See event information on our website" : "详见网站活动信息");
 
     const eventDateLabel =

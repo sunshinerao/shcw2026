@@ -152,7 +152,6 @@ type UserFormState = {
   organizationContactPhone: string;
 };
 
-const ITEMS_PER_PAGE = 8;
 const ROLE_OPTIONS: UserRole[] = [
   "VISITOR",
   "ATTENDEE",
@@ -221,6 +220,7 @@ export default function AdminUsersPage() {
   const [roleFilter, setRoleFilter] = useState<UserRole | "ALL">("ALL");
   const [statusFilter, setStatusFilter] = useState<UserStatus | "ALL">("ALL");
   const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"success" | "error">("success");
@@ -294,7 +294,7 @@ export default function AdminUsersPage() {
   useEffect(() => {
     const params = new URLSearchParams({
       page: String(currentPage),
-      pageSize: String(ITEMS_PER_PAGE),
+      pageSize: String(itemsPerPage),
       sortBy: "createdAt",
       sortOrder: "desc",
     });
@@ -303,7 +303,7 @@ export default function AdminUsersPage() {
     if (statusFilter !== "ALL") params.set("status", statusFilter);
     currentParamsRef.current = params;
     void loadUsers(params);
-  }, [currentPage, debouncedSearch, roleFilter, statusFilter, loadUsers]);
+  }, [currentPage, itemsPerPage, debouncedSearch, roleFilter, statusFilter, loadUsers]);
 
   const resetForm = () => {
     setEditingUser(null);
@@ -782,13 +782,26 @@ export default function AdminUsersPage() {
             </Table>
           </div>
 
-          {totalPages > 1 ? (
+          {filteredTotal > 0 ? (
             <div className="flex items-center justify-between border-t border-slate-100 px-6 py-4">
-              <p className="text-sm text-slate-500">{t("pagination", { current: currentPage, total: totalPages })}</p>
               <div className="flex items-center gap-2">
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage === 1}><ChevronLeft className="h-4 w-4" /></Button>
-                <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={currentPage === totalPages}><ChevronRight className="h-4 w-4" /></Button>
+                <span className="text-sm text-slate-500">{t("perPage")}</span>
+                <Select value={String(itemsPerPage)} onValueChange={(v) => { setItemsPerPage(Number(v)); setCurrentPage(1); }}>
+                  <SelectTrigger className="h-8 w-[70px]"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="10">10</SelectItem>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                  </SelectContent>
+                </Select>
+                {totalPages > 1 ? <p className="text-sm text-slate-500">{t("pagination", { current: currentPage, total: totalPages })}</p> : null}
               </div>
+              {totalPages > 1 ? (
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage === 1}><ChevronLeft className="h-4 w-4" /></Button>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={currentPage === totalPages}><ChevronRight className="h-4 w-4" /></Button>
+                </div>
+              ) : null}
             </div>
           ) : null}
         </CardContent>

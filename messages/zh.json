@@ -1028,6 +1028,7 @@
             "setVerifier": "设为验证人员"
         },
         "pagination": "第 {current} 页，共 {total} 页",
+        "perPage": "每页",
         "detail": {
             "title": "用户详情",
             "description": "查看用户完整信息和报名记录。",
@@ -1384,6 +1385,8 @@
         },
         "listTitle": "嘉宾列表 ({count})",
         "summary": "Keynote: {keynote} / 总计: {total}",
+        "pagination": "第 {current} 页，共 {total} 页",
+        "perPage": "每页",
         "badges": {
             "keynote": "Keynote",
             "hidden": "前端隐藏"
@@ -2731,7 +2734,11 @@
             "title": "内容功能开关",
             "description": "控制前端各功能模块的显示与隐藏。",
             "newsEnabled": "显示新闻模块",
-            "newsEnabledHint": "关闭后，导航菜单中的「新闻」链接将隐藏，直接访问 /news 页面将返回 404。"
+            "newsEnabledHint": "关闭后，导航菜单中的「新闻」链接将隐藏，直接访问 /news 页面将返回 404。",
+            "speakersEnabled": "显示嘉宾模块",
+            "speakersEnabledHint": "关闭后，首页嘉宾板块与导航中的「嘉宾」链接将隐藏，直接访问 /speakers 页面将返回 404。",
+            "partnersEnabled": "显示合作伙伴模块",
+            "partnersEnabledHint": "关闭后，首页合作伙伴板块将隐藏。"
         },
         "invitationTemplate": {
             "title": "邀请函模板配置",
