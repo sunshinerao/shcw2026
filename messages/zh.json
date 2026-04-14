@@ -780,6 +780,7 @@
             "endTime": "结束时间",
             "type": "类型",
             "types": {
+                "opening": "开幕致辞",
                 "keynote": "主旨演讲",
                 "panel": "圆桌讨论",
                 "workshop": "工作坊",
@@ -2217,6 +2218,7 @@
             "empty": "详细议程将尽快公布。",
             "speaker": "演讲者：",
             "types": {
+                "opening": "开幕致辞",
                 "keynote": "主题演讲",
                 "panel": "圆桌讨论",
                 "workshop": "工作坊",

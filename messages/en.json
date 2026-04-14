@@ -780,6 +780,7 @@
             "endTime": "End Time",
             "type": "Type",
             "types": {
+                "opening": "Opening Remarks",
                 "keynote": "Keynote",
                 "panel": "Panel",
                 "workshop": "Workshop",
@@ -2217,6 +2218,7 @@
             "empty": "Detailed agenda will be announced soon.",
             "speaker": "Speaker: ",
             "types": {
+                "opening": "Opening Remarks",
                 "keynote": "Keynote",
                 "ceremony": "Ceremony",
                 "panel": "Panel",

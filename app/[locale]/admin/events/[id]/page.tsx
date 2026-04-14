@@ -99,7 +99,7 @@ type EventInfo = {
   venue: string;
 };
 
-const AGENDA_TYPES = ["keynote", "panel", "workshop", "sharing", "launch", "break", "networking"] as const;
+const AGENDA_TYPES = ["opening", "keynote", "panel", "workshop", "sharing", "launch", "break", "networking"] as const;
 
 const EVENT_INSTITUTION_ROLES = [
   "organizer",
