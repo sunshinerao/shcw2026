@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 
 import {
   canAccessAdminSection,
+  canAssignAgendaPeople,
+  canCreateSpeakerProfiles,
   canManageEvents,
   canManageFaq,
   canManageInsights,
@@ -58,6 +60,16 @@ test("resource management helpers grant expected permissions", () => {
   assert.equal(canManageSpeakers("ADMIN", null), true);
   assert.equal(canManageSpeakers("STAFF", JSON.stringify(["speakers"])), true);
   assert.equal(canManageSpeakers("STAFF", null), false);
+  assert.equal(canManageSpeakers("EVENT_MANAGER", null), false);
+
+  assert.equal(canAssignAgendaPeople("ADMIN"), true);
+  assert.equal(canAssignAgendaPeople("EVENT_MANAGER"), true);
+  assert.equal(canAssignAgendaPeople("STAFF"), false);
+
+  assert.equal(canCreateSpeakerProfiles("ADMIN", null), true);
+  assert.equal(canCreateSpeakerProfiles("EVENT_MANAGER", null), true);
+  assert.equal(canCreateSpeakerProfiles("STAFF", JSON.stringify(["speakers"])), true);
+  assert.equal(canCreateSpeakerProfiles("STAFF", null), false);
 
   assert.equal(canManageNews("STAFF", JSON.stringify(["news"])), true);
   assert.equal(canManageInsights("STAFF", JSON.stringify(["insights"])), true);

@@ -228,7 +228,7 @@ export default function EventAgendaPage({
   const [form, setForm] = useState<AgendaFormState>(initialAgendaForm);
   const [speakerSearch, setSpeakerSearch] = useState("");
   const [newSpeakerForm, setNewSpeakerForm] = useState<NewSpeakerForm>(initialNewSpeakerForm);
-  const canManageSpeakersFlag = currentUserRole === "ADMIN" || (currentUserStaffPermissions?.includes("speakers") ?? false);
+  const canManageSpeakersFlag = currentUserRole === "ADMIN" || currentUserRole === "EVENT_MANAGER" || (currentUserStaffPermissions?.includes("speakers") ?? false);
 
   // Institution association state
   const [eventInstitutions, setEventInstitutions] = useState<EventInstitutionItem[]>([]);
@@ -750,6 +750,7 @@ export default function EventAgendaPage({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...newSpeakerForm,
+          sourceEventId: eventId,
           locale,
         }),
       });

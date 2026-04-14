@@ -13,6 +13,7 @@ import {
 import { backfillAgendaEnglish } from "@/lib/agenda-translation";
 import { prisma } from "@/lib/prisma";
 import { translateMissingEventFieldsToEnglish, translateRecordValuesToEnglish } from "@/lib/ai-translation";
+import { canAssignAgendaPeople } from "@/lib/permissions";
 
 async function requireEventManager(requestLocale: "zh" | "en", eventId: string) {
   const session = await getServerSession(authOptions);
@@ -183,19 +184,7 @@ export async function POST(
 
     const body = await req.json();
     const { agendaDate, title, description, titleEn: providedTitleEn, descriptionEn: providedDescriptionEn, startTime, endTime, type, venue, order, speakerIds, moderatorId, speakerMeta } = body;
-
-    if (auth.role === "EVENT_MANAGER" && (speakerIds !== undefined || moderatorId !== undefined || speakerMeta !== undefined)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error:
-            requestLocale === "zh"
-              ? "活动管理员无权设置议程嘉宾"
-              : "Event managers are not allowed to assign agenda speakers",
-        },
-        { status: 403 }
-      );
-    }
+    const canAssignPeople = canAssignAgendaPeople(auth.role);
 
     if (!title || !agendaDate || !startTime || !endTime) {
       return NextResponse.json(
@@ -276,11 +265,11 @@ export async function POST(
         type: type || "keynote",
         venue: venue || null,
         order: typeof order === "number" ? order : 0,
-        speakers: auth.role === "ADMIN" && speakerIds?.length
+        speakers: canAssignPeople && speakerIds?.length
           ? { connect: speakerIds.map((id: string) => ({ id })) }
           : undefined,
-        ...(auth.role === "ADMIN" && moderatorId !== undefined && { moderatorId: moderatorId || null }),
-        ...(auth.role === "ADMIN" && speakerMeta !== undefined && {
+        ...(canAssignPeople && moderatorId !== undefined && { moderatorId: moderatorId || null }),
+        ...(canAssignPeople && speakerMeta !== undefined && {
           speakerMeta: await (async () => {
             if (!speakerMeta?.topics || Object.keys(speakerMeta.topics).length === 0) return speakerMeta;
             const topicsToTranslate: Record<string, string> = {};

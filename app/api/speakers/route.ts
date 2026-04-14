@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
-import { canManageSpeakers } from "@/lib/permissions";
+import { canCreateSpeakerProfiles, canManageSpeakers } from "@/lib/permissions";
 
 // 检查用户是否有嘉宾管理权限
 async function checkSpeakerPermission(sessionUserId: string, locale: "zh" | "en") {
@@ -19,6 +19,50 @@ async function checkSpeakerPermission(sessionUserId: string, locale: "zh" | "en"
 
   if (!canManageSpeakers(currentUser.role, currentUser.staffPermissions)) {
     return { allowed: false, status: 403, error: apiMessage(locale, "adminOnly") };
+  }
+
+  return { allowed: true, userRole: currentUser.role };
+}
+
+async function checkSpeakerCreatePermission(
+  sessionUserId: string,
+  locale: "zh" | "en",
+  sourceEventId?: string | null
+) {
+  const currentUser = await prisma.user.findUnique({
+    where: { id: sessionUserId },
+    select: { id: true, role: true, staffPermissions: true },
+  });
+
+  if (!currentUser) {
+    return { allowed: false, status: 401, error: apiMessage(locale, "userNotFound") };
+  }
+
+  if (!canCreateSpeakerProfiles(currentUser.role, currentUser.staffPermissions)) {
+    return { allowed: false, status: 403, error: apiMessage(locale, "adminOnly") };
+  }
+
+  if (currentUser.role === "EVENT_MANAGER") {
+    if (!sourceEventId) {
+      return {
+        allowed: false,
+        status: 403,
+        error: locale === "zh" ? "活动管理员只能为自己负责的活动新增嘉宾" : "Event managers can only create speakers for their assigned events",
+      };
+    }
+
+    const event = await prisma.event.findUnique({
+      where: { id: sourceEventId },
+      select: { managerUserId: true },
+    });
+
+    if (event?.managerUserId !== currentUser.id) {
+      return {
+        allowed: false,
+        status: 403,
+        error: locale === "zh" ? "你仅可为自己负责的活动新增嘉宾" : "You can only create speakers for your assigned events",
+      };
+    }
   }
 
   return { allowed: true, userRole: currentUser.role };
@@ -203,15 +247,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 检查嘉宾管理权限
-    const permission = await checkSpeakerPermission(session.user.id, requestLocale);
-    if (!permission.allowed) {
-      return NextResponse.json(
-        { success: false, error: permission.error },
-        { status: permission.status }
-      );
-    }
     const {
+      sourceEventId,
       name,
       nameEn,
       salutation,
@@ -241,6 +278,15 @@ export async function POST(req: NextRequest) {
       isVisible,
       order,
     } = body;
+
+    // 检查嘉宾创建权限
+    const permission = await checkSpeakerCreatePermission(session.user.id, requestLocale, sourceEventId);
+    if (!permission.allowed) {
+      return NextResponse.json(
+        { success: false, error: permission.error },
+        { status: permission.status }
+      );
+    }
     
     // 验证必填字段
     if (!name || !title || !organization) {
@@ -266,6 +312,8 @@ export async function POST(req: NextRequest) {
       }
     }
     
+    const isEventManagerCreate = permission.userRole === "EVENT_MANAGER";
+
     // 创建嘉宾
     const speaker = await prisma.speaker.create({
       data: {
@@ -287,15 +335,15 @@ export async function POST(req: NextRequest) {
         relevanceToShcwEn: relevanceToShcwEn || null,
         expertiseTags: expertiseTags ?? null,
         slug: slug?.trim() || null,
-        institutionId: institutionId || null,
+        institutionId: isEventManagerCreate ? null : institutionId || null,
         email: email || null,
         linkedin: linkedin || null,
         twitter: twitter || null,
         website: website || null,
         avatar: avatar || null,
-        isKeynote: isKeynote || false,
-        isVisible: isVisible !== undefined ? Boolean(isVisible) : true,
-        order: order || 0,
+        isKeynote: isEventManagerCreate ? false : Boolean(isKeynote),
+        isVisible: isEventManagerCreate ? true : (isVisible !== undefined ? Boolean(isVisible) : true),
+        order: isEventManagerCreate ? 0 : order || 0,
       },
     });
 

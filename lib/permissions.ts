@@ -112,6 +112,14 @@ export function canManageSpeakers(role?: string | null, staffPermissions?: strin
   return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("speakers");
 }
 
+export function canAssignAgendaPeople(role?: string | null): boolean {
+  return isAdminRole(role) || isEventManagerRole(role);
+}
+
+export function canCreateSpeakerProfiles(role?: string | null, staffPermissions?: string | null): boolean {
+  return isAdminRole(role) || isEventManagerRole(role) || parseStaffPermissions(staffPermissions).includes("speakers");
+}
+
 export function canManageNews(role?: string | null, staffPermissions?: string | null): boolean {
   return isAdminRole(role) || parseStaffPermissions(staffPermissions).includes("news");
 }
