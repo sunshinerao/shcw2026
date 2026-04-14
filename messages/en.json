@@ -1840,6 +1840,7 @@
                 "passwordMismatch": "The two passwords do not match",
                 "passwordTooShort": "Password must be at least 8 characters",
                 "emailTaken": "This email is already registered. Please sign in instead.",
+                "nameTaken": "This name is already registered. Please review it and try again.",
                 "countryRequired": "Please select your country/region.",
                 "titleRequired": "Please enter your title.",
                 "failed": "Registration failed. Please try again later."

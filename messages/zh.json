@@ -1840,6 +1840,7 @@
                 "passwordMismatch": "两次输入的密码不一致",
                 "passwordTooShort": "密码至少需要 8 个字符",
                 "emailTaken": "该邮箱已注册，请直接登录",
+                "nameTaken": "该姓名已被注册，请核对后重试",
                 "countryRequired": "请选择您的国别/地区",
                 "titleRequired": "请输入您的职位",
                 "failed": "注册失败，请稍后重试"

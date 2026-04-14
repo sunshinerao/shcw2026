@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale, type ApiLocale } from "@/lib/api-i18n";
 import { prisma } from "@/lib/prisma";
 import { generatePassCode, generateClimatePassportId } from "@/lib/utils";
+import { normalizeUserEmail, normalizeUserName } from "@/lib/user-identity";
 
 const ALLOWED_SORT_FIELDS = new Set([
   "createdAt",
