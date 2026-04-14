@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { generatePassCode, generateClimatePassportId } from "@/lib/utils";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { normalizeSalutationValue } from "@/lib/user-form-options";
+import { normalizeUserEmail, normalizeUserName } from "@/lib/user-identity";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,9 +23,11 @@ export async function POST(req: NextRequest) {
       locale,
     } = body;
     const requestLocale = resolveRequestLocale(req, locale);
+    const normalizedName = normalizeUserName(name || "");
+    const normalizedEmail = normalizeUserEmail(email || "");
 
     // Validation
-    if (!name || !email || !password || !title || !country) {
+    if (!normalizedName || !normalizedEmail || !password || !title || !country) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "registerRequired") },
         { status: 400 }
@@ -32,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalizedEmail)) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "invalidEmailFormat") },
         { status: 400 }
@@ -54,14 +57,31 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check if email already exists
+    // Check if email or name already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "emailTaken") },
+        { status: 400 }
+      );
+    }
+
+    const existingNameUser = await prisma.user.findFirst({
+      where: {
+        name: {
+          equals: normalizedName,
+          mode: "insensitive",
+        },
+      },
+      select: { id: true },
+    });
+
+    if (existingNameUser) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "nameTaken") },
         { status: 400 }
       );
     }
@@ -111,8 +131,8 @@ export async function POST(req: NextRequest) {
     const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
-          name,
-          email,
+          name: normalizedName,
+          email: normalizedEmail,
           password: hashedPassword,
           phone: phone || null,
           country,

@@ -115,11 +115,7 @@ export default function RegisterPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 400) {
-          setError(t("errors.emailTaken"));
-        } else {
-          setError(data.error || data.message || t("errors.failed"));
-        }
+        setError(data.error || data.message || t("errors.failed"));
         return;
       }
 

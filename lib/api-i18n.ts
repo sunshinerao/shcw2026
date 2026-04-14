@@ -99,6 +99,10 @@ const apiMessages = {
     zh: "该邮箱已被注册",
     en: "This email address is already registered.",
   },
+  nameTaken: {
+    zh: "该姓名已被注册",
+    en: "This name is already registered.",
+  },
   registerSuccessLogin: {
     zh: "注册成功，请登录",
     en: "Registration successful. Please sign in.",
@@ -318,6 +322,10 @@ const apiMessages = {
   emailInUseByOther: {
     zh: "该邮箱已被其他用户使用",
     en: "This email address is already used by another account.",
+  },
+  nameInUseByOther: {
+    zh: "该姓名已被其他用户使用",
+    en: "This name is already used by another account.",
   },
   invalidUserStatus: {
     zh: "无效的用户状态",

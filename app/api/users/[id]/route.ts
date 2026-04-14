@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { UserRole, UserStatus } from "@prisma/client";
 import { apiMessage, resolveRequestLocale, type ApiLocale } from "@/lib/api-i18n";
+import { normalizeUserEmail, normalizeUserName } from "@/lib/user-identity";
 
 // 验证用户是否有权限访问
 async function checkPermission(
@@ -213,7 +214,7 @@ export async function PUT(
     // 检查目标用户是否存在
     const targetUser = await prisma.user.findUnique({
       where: { id },
-      select: { id: true, email: true, role: true },
+      select: { id: true, email: true, name: true, role: true },
     });
 
     if (!targetUser) {
@@ -264,10 +265,27 @@ export async function PUT(
       }
     }
 
+    const normalizedName = name !== undefined ? normalizeUserName(name || "") : undefined;
+    const normalizedEmail = email !== undefined ? normalizeUserEmail(email || "") : undefined;
+
+    if (name !== undefined && !normalizedName) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "nameRequired") },
+        { status: 400 }
+      );
+    }
+
+    if (email !== undefined && !normalizedEmail) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "invalidEmailFormat") },
+        { status: 400 }
+      );
+    }
+
     // 验证邮箱格式（如果提供了邮箱）
-    if (email && email !== targetUser.email) {
+    if (normalizedEmail && normalizedEmail !== targetUser.email) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(email)) {
+      if (!emailRegex.test(normalizedEmail)) {
         return NextResponse.json(
           { success: false, error: apiMessage(requestLocale, "invalidEmailFormat") },
           { status: 400 }
@@ -276,11 +294,31 @@ export async function PUT(
 
       // 检查邮箱是否已被其他用户使用
       const existingUser = await prisma.user.findUnique({
-        where: { email },
+        where: { email: normalizedEmail },
       });
       if (existingUser && existingUser.id !== id) {
         return NextResponse.json(
           { success: false, error: apiMessage(requestLocale, "emailInUseByOther") },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (normalizedName && normalizedName !== targetUser.name) {
+      const existingNameUser = await prisma.user.findFirst({
+        where: {
+          id: { not: id },
+          name: {
+            equals: normalizedName,
+            mode: "insensitive",
+          },
+        },
+        select: { id: true },
+      });
+
+      if (existingNameUser) {
+        return NextResponse.json(
+          { success: false, error: apiMessage(requestLocale, "nameInUseByOther") },
           { status: 400 }
         );
       }
@@ -320,8 +358,8 @@ export async function PUT(
       const user = await tx.user.update({
         where: { id },
         data: {
-          ...(name !== undefined && { name }),
-          ...(email !== undefined && { email }),
+          ...(normalizedName !== undefined && { name: normalizedName }),
+          ...(normalizedEmail !== undefined && { email: normalizedEmail }),
           ...(phone !== undefined && { phone }),
           ...(title !== undefined && { title }),
           ...(bio !== undefined && { bio }),

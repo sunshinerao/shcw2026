@@ -251,7 +251,10 @@ export async function POST(req: NextRequest) {
       organization,
     } = body;
 
-    if (!name || !email || !password) {
+    const normalizedName = normalizeUserName(name || "");
+    const normalizedEmail = normalizeUserEmail(email || "");
+
+    if (!normalizedName || !normalizedEmail || !password) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "userCreateRequired") },
         { status: 400 }
@@ -259,7 +262,7 @@ export async function POST(req: NextRequest) {
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
+    if (!emailRegex.test(normalizedEmail)) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "invalidEmailFormat") },
         { status: 400 }
@@ -288,13 +291,30 @@ export async function POST(req: NextRequest) {
     }
 
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
       select: { id: true },
     });
 
     if (existingUser) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "emailTaken") },
+        { status: 400 }
+      );
+    }
+
+    const existingNameUser = await prisma.user.findFirst({
+      where: {
+        name: {
+          equals: normalizedName,
+          mode: "insensitive",
+        },
+      },
+      select: { id: true },
+    });
+
+    if (existingNameUser) {
+      return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "nameTaken") },
         { status: 400 }
       );
     }
@@ -306,8 +326,8 @@ export async function POST(req: NextRequest) {
     const newUser = await prisma.$transaction(async (tx) => {
       const createdUser = await tx.user.create({
         data: {
-          name,
-          email,
+          name: normalizedName,
+          email: normalizedEmail,
           password: hashedPassword,
           phone: phone || null,
           title: title || null,
