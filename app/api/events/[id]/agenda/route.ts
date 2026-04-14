@@ -10,6 +10,7 @@ import {
   isValidAgendaDate,
   normalizeAgendaDateKey,
 } from "@/lib/agenda";
+import { backfillAgendaEnglish } from "@/lib/agenda-translation";
 import { prisma } from "@/lib/prisma";
 import { translateMissingEventFieldsToEnglish, translateRecordValuesToEnglish } from "@/lib/ai-translation";
 
@@ -129,7 +130,16 @@ export async function GET(
       orderBy: [{ agendaDate: "asc" }, { order: "asc" }, { startTime: "asc" }],
     });
 
-    return NextResponse.json({ success: true, data: agendaItems });
+    const normalizedAgendaItems = agendaItems.map((item) => ({
+      ...item,
+      agendaDate: normalizeAgendaDateKey(item.agendaDate),
+    }));
+
+    const hydratedAgendaItems = requestLocale === "en"
+      ? await backfillAgendaEnglish(normalizedAgendaItems)
+      : normalizedAgendaItems;
+
+    return NextResponse.json({ success: true, data: hydratedAgendaItems });
   } catch (error) {
     console.error("Get agenda items error:", error);
     return NextResponse.json(

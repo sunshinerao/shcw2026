@@ -170,6 +170,7 @@ function getFullDescription(event: PublicEvent, locale: string) {
 }
 
 export default function EventDetailPage() {
+
   const t = useTranslations("eventDetailPage");
   const eventListT = useTranslations("eventsPage");
   const locale = useLocale() as "zh" | "en";
@@ -326,6 +327,36 @@ export default function EventDetailPage() {
 
     return Array.from(groups.entries()).map(([date, items]) => ({ date, items }));
   }, [event]);
+
+  const getAgendaTitle = (item: AgendaItem) =>
+    locale === "en" && item.titleEn ? item.titleEn : item.title;
+
+  const getAgendaDescription = (item: AgendaItem) => {
+    if (locale === "en") {
+      return item.descriptionEn || "";
+    }
+
+    return item.description || item.descriptionEn || "";
+  };
+
+  const getAgendaSpeakerName = (speaker: AgendaSpeaker) =>
+    locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name;
+
+  const getAgendaSpeakerMeta = (speaker: AgendaSpeaker) => {
+    const parts = locale === "en"
+      ? [speaker.titleEn?.trim(), speaker.organizationEn?.trim()].filter(Boolean)
+      : [speaker.title?.trim(), speaker.organization?.trim()].filter(Boolean);
+
+    return parts.join(" · ");
+  };
+
+  const getAgendaTopic = (item: AgendaItem, speakerId: string) => {
+    if (locale === "en") {
+      return item.speakerMeta?.topicsEn?.[speakerId] || "";
+    }
+
+    return item.speakerMeta?.topics?.[speakerId] || "";
+  };
 
   const handleSave = async () => {
     if (!event || isSaving || isRegistered) {
@@ -820,15 +851,15 @@ export default function EventDetailPage() {
                                 <div className="flex-1 min-w-0">
                                   <div className="flex flex-wrap items-center gap-2 mb-1">
                                     <h4 className="font-semibold text-slate-900">
-                                      {locale === "en" && item.titleEn ? item.titleEn : item.title}
+                                      {getAgendaTitle(item)}
                                     </h4>
                                     <Badge variant="outline" className="shrink-0 text-xs">
                                       {t.has(`agenda.types.${item.type}`) ? t(`agenda.types.${item.type}` as Parameters<typeof t>[0]) : item.type}
                                     </Badge>
                                   </div>
-                                  {(item.description || item.descriptionEn) && (
+                                  {getAgendaDescription(item) && (
                                     <p className="text-sm text-slate-600 mb-2">
-                                      {locale === "en" && item.descriptionEn ? item.descriptionEn : item.description}
+                                      {getAgendaDescription(item)}
                                     </p>
                                   )}
                                   {item.venue && (
@@ -853,12 +884,9 @@ export default function EventDetailPage() {
                                             return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
                                           })
                                           .map((speaker) => {
-                                            const name = locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name;
-                                            const title = locale === "en" && speaker.titleEn ? speaker.titleEn : speaker.title;
-                                            const org = locale === "en" && speaker.organizationEn ? speaker.organizationEn : speaker.organization;
-                                            const topic = locale === "en"
-                                              ? item.speakerMeta?.topicsEn?.[speaker.id] || item.speakerMeta?.topics?.[speaker.id]
-                                              : item.speakerMeta?.topics?.[speaker.id];
+                                            const name = getAgendaSpeakerName(speaker);
+                                            const meta = getAgendaSpeakerMeta(speaker);
+                                            const topic = getAgendaTopic(item, speaker.id);
                                             return (
                                               <div key={speaker.id} className="flex items-start gap-2">
                                                 <Avatar className="h-5 w-5 shrink-0 mt-0.5">
@@ -872,9 +900,11 @@ export default function EventDetailPage() {
                                                     <span className="text-xs font-medium text-slate-700">
                                                       {name}
                                                     </span>
-                                                    <span className="text-xs text-slate-400">
-                                                      {title} · {org}
-                                                    </span>
+                                                    {meta ? (
+                                                      <span className="text-xs text-slate-400">
+                                                        {meta}
+                                                      </span>
+                                                    ) : null}
                                                   </div>
                                                   {topic && (
                                                     <div className="text-xs font-bold text-slate-600 mt-0.5">{topic}</div>
@@ -895,15 +925,17 @@ export default function EventDetailPage() {
                                         <Avatar className="h-5 w-5 shrink-0">
                                           <AvatarImage src={item.moderator.avatar || undefined} />
                                           <AvatarFallback className="text-[10px]">
-                                            {(locale === "en" && item.moderator.nameEn ? item.moderator.nameEn : item.moderator.name).charAt(0)}
+                                            {getAgendaSpeakerName(item.moderator).charAt(0)}
                                           </AvatarFallback>
                                         </Avatar>
                                         <span className="text-xs font-medium text-amber-700">
-                                          {locale === "en" && item.moderator.nameEn ? item.moderator.nameEn : item.moderator.name}
+                                          {getAgendaSpeakerName(item.moderator)}
                                         </span>
-                                        <span className="text-xs text-slate-400">
-                                          {locale === "en" && item.moderator.titleEn ? item.moderator.titleEn : item.moderator.title} · {locale === "en" && item.moderator.organizationEn ? item.moderator.organizationEn : item.moderator.organization}
-                                        </span>
+                                        {getAgendaSpeakerMeta(item.moderator) ? (
+                                          <span className="text-xs text-slate-400">
+                                            {getAgendaSpeakerMeta(item.moderator)}
+                                          </span>
+                                        ) : null}
                                       </div>
                                     </div>
                                   )}

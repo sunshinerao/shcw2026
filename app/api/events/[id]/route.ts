@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { EventHostType, EventLayer, UserRole } from "@prisma/client";
 import { translateMissingEventFieldsToEnglish } from "@/lib/ai-translation";
 import { agendaDateToUtcDate, isAgendaDateWithinEventRange, isAgendaTimeRangeValid, isValidAgendaDate, normalizeAgendaDateKey } from "@/lib/agenda";
+import { backfillAgendaEnglish } from "@/lib/agenda-translation";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canManageEvents } from "@/lib/permissions";
@@ -179,6 +180,15 @@ export async function GET(
       );
     }
 
+    const normalizedAgendaItems = event.agendaItems.map((item) => ({
+      ...item,
+      agendaDate: normalizeAgendaDateKey(item.agendaDate),
+    }));
+
+    const hydratedAgendaItems = requestLocale === "en"
+      ? await backfillAgendaEnglish(normalizedAgendaItems)
+      : normalizedAgendaItems;
+
     return NextResponse.json({
       success: true,
       data: {
@@ -187,10 +197,7 @@ export async function GET(
           ...slot,
           scheduleDate: normalizeAgendaDateKey(slot.scheduleDate),
         })),
-        agendaItems: event.agendaItems.map((item) => ({
-          ...item,
-          agendaDate: normalizeAgendaDateKey(item.agendaDate),
-        })),
+        agendaItems: hydratedAgendaItems,
       },
     });
   } catch (error) {

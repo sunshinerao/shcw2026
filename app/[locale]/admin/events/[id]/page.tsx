@@ -7,6 +7,8 @@ import {
   ArrowLeft,
   Building2,
   Calendar,
+  ChevronDown,
+  ChevronUp,
   Clock,
   Edit2,
   MapPin,
@@ -145,6 +147,7 @@ type AgendaFormState = {
   speakerIds: string[];
   moderatorId: string;
   speakerTopics: Record<string, string>;
+  speakerTopicsEn: Record<string, string>;
 };
 
 const initialAgendaForm: AgendaFormState = {
@@ -161,6 +164,7 @@ const initialAgendaForm: AgendaFormState = {
   speakerIds: [],
   moderatorId: "",
   speakerTopics: {},
+  speakerTopicsEn: {},
 };
 
 // New speaker inline form state
@@ -357,6 +361,25 @@ export default function EventAgendaPage({
   const getSpeakerOrg = (s: AgendaSpeaker) =>
     locale === "en" && s.organizationEn ? s.organizationEn : s.organization;
 
+  const getAgendaTitle = (item: AgendaItem) =>
+    locale === "en" && item.titleEn ? item.titleEn : item.title;
+
+  const getAgendaDescription = (item: AgendaItem) => {
+    if (locale === "en") {
+      return item.descriptionEn || "";
+    }
+
+    return item.description || item.descriptionEn || "";
+  };
+
+  const getAgendaTopic = (item: AgendaItem, speakerId: string) => {
+    if (locale === "en") {
+      return item.speakerMeta?.topicsEn?.[speakerId] || "";
+    }
+
+    return item.speakerMeta?.topics?.[speakerId] || "";
+  };
+
   const getAgendaTypeLabel = (type: string) => {
     const key = type as (typeof AGENDA_TYPES)[number];
     try {
@@ -501,6 +524,7 @@ export default function EventAgendaPage({
       speakerIds: orderedIds,
       moderatorId: item.moderatorId || "",
       speakerTopics: item.speakerMeta?.topics || {},
+      speakerTopicsEn: item.speakerMeta?.topicsEn || {},
     });
     setIsAgendaDialogOpen(true);
   };
@@ -514,6 +538,7 @@ export default function EventAgendaPage({
         ...prev,
         speakerIds: [...prev.speakerIds, id],
         speakerTopics: { ...prev.speakerTopics, [id]: "" },
+        speakerTopicsEn: { ...prev.speakerTopicsEn, [id]: "" },
       }));
     }
   };
@@ -521,11 +546,32 @@ export default function EventAgendaPage({
   const removeSpeaker = (id: string) => {
     setForm((prev) => {
       const newTopics = { ...prev.speakerTopics };
+      const newTopicsEn = { ...prev.speakerTopicsEn };
       delete newTopics[id];
+      delete newTopicsEn[id];
       return {
         ...prev,
         speakerIds: prev.speakerIds.filter((sid) => sid !== id),
         speakerTopics: newTopics,
+        speakerTopicsEn: newTopicsEn,
+      };
+    });
+  };
+
+  const moveSpeaker = (id: string, direction: "up" | "down") => {
+    setForm((prev) => {
+      const currentIndex = prev.speakerIds.indexOf(id);
+      if (currentIndex === -1) return prev;
+
+      const nextIndex = direction === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (nextIndex < 0 || nextIndex >= prev.speakerIds.length) return prev;
+
+      const nextSpeakerIds = [...prev.speakerIds];
+      [nextSpeakerIds[currentIndex], nextSpeakerIds[nextIndex]] = [nextSpeakerIds[nextIndex], nextSpeakerIds[currentIndex]];
+
+      return {
+        ...prev,
+        speakerIds: nextSpeakerIds,
       };
     });
   };
@@ -598,6 +644,7 @@ export default function EventAgendaPage({
           speakerMeta: {
             orderedIds: form.speakerIds,
             topics: form.speakerTopics,
+            topicsEn: form.speakerTopicsEn,
           },
         } : {}),
       };
@@ -847,7 +894,7 @@ export default function EventAgendaPage({
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2 mb-1">
                             <h3 className="font-semibold text-slate-900">
-                              {item.title}
+                              {getAgendaTitle(item)}
                             </h3>
                             <Badge
                               className={
@@ -874,9 +921,9 @@ export default function EventAgendaPage({
                               </>
                             )}
                           </div>
-                          {item.description && (
+                          {getAgendaDescription(item) && (
                             <p className="text-sm text-slate-600 mb-2 line-clamp-2">
-                              {item.description}
+                              {getAgendaDescription(item)}
                             </p>
                           )}
                           {/* Speakers */}
@@ -896,7 +943,7 @@ export default function EventAgendaPage({
                                     return (ia === -1 ? 999 : ia) - (ib === -1 ? 999 : ib);
                                   })
                                   .map((speaker) => {
-                                    const topic = item.speakerMeta?.topics?.[speaker.id];
+                                    const topic = getAgendaTopic(item, speaker.id);
                                     return (
                                       <div
                                         key={speaker.id}
@@ -1413,12 +1460,15 @@ export default function EventAgendaPage({
                 {/* Selected speakers as cards with topic input */}
                 {selectedSpeakers.length > 0 ? (
                   <div className="space-y-2">
-                    {selectedSpeakers.map((s) => (
+                    {selectedSpeakers.map((s, index) => (
                       <div
                         key={s.id}
                         className="rounded-lg border border-slate-200 bg-white p-2.5 space-y-2"
                       >
                         <div className="flex items-center gap-2">
+                          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-600">
+                            {index + 1}
+                          </div>
                           <Avatar className="h-7 w-7 shrink-0">
                             <AvatarImage src={s.avatar || undefined} />
                             <AvatarFallback className="text-[10px]">
@@ -1434,34 +1484,64 @@ export default function EventAgendaPage({
                             </span>
                           </div>
                           {canManageSpeakersFlag ? (
-                            <button
-                              type="button"
-                              className="ml-1 rounded-full p-0.5 hover:bg-red-50 text-slate-400 hover:text-red-500"
-                              onClick={() => removeSpeaker(s.id)}
-                            >
-                              <X className="h-3.5 w-3.5" />
-                            </button>
+                            <div className="ml-1 flex items-center gap-1">
+                              <button
+                                type="button"
+                                className="rounded-full p-0.5 hover:bg-slate-100 text-slate-400 hover:text-slate-700 disabled:opacity-40"
+                                onClick={() => moveSpeaker(s.id, "up")}
+                                disabled={index === 0}
+                                title={locale === "en" ? "Move up" : "上移"}
+                              >
+                                <ChevronUp className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                className="rounded-full p-0.5 hover:bg-slate-100 text-slate-400 hover:text-slate-700 disabled:opacity-40"
+                                onClick={() => moveSpeaker(s.id, "down")}
+                                disabled={index === selectedSpeakers.length - 1}
+                                title={locale === "en" ? "Move down" : "下移"}
+                              >
+                                <ChevronDown className="h-3.5 w-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                className="rounded-full p-0.5 hover:bg-red-50 text-slate-400 hover:text-red-500"
+                                onClick={() => removeSpeaker(s.id)}
+                                title={locale === "en" ? "Remove" : "移除"}
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </button>
+                            </div>
                           ) : null}
                         </div>
                         {canManageSpeakersFlag ? (
                           <Input
-                            value={form.speakerTopics[s.id] || ""}
+                            value={locale === "en" ? (form.speakerTopicsEn[s.id] || "") : (form.speakerTopics[s.id] || "")}
                             onChange={(e) =>
                               setForm((prev) => ({
                                 ...prev,
-                                speakerTopics: {
-                                  ...prev.speakerTopics,
-                                  [s.id]: e.target.value,
-                                },
+                                ...(locale === "en"
+                                  ? {
+                                      speakerTopicsEn: {
+                                        ...prev.speakerTopicsEn,
+                                        [s.id]: e.target.value,
+                                      },
+                                    }
+                                  : {
+                                      speakerTopics: {
+                                        ...prev.speakerTopics,
+                                        [s.id]: e.target.value,
+                                      },
+                                    }),
                               }))
                             }
                             placeholder={t("speakerTopic")}
                             className="h-7 text-xs"
                           />
                         ) : (
-                          form.speakerTopics[s.id] ? (
+                          (locale === "en" ? form.speakerTopicsEn[s.id] : form.speakerTopics[s.id]) ? (
                             <p className="text-xs text-slate-500 italic pl-0.5">
-                              {form.speakerTopics[s.id]}
+                              {locale === "en" ? form.speakerTopicsEn[s.id] : form.speakerTopics[s.id]}
                             </p>
                           ) : null
                         )}
