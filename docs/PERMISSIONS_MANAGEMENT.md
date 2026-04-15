@@ -249,7 +249,7 @@
 - insights:read / insights:write
 - partners:read / partners:write
 - institutions:read / institutions:write
-- users:write
+- users:read / users:write
 
 路由映射（按资源）：
 - events：`app/api/v1/events/**`
@@ -258,7 +258,8 @@
 - insights：`app/api/v1/insights/**`
 - partners：`app/api/v1/partners/**`
 - institutions：`app/api/v1/institutions/**`
-- users:write：`app/api/v1/users/reset-password/route.ts`
+- users:read：`app/api/v1/users/route.ts`、`app/api/v1/users/[id]/route.ts`、`app/api/v1/users/[id]/points/route.ts`
+- users:write：`app/api/v1/users/route.ts`、`app/api/v1/users/[id]/route.ts`、`app/api/v1/users/[id]/role/route.ts`、`app/api/v1/users/[id]/points/route.ts`、`app/api/v1/users/reset-password/route.ts`
 
 附加校验：
 - API Key 必须 active

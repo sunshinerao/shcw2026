@@ -2,6 +2,7 @@
 
 > 版本状态：`/api/v2` 已上线，作为 OpenClaw/Agent 对接的推荐版本。  
 > 兼容性策略：V2 当前与 V1 业务行为一致，主要用于版本化治理与后续演进。
+> 本次更新已补充活动报名观众列表、批量审批，以及用户列表、详情、角色、积分相关接口说明。
 > OpenAPI 3.1 规范：`docs/openapi.v2.json`（SDK 生成说明见 `docs/OPENAPI_V2_USAGE.md`）。
 
 > 供 AI Agent（如 OpenClaw、Dify、LangChain 等）调用的 REST API。  
@@ -31,7 +32,7 @@
 6. [新闻 News](#6-新闻-news)
 7. [合作伙伴 Partners](#7-合作伙伴-partners)
 8. [知识成果 Insights](#8-知识成果-insights)
-9. [用户密码重置 Users](#9-用户密码重置-users)
+9. [用户 Users](#9-用户-users)
 10. [错误码参考](#10-错误码参考)
 11. [权限说明](#11-权限说明)
 
@@ -177,6 +178,34 @@ GET /api/v2/events/{id}
 **所需权限：** `events:read`
 
 返回活动完整信息，含 `agendaItems`（议程列表，每项含嘉宾信息）和 `eventDateSlots`。
+
+### 3.2.1 获取活动报名观众列表
+
+```
+GET /api/v2/events/{id}/registrations
+```
+
+**所需权限：** `events:read`
+
+可选 Query 参数：`status`
+
+返回该活动的报名观众列表，包含用户姓名、邮箱、角色、气候护照 ID，以及当前活动的已批准人数统计。
+
+### 3.2.2 批量审批或拒绝报名
+
+```
+PATCH /api/v2/events/{id}/registrations
+Content-Type: application/json
+```
+
+**所需权限：** `events:write`
+
+```json
+{
+  "registrationIds": ["reg_001", "reg_002"],
+  "action": "approve"
+}
+```
 
 ---
 
@@ -670,9 +699,71 @@ DELETE /api/v2/insights/{id_or_slug}
 
 ---
 
-## 9. 用户密码重置 Users
+## 9. 用户 Users
 
-### 9.1 重置用户密码
+### 9.1 获取用户列表
+
+```
+GET /api/v2/users
+```
+
+**所需权限：** `users:read`
+
+支持分页与筛选，常用 Query 参数：`page`、`pageSize`、`search`、`role`、`status`、`sortBy`、`sortOrder`。
+
+### 9.2 获取单个用户详情
+
+```
+GET /api/v2/users/{id}
+```
+
+**所需权限：** `users:read`
+
+### 9.3 创建用户
+
+```
+POST /api/v2/users
+Content-Type: application/json
+```
+
+**所需权限：** `users:write`
+
+### 9.4 更新用户资料
+
+```
+PUT /api/v2/users/{id}
+Content-Type: application/json
+```
+
+**所需权限：** `users:write`
+
+### 9.5 更新用户角色
+
+```
+PUT /api/v2/users/{id}/role
+Content-Type: application/json
+```
+
+**所需权限：** `users:write`
+
+### 9.6 获取用户积分记录
+
+```
+GET /api/v2/users/{id}/points
+```
+
+**所需权限：** `users:read`
+
+### 9.7 调整用户积分
+
+```
+POST /api/v2/users/{id}/points
+Content-Type: application/json
+```
+
+**所需权限：** `users:write`
+
+### 9.8 重置用户密码
 
 ```
 POST /api/v2/users/reset-password
@@ -683,50 +774,7 @@ Content-Type: application/json
 
 直接将指定用户的密码设置为新密码，**无需提供原密码**。操作成功后，该用户此前通过忘记密码流程获取的邮件重置链接将同时失效。
 
-> ⚠️  此接口为高权限操作，仅应在受控场景下使用（如 AI Agent 代运营维护、后台批量管理）。API 密钥的 IP 白名单建议配置以限制调用来源。
-
-**请求体：**
-
-```json
-{
-  "email": "user@example.com",
-  "newPassword": "NewSecurePass123"
-}
-```
-
-**字段说明：**
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `email` | string | ✅ | 用户注册邮箱（大小写不敏感） |
-| `newPassword` | string | ✅ | 新密码，至少 8 个字符 |
-
-**验证规则：**
-- `email` 必须已存在于数据库
-- `newPassword` 长度 ≥ 8 个字符
-- 已被停用（`SUSPENDED`）的账号无法重置密码（返回 `403`）
-
-**成功响应（HTTP 200）：**
-
-```json
-{
-  "success": true,
-  "message": "Password for user@example.com has been reset successfully.",
-  "data": {
-    "userId": "clxyz123",
-    "email": "user@example.com",
-    "name": "张三"
-  }
-}
-```
-
-**失败响应示例：**
-
-```json
-{ "success": false, "error": "newPassword must be at least 8 characters" }
-{ "success": false, "error": "No user found with that email address" }
-{ "success": false, "error": "Cannot reset password for a suspended account" }
-```
+> ⚠️ 此接口为高权限操作，仅应在受控场景下使用。建议为 API 密钥配置 IP 白名单以限制调用来源。
 
 ---
 
@@ -767,7 +815,8 @@ Content-Type: application/json
 | `insights:write` | 创建/更新/删除知识成果 |
 | `partners:read` | 读取合作伙伴列表和详情 |
 | `partners:write` | 创建/更新/删除合作伙伴 |
-| `users:write` | 重置任意用户密码 |
+| `users:read` | 读取用户列表、详情与积分记录 |
+| `users:write` | 创建/更新用户、调整角色与积分、重置密码 |
 
 ---
 

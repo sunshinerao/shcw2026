@@ -15,6 +15,7 @@ export const ALL_PERMISSIONS = [
   "partners:write",
   "institutions:read",
   "institutions:write",
+  "users:read",
   "users:write",
 ] as const;
 

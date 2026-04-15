@@ -92,11 +92,16 @@ test("v1 API routes keep verifyApiKey scope mapping", async () => {
   const checks: Array<{ file: string; scopes: string[] }> = [
     { file: "app/api/v1/events/route.ts", scopes: ["events:read", "events:write"] },
     { file: "app/api/v1/events/[id]/route.ts", scopes: ["events:read", "events:write"] },
+    { file: "app/api/v1/events/[id]/registrations/route.ts", scopes: ["events:read", "events:write"] },
     { file: "app/api/v1/speakers/route.ts", scopes: ["speakers:read", "speakers:write"] },
     { file: "app/api/v1/news/route.ts", scopes: ["news:read", "news:write"] },
     { file: "app/api/v1/insights/route.ts", scopes: ["insights:read", "insights:write"] },
     { file: "app/api/v1/partners/route.ts", scopes: ["partners:read", "partners:write"] },
     { file: "app/api/v1/institutions/route.ts", scopes: ["institutions:read", "institutions:write"] },
+    { file: "app/api/v1/users/route.ts", scopes: ["users:read", "users:write"] },
+    { file: "app/api/v1/users/[id]/route.ts", scopes: ["users:read", "users:write"] },
+    { file: "app/api/v1/users/[id]/role/route.ts", scopes: ["users:write"] },
+    { file: "app/api/v1/users/[id]/points/route.ts", scopes: ["users:read", "users:write"] },
     { file: "app/api/v1/users/reset-password/route.ts", scopes: ["users:write"] },
   ];
 

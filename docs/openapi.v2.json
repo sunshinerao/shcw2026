@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "SHCW2026 OpenClaw API V2",
-    "version": "2.1.0",
-    "description": "Machine-readable OpenAPI spec for SHCW2026 /api/v2 endpoints. V2 preserves V1 behavior and adds response header X-API-Version plus standardized error code field."
+    "version": "2.2.0",
+    "description": "Machine-readable OpenAPI spec for SHCW2026 /api/v2 endpoints. V2 preserves V1 behavior and adds response header X-API-Version plus standardized error code field, event registration audience endpoints, and expanded user management operations."
   },
   "servers": [
     {
@@ -251,6 +251,53 @@
           "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
           "403": { "$ref": "#/components/responses/ErrorForbidden" },
           "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/events/{id}/registrations": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Events"],
+        "summary": "List event registrations",
+        "parameters": [
+          { "in": "query", "name": "status", "schema": { "type": "string", "enum": ["PENDING_APPROVAL", "REGISTERED", "CANCELLED", "ATTENDED", "WAITLIST", "REJECTED"] } }
+        ],
+        "responses": {
+          "200": { "description": "Event registration audience list", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "patch": {
+        "tags": ["Events"],
+        "summary": "Batch approve or reject event registrations",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["registrationIds", "action"],
+                "properties": {
+                  "registrationIds": { "type": "array", "items": { "type": "string" } },
+                  "action": { "type": "string", "enum": ["approve", "reject"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Batch registration update completed", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
           "500": { "$ref": "#/components/responses/ErrorInternal" }
         }
       }
@@ -610,6 +657,185 @@
         "summary": "Delete institution",
         "responses": {
           "200": { "description": "Deleted", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/users": {
+      "get": {
+        "tags": ["Users"],
+        "summary": "List users",
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer", "minimum": 1, "default": 1 } },
+          { "in": "query", "name": "pageSize", "schema": { "type": "integer", "minimum": 1, "maximum": 100, "default": 20 } },
+          { "in": "query", "name": "search", "schema": { "type": "string" } },
+          { "in": "query", "name": "role", "schema": { "type": "string" } },
+          { "in": "query", "name": "status", "schema": { "type": "string" } },
+          { "in": "query", "name": "sortBy", "schema": { "type": "string" } },
+          { "in": "query", "name": "sortOrder", "schema": { "type": "string", "enum": ["asc", "desc"], "default": "desc" } }
+        ],
+        "responses": {
+          "200": { "description": "Users list", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PaginatedSuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Create user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["name", "email", "password"],
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 },
+                  "role": { "type": "string" },
+                  "status": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "title": { "type": "string" },
+                  "bio": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "User created", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/users/{id}": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user detail",
+        "responses": {
+          "200": { "description": "User detail", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "email": { "type": "string", "format": "email" },
+                  "password": { "type": "string", "minLength": 8 },
+                  "role": { "type": "string" },
+                  "status": { "type": "string" },
+                  "phone": { "type": "string" },
+                  "title": { "type": "string" },
+                  "bio": { "type": "string" },
+                  "avatar": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User updated", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "409": { "$ref": "#/components/responses/ErrorConflict" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/users/{id}/role": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "put": {
+        "tags": ["Users"],
+        "summary": "Update user role",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["role"],
+                "properties": {
+                  "role": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User role updated", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      }
+    },
+    "/api/v2/users/{id}/points": {
+      "parameters": [
+        { "in": "path", "name": "id", "required": true, "schema": { "type": "string" } }
+      ],
+      "get": {
+        "tags": ["Users"],
+        "summary": "Get user points and transactions",
+        "responses": {
+          "200": { "description": "User points detail", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
+          "403": { "$ref": "#/components/responses/ErrorForbidden" },
+          "404": { "$ref": "#/components/responses/ErrorNotFound" },
+          "500": { "$ref": "#/components/responses/ErrorInternal" }
+        }
+      },
+      "post": {
+        "tags": ["Users"],
+        "summary": "Adjust user points",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["points", "description"],
+                "properties": {
+                  "points": { "type": "number" },
+                  "description": { "type": "string" },
+                  "type": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "User points adjusted", "headers": { "X-API-Version": { "$ref": "#/components/headers/XApiVersion" } }, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SuccessResponse" } } } },
+          "400": { "$ref": "#/components/responses/ErrorBadRequest" },
           "401": { "$ref": "#/components/responses/ErrorUnauthorized" },
           "403": { "$ref": "#/components/responses/ErrorForbidden" },
           "404": { "$ref": "#/components/responses/ErrorNotFound" },

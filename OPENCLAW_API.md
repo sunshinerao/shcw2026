@@ -153,6 +153,34 @@ GET /api/v1/events/{id}
 
 返回活动完整信息，含 `agendaItems`（议程列表，每项含嘉宾信息）和 `eventDateSlots`。
 
+### 3.2.1 获取活动报名观众列表
+
+```
+GET /api/v1/events/{id}/registrations
+```
+
+**所需权限：** `events:read`
+
+可选 Query 参数：`status`
+
+返回该活动的报名观众列表，包含用户姓名、邮箱、角色、气候护照 ID，以及当前活动的已批准人数统计。
+
+### 3.2.2 批量审批或拒绝报名
+
+```
+PATCH /api/v1/events/{id}/registrations
+Content-Type: application/json
+```
+
+**所需权限：** `events:write`
+
+```json
+{
+  "registrationIds": ["reg_001", "reg_002"],
+  "action": "approve"
+}
+```
+
 ---
 
 ### 3.3 创建活动
@@ -645,9 +673,107 @@ DELETE /api/v1/insights/{id_or_slug}
 
 ---
 
-## 9. 用户密码重置 Users
+## 9. 用户 Users
 
-### 9.1 重置用户密码
+### 9.1 获取用户列表
+
+```
+GET /api/v1/users
+```
+
+**所需权限：** `users:read`
+
+支持分页与筛选，常用 Query 参数：`page`、`pageSize`、`search`、`role`、`status`、`sortBy`、`sortOrder`。
+
+### 9.2 获取单个用户详情
+
+```
+GET /api/v1/users/{id}
+```
+
+**所需权限：** `users:read`
+
+返回用户基础资料、所属机构、报名记录与统计信息；不会暴露密码等敏感字段。
+
+### 9.3 创建用户
+
+```
+POST /api/v1/users
+Content-Type: application/json
+```
+
+**所需权限：** `users:write`
+
+**请求体示例：**
+
+```json
+{
+  "name": "张三",
+  "email": "user@example.com",
+  "password": "NewSecurePass123",
+  "role": "ATTENDEE",
+  "status": "ACTIVE"
+}
+```
+
+### 9.4 更新用户资料
+
+```
+PUT /api/v1/users/{id}
+Content-Type: application/json
+```
+
+**所需权限：** `users:write`
+
+支持更新姓名、邮箱、手机号、职务、简介、头像、角色、状态、员工模块权限及机构资料；如传入 `password`，将直接重置为新密码。
+
+### 9.5 更新用户角色
+
+```
+PUT /api/v1/users/{id}/role
+Content-Type: application/json
+```
+
+**所需权限：** `users:write`
+
+**请求体示例：**
+
+```json
+{
+  "role": "VERIFIER"
+}
+```
+
+### 9.6 获取用户积分记录
+
+```
+GET /api/v1/users/{id}/points
+```
+
+**所需权限：** `users:read`
+
+返回当前积分、已参加活动数及最近 50 条积分流水。
+
+### 9.7 调整用户积分
+
+```
+POST /api/v1/users/{id}/points
+Content-Type: application/json
+```
+
+**所需权限：** `users:write`
+
+**请求体示例：**
+
+```json
+{
+  "points": 20,
+  "description": "Manual bonus for volunteer support",
+  "type": "BONUS"
+}
+```
+
+### 9.8 重置用户密码
 
 ```
 POST /api/v1/users/reset-password
@@ -658,50 +784,7 @@ Content-Type: application/json
 
 直接将指定用户的密码设置为新密码，**无需提供原密码**。操作成功后，该用户此前通过忘记密码流程获取的邮件重置链接将同时失效。
 
-> ⚠️  此接口为高权限操作，仅应在受控场景下使用（如 AI Agent 代运营维护、后台批量管理）。API 密钥的 IP 白名单建议配置以限制调用来源。
-
-**请求体：**
-
-```json
-{
-  "email": "user@example.com",
-  "newPassword": "NewSecurePass123"
-}
-```
-
-**字段说明：**
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `email` | string | ✅ | 用户注册邮箱（大小写不敏感） |
-| `newPassword` | string | ✅ | 新密码，至少 8 个字符 |
-
-**验证规则：**
-- `email` 必须已存在于数据库
-- `newPassword` 长度 ≥ 8 个字符
-- 已被停用（`SUSPENDED`）的账号无法重置密码（返回 `403`）
-
-**成功响应（HTTP 200）：**
-
-```json
-{
-  "success": true,
-  "message": "Password for user@example.com has been reset successfully.",
-  "data": {
-    "userId": "clxyz123",
-    "email": "user@example.com",
-    "name": "张三"
-  }
-}
-```
-
-**失败响应示例：**
-
-```json
-{ "success": false, "error": "newPassword must be at least 8 characters" }
-{ "success": false, "error": "No user found with that email address" }
-{ "success": false, "error": "Cannot reset password for a suspended account" }
-```
+> ⚠️ 此接口为高权限操作，仅应在受控场景下使用。建议为 API 密钥配置 IP 白名单以限制调用来源。
 
 ---
 
@@ -742,7 +825,8 @@ Content-Type: application/json
 | `insights:write` | 创建/更新/删除知识成果 |
 | `partners:read` | 读取合作伙伴列表和详情 |
 | `partners:write` | 创建/更新/删除合作伙伴 |
-| `users:write` | 重置任意用户密码 |
+| `users:read` | 读取用户列表、详情与积分记录 |
+| `users:write` | 创建/更新用户、调整角色与积分、重置密码 |
 
 ---
 
