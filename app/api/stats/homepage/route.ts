@@ -1,48 +1,42 @@
+import { RegistrationStatus } from "@prisma/client";
 import { NextResponse } from "next/server";
+import { countDistinctEventDays } from "@/lib/homepage-stats";
 import { prisma } from "@/lib/prisma";
+import { getSystemSettingsForServer } from "@/lib/system-settings";
 
 export async function GET() {
   try {
-    // 1. Event Days: count distinct dates across all published events
-    const events = await prisma.event.findMany({
-      where: { isPublished: true },
-      select: { startDate: true, endDate: true },
-    });
-
-    const dateSet = new Set<string>();
-    for (const event of events) {
-      const start = new Date(event.startDate);
-      const end = new Date(event.endDate);
-      const current = new Date(start);
-      while (current <= end) {
-        dateSet.add(current.toISOString().slice(0, 10));
-        current.setDate(current.getDate() + 1);
-      }
-    }
-    const eventDays = dateSet.size;
-
-    // 2. Thematic Forums: count published events
-    const forums = await prisma.event.count({
-      where: { isPublished: true },
-    });
-
-    // 3. Speakers: count keynote speakers
-    const keynoteSpeakers = await prisma.speaker.count({
-      where: { isKeynote: true },
-    });
-
-    // 4. Attendees: fixed value
-    const attendees = 200000;
+    const [events, forums, speakers, attendees, settings] = await Promise.all([
+      prisma.event.findMany({
+        where: { isPublished: true },
+        select: { startDate: true, endDate: true },
+      }),
+      prisma.event.count({
+        where: { isPublished: true },
+      }),
+      prisma.speaker.count({
+        where: { isVisible: true },
+      }),
+      prisma.registration.count({
+        where: {
+          status: {
+            in: [RegistrationStatus.REGISTERED, RegistrationStatus.ATTENDED],
+          },
+        },
+      }),
+      getSystemSettingsForServer(),
+    ]);
 
     return NextResponse.json({
-      eventDays,
+      eventDays: countDistinctEventDays(events),
       forums,
-      keynoteSpeakers,
+      speakers,
       attendees,
+      showAttendees: settings.homepageAttendeesEnabled === true,
     });
   } catch {
     return NextResponse.json(
-      { eventDays: 0, forums: 0, keynoteSpeakers: 0, attendees: 200000 },
+      { eventDays: 0, forums: 0, speakers: 0, attendees: 0, showAttendees: false },
       { status: 500 }
     );
   }

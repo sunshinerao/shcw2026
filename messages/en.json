@@ -296,7 +296,8 @@
             "summary": "Summary",
             "content": "Content",
             "uploadFile": "Upload file",
-            "uploadCoreFile": "Upload formatted MD (core content)",
+            "uploadCoreFile": "Upload structured source document",
+            "uploadStructuredMd": "Unified structured source document (ZH + EN in one file)",
             "uploadPublishFile": "Upload publish file (final release file)",
             "fileUrl": "File URL",
             "format": "Format",
@@ -328,7 +329,8 @@
             "clearCoreContent": "Clear core content",
             "clearPublishFile": "Delete publish file",
             "specZh": "Download MD Spec (ZH)",
-            "specEn": "Download MD Spec (EN)"
+            "specEn": "Download MD Spec (EN)",
+            "specUnified": "Download Unified MD Spec"
         },
         "messages": {
             "saved": "Saved successfully",
@@ -336,13 +338,15 @@
             "uploaded": "File uploaded and extracted successfully",
             "uploadedCore": "Chinese core content uploaded and extracted",
             "uploadedCoreEn": "English core content uploaded and extracted",
+            "uploadedStructuredSource": "Structured source document uploaded and extracted",
             "uploadedCover": "Cover image uploaded successfully",
             "uploadFailed": "Failed to upload file",
             "uploadCoverFailed": "Failed to upload cover image",
             "slugRequired": "Please provide title or slug",
             "confirmDelete": "Delete this insight?",
             "coreContentCleared": "Core content cleared",
-            "publishFileCleared": "Publish file deleted"
+            "publishFileCleared": "Publish file deleted",
+            "noInstitutionOptions": "No institutions available yet. Create or enable one in Institution Management first."
         }
     },
     "adminPostersPage": {
@@ -1640,7 +1644,8 @@
     "eventsPage": {
         "hero": {
             "title": "Event Schedule",
-            "subtitle": "April 20-28, 2026. Explore {count} featured programs."
+            "subtitle": "{dateRange}. Explore {count} featured programs.",
+            "subtitleNoRange": "Explore {count} featured programs."
         },
         "loading": "Loading events...",
         "loadError": "Unable to load events right now.",
@@ -2442,267 +2447,20 @@
             },
             "knowledge": {
                 "title": "Knowledge Partner",
-                "description": "Co-publish reports and white papers while convening thematic discussions together"
+                "description": "Co-publish research reports and white papers, and co-host thematic forums"
             },
             "community": {
                 "title": "Community Partner",
-                "description": "Mobilize communities and expand public participation in climate action"
+                "description": "Organize community engagement activities and promote climate action"
             },
             "showcase": {
                 "title": "Showcase Partner",
-                "description": "Present innovative products and solutions in the exhibition area with targeted visibility"
+                "description": "Display innovative products and solutions in the exhibition area and gain targeted visibility"
             }
         },
         "cta": {
             "title": "Ready to join us?",
-            "description": "Contact our partnership team for a detailed proposal and tailored recommendations"
-        }
-    },
-    "newsPage": {
-        "hero": {
-            "title": "Newsroom",
-            "subtitle": "Stay up to date with Shanghai Climate Week announcements, speakers, and event news"
-        },
-        "searchPlaceholder": "Search news...",
-        "latest": "Latest updates",
-        "readMore": "Read more",
-        "categories": {
-            "all": "All",
-            "announcement": "Announcements",
-            "speaker": "Speaker Updates",
-            "partner": "Partners",
-            "signing": "Partnership Signing",
-            "exhibitor": "Exhibitors"
-        },
-        "items": {
-            "1": {
-                "title": "Registration for Shanghai Climate Week 2026 is now open, with global climate leaders heading to Shanghai",
-                "excerpt": "Under the theme Eastern Momentum, New Voyage, this year’s edition is expected to welcome more than 1,000 participants from around the world to discuss the climate action agenda for the next decade..."
-            },
-            "2": {
-                "title": "Special Envoy Xie Zhenhua confirmed to attend the opening ceremony and deliver a keynote speech",
-                "excerpt": "China’s Special Envoy for Climate Change Xie Zhenhua has confirmed his attendance at the Shanghai Climate Week 2026 opening ceremony, where he will speak about China’s climate policy and global cooperation..."
-            },
-            "3": {
-                "title": "Partner lineup announced for the Green Finance Innovation Summit",
-                "excerpt": "The People’s Bank of China, the Green Finance Committee, MSCI, Goldman Sachs, and other institutions will jointly host the summit to explore ESG investment and sustainable finance..."
-            },
-            "4": {
-                "title": "Shanghai Climate Week signs a strategic cooperation agreement with UNDP",
-                "excerpt": "The two sides will deepen collaboration in climate governance, capacity building, and technology transfer to accelerate climate action across the Asia-Pacific region..."
-            },
-            "5": {
-                "title": "Applications open for the Youth Climate Leaders Summit",
-                "excerpt": "Open to global climate leaders aged 18 to 35, the summit will offer dialogue with leading climate experts and support outstanding projects..."
-            },
-            "6": {
-                "title": "Tesla and BYD confirmed for the Renewable Energy Transition Conference",
-                "excerpt": "The two EV leaders will showcase their latest electric mobility technologies and sustainable energy solutions to support transport decarbonization..."
-            }
-        }
-    },
-    "eventRegister": {
-        "title": "Event Registration",
-        "subtitle": "Fill in the information below to register for the event",
-        "backToEvent": "Back to Event",
-        "eventNotFound": "Event not found",
-        "backToEvents": "Back to Events",
-        "loading": "Loading event details...",
-        "submitError": "Registration failed, please try again later",
-        "loginRequired": {
-            "title": "Login Required",
-            "description": "You need to be logged in to register for events. Don't have an account? Register for free.",
-            "login": "Login Now",
-            "register": "Register Free"
-        },
-        "form": {
-            "title": "Title",
-            "autoFilled": "Your information has been auto-filled",
-            "name": "Name",
-            "email": "Email",
-            "phone": "Phone",
-            "organization": "Organization",
-            "titlePlaceholder": "Enter your job title",
-            "dietary": "Dietary Requirements",
-            "dietaryPlaceholder": "e.g., vegetarian, allergies",
-            "notes": "Notes",
-            "submit": "Confirm Registration",
-            "submitting": "Submitting..."
-        },
-        "eventInfo": {
-            "title": "Event Information",
-            "capacity": "Limited to {count} people"
-        },
-        "success": {
-            "title": "Registration Submitted!",
-            "description": "Registration successful! Please visit your Event Pass to confirm your registration.",
-            "viewEvent": "View Event",
-            "goToDashboard": "Go to Dashboard"
-        },
-        "eventClosed": {
-            "title": "Apply to Attend a Closed-Door Event",
-            "description": "This event is closed-door and does not accept public registrations. If you would like to attend, please email the organizer with a short introduction to your organization, role, and reason for attending.",
-            "contactTitle": "Contact the organizer",
-            "contactDescription": "The organizer will review your request based on the event arrangement and seat availability, then follow up by email.",
-            "contactLabel": "Contact email",
-            "contactAction": "Email to apply",
-            "email": "info@shanghaiclimateweek.org.cn"
-        }
-    },
-    "faqPage": {
-        "title": "FAQ",
-        "subtitle": "Frequently asked questions about Shanghai Climate Week 2026",
-        "backToHome": "Back to Home",
-        "loading": "Loading FAQs...",
-        "emptyTitle": "No FAQs available yet",
-        "emptyDescription": "Please add and publish FAQ items from the admin console.",
-        "detailTitle": "FAQ details",
-        "viewDetail": "View details",
-        "downloadAttachment": "Download attachment",
-        "attachment": "Related attachment",
-        "pinned": "Pinned",
-        "contact": {
-            "title": "Still have questions?",
-            "description": "If you couldn't find the answer you're looking for, please feel free to contact our team.",
-            "button": "Contact Us"
-        }
-    },
-    "adminFaq": {
-        "title": "FAQ Management",
-        "subtitle": "Manage the FAQ cards, detail content, and attachment downloads shown on the public site.",
-        "create": "Add FAQ",
-        "edit": "Edit FAQ",
-        "delete": "Delete FAQ",
-        "createTitle": "Create FAQ",
-        "editTitle": "Edit FAQ",
-        "deleteTitle": "Confirm deletion",
-        "deleteDescription": "Delete this FAQ item permanently? This action cannot be undone.",
-        "save": "Save",
-        "cancel": "Cancel",
-        "upload": "Upload attachment",
-        "uploading": "Uploading...",
-        "removeAttachment": "Remove attachment",
-        "attachmentUploaded": "Attachment uploaded",
-        "previewAttachment": "Preview attachment",
-        "attachmentHint": "Supports PDF / PNG / JPG / WEBP, up to 10MB.",
-        "empty": "No FAQ items yet.",
-        "loadError": "Failed to load FAQ items.",
-        "saveError": "Failed to save the FAQ item.",
-        "deleteError": "Failed to delete the FAQ item.",
-        "uploadError": "Failed to upload the attachment.",
-        "createSuccess": "FAQ item created.",
-        "updateSuccess": "FAQ item updated.",
-        "deleteSuccess": "FAQ item deleted.",
-        "importDefaults": "Import defaults",
-        "importError": "Failed to import default FAQ items.",
-        "importSuccess": "Imported {created} default FAQ items and skipped {skipped} duplicates.",
-        "fields": {
-            "category": "Category (Chinese)",
-            "categoryEn": "Category (English)",
-            "question": "Question (Chinese)",
-            "questionEn": "Question (English)",
-            "summary": "Summary (Chinese)",
-            "summaryEn": "Summary (English)",
-            "answer": "Detailed answer (Chinese)",
-            "answerEn": "Detailed answer (English)",
-            "sortOrder": "Sort order",
-            "published": "Visible on site",
-            "pinned": "Pin to top",
-            "attachment": "Attachment file"
-        },
-        "table": {
-            "question": "Question",
-            "summary": "Summary",
-            "status": "Status",
-            "attachment": "Attachment",
-            "actions": "Actions",
-            "published": "Published",
-            "draft": "Draft",
-            "pinned": "Pinned",
-            "notPinned": "Not pinned",
-            "hasAttachment": "Attached",
-            "noAttachment": "None"
-        }
-    },
-    "verifierPage": {
-        "header": {
-            "title": "On-site Check-in",
-            "subtitle": "Scan participant QR codes for verification"
-        },
-        "history": "History",
-        "ready": {
-            "title": "Ready to Scan",
-            "description": "Tap Start Scanning and point your camera at the participant's QR code",
-            "start": "Start Scanning"
-        },
-        "scanning": {
-            "title": "Scan QR Code",
-            "cancel": "Cancel",
-            "hint": "Place the QR code inside the frame to scan automatically"
-        },
-        "result": {
-            "success": "Verification Successful",
-            "failed": "Verification Failed",
-            "requestFailed": "Verification request failed",
-            "continueScanning": "Continue Scanning",
-            "eventInfo": "Event Info",
-            "pointsAwarded": "+{points} Points",
-            "pointsDescription": "Points awarded for event attendance",
-            "alreadyCheckedIn": "This user has already checked in",
-            "checkedInTime": "Checked in at: {time}"
-        },
-        "historyPanel": {
-            "title": "Recent Check-in Records",
-            "empty": "No check-in records yet",
-            "passportVerify": "Passport verification"
-        },
-        "noPermission": "You do not have verifier permissions"
-    },
-    "speakersSection": {
-        "title": "Featured Speakers",
-        "subtitle": "Industry leaders, experts and policy makers from around the world",
-        "viewAll": "View All Speakers"
-    },
-    "newsSection": {
-        "title": "News and Media",
-        "subtitle": "Stay updated with Shanghai Climate Week",
-        "readMore": "Read More",
-        "viewAll": "View All News"
-    },
-    "adminNews": {
-        "title": "News Management",
-        "subtitle": "Manage website news and updates",
-        "create": "Publish News",
-        "edit": "Edit",
-        "delete": "Delete",
-        "confirmDelete": "Are you sure you want to delete this news article?",
-        "loadError": "Failed to load news",
-        "empty": "No news yet. Click the button above to publish your first article.",
-        "seedButton": "Import Sample News",
-        "seedSuccess": "Import completed",
-        "seedCreated": "created",
-        "seedSkipped": "skipped",
-        "createSuccess": "News published successfully",
-        "updateSuccess": "News updated successfully",
-        "deleteSuccess": "News deleted",
-        "uploadSuccess": "Cover image uploaded",
-        "uploadFailed": "Failed to upload cover image",
-        "form": {
-            "title": "Title",
-            "titleEn": "English Title",
-            "excerpt": "Excerpt",
-            "excerptEn": "English Excerpt",
-            "content": "Content",
-            "contentEn": "English Content",
-            "coverImage": "Cover Image",
-            "slug": "URL Slug",
-            "isPublished": "Published",
-            "save": "Save",
-            "cancel": "Cancel"
-        },
-        "status": {
-            "published": "Published",
-            "draft": "Draft"
+            "description": "Contact our partnership team for detailed plans and tailored recommendations"
         }
     },
     "adminSettingsPage": {
@@ -2711,6 +2469,12 @@
         "loading": "Loading settings...",
         "save": "Save settings",
         "reload": "Reload",
+        "tabs": {
+            "ai": "AI Settings",
+            "siteFeatures": "Display Control",
+            "knowledge": "Knowledge Rules",
+            "invitationTemplate": "Invitation Template & Signatures"
+        },
         "ai": {
             "title": "AI Highlight Generation",
             "description": "Configure OpenAI options to auto-generate event highlights from event data.",
@@ -2729,7 +2493,9 @@
         "messages": {
             "loadFailed": "Failed to load system settings.",
             "saveSuccess": "System settings saved.",
-            "saveFailed": "Failed to save system settings."
+            "saveFailed": "Failed to save system settings.",
+            "knowledgeSaveSuccess": "Knowledge type settings saved.",
+            "templateSaveSuccess": "Knowledge template settings saved."
         },
         "siteFeatures": {
             "title": "Content Feature Toggles",
@@ -2739,11 +2505,63 @@
             "speakersEnabled": "Show speakers module",
             "speakersEnabledHint": "When disabled, the homepage speakers section and Speakers navigation link are hidden, and /speakers returns 404.",
             "partnersEnabled": "Show partners module",
-            "partnersEnabledHint": "When disabled, the partners section on the homepage is hidden."
+            "partnersEnabledHint": "When disabled, the partners section on the homepage is hidden.",
+            "homepageAttendeesEnabled": "Show homepage attendee count",
+            "homepageAttendeesEnabledHint": "When disabled, the attendee metric is hidden on the homepage. When enabled, it uses real registration data from the backend."
+        },
+        "knowledge": {
+            "title": "Knowledge Type Rules",
+            "description": "Maintain the formatted MD spec file and configure four callable template slots for each asset type: standard formal, simplified formal, standard web, and card web.",
+            "loading": "Loading Knowledge type settings...",
+            "typeCode": "Type code",
+            "formalTemplate": "Default formal document template",
+            "formalTemplateHint": "Configure the standard and simplified formal-document templates for this type.",
+            "webTemplate": "Default webpage template",
+            "webTemplateHint": "Configure the standard and card-style webpage templates for this type.",
+            "toneZh": "Chinese summary/tone guidance",
+            "toneEn": "English summary/tone guidance",
+            "sectionFocusZh": "Chinese section focus guidance",
+            "sectionFocusEn": "English section focus guidance",
+            "mdSpecTemplate": "Formatted text spec (MD file)",
+            "mdSpecTemplateHint": "Edit the full bilingual MD spec template for this type. Supported placeholders: {{type}}, {{labelZh}}, {{labelEn}}, {{toneZh}}, {{toneEn}}, {{sectionFocusZh}}, {{sectionFocusEn}}.",
+            "templateLibraryTitle": "Template library editor",
+            "templateLibraryDescription": "Visually maintain formal and webpage templates, and directly upload or paste Figma HTML to import a formal template. Saved changes apply immediately to rendering and export flows.",
+            "formalTemplateLibrary": "Formal document templates",
+            "webTemplateLibrary": "Web display templates",
+            "renderMode": "Render mode",
+            "styleTemplate": "Document style",
+            "colorScheme": "Color scheme",
+            "fontSize": "Font size",
+            "tocItemsPerPage": "TOC items per page",
+            "chapterFirstPageChars": "Chapter first-page capacity",
+            "chapterBodyPageChars": "Chapter continuation-page capacity",
+            "headerText": "Header text",
+            "footerText": "Footer text",
+            "includeCover": "Include cover",
+            "includeToc": "Include table of contents",
+            "includeHeaders": "Show headers",
+            "includeFooters": "Show footers",
+            "includeReferences": "Include references",
+            "includeChapters": "Render chapters",
+            "layout": "Layout",
+            "accentColor": "Accent color",
+            "maxContentWidth": "Max content width",
+            "lineHeight": "Line height",
+            "showToc": "Show table of contents",
+            "showKeyPoints": "Show key points",
+            "showRecommendations": "Show recommendations",
+            "showReferences": "Show references",
+            "showMetadata": "Show metadata",
+            "showDownloadLink": "Show download link",
+            "enablePdfExport": "Enable PDF export",
+            "enableDocxExport": "Enable DOCX export",
+            "enablePrint": "Enable print",
+            "saveTemplate": "Save current template",
+            "save": "Save Knowledge settings"
         },
         "invitationTemplate": {
-            "title": "Invitation Letter Template",
-            "description": "Configure the three page images and every dynamic copy block on page 2 except the fixed title.",
+            "title": "Invitation Template & Signatures",
+            "description": "Configure the three-page invitation images, all dynamic copy blocks on page 2, and the signature presets bound to this template.",
             "coverImages": "Cover image (Page 1)",
             "bodyBgImages": "Body background (Page 2)",
             "backBgImages": "Back cover background (Page 3)",
@@ -2765,7 +2583,7 @@
             "closingText": "Closing copy",
             "greetingText": "Greeting copy",
             "signatureHtml": "Signature template",
-            "signatureHtmlHint": "Supports HTML tags: '<br>'. Example: Shanghai Climate Week Executive Committee'<br />'March 2026",
+            "signatureHtmlHint": "Supports HTML tags: '<br>'. Example: Shanghai Climate Week Executive Committee<br />March 2026",
             "footerNoteText": "Footer note",
             "footerLinkTemplate": "Footer link template",
             "bodyLimitHint": "For this layout, keep the visible body content within {count} characters.",

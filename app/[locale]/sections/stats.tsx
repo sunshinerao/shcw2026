@@ -1,8 +1,9 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { useRef, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { useRef, useEffect, useState } from "react";
+import { buildHomepageStats } from "@/lib/homepage-stats";
 
 interface StatItemProps {
   value: string;
@@ -55,26 +56,37 @@ function StatItem({ value, label, delay }: StatItemProps) {
 
 export function StatsSection() {
   const t = useTranslations();
-  const [statsData, setStatsData] = useState({ eventDays: 0, forums: 0, keynoteSpeakers: 0, attendees: 200000 });
+  const [statsData, setStatsData] = useState({
+    eventDays: 0,
+    forums: 0,
+    speakers: 0,
+    attendees: 0,
+    showAttendees: false,
+  });
 
   useEffect(() => {
-    fetch("/api/stats/homepage")
+    fetch("/api/stats/homepage", { cache: "no-store" })
       .then((res) => res.json())
       .then((data) => setStatsData(data))
       .catch(() => {});
   }, []);
 
-  const stats = [
-    { value: statsData.eventDays > 0 ? `${statsData.eventDays}+` : "0", label: t("stats.days") },
-    { value: statsData.forums > 0 ? `${statsData.forums}+` : "0", label: t("stats.forums") },
-    { value: statsData.keynoteSpeakers > 0 ? `${statsData.keynoteSpeakers}+` : "0", label: t("stats.speakers") },
-    { value: `${statsData.attendees}+`, label: t("stats.attendees") },
-  ];
+  const statLabels = {
+    days: t("stats.days"),
+    forums: t("stats.forums"),
+    speakers: t("stats.speakers"),
+    attendees: t("stats.attendees"),
+  };
+
+  const stats = buildHomepageStats(statsData, statsData.showAttendees).map((stat) => ({
+    ...stat,
+    label: statLabels[stat.key],
+  }));
 
   return (
     <section className="py-16 sm:py-20 bg-emerald-50/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
+        <div className={`grid grid-cols-2 ${stats.length > 3 ? "md:grid-cols-4" : "md:grid-cols-3"} gap-8 md:gap-12`}>
           {stats.map((stat, index) => (
             <StatItem
               key={stat.label}

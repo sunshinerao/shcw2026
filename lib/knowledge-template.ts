@@ -11,11 +11,22 @@ export interface FormalDocumentTemplateConfig {
   // 文档风格
   styleTemplate: "default" | "professional" | "minimal";
   colorScheme: "blue" | "green" | "gray";
+  renderMode?: "classic" | "figma_whitepaper";
+  accentColor?: string;
   
   // 页面配置
   pageSize: "A4" | "Letter";
   fontSize: number;
   fontFamily: string;
+  tocItemsPerPage?: number;
+  chapterFirstPageChars?: number;
+  chapterBodyPageChars?: number;
+  forceChapterPageBreak?: boolean;
+  includeAboutPage?: boolean;
+  templateContractVersion?: "shcw-formal-v1";
+  importedFrom?: "manual" | "figma-html" | "figma-css";
+  sourceHtml?: string;
+  customCss?: string;
   
   // 包含的元素
   includeCover: boolean;
@@ -86,9 +97,16 @@ export const DEFAULT_TEMPLATES = {
       formal: {
         styleTemplate: "professional",
         colorScheme: "blue",
+        renderMode: "figma_whitepaper",
+        accentColor: "#f6645a",
         pageSize: "A4",
         fontSize: 11,
         fontFamily: "PingFang SC, Arial",
+        tocItemsPerPage: 6,
+        chapterFirstPageChars: 1600,
+        chapterBodyPageChars: 2300,
+        forceChapterPageBreak: true,
+        includeAboutPage: true,
         includeCover: true,
         includeTableOfContents: true,
         includePageNumbers: true,
@@ -120,9 +138,16 @@ export const DEFAULT_TEMPLATES = {
       formal: {
         styleTemplate: "minimal",
         colorScheme: "gray",
+        renderMode: "classic",
+        accentColor: "#475569",
         pageSize: "A4",
         fontSize: 10,
         fontFamily: "Arial, sans-serif",
+        tocItemsPerPage: 8,
+        chapterFirstPageChars: 1800,
+        chapterBodyPageChars: 2600,
+        forceChapterPageBreak: true,
+        includeAboutPage: false,
         includeCover: false,
         includeTableOfContents: false,
         includePageNumbers: true,

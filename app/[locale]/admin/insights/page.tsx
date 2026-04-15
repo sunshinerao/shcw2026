@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
-import { BookOpen, Check, Download, Edit2, Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { BookOpen, Check, Download, Edit2, FileText, Loader2, Plus, Trash2, Upload } from "lucide-react";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,10 +12,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getKnowledgeTypePreset, type KnowledgeTypeSettingsMap } from "@/lib/knowledge-type-config";
 
 const typeOptions = ["WHITE_PAPER", "REPORT", "INITIATIVE", "POLICY_BRIEF", "GUIDE", "DECLARATION", "SUMMARY"];
 const statusOptions = ["DRAFT", "PUBLISHED"];
 const accessTypeOptions = ["PUBLIC", "LOGIN_REQUIRED", "PAID", "HIDDEN"];
+const defaultKnowledgeTypeSettings = Object.fromEntries(
+  typeOptions.map((type) => [type, getKnowledgeTypePreset(type)])
+) as KnowledgeTypeSettingsMap;
 
 function slugify(text: string) {
   return text
@@ -54,6 +58,10 @@ type FormState = {
   summaryEn: string;
   content: string;
   contentEn: string;
+  keyPoints: string[];
+  keyPointsEn: string[];
+  chapters: any[];
+  chaptersEn: any[];
   pullQuote: string;
   pullQuoteEn: string;
   pullQuoteCaption: string;
@@ -82,9 +90,11 @@ type OptionItem = {
 
 type TemplateItem = {
   id: string;
+  code?: string | null;
   name: string;
   nameEn?: string | null;
   isDefault?: boolean;
+  isActive?: boolean;
 };
 
 const emptyForm: FormState = {
@@ -105,6 +115,10 @@ const emptyForm: FormState = {
   summaryEn: "",
   content: "",
   contentEn: "",
+  keyPoints: [],
+  keyPointsEn: [],
+  chapters: [],
+  chaptersEn: [],
   pullQuote: "",
   pullQuoteEn: "",
   pullQuoteCaption: "",
@@ -133,6 +147,23 @@ function getDefaultTemplateId(list: TemplateItem[]) {
   return list.find((item) => item.isDefault)?.id || list[0].id;
 }
 
+function getTemplateIdByCode(list: TemplateItem[], code: string) {
+  return list.find((item) => item.code === code)?.id || "";
+}
+
+function getRecommendedTemplateIds(
+  type: string,
+  formalTemplates: TemplateItem[],
+  webTemplates: TemplateItem[],
+  typeSettings?: KnowledgeTypeSettingsMap,
+) {
+  const preset = getKnowledgeTypePreset(type, typeSettings);
+  return {
+    primaryTemplateId: getTemplateIdByCode(formalTemplates, preset.formalTemplateCodeStandard || preset.formalTemplateCode) || getDefaultTemplateId(formalTemplates),
+    webTemplateId: getTemplateIdByCode(webTemplates, preset.webTemplateCodeStandard || preset.webTemplateCode) || getDefaultTemplateId(webTemplates),
+  };
+}
+
 function todayDateInputValue() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -152,8 +183,10 @@ export default function AdminInsightsPage() {
   const [trackOptions, setTrackOptions] = useState<OptionItem[]>([]);
   const [formalTemplates, setFormalTemplates] = useState<TemplateItem[]>([]);
   const [webTemplates, setWebTemplates] = useState<TemplateItem[]>([]);
+  const [knowledgeTypeSettings, setKnowledgeTypeSettings] = useState<KnowledgeTypeSettingsMap>(defaultKnowledgeTypeSettings);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
 
+  const currentTypePreset = getKnowledgeTypePreset(form.type, knowledgeTypeSettings);
   const nameOf = (item: { name: string; nameEn?: string | null }) => (locale === "en" && item.nameEn ? item.nameEn : item.name);
 
   const loadData = useCallback(async () => {
@@ -182,7 +215,7 @@ export default function AdminInsightsPage() {
       try {
         const [eventsRes, institutionsRes, speakersRes, tracksRes, templatesRes] = await Promise.all([
           fetch("/api/events?pageSize=200").then((r) => r.json()),
-          fetch("/api/institutions?isActive=true").then((r) => r.json()),
+          fetch("/api/institutions?limit=200").then((r) => r.json()),
           fetch("/api/speakers?limit=200").then((r) => r.json()),
           fetch("/api/tracks").then((r) => r.json()),
           fetch("/api/knowledge-templates").then((r) => r.json()),
@@ -197,13 +230,23 @@ export default function AdminInsightsPage() {
             }))
           );
 
+          const institutionList = Array.isArray(institutionsRes?.data)
+            ? institutionsRes.data
+            : Array.isArray(institutionsRes?.data?.items)
+            ? institutionsRes.data.items
+            : Array.isArray(institutionsRes?.items)
+            ? institutionsRes.items
+            : [];
+
           setInstitutionOptions(
-            (institutionsRes?.data || []).map((i: any) => ({
-              id: i.id,
-              name: i.name,
-              nameEn: i.nameEn,
-              slug: i.slug,
-            }))
+            institutionList
+              .map((i: any) => ({
+                id: i.id,
+                name: i.name,
+                nameEn: i.nameEn,
+                slug: i.slug,
+              }))
+              .filter((i: OptionItem) => Boolean(i.id && i.name))
           );
 
           setSpeakerOptions(
@@ -224,6 +267,7 @@ export default function AdminInsightsPage() {
 
           setFormalTemplates(templatesRes?.data?.formalTemplates || []);
           setWebTemplates(templatesRes?.data?.webTemplates || []);
+          setKnowledgeTypeSettings(templatesRes?.data?.typeSettings || defaultKnowledgeTypeSettings);
         }
       } catch {
         // ignore
@@ -239,11 +283,12 @@ export default function AdminInsightsPage() {
 
   function openCreate() {
     setEditingId(null);
+    const recommended = getRecommendedTemplateIds(emptyForm.type, formalTemplates, webTemplates, knowledgeTypeSettings);
     setForm({
       ...emptyForm,
       publishDate: todayDateInputValue(),
-      primaryTemplateId: getDefaultTemplateId(formalTemplates),
-      webTemplateId: getDefaultTemplateId(webTemplates),
+      primaryTemplateId: recommended.primaryTemplateId,
+      webTemplateId: recommended.webTemplateId,
     });
     setDialogOpen(true);
   }
@@ -294,7 +339,7 @@ export default function AdminInsightsPage() {
     }
   }
 
-  async function uploadCoreMarkdownFile(file: File, lang: "zh" | "en" = "zh") {
+  async function uploadCoreMarkdownFile(file: File) {
     setIsUploadingFile(true);
     setStatus("");
 
@@ -302,7 +347,7 @@ export default function AdminInsightsPage() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("uploadMode", "core");
-      formData.append("uploadLang", lang);
+      formData.append("assetType", form.type);
 
       const res = await fetch("/api/insights/upload", {
         method: "POST",
@@ -315,30 +360,16 @@ export default function AdminInsightsPage() {
       }
 
       const extracted = json.data?.extracted || {};
-      const isEn = lang === "en";
 
       setForm((prev) => {
-        if (isEn) {
-          // English upload: only populate En fields, never overwrite zh fields
-          return {
-            ...prev,
-            titleEn: prev.titleEn || extracted.titleEn || "",
-            subtitleEn: prev.subtitleEn || extracted.subtitleEn || "",
-            summaryEn: prev.summaryEn || extracted.summaryEn || "",
-            contentEn: prev.contentEn || extracted.fullContentEn || "",
-            pullQuoteEn: prev.pullQuoteEn || extracted.pullQuoteEn || "",
-            pullQuoteCaptionEn: prev.pullQuoteCaptionEn || extracted.pullQuoteCaptionEn || "",
-            aboutUsEn: prev.aboutUsEn || extracted.aboutUsEn || "",
-            tagsEn: prev.tagsEn || extracted.tagsEn || "",
-            recommendationsEn: prev.recommendationsEn ||
-              (Array.isArray(extracted.recommendationsEn) ? extracted.recommendationsEn.join("\n") : ""),
-          };
-        }
-        // Chinese upload: populate zh fields + ai-generated En fields
+        const nextType = extracted.typeSuggestion || prev.type;
+        const recommended = getRecommendedTemplateIds(nextType, formalTemplates, webTemplates, knowledgeTypeSettings);
         const nextTitle = prev.title || extracted.title || "";
         const nextSubtitle = prev.subtitle || extracted.subtitle || nextTitle;
+
         return {
           ...prev,
+          type: nextType,
           title: nextTitle,
           titleEn: prev.titleEn || extracted.titleEn || nextTitle,
           subtitle: nextSubtitle,
@@ -346,22 +377,34 @@ export default function AdminInsightsPage() {
           slug: prev.slug || extracted.slugSuggestion || slugify(nextTitle),
           author: prev.author || extracted.author || "",
           tags: prev.tags || extracted.tags || "",
+          tagsEn: prev.tagsEn || extracted.tagsEn || "",
           summary: prev.summary || extracted.summary || "",
           summaryEn: prev.summaryEn || extracted.summaryEn || "",
-          content: prev.content || extracted.fullContent || "",
-          contentEn: prev.contentEn || extracted.fullContentEn || "",
+          content: prev.content || extracted.fullContent || extracted.shortContent || "",
+          contentEn: prev.contentEn || extracted.fullContentEn || extracted.shortContentEn || "",
+          keyPoints: Array.isArray(extracted.keyPoints) ? extracted.keyPoints : prev.keyPoints,
+          keyPointsEn: Array.isArray(extracted.keyPointsEn) ? extracted.keyPointsEn : prev.keyPointsEn,
+          chapters: Array.isArray(extracted.chapters) ? extracted.chapters : prev.chapters,
+          chaptersEn: Array.isArray(extracted.chaptersEn) ? extracted.chaptersEn : prev.chaptersEn,
           pullQuote: prev.pullQuote || extracted.pullQuote || "",
+          pullQuoteEn: prev.pullQuoteEn || extracted.pullQuoteEn || "",
           pullQuoteCaption: prev.pullQuoteCaption || extracted.pullQuoteCaption || "",
+          pullQuoteCaptionEn: prev.pullQuoteCaptionEn || extracted.pullQuoteCaptionEn || "",
           aboutUs: prev.aboutUs || extracted.aboutUs || "",
+          aboutUsEn: prev.aboutUsEn || extracted.aboutUsEn || "",
           references: prev.references ||
             (Array.isArray(extracted.references) ? extracted.references.join("\n") : ""),
           recommendations: prev.recommendations ||
             (Array.isArray(extracted.recommendations) ? extracted.recommendations.join("\n") : ""),
+          recommendationsEn: prev.recommendationsEn ||
+            (Array.isArray(extracted.recommendationsEn) ? extracted.recommendationsEn.join("\n") : ""),
           coverImage: prev.coverImage || extracted.coverImage || "",
+          primaryTemplateId: prev.primaryTemplateId || recommended.primaryTemplateId,
+          webTemplateId: prev.webTemplateId || recommended.webTemplateId,
         };
       });
 
-      setStatus(isEn ? t("messages.uploadedCoreEn") : t("messages.uploadedCore"));
+      setStatus(t("messages.uploadedStructuredSource"));
     } catch (error) {
       setStatus(error instanceof Error ? error.message : t("messages.uploadFailed"));
     } finally {
@@ -414,6 +457,10 @@ export default function AdminInsightsPage() {
       summaryEn: data.summaryEn || "",
       content: data.content || "",
       contentEn: data.contentEn || "",
+      keyPoints: Array.isArray(data.keyPoints) ? data.keyPoints : [],
+      keyPointsEn: Array.isArray(data.keyPointsEn) ? data.keyPointsEn : [],
+      chapters: Array.isArray(data.chapters) ? data.chapters : [],
+      chaptersEn: Array.isArray(data.chaptersEn) ? data.chaptersEn : [],
       pullQuote: data.pullQuote || "",
       pullQuoteEn: data.pullQuoteEn || "",
       pullQuoteCaption: data.pullQuoteCaption || "",
@@ -494,6 +541,10 @@ export default function AdminInsightsPage() {
       summaryEn: "",
       content: "",
       contentEn: "",
+      keyPoints: [],
+      keyPointsEn: [],
+      chapters: [],
+      chaptersEn: [],
       slug: "",
       author: "",
       tags: "",
@@ -587,8 +638,49 @@ export default function AdminInsightsPage() {
               </div>
               <div className="grid gap-4 md:grid-cols-3">
                 <div className="space-y-2 md:col-span-2"><Label>{t("fields.slug")}</Label><Input value={form.slug} onChange={(e) => setForm((p) => ({ ...p, slug: e.target.value }))} /></div>
-                <div className="space-y-2"><Label>{t("fields.type")}</Label><Select value={form.type} onValueChange={(v) => setForm((p) => ({ ...p, type: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{typeOptions.map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent></Select></div>
+                <div className="space-y-2"><Label>{t("fields.type")}</Label><Select value={form.type} onValueChange={(v) => setForm((p) => ({ ...p, type: v, ...getRecommendedTemplateIds(v, formalTemplates, webTemplates, knowledgeTypeSettings) }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{typeOptions.map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent></Select></div>
               </div>
+
+              {/* MD Upload section */}
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <Label className="text-sm font-semibold text-slate-700">{t("fields.uploadCoreFile")}</Label>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {locale === "en"
+                        ? `Current type: ${currentTypePreset.labelEn}. The system will auto-read one bilingual source file and match the recommended templates.`
+                        : `当前类型：${currentTypePreset.labelZh}。系统会自动识别同一份中英结构化源文档，并匹配推荐模板。`}
+                    </p>
+                  </div>
+                  <Button type="button" variant="ghost" size="sm" asChild>
+                    <a href={`/api/insights/md-spec?type=${form.type}`} download>
+                      <Download className="mr-1 h-3.5 w-3.5" />
+                      {t("actions.specUnified")}
+                    </a>
+                  </Button>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500">{t("fields.uploadStructuredMd")}</p>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="file"
+                      accept=".md,.markdown,text/markdown,text/plain"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) void uploadCoreMarkdownFile(file);
+                      }}
+                      disabled={isUploadingFile}
+                    />
+                    {isUploadingFile && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-slate-400" />}
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <Button type="button" variant="outline" size="sm" onClick={clearCoreContent}>
+                    {t("actions.clearCoreContent")}
+                  </Button>
+                </div>
+              </div>
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2"><Label>{t("fields.status")}</Label><Select value={form.status} onValueChange={(v) => setForm((p) => ({ ...p, status: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{statusOptions.map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent></Select></div>
                 <div className="space-y-2"><Label>{t("fields.access")}</Label><Select value={form.accessType} onValueChange={(v) => setForm((p) => ({ ...p, accessType: v }))}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{accessTypeOptions.map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent></Select></div>
@@ -655,68 +747,34 @@ export default function AdminInsightsPage() {
                   </Select>
                 </div>
               </div>
+
+              <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                {editingId ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button type="button" variant="outline" size="sm" asChild>
+                      <a href={`/api/insights/${editingId}/export?format=html`} target="_blank" rel="noopener noreferrer">
+                        <FileText className="mr-1 h-4 w-4" />
+                        {locale === "en" ? "Formal Preview" : "正式预览"}
+                      </a>
+                    </Button>
+                    <Button type="button" variant="outline" size="sm" asChild>
+                      <a href={`/api/insights/${editingId}/export?format=pdf&download=true`} target="_blank" rel="noopener noreferrer">
+                        <Download className="mr-1 h-4 w-4" />
+                        {locale === "en" ? "Download current PDF" : "下载当前 PDF"}
+                      </a>
+                    </Button>
+                    <span className="text-xs text-slate-500">
+                      {locale === "en" ? "Preview uses the selected formal document template." : "预览将调用当前选中的正式文档模板。"}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-500">
+                    {locale === "en" ? "Save the knowledge asset first to open the formal preview and PDF export." : "请先保存成果，再打开正式预览和 PDF 导出。"}
+                  </p>
+                )}
+              </div>
               <div className="space-y-2"><Label>{t("fields.summary")}</Label><Textarea rows={3} value={form.summary} onChange={(e) => setForm((p) => ({ ...p, summary: e.target.value }))} /></div>
               <div className="space-y-2"><Label>{t("fields.summaryEn")}</Label><Textarea rows={3} value={form.summaryEn} onChange={(e) => setForm((p) => ({ ...p, summaryEn: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>{t("fields.content")}</Label><Textarea rows={8} value={form.content} onChange={(e) => setForm((p) => ({ ...p, content: e.target.value }))} /></div>
-              <div className="space-y-2"><Label>{t("fields.contentEn")}</Label><Textarea rows={8} value={form.contentEn} onChange={(e) => setForm((p) => ({ ...p, contentEn: e.target.value }))} /></div>
-
-              {/* MD Upload section */}
-              <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold text-slate-700">{t("fields.uploadCoreFile")}</Label>
-                  <div className="flex gap-2">
-                    <Button type="button" variant="ghost" size="sm" asChild>
-                      <a href="/api/insights/md-spec?lang=zh" download>
-                        <Download className="mr-1 h-3.5 w-3.5" />
-                        {t("actions.specZh")}
-                      </a>
-                    </Button>
-                    <Button type="button" variant="ghost" size="sm" asChild>
-                      <a href="/api/insights/md-spec?lang=en" download>
-                        <Download className="mr-1 h-3.5 w-3.5" />
-                        {t("actions.specEn")}
-                      </a>
-                    </Button>
-                  </div>
-                </div>
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="space-y-1">
-                    <p className="text-xs text-slate-500">{t("fields.uploadZhMd")}</p>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="file"
-                        accept=".md,.markdown,text/markdown,text/plain"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) void uploadCoreMarkdownFile(file, "zh");
-                        }}
-                        disabled={isUploadingFile}
-                      />
-                      {isUploadingFile && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-slate-400" />}
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs text-slate-500">{t("fields.uploadEnMd")}</p>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        type="file"
-                        accept=".md,.markdown,text/markdown,text/plain"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) void uploadCoreMarkdownFile(file, "en");
-                        }}
-                        disabled={isUploadingFile}
-                      />
-                      {isUploadingFile && <Loader2 className="h-4 w-4 shrink-0 animate-spin text-slate-400" />}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-end">
-                  <Button type="button" variant="outline" size="sm" onClick={clearCoreContent}>
-                    {t("actions.clearCoreContent")}
-                  </Button>
-                </div>
-              </div>
 
               {/* Extended fields: author, tags, pull quote, references */}
               <div className="grid gap-4 md:grid-cols-2">
@@ -790,7 +848,9 @@ export default function AdminInsightsPage() {
               <div className="space-y-2">
                 <Label>{t("fields.relatedInstitutions")}</Label>
                 <div className="max-h-36 overflow-y-auto rounded-md border border-slate-200 p-2 space-y-1">
-                  {institutionOptions.map((item) => {
+                  {institutionOptions.length === 0 ? (
+                    <p className="px-2 py-1 text-sm text-slate-500">{t("messages.noInstitutionOptions")}</p>
+                  ) : institutionOptions.map((item) => {
                     const selected = form.relatedInstitutionIds.includes(item.id);
                     return (
                       <button

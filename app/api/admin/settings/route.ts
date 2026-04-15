@@ -68,6 +68,14 @@ export async function PUT(req: NextRequest) {
       newsEnabled: typeof body.newsEnabled === "boolean" ? body.newsEnabled : undefined,
       speakersEnabled: typeof body.speakersEnabled === "boolean" ? body.speakersEnabled : undefined,
       partnersEnabled: typeof body.partnersEnabled === "boolean" ? body.partnersEnabled : undefined,
+      homepageAttendeesEnabled:
+        typeof body.homepageAttendeesEnabled === "boolean"
+          ? body.homepageAttendeesEnabled
+          : undefined,
+      knowledgeTypeSettings:
+        body.knowledgeTypeSettings && typeof body.knowledgeTypeSettings === "object"
+          ? body.knowledgeTypeSettings
+          : undefined,
     });
 
     return NextResponse.json({ success: true, data: settings });

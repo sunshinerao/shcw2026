@@ -20,6 +20,7 @@ import { promises as fs } from "fs";
 import { requireInsightAdmin } from "@/lib/insight-auth";
 import { getSystemSettingsForServer } from "@/lib/system-settings";
 import { translateMissingInsightFieldsToEnglish } from "@/lib/ai-translation";
+import { normalizeKnowledgeAssetType } from "@/lib/knowledge-type-config";
 
 const execFileAsync = promisify(execFile);
 
@@ -147,6 +148,10 @@ type ParsedChapter = {
 function parseCoreMarkdown(raw: string, fileName: string, lang: "zh" | "en" = "zh") {
   const { fields, body } = parseSimpleFrontmatter(raw);
 
+  const parsedType = normalizeKnowledgeAssetType(
+    String(fields.type || fields.documenttype || fields.assettype || fields.category || "REPORT")
+  );
+
   // --- Frontmatter fields ---
   const titleField = lang === "zh"
     ? (fields.title || fields["标题"] || "")
@@ -164,18 +169,19 @@ function parseCoreMarkdown(raw: string, fileName: string, lang: "zh" | "en" = "z
   const pullQuoteMarker = lang === "zh" ? "PULL_QUOTE" : "PULL_QUOTE_EN";
   const pullQuoteCaptionMarker = lang === "zh" ? "PULL_QUOTE_CAPTION" : "PULL_QUOTE_CAPTION_EN";
   const aboutUsMarker = lang === "zh" ? "ABOUT_US" : "ABOUT_US_EN";
+  const chapterTitleMarker = lang === "zh" ? "CHAPTER_TITLE" : "CHAPTER_TITLE_EN";
   const chapterSubtitleMarker = lang === "zh" ? "CHAPTER_SUBTITLE" : "CHAPTER_SUBTITLE_EN";
   const keyPointsHeading = lang === "zh" ? "KEY_POINTS" : "KEY_POINTS_EN";
   const refsHeading = "REFERENCES";
   const recsHeading = lang === "zh" ? "RECOMMENDATIONS" : "RECOMMENDATIONS_EN";
+  const contentMarker = lang === "zh" ? "CONTENT_ZH" : "CONTENT_EN";
+  const oppositeContentMarker = lang === "zh" ? "CONTENT_EN" : "CONTENT_ZH";
 
   const extractedSummary = extractCommentBlock(body, summaryMarker);
   const pullQuote = extractCommentBlock(body, pullQuoteMarker);
   const pullQuoteCaption = extractCommentBlock(body, pullQuoteCaptionMarker);
   const aboutUs = extractCommentBlock(body, aboutUsMarker);
 
-  // --- Chapter parsing ---
-  // Split on lines starting with a single # (h1), preserve the heading
   const chapterSplits = body.split(/(?=^# .+$)/m).filter((s) => s.trim());
 
   const chapters: ParsedChapter[] = [];
@@ -184,24 +190,27 @@ function parseCoreMarkdown(raw: string, fileName: string, lang: "zh" | "en" = "z
   for (const block of chapterSplits) {
     const headingMatch = block.match(/^# (.+)$/m);
     if (!headingMatch) {
-      // Content before first chapter
       preambleBlock = block;
       continue;
     }
 
-    const chapterTitle = headingMatch[1].trim();
+    const explicitTitle = extractCommentBlock(block, chapterTitleMarker)
+      .split("\n")
+      .map((line) => line.trim())
+      .find(Boolean) || "";
+    const chapterTitle = sanitizeText(explicitTitle || headingMatch[1].trim());
 
-    // Extract chapter subtitle from <!-- CHAPTER_SUBTITLE --> or <!-- CHAPTER_SUBTITLE_EN -->
     const subMatch = block.match(new RegExp(`<!--\\s*${chapterSubtitleMarker}\\s*-->\\s*([^\\n<]+)`));
     const chapterSubtitle = subMatch ? subMatch[1].trim() : "";
 
-    // Extract key points for this chapter
     const chapterKeyPoints = extractSpecialSection(block, keyPointsHeading);
+    const contentFromMarker = extractCommentBlock(block, contentMarker);
 
-    // Remove heading line, comment markers, and KEY_POINTS section from content
-    const contentRaw = block
+    const contentRaw = (contentFromMarker || block)
       .replace(/^# .+$/m, "")
+      .replace(new RegExp(`<!--\\s*${chapterTitleMarker}\\s*-->\\s*[^\\n]*`, "g"), "")
       .replace(new RegExp(`<!--\\s*${chapterSubtitleMarker}\\s*-->\\s*[^\\n]*`, "g"), "")
+      .replace(new RegExp(`<!--\\s*${oppositeContentMarker}\\s*-->[\\s\\S]*?(?=<!--[A-Z_]+-->|$)`, "g"), "")
       .replace(new RegExp(`^##\\s+${keyPointsHeading}\\s*$[\\s\\S]*?(?=^##\\s|^#\\s|$)`, "im"), "")
       .replace(/<!--[A-Z_]+-->/g, "")
       .trim();
@@ -220,25 +229,26 @@ function parseCoreMarkdown(raw: string, fileName: string, lang: "zh" | "en" = "z
     });
   }
 
-  // --- Top-level special sections ---
   const references = extractSpecialSection(body, refsHeading);
   const recommendations = extractSpecialSection(body, recsHeading);
+  const keyPoints = chapters
+    .flatMap((chapter) => chapter.keyPoints || [])
+    .map((item) => sanitizeText(String(item || "")))
+    .filter(Boolean);
 
-  // --- Derive title/subtitle from first chapter or filename ---
   const firstHeading = body.match(/^# (.+)$/m)?.[1]?.trim() || "";
   const title = titleField || firstHeading || fileNameWithoutExt(fileName) || "Untitled";
   const subtitle = subtitleField || title;
 
-  // --- Summary fallback ---
   const paragraphs = preambleBlock ? getMarkdownParagraphs(preambleBlock) : [];
   const summary = extractedSummary || paragraphs[0] || (chapters[0]?.content ? summarizeText(chapters[0].content) : "");
 
-  // Full content = concatenation of all chapter content
   const fullContent = chapters
     .map((c) => [c.title ? `# ${c.title}` : "", c.subtitle ? `## ${c.subtitle}` : "", c.content].filter(Boolean).join("\n\n"))
     .join("\n\n---\n\n");
 
   return {
+    docType: parsedType,
     title: sanitizeText(title),
     subtitle: sanitizeText(subtitle),
     author: sanitizeText(authorField),
@@ -247,6 +257,7 @@ function parseCoreMarkdown(raw: string, fileName: string, lang: "zh" | "en" = "z
     pullQuote: sanitizeText(pullQuote),
     pullQuoteCaption: sanitizeText(pullQuoteCaption),
     aboutUs: sanitizeText(aboutUs),
+    keyPoints,
     chapters,
     references,
     recommendations,
@@ -543,8 +554,12 @@ export async function POST(req: NextRequest) {
     }
 
     const isCoreUpload = uploadMode === "core";
-    const uploadLangRaw = (formData.get("uploadLang") as string | null) || "zh";
-    const uploadLang: "zh" | "en" = uploadLangRaw === "en" ? "en" : "zh";
+    const uploadLangRaw = (formData.get("uploadLang") as string | null) || "bilingual";
+    const uploadLang: "zh" | "en" | "bilingual" = uploadLangRaw === "en"
+      ? "en"
+      : uploadLangRaw === "zh"
+      ? "zh"
+      : "bilingual";
     const typeAllowed = isCoreUpload
       ? (CORE_ALLOWED_TYPES.has(file.type) || isMarkdownFile(file))
       : PUBLISH_ALLOWED_TYPES.has(file.type);
@@ -574,26 +589,28 @@ export async function POST(req: NextRequest) {
       }
 
       const markdownRaw = await file.text();
-      const parsed = parseCoreMarkdown(markdownRaw, file.name, uploadLang);
+      const parsedZh = parseCoreMarkdown(markdownRaw, file.name, "zh");
+      const parsedEn = parseCoreMarkdown(markdownRaw, file.name, "en");
 
-      // For zh uploads, try to translate missing En fields
-      // For en uploads, the parsed fields ARE the En fields — no translation needed
-      const needsTranslation = uploadLang === "zh";
+      const detectedType = normalizeKnowledgeAssetType(
+        String(formData.get("assetType") || parsedZh.docType || parsedEn.docType || "REPORT")
+      );
+
+      const titleBase = parsedZh.title || parsedEn.title || fileNameWithoutExt(file.name);
+      const subtitleBase = parsedZh.subtitle || parsedEn.subtitle || titleBase;
+      const summaryBase = parsedZh.summary || summarizeText(parsedZh.fullContent || parsedEn.fullContent, 240);
+
+      const needsTranslation = uploadLang !== "en" && (!parsedEn.title || !parsedEn.summary || !parsedEn.fullContent);
       const translated = needsTranslation
         ? await translateMissingInsightFieldsToEnglish({
-            title: parsed.title,
-            subtitle: parsed.subtitle,
-            summary: parsed.summary,
-            content: parsed.fullContent,
+            title: titleBase,
+            subtitle: subtitleBase,
+            summary: summaryBase,
+            content: parsedZh.fullContent,
           })
         : {};
 
-      const finalTitle = parsed.title;
-      const finalSubtitle = parsed.subtitle || finalTitle;
-      const finalSummary = parsed.summary || summarizeText(parsed.fullContent, 240);
-
-      // Build chapters with keyPoints embedded
-      const chaptersJson = parsed.chapters.map((c, i) => ({
+      const zhChaptersJson = parsedZh.chapters.map((c, i) => ({
         index: i,
         title: c.title,
         subtitle: c.subtitle,
@@ -601,8 +618,15 @@ export async function POST(req: NextRequest) {
         keyPoints: c.keyPoints,
       }));
 
-      // En-side: for zh uploads populate with AI translation, for en uploads use chapter content
-      const isEnLang = uploadLang === "en";
+      const enChaptersJson = parsedEn.chapters.map((c, i) => ({
+        index: i,
+        title: c.title,
+        subtitle: c.subtitle,
+        content: c.content,
+        keyPoints: c.keyPoints,
+      }));
+
+      const useEnglishOnly = uploadLang === "en";
 
       return NextResponse.json({
         success: true,
@@ -612,39 +636,41 @@ export async function POST(req: NextRequest) {
           mode: "core",
           lang: uploadLang,
           extracted: {
-            // For zh: populate zh fields; for en: only en fields (caller merges)
-            ...(isEnLang ? {} : {
-              title: finalTitle,
-              subtitle: finalSubtitle,
-              author: parsed.author || "",
-              tags: parsed.tags || "",
-              summary: finalSummary,
-              pullQuote: parsed.pullQuote || "",
-              pullQuoteCaption: parsed.pullQuoteCaption || "",
-              aboutUs: parsed.aboutUs || "",
-              chapters: chaptersJson,
-              references: parsed.references,
-              recommendations: parsed.recommendations,
-              fullContent: parsed.fullContent,
-              slugSuggestion: slugify(finalTitle),
+            ...(useEnglishOnly ? {} : {
+              title: titleBase,
+              subtitle: subtitleBase,
+              author: parsedZh.author || "",
+              tags: parsedZh.tags || "",
+              summary: summaryBase,
+              pullQuote: parsedZh.pullQuote || "",
+              pullQuoteCaption: parsedZh.pullQuoteCaption || "",
+              aboutUs: parsedZh.aboutUs || "",
+              keyPoints: parsedZh.keyPoints,
+              chapters: zhChaptersJson,
+              references: parsedZh.references,
+              recommendations: parsedZh.recommendations,
+              fullContent: parsedZh.fullContent,
+              slugSuggestion: slugify(titleBase),
               fileFormat: "MD",
+              typeSuggestion: detectedType,
               coverImage: createAutoCoverDataUrl({
-                title: finalTitle,
+                title: titleBase,
                 format: "MD",
-                subtitle: finalSubtitle,
+                subtitle: subtitleBase,
               }),
             }),
-            // En fields
-            titleEn: isEnLang ? finalTitle : (translated.titleEn || finalTitle),
-            subtitleEn: isEnLang ? finalSubtitle : (translated.subtitleEn || finalSubtitle),
-            summaryEn: isEnLang ? finalSummary : (translated.summaryEn || finalSummary),
-            pullQuoteEn: isEnLang ? (parsed.pullQuote || "") : "",
-            pullQuoteCaptionEn: isEnLang ? (parsed.pullQuoteCaption || "") : "",
-            aboutUsEn: isEnLang ? (parsed.aboutUs || "") : "",
-            chaptersEn: isEnLang ? chaptersJson : [],
-            recommendationsEn: isEnLang ? parsed.recommendations : [],
-            tagsEn: isEnLang ? (parsed.tags || "") : "",
-            fullContentEn: isEnLang ? parsed.fullContent : (translated.contentEn || ""),
+            titleEn: parsedEn.title || translated.titleEn || titleBase,
+            subtitleEn: parsedEn.subtitle || translated.subtitleEn || subtitleBase,
+            summaryEn: parsedEn.summary || translated.summaryEn || summaryBase,
+            pullQuoteEn: parsedEn.pullQuote || "",
+            pullQuoteCaptionEn: parsedEn.pullQuoteCaption || "",
+            aboutUsEn: parsedEn.aboutUs || "",
+            keyPointsEn: parsedEn.keyPoints,
+            chaptersEn: enChaptersJson,
+            recommendationsEn: parsedEn.recommendations,
+            tagsEn: parsedEn.tags || "",
+            fullContentEn: parsedEn.fullContent || translated.contentEn || "",
+            typeSuggestion: detectedType,
             aiGenerated: needsTranslation && Boolean(translated.titleEn || translated.summaryEn),
           },
         },

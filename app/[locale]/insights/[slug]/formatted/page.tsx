@@ -3,6 +3,7 @@
  * Route: /[locale]/insights/[slug]/formatted
  */
 
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import {
@@ -38,6 +39,13 @@ type WebpageTemplateRuntimeConfig = {
   maxContentWidth?: number;
   lineHeight?: number;
 };
+
+function parseTextList(value: string) {
+  return value
+    .split(/\n+/)
+    .map((item) => item.replace(/^[-•\s]+/, "").trim())
+    .filter(Boolean);
+}
 
 function normalizeSlugParam(slug: string) {
   try {
@@ -128,18 +136,26 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
   const subtitle = isEnglish ? asset.subtitleEn : asset.subtitle;
   const summary = isEnglish ? asset.summaryEn : asset.summary;
   const content = isEnglish ? asset.contentEn : asset.content;
+  const chaptersRaw = isEnglish ? asset.chaptersEn : asset.chapters;
+  const chapters = Array.isArray(chaptersRaw) ? chaptersRaw : [];
   const keyPointsRaw = isEnglish ? asset.keyPointsEn : asset.keyPoints;
-  const keyPoints = Array.isArray(keyPointsRaw)
+  const derivedKeyPoints = chapters.flatMap((chapter: any) =>
+    Array.isArray(chapter?.keyPoints)
+      ? chapter.keyPoints.filter((point: unknown): point is string => typeof point === "string")
+      : []
+  );
+  const keyPoints = Array.isArray(keyPointsRaw) && keyPointsRaw.length > 0
     ? keyPointsRaw.filter((point): point is string => typeof point === "string")
-    : [];
+    : derivedKeyPoints;
   const recommendationsRaw = isEnglish
     ? asset.recommendationsEn
     : asset.recommendations;
   const recommendations = typeof recommendationsRaw === "string" ? recommendationsRaw : "";
+  const recommendationItems = parseTextList(recommendations);
+  const isMinimalLayout = layout === "minimal";
+  const isCardLayout = layout === "card-based";
   const referencesRaw = asset.references;
   const references = Array.isArray(referencesRaw) ? referencesRaw : [];
-  const chaptersRaw = isEnglish ? asset.chaptersEn : asset.chapters;
-  const chapters = Array.isArray(chaptersRaw) ? chaptersRaw : [];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -150,7 +166,7 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
             href={`/${locale}/insights`}
             className="inline-flex items-center text-emerald-600 hover:text-emerald-700 font-medium"
           >
-            ← Back to Knowledge Hub
+            ← {isEnglish ? "Back to Knowledge Hub" : "返回知识中心"}
           </Link>
         </div>
 
@@ -160,11 +176,16 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
           <div className="px-8 py-12 text-white" style={{ background: `linear-gradient(90deg, ${accentColor}, #0f766e)` }}>
             <div className="max-w-4xl mx-auto">
               {asset.coverImage && (
-                <img
-                  src={asset.coverImage}
-                  alt={title ?? "Knowledge cover image"}
-                  className="w-full max-w-md h-48 object-cover rounded-lg mb-6 opacity-90"
-                />
+                <div className="relative mb-6 h-48 w-full max-w-md overflow-hidden rounded-lg opacity-90">
+                  <Image
+                    src={asset.coverImage}
+                    alt={title ?? "Knowledge cover image"}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 448px"
+                    unoptimized
+                  />
+                </div>
               )}
 
               <h1 className="text-4xl font-bold mb-4">{title}</h1>
@@ -205,6 +226,22 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
             <div className="flex gap-2 flex-wrap">
               {showDownload && asset.downloadEnabled && (
                 <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="gap-2"
+                  >
+                    <a
+                      href={`/api/insights/${asset.id}/export?format=html`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <FileText className="w-4 h-4" />
+                      {isEnglish ? "Formal Preview" : "正式预览"}
+                    </a>
+                  </Button>
+
                   {enablePdfExport && (
                   <Button
                     variant="outline"
@@ -270,7 +307,7 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
           <div className="px-8 py-12">
             {/* 摘要 */}
             {summary && (
-              <div className={`mb-12 p-6 rounded-lg border ${layout === "minimal" ? "bg-slate-50 border-slate-200" : "bg-emerald-50 border-emerald-200"}`}>
+              <div className={`mb-12 rounded-lg border p-6 ${isMinimalLayout ? "bg-slate-50 border-slate-200" : "bg-emerald-50 border-emerald-200"}`}>
                 <h2 className="text-xl font-bold text-emerald-900 mb-3">
                   {isEnglish ? "Summary" : "摘要"}
                 </h2>
@@ -299,7 +336,59 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
             )}
 
             {/* 主要内容 */}
-            {content && (
+            {chapters.length > 0 ? (
+              <div className="mb-12">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">
+                  {isEnglish ? "Structured Chapters" : "结构化章节"}
+                </h2>
+                <div className={`grid gap-6 ${isCardLayout ? "md:grid-cols-2" : "grid-cols-1"}`}>
+                  {(chapters as any[]).map((ch: any, idx: number) => {
+                    const chapterKeyPoints = Array.isArray(ch.keyPoints)
+                      ? ch.keyPoints.filter((point: unknown): point is string => typeof point === "string")
+                      : [];
+
+                    return (
+                      <div
+                        key={idx}
+                        className={`rounded-xl border p-6 ${isCardLayout ? "bg-slate-50 border-slate-200 shadow-sm" : "bg-white border-slate-200"}`}
+                      >
+                        <div className="mb-4">
+                          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+                            {isEnglish ? `Chapter ${idx + 1}` : `第 ${idx + 1} 章`}
+                          </p>
+                          <h3 className="mt-2 text-xl font-semibold text-slate-900">
+                            {ch.title || (isEnglish ? `Section ${idx + 1}` : `章节 ${idx + 1}`)}
+                          </h3>
+                          {ch.subtitle && (
+                            <p className="mt-2 text-sm text-slate-600">{ch.subtitle}</p>
+                          )}
+                        </div>
+
+                        {ch.content && (
+                          <div
+                            className="whitespace-pre-wrap text-slate-700"
+                            style={{ lineHeight }}
+                          >
+                            {ch.content}
+                          </div>
+                        )}
+
+                        {showKeyPoints && chapterKeyPoints.length > 0 && (
+                          <ul className="mt-4 space-y-2">
+                            {chapterKeyPoints.map((point: string, pointIdx: number) => (
+                              <li key={pointIdx} className="flex gap-2 text-sm text-slate-700">
+                                <span className="mt-0.5 text-emerald-600">•</span>
+                                <span>{point}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : content && (
               <div className="mb-12 prose prose-sm max-w-none">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">
                   {isEnglish ? "Content" : "正文内容"}
@@ -336,14 +425,19 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
             )}
 
             {/* 推荐 */}
-            {showRecommendations && recommendations && (
-              <div className="mb-12 p-6 bg-blue-50 rounded-lg border border-blue-200">
-                <h2 className="text-xl font-bold text-blue-900 mb-3">
-                  {isEnglish ? "Recommendations" : "建议"}
+            {showRecommendations && recommendationItems.length > 0 && (
+              <div className={`mb-12 rounded-lg border p-6 ${isCardLayout ? "border-amber-200 bg-amber-50" : "border-blue-200 bg-blue-50"}`}>
+                <h2 className={`mb-3 text-xl font-bold ${isCardLayout ? "text-amber-900" : "text-blue-900"}`}>
+                  {isEnglish ? "Recommendations" : "建议与延伸阅读"}
                 </h2>
-                <p className="text-blue-800 leading-relaxed">
-                  {recommendations}
-                </p>
+                <ul className={`space-y-2 ${isCardLayout ? "text-amber-900" : "text-blue-800"}`}>
+                  {recommendationItems.map((item, idx) => (
+                    <li key={idx} className="flex gap-2 leading-relaxed">
+                      <span>•</span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 
@@ -353,20 +447,12 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">
                   {isEnglish ? "References" : "参考资料"}
                 </h2>
-                <ol className="list-decimal list-inside space-y-2 ml-4">
+                <ol className="ml-4 list-decimal list-inside space-y-2">
                   {(references as any[]).map((ref: any, idx: number) => (
                     <li key={idx} className="text-slate-700">
                       {typeof ref === "string" ? ref : ref.title || JSON.stringify(ref)}
                     </li>
                   ))}
-
-                  {webTemplate && (
-                    <div className="mt-12 border-t border-slate-200 pt-4 text-xs text-slate-500">
-                      {isEnglish
-                        ? `Template: ${webTemplate.nameEn || webTemplate.name}`
-                        : `模板：${webTemplate.name}`}
-                    </div>
-                  )}
                 </ol>
               </div>
             )}
@@ -377,7 +463,7 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
                 {isEnglish ? "Related Information" : "相关信息"}
               </h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
                 {/* 相关事件 */}
                 {asset.events && asset.events.length > 0 && (
                   <div>
@@ -399,6 +485,24 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
                   </div>
                 )}
 
+                {/* 相关机构 */}
+                {asset.institutions && asset.institutions.length > 0 && (
+                  <div>
+                    <h4 className="mb-3 font-semibold text-slate-900">
+                      {isEnglish ? "Related Institutions" : "相关机构"}
+                    </h4>
+                    <ul className="space-y-2">
+                      {asset.institutions.map((ia: any) => (
+                        <li key={ia.institutionId}>
+                          <span className="text-slate-700">
+                            {isEnglish ? ia.institution.nameEn || ia.institution.name : ia.institution.name}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
                 {/* 相关轨道 */}
                 {asset.tracks && asset.tracks.length > 0 && (
                   <div>
@@ -408,13 +512,21 @@ export default async function FormattedKnowledgeAssetPage({ params }: Props) {
                     <ul className="space-y-2">
                       {asset.tracks.map((ta: any) => (
                         <li key={ta.trackId}>
-                          <span className="text-slate-700">{ta.track.name}</span>
+                          <span className="text-slate-700">{isEnglish ? ta.track.nameEn || ta.track.name : ta.track.name}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
                 )}
               </div>
+
+              {webTemplate && (
+                <div className="mt-8 border-t border-slate-200 pt-4 text-xs text-slate-500">
+                  {isEnglish
+                    ? `Template: ${webTemplate.nameEn || webTemplate.name}`
+                    : `模板：${webTemplate.name}`}
+                </div>
+              )}
             </div>
           </div>
 

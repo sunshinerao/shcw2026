@@ -37,6 +37,31 @@ export async function initializeDefaultTemplates() {
             : undefined,
         },
       });
+      continue;
+    }
+
+    const existingConfig = (existing.config || {}) as Record<string, any>;
+    const mergedConfig = {
+      formal: template.config.formal
+        ? { ...(template.config.formal as Record<string, any>), ...((existingConfig.formal || {}) as Record<string, any>) }
+        : existingConfig.formal,
+      webpage: template.config.webpage
+        ? { ...(template.config.webpage as Record<string, any>), ...((existingConfig.webpage || {}) as Record<string, any>) }
+        : existingConfig.webpage,
+    };
+
+    if (JSON.stringify(existingConfig) !== JSON.stringify(mergedConfig)) {
+      await prisma.knowledgeTemplate.update({
+        where: { id: existing.id },
+        data: {
+          config: mergedConfig as unknown as Prisma.InputJsonValue,
+          documentFormat: existing.documentFormat || (template as any).documentFormat,
+          componentType: existing.componentType || (template.templateType === "WEBPAGE_DISPLAY" ? (template.config.webpage?.layout || "standard") : undefined),
+          includeElements: template.templateType === "FORMAL_DOCUMENT"
+            ? ((mergedConfig.formal || {}) as unknown as Prisma.InputJsonValue)
+            : (existing.includeElements ?? undefined) as Prisma.InputJsonValue | undefined,
+        },
+      });
     }
   }
 }

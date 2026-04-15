@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/routing";
 import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors, getEventDateLabel, getEventScheduleLabel } from "@/lib/data/events";
+import { formatEventDateRangeFromEvents } from "@/lib/homepage-stats";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
 
@@ -171,6 +172,12 @@ export default function EventsPage() {
   }, {});
 
   const sortedDates = Object.keys(groupedEvents).sort();
+  const heroDateRange =
+    formatEventDateRangeFromEvents(filteredEvents, locale) ||
+    formatEventDateRangeFromEvents(events, locale);
+  const heroSubtitle = heroDateRange
+    ? t("hero.subtitle", { dateRange: heroDateRange, count: filteredEvents.length })
+    : t("hero.subtitleNoRange", { count: filteredEvents.length });
 
   return (
     <div className="min-h-screen bg-slate-50 pt-16 lg:pt-20">
@@ -185,7 +192,7 @@ export default function EventsPage() {
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
               {t("hero.title")}
             </h1>
-            <p className="text-lg text-slate-400 max-w-2xl mx-auto">{t("hero.subtitle", { count: events.length })}</p>
+            <p className="text-lg text-slate-400 max-w-2xl mx-auto">{heroSubtitle}</p>
           </motion.div>
         </div>
       </section>

@@ -296,7 +296,8 @@
             "summary": "摘要",
             "content": "正文",
             "uploadFile": "上传文件",
-            "uploadCoreFile": "上传格式化MD（核心内容）",
+            "uploadCoreFile": "上传结构化源文档",
+            "uploadStructuredMd": "统一结构化源文档（中英同一文件）",
             "uploadPublishFile": "上传发布文件（正式可发布文件）",
             "fileUrl": "文件地址",
             "format": "文件格式",
@@ -328,7 +329,8 @@
             "clearCoreContent": "清空核心内容",
             "clearPublishFile": "删除正式文件",
             "specZh": "下载MD规范（中）",
-            "specEn": "下载MD规范（英）"
+            "specEn": "下载MD规范（英）",
+            "specUnified": "下载统一MD规范"
         },
         "messages": {
             "saved": "保存成功",
@@ -336,13 +338,15 @@
             "uploaded": "文件上传并提取成功",
             "uploadedCore": "中文核心内容已上传并提取成功",
             "uploadedCoreEn": "英文核心内容已上传并提取成功",
+            "uploadedStructuredSource": "结构化源文档已识别并提取成功",
             "uploadedCover": "封面图片上传成功",
             "uploadFailed": "文件上传失败",
             "uploadCoverFailed": "封面上传失败",
             "slugRequired": "请先填写标题或 slug",
             "confirmDelete": "确认删除该成果？",
             "coreContentCleared": "核心内容已清空",
-            "publishFileCleared": "正式文件已删除"
+            "publishFileCleared": "正式文件已删除",
+            "noInstitutionOptions": "暂无可选机构，请先在机构管理中创建或启用机构。"
         }
     },
     "adminPostersPage": {
@@ -1640,7 +1644,8 @@
     "eventsPage": {
         "hero": {
             "title": "活动日程",
-            "subtitle": "2026年4月20日 - 4月28日，探索 {count} 场精彩活动"
+            "subtitle": "{dateRange}，探索 {count} 场精彩活动",
+            "subtitleNoRange": "探索 {count} 场精彩活动"
         },
         "loading": "正在加载活动...",
         "loadError": "暂时无法加载活动列表。",
@@ -2713,6 +2718,12 @@
         "loading": "正在加载设置...",
         "save": "保存设置",
         "reload": "重新加载",
+        "tabs": {
+            "ai": "AI 设置",
+            "siteFeatures": "显示控制",
+            "knowledge": "Knowledge 规范",
+            "invitationTemplate": "邀请函模板与签名"
+        },
         "ai": {
             "title": "AI 亮点生成",
             "description": "配置 OpenAI 参数，用于根据活动信息自动生成活动亮点。",
@@ -2731,7 +2742,9 @@
         "messages": {
             "loadFailed": "加载系统设置失败。",
             "saveSuccess": "系统设置已保存。",
-            "saveFailed": "保存系统设置失败。"
+            "saveFailed": "保存系统设置失败。",
+            "knowledgeSaveSuccess": "Knowledge 类型规范已保存。",
+            "templateSaveSuccess": "Knowledge 模版配置已保存。"
         },
         "siteFeatures": {
             "title": "内容功能开关",
@@ -2741,11 +2754,63 @@
             "speakersEnabled": "显示嘉宾模块",
             "speakersEnabledHint": "关闭后，首页嘉宾板块与导航中的「嘉宾」链接将隐藏，直接访问 /speakers 页面将返回 404。",
             "partnersEnabled": "显示合作伙伴模块",
-            "partnersEnabledHint": "关闭后，首页合作伙伴板块将隐藏。"
+            "partnersEnabledHint": "关闭后，首页合作伙伴板块将隐藏。",
+            "homepageAttendeesEnabled": "显示首页参会人数",
+            "homepageAttendeesEnabledHint": "关闭后，首页统计区将隐藏参会人数；开启后按后台实际报名数据展示。"
+        },
+        "knowledge": {
+            "title": "Knowledge 类型规范设置",
+            "description": "为每种成果类型维护格式化 MD 文件规范，并配置 4 个可调用模板槽位：标准正式、简化正式、标准网页、卡片网页。",
+            "loading": "正在加载 Knowledge 类型设置...",
+            "typeCode": "类型代码",
+            "formalTemplate": "默认正式文档模板",
+            "formalTemplateHint": "为该类型配置标准版与简化版正式文档模板。",
+            "webTemplate": "默认网页展示模板",
+            "webTemplateHint": "为该类型配置标准版与卡片式网页模板。",
+            "toneZh": "中文摘要/语气提示",
+            "toneEn": "英文摘要/语气提示",
+            "sectionFocusZh": "中文章节重点提示",
+            "sectionFocusEn": "英文章节重点提示",
+            "mdSpecTemplate": "格式化文本规范（MD 文件）",
+            "mdSpecTemplateHint": "可直接维护该类型的完整双语 MD 规范模板。支持占位符：{{type}}、{{labelZh}}、{{labelEn}}、{{toneZh}}、{{toneEn}}、{{sectionFocusZh}}、{{sectionFocusEn}}。",
+            "templateLibraryTitle": "模版库可视化维护",
+            "templateLibraryDescription": "直接维护正式与网页模版参数，并支持上传或粘贴 Figma HTML 导入正式模版。保存后会立即用于前台展示与导出。",
+            "formalTemplateLibrary": "正式文档模版库",
+            "webTemplateLibrary": "网页展示模版库",
+            "renderMode": "渲染模式",
+            "styleTemplate": "文档风格",
+            "colorScheme": "配色方案",
+            "fontSize": "字号",
+            "tocItemsPerPage": "目录每页条数",
+            "chapterFirstPageChars": "章节首页容量",
+            "chapterBodyPageChars": "章节续页容量",
+            "headerText": "页眉文案",
+            "footerText": "页脚文案",
+            "includeCover": "包含封面",
+            "includeToc": "包含目录",
+            "includeHeaders": "显示页眉",
+            "includeFooters": "显示页脚",
+            "includeReferences": "包含参考资料",
+            "includeChapters": "按章节展示",
+            "layout": "网页布局",
+            "accentColor": "强调色",
+            "maxContentWidth": "最大内容宽度",
+            "lineHeight": "行高倍率",
+            "showToc": "显示目录",
+            "showKeyPoints": "显示关键要点",
+            "showRecommendations": "显示推荐内容",
+            "showReferences": "显示参考资料",
+            "showMetadata": "显示元数据",
+            "showDownloadLink": "显示下载入口",
+            "enablePdfExport": "启用 PDF 导出",
+            "enableDocxExport": "启用 DOCX 导出",
+            "enablePrint": "启用打印",
+            "saveTemplate": "保存当前模版",
+            "save": "保存 Knowledge 设置"
         },
         "invitationTemplate": {
-            "title": "邀请函模板配置",
-            "description": "配置邀请函三页图片，以及第2页除标题外的全部动态文案模板。",
+            "title": "邀请函模板与签名配置",
+            "description": "配置邀请函三页图片、第2页动态文案模板，以及与该模版绑定的签名预设。",
             "coverImages": "封面图片（第1页）",
             "bodyBgImages": "正文背景（第2页）",
             "backBgImages": "封底背景（第3页）",

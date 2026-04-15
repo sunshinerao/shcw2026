@@ -11,8 +11,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LoadingButton } from "@/components/ui/loading-button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { KNOWLEDGE_ASSET_TYPES, getKnowledgeTypePreset, normalizeKnowledgeTypeSettings, type KnowledgeTypeSettingsMap } from "@/lib/knowledge-type-config";
+import type { FormalDocumentTemplateConfig, WebpageTemplateConfig } from "@/lib/knowledge-template";
 import {
   estimateInvitationTemplateVisibleChars,
   getInvitationBodyCharLimit,
@@ -29,6 +33,21 @@ type SettingsResponse = {
   newsEnabled: boolean;
   speakersEnabled: boolean;
   partnersEnabled: boolean;
+  homepageAttendeesEnabled: boolean;
+  knowledgeTypeSettings: KnowledgeTypeSettingsMap;
+};
+
+type TemplateOption = {
+  id: string;
+  code?: string | null;
+  name: string;
+  nameEn?: string | null;
+  isDefault?: boolean;
+  isActive?: boolean;
+  config?: {
+    formal?: Partial<FormalDocumentTemplateConfig>;
+    webpage?: Partial<WebpageTemplateConfig>;
+  } | null;
 };
 
 export default function AdminSettingsPage() {
@@ -52,6 +71,24 @@ export default function AdminSettingsPage() {
   const [newsEnabled, setNewsEnabled] = useState(true);
   const [speakersEnabled, setSpeakersEnabled] = useState(true);
   const [partnersEnabled, setPartnersEnabled] = useState(true);
+  const [homepageAttendeesEnabled, setHomepageAttendeesEnabled] = useState(false);
+  const [formalTemplates, setFormalTemplates] = useState<TemplateOption[]>([]);
+  const [webTemplates, setWebTemplates] = useState<TemplateOption[]>([]);
+  const [knowledgeTypeSettings, setKnowledgeTypeSettings] = useState<KnowledgeTypeSettingsMap>(
+    normalizeKnowledgeTypeSettings(undefined)
+  );
+  const [isKnowledgeSaving, setIsKnowledgeSaving] = useState(false);
+  const [templateSavingId, setTemplateSavingId] = useState<string | null>(null);
+  const [isImportingTemplate, setIsImportingTemplate] = useState(false);
+  const [figmaHtmlFile, setFigmaHtmlFile] = useState<File | null>(null);
+  const [figmaImportForm, setFigmaImportForm] = useState({
+    name: "",
+    nameEn: "",
+    code: "",
+    description: "",
+    sourceHtml: "",
+    sourceFileName: "",
+  });
 
   // Invitation template settings
   const [isTplLoading, setIsTplLoading] = useState(true);
@@ -140,6 +177,8 @@ export default function AdminSettingsPage() {
       setNewsEnabled(data.newsEnabled !== false);
       setSpeakersEnabled(data.speakersEnabled !== false);
       setPartnersEnabled(data.partnersEnabled !== false);
+      setHomepageAttendeesEnabled(data.homepageAttendeesEnabled === true);
+      setKnowledgeTypeSettings(normalizeKnowledgeTypeSettings(data.knowledgeTypeSettings));
       setStatusMessage("");
     } catch (error) {
       setMessage("error", error instanceof Error ? error.message : t("messages.loadFailed"));
@@ -147,6 +186,25 @@ export default function AdminSettingsPage() {
       setIsLoading(false);
     }
   }, [t]);
+
+  const loadKnowledgeTemplates = useCallback(async () => {
+    try {
+      const response = await fetch("/api/knowledge-templates", { cache: "no-store" });
+      const payload = await response.json();
+      if (!response.ok || !payload.success) {
+        throw new Error(payload.error || "Failed to load knowledge templates");
+      }
+
+      setFormalTemplates(payload.data?.formalTemplates || []);
+      setWebTemplates(payload.data?.webTemplates || []);
+      if (payload.data?.typeSettings) {
+        setKnowledgeTypeSettings(normalizeKnowledgeTypeSettings(payload.data.typeSettings));
+      }
+    } catch {
+      setFormalTemplates([]);
+      setWebTemplates([]);
+    }
+  }, []);
 
   const loadTplSettings = useCallback(async () => {
     setIsTplLoading(true);
@@ -228,9 +286,10 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     void loadSettings();
+    void loadKnowledgeTemplates();
     void loadTplSettings();
     void loadSigPresets();
-  }, [loadSettings, loadTplSettings, loadSigPresets]);
+  }, [loadSettings, loadKnowledgeTemplates, loadTplSettings, loadSigPresets]);
 
   const saveSettings = async () => {
     setIsSaving(true);
@@ -244,6 +303,7 @@ export default function AdminSettingsPage() {
         newsEnabled,
         speakersEnabled,
         partnersEnabled,
+        homepageAttendeesEnabled,
       };
 
       if (clearOpenaiApiKey) {
@@ -276,6 +336,210 @@ export default function AdminSettingsPage() {
       setMessage("error", error instanceof Error ? error.message : t("messages.saveFailed"));
     } finally {
       setIsSaving(false);
+    }
+  };
+
+  const updateKnowledgeTypeField = (
+    typeKey: (typeof KNOWLEDGE_ASSET_TYPES)[number],
+    field:
+      | "formalTemplateCode"
+      | "webTemplateCode"
+      | "formalTemplateCodeStandard"
+      | "formalTemplateCodeSimple"
+      | "webTemplateCodeStandard"
+      | "webTemplateCodeCard"
+      | "toneZh"
+      | "toneEn"
+      | "sectionFocusZh"
+      | "sectionFocusEn"
+      | "mdSpecTemplate",
+    value: string,
+  ) => {
+    setKnowledgeTypeSettings((prev) => {
+      const current = prev[typeKey];
+      const next = {
+        ...current,
+        [field]: value,
+      };
+
+      if (field === "formalTemplateCode" || field === "formalTemplateCodeStandard") {
+        next.formalTemplateCode = value;
+        next.formalTemplateCodeStandard = value;
+      }
+
+      if (field === "webTemplateCode" || field === "webTemplateCodeStandard") {
+        next.webTemplateCode = value;
+        next.webTemplateCodeStandard = value;
+      }
+
+      return {
+        ...prev,
+        [typeKey]: next,
+      };
+    });
+  };
+
+  const saveKnowledgeSettings = async () => {
+    setIsKnowledgeSaving(true);
+    try {
+      const response = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ knowledgeTypeSettings }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || t("messages.saveFailed"));
+      }
+      setKnowledgeTypeSettings(normalizeKnowledgeTypeSettings(result.data.knowledgeTypeSettings));
+      setMessage("success", t("messages.knowledgeSaveSuccess"));
+    } catch (error) {
+      setMessage("error", error instanceof Error ? error.message : t("messages.saveFailed"));
+    } finally {
+      setIsKnowledgeSaving(false);
+    }
+  };
+
+  const updateFormalTemplateField = (
+    templateId: string,
+    field: keyof FormalDocumentTemplateConfig,
+    value: string | number | boolean,
+  ) => {
+    setFormalTemplates((prev) =>
+      prev.map((item) =>
+        item.id === templateId
+          ? {
+              ...item,
+              config: {
+                ...(item.config || {}),
+                formal: {
+                  ...(item.config?.formal || {}),
+                  [field]: value,
+                },
+              },
+            }
+          : item
+      )
+    );
+  };
+
+  const updateWebTemplateField = (
+    templateId: string,
+    field: keyof WebpageTemplateConfig,
+    value: string | number | boolean,
+  ) => {
+    setWebTemplates((prev) =>
+      prev.map((item) =>
+        item.id === templateId
+          ? {
+              ...item,
+              config: {
+                ...(item.config || {}),
+                webpage: {
+                  ...(item.config?.webpage || {}),
+                  [field]: value,
+                },
+              },
+            }
+          : item
+      )
+    );
+  };
+
+  const saveTemplateConfig = async (template: TemplateOption) => {
+    setTemplateSavingId(template.id);
+    try {
+      const sourceHtml = template.config?.formal?.sourceHtml;
+      const response = await fetch(`/api/knowledge-templates/${template.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          config: template.config || {},
+          sourceHtml: typeof sourceHtml === "string" ? sourceHtml : undefined,
+        }),
+      });
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || t("messages.saveFailed"));
+      }
+
+      if (result.data?.templateType === "FORMAL_DOCUMENT") {
+        setFormalTemplates((prev) => prev.map((item) => (item.id === template.id ? result.data : item)));
+      } else {
+        setWebTemplates((prev) => prev.map((item) => (item.id === template.id ? result.data : item)));
+      }
+
+      const warningCount = Array.isArray(result.validation?.warnings) ? result.validation.warnings.length : 0;
+      setMessage(
+        "success",
+        warningCount > 0
+          ? `${t("messages.templateSaveSuccess")} (${warningCount} ${locale === "en" ? "warnings" : "条提醒"})`
+          : t("messages.templateSaveSuccess")
+      );
+    } catch (error) {
+      setMessage("error", error instanceof Error ? error.message : t("messages.saveFailed"));
+    } finally {
+      setTemplateSavingId(null);
+    }
+  };
+
+  const importFormalTemplateFromHtml = async () => {
+    if (!figmaHtmlFile && !figmaImportForm.sourceHtml.trim()) {
+      setMessage("error", locale === "en" ? "Please upload or paste the exported Figma HTML first." : "请先上传或粘贴 Figma 导出的 HTML。" );
+      return;
+    }
+
+    setIsImportingTemplate(true);
+    try {
+      const defaultName = locale === "en" ? "Imported Figma Formal Template" : "导入的 Figma 正式模板";
+      const response = await fetch(
+        "/api/knowledge-templates/import-html",
+        figmaHtmlFile
+          ? {
+              method: "POST",
+              body: (() => {
+                const formData = new FormData();
+                formData.append("createTemplate", "true");
+                formData.append("name", figmaImportForm.name.trim() || defaultName);
+                formData.append("nameEn", figmaImportForm.nameEn.trim() || figmaImportForm.name.trim() || "Imported Figma Formal Template");
+                formData.append("code", figmaImportForm.code.trim() || `formal_import_${Date.now()}`);
+                formData.append("description", figmaImportForm.description.trim());
+                formData.append("file", figmaHtmlFile);
+                return formData;
+              })(),
+            }
+          : {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                createTemplate: true,
+                name: figmaImportForm.name.trim() || defaultName,
+                nameEn: figmaImportForm.nameEn.trim() || figmaImportForm.name.trim() || "Imported Figma Formal Template",
+                code: figmaImportForm.code.trim() || `formal_import_${Date.now()}`,
+                description: figmaImportForm.description.trim(),
+                sourceHtml: figmaImportForm.sourceHtml,
+              }),
+            }
+      );
+      const result = await response.json();
+      if (!response.ok || !result.success) {
+        throw new Error(result.error || (locale === "en" ? "Failed to import template" : "导入模版失败"));
+      }
+
+      await loadKnowledgeTemplates();
+      setFigmaHtmlFile(null);
+      setFigmaImportForm({ name: "", nameEn: "", code: "", description: "", sourceHtml: "", sourceFileName: "" });
+      const warningCount = Array.isArray(result.validation?.warnings) ? result.validation.warnings.length : 0;
+      setMessage(
+        "success",
+        warningCount > 0
+          ? (locale === "en" ? `Template imported with ${warningCount} warnings.` : `模版已导入，并返回 ${warningCount} 条提醒。`)
+          : (locale === "en" ? "Template imported successfully." : "模版导入成功。")
+      );
+    } catch (error) {
+      setMessage("error", error instanceof Error ? error.message : (locale === "en" ? "Failed to import template" : "导入模版失败"));
+    } finally {
+      setIsImportingTemplate(false);
     }
   };
 
@@ -466,6 +730,15 @@ export default function AdminSettingsPage() {
           </div>
         ) : null}
 
+        <Tabs defaultValue="ai" className="space-y-6">
+          <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 rounded-xl bg-slate-100 p-2">
+            <TabsTrigger value="ai">{t("tabs.ai")}</TabsTrigger>
+            <TabsTrigger value="siteFeatures">{t("tabs.siteFeatures")}</TabsTrigger>
+            <TabsTrigger value="knowledge">{t("tabs.knowledge")}</TabsTrigger>
+            <TabsTrigger value="invitationTemplate">{t("tabs.invitationTemplate")}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="ai" className="space-y-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -580,7 +853,9 @@ export default function AdminSettingsPage() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
 
+          <TabsContent value="siteFeatures" className="space-y-6">
         {/* Site Features */}
         <Card>
           <CardHeader>
@@ -657,11 +932,656 @@ export default function AdminSettingsPage() {
                     }
                   }} />
                 </div>
+
+                <div className="flex items-center justify-between rounded-lg border p-4">
+                  <div>
+                    <Label className="text-base">{t("siteFeatures.homepageAttendeesEnabled")}</Label>
+                    <p className="text-sm text-slate-500 mt-1">{t("siteFeatures.homepageAttendeesEnabledHint")}</p>
+                  </div>
+                  <Switch checked={homepageAttendeesEnabled} onCheckedChange={async (val) => {
+                    setHomepageAttendeesEnabled(val);
+                    try {
+                      await fetch("/api/admin/settings", {
+                        method: "PUT",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ homepageAttendeesEnabled: val }),
+                      });
+                    } catch {
+                      setHomepageAttendeesEnabled(!val);
+                    }
+                  }} />
+                </div>
               </>
             )}
           </CardContent>
         </Card>
+          </TabsContent>
 
+          <TabsContent value="knowledge" className="space-y-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="h-5 w-5 text-violet-600" />
+              {t("knowledge.title")}
+            </CardTitle>
+            <CardDescription>{t("knowledge.description")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-slate-500">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                {t("knowledge.loading")}
+              </div>
+            ) : (
+              <>
+                <Tabs defaultValue={KNOWLEDGE_ASSET_TYPES[0]} className="space-y-4">
+                  <TabsList className="flex h-auto w-full flex-wrap justify-start gap-2 rounded-xl bg-slate-100 p-2">
+                    {KNOWLEDGE_ASSET_TYPES.map((typeKey) => {
+                      const preset = knowledgeTypeSettings[typeKey] || getKnowledgeTypePreset(typeKey);
+                      return (
+                        <TabsTrigger key={typeKey} value={typeKey}>
+                          {locale === "en" ? preset.labelEn : preset.labelZh}
+                        </TabsTrigger>
+                      );
+                    })}
+                  </TabsList>
+
+                  {KNOWLEDGE_ASSET_TYPES.map((typeKey) => {
+                    const preset = knowledgeTypeSettings[typeKey] || getKnowledgeTypePreset(typeKey);
+
+                    return (
+                      <TabsContent key={typeKey} value={typeKey} className="mt-0">
+                        <div className="rounded-xl border border-slate-200 p-4 space-y-4">
+                          <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                            <div>
+                              <h3 className="text-base font-semibold text-slate-900">
+                                {locale === "en" ? preset.labelEn : preset.labelZh}
+                              </h3>
+                              <p className="text-xs text-slate-500">{t("knowledge.typeCode")}: {typeKey}</p>
+                            </div>
+                          </div>
+
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label>{locale === "en" ? "Standard formal template" : "标准正式文档模板"}</Label>
+                              <p className="text-xs text-slate-500">{locale === "en" ? "Slot 1 of 4 for this knowledge type." : "该类型 4 个模板槽位中的第 1 个。"}</p>
+                              <Select
+                                value={preset.formalTemplateCodeStandard}
+                                onValueChange={(value) => updateKnowledgeTypeField(typeKey, "formalTemplateCodeStandard", value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder={locale === "en" ? "Standard formal template" : "标准正式文档模板"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {formalTemplates.map((item) => (
+                                    <SelectItem key={item.id} value={item.code || item.id}>
+                                      {locale === "en" ? item.nameEn || item.name : item.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>{locale === "en" ? "Simplified formal template" : "简化正式文档模板"}</Label>
+                              <p className="text-xs text-slate-500">{locale === "en" ? "Slot 2 of 4 for this knowledge type." : "该类型 4 个模板槽位中的第 2 个。"}</p>
+                              <Select
+                                value={preset.formalTemplateCodeSimple}
+                                onValueChange={(value) => updateKnowledgeTypeField(typeKey, "formalTemplateCodeSimple", value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder={locale === "en" ? "Simplified formal template" : "简化正式文档模板"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {formalTemplates.map((item) => (
+                                    <SelectItem key={item.id} value={item.code || item.id}>
+                                      {locale === "en" ? item.nameEn || item.name : item.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>{locale === "en" ? "Standard webpage template" : "标准网页展示模板"}</Label>
+                              <p className="text-xs text-slate-500">{locale === "en" ? "Slot 3 of 4 for this knowledge type." : "该类型 4 个模板槽位中的第 3 个。"}</p>
+                              <Select
+                                value={preset.webTemplateCodeStandard}
+                                onValueChange={(value) => updateKnowledgeTypeField(typeKey, "webTemplateCodeStandard", value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder={locale === "en" ? "Standard webpage template" : "标准网页展示模板"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {webTemplates.map((item) => (
+                                    <SelectItem key={item.id} value={item.code || item.id}>
+                                      {locale === "en" ? item.nameEn || item.name : item.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+
+                            <div className="space-y-2">
+                              <Label>{locale === "en" ? "Card webpage template" : "卡片式网页模板"}</Label>
+                              <p className="text-xs text-slate-500">{locale === "en" ? "Slot 4 of 4 for this knowledge type." : "该类型 4 个模板槽位中的第 4 个。"}</p>
+                              <Select
+                                value={preset.webTemplateCodeCard}
+                                onValueChange={(value) => updateKnowledgeTypeField(typeKey, "webTemplateCodeCard", value)}
+                              >
+                                <SelectTrigger>
+                                  <SelectValue placeholder={locale === "en" ? "Card webpage template" : "卡片式网页模板"} />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {webTemplates.map((item) => (
+                                    <SelectItem key={item.id} value={item.code || item.id}>
+                                      {locale === "en" ? item.nameEn || item.name : item.name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label>{t("knowledge.toneZh")}</Label>
+                              <Textarea
+                                rows={2}
+                                value={preset.toneZh}
+                                onChange={(e) => updateKnowledgeTypeField(typeKey, "toneZh", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{t("knowledge.toneEn")}</Label>
+                              <Textarea
+                                rows={2}
+                                value={preset.toneEn}
+                                onChange={(e) => updateKnowledgeTypeField(typeKey, "toneEn", e.target.value)}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <div className="space-y-2">
+                              <Label>{t("knowledge.sectionFocusZh")}</Label>
+                              <Textarea
+                                rows={2}
+                                value={preset.sectionFocusZh}
+                                onChange={(e) => updateKnowledgeTypeField(typeKey, "sectionFocusZh", e.target.value)}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>{t("knowledge.sectionFocusEn")}</Label>
+                              <Textarea
+                                rows={2}
+                                value={preset.sectionFocusEn}
+                                onChange={(e) => updateKnowledgeTypeField(typeKey, "sectionFocusEn", e.target.value)}
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-2">
+                            <Label>{t("knowledge.mdSpecTemplate")}</Label>
+                            <p className="text-xs text-slate-500">{t("knowledge.mdSpecTemplateHint")}</p>
+                            <Textarea
+                              rows={18}
+                              className="font-mono text-xs"
+                              value={preset.mdSpecTemplate || ""}
+                              onChange={(e) => updateKnowledgeTypeField(typeKey, "mdSpecTemplate", e.target.value)}
+                            />
+                          </div>
+                        </div>
+                      </TabsContent>
+                    );
+                  })}
+                </Tabs>
+
+                <div className="space-y-6 border-t border-slate-200 pt-6">
+                  <div>
+                    <LoadingButton onClick={saveKnowledgeSettings} loading={isKnowledgeSaving} loadingText={locale === "en" ? "Saving..." : "保存中..."}>
+                      <Save className="mr-2 h-4 w-4" />
+                      {t("knowledge.save")}
+                    </LoadingButton>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-900">{t("knowledge.templateLibraryTitle")}</h3>
+                      <p className="text-sm text-slate-500">{t("knowledge.templateLibraryDescription")}</p>
+                    </div>
+
+                    <div className="rounded-xl border border-dashed border-violet-300 bg-violet-50/60 p-4 space-y-4">
+                      <div>
+                        <h4 className="text-sm font-semibold text-slate-900">
+                          {locale === "en" ? "Import Figma HTML as a formal template" : "导入 Figma HTML 生成正式模板"}
+                        </h4>
+                        <p className="text-xs text-slate-500">
+                          {locale === "en"
+                            ? "Paste the HTML exported from Figma. The system will preserve its visual style but still enforce TOC pagination, chapter breaks, continuation pages, and page-number backfill."
+                            : "粘贴 Figma 导出的 HTML 后，系统会保留视觉风格，但仍强制执行目录分页、章节分页、续页拆分和目录页码回填。"}
+                        </p>
+                      </div>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <div className="space-y-2">
+                          <Label>{locale === "en" ? "Template name" : "模板名称"}</Label>
+                          <Input
+                            value={figmaImportForm.name}
+                            onChange={(e) => setFigmaImportForm((prev) => ({ ...prev, name: e.target.value }))}
+                            placeholder={locale === "en" ? "Imported Figma Formal Template" : "导入的 Figma 正式模板"}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>{locale === "en" ? "Template code" : "模板编码"}</Label>
+                          <Input
+                            value={figmaImportForm.code}
+                            onChange={(e) => setFigmaImportForm((prev) => ({ ...prev, code: e.target.value }))}
+                            placeholder="formal_import_custom"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>{locale === "en" ? "Description" : "描述"}</Label>
+                        <Input
+                          value={figmaImportForm.description}
+                          onChange={(e) => setFigmaImportForm((prev) => ({ ...prev, description: e.target.value }))}
+                          placeholder={locale === "en" ? "Optional description for the imported template" : "可选：填写该模板的用途说明"}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>{locale === "en" ? "HTML file upload" : "HTML 文件上传"}</Label>
+                        <Input
+                          type="file"
+                          accept=".html,.htm,text/html"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0] || null;
+                            setFigmaHtmlFile(file);
+                            if (!file) {
+                              setFigmaImportForm((prev) => ({ ...prev, sourceFileName: "" }));
+                              return;
+                            }
+                            const text = await file.text();
+                            setFigmaImportForm((prev) => ({
+                              ...prev,
+                              sourceHtml: text,
+                              sourceFileName: file.name,
+                              code: prev.code || file.name.replace(/\.(html?|HTML?)$/, "").replace(/[^a-zA-Z0-9_-]+/g, "_").toLowerCase(),
+                            }));
+                          }}
+                        />
+                        {figmaImportForm.sourceFileName ? (
+                          <p className="text-xs text-emerald-700">
+                            {locale === "en" ? `Loaded file: ${figmaImportForm.sourceFileName}` : `已载入文件：${figmaImportForm.sourceFileName}`}
+                          </p>
+                        ) : null}
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label>{locale === "en" ? "Figma exported HTML" : "Figma 导出的 HTML 源码"}</Label>
+                        <Textarea
+                          rows={10}
+                          className="font-mono text-xs"
+                          value={figmaImportForm.sourceHtml}
+                          onChange={(e) => {
+                            setFigmaHtmlFile(null);
+                            setFigmaImportForm((prev) => ({ ...prev, sourceHtml: e.target.value, sourceFileName: prev.sourceFileName || "" }));
+                          }}
+                          placeholder={locale === "en" ? "Upload an HTML file or paste the exported HTML here..." : "可上传 HTML 文件，或将导出的 HTML 粘贴到这里..."}
+                        />
+                      </div>
+
+                      <LoadingButton onClick={importFormalTemplateFromHtml} loading={isImportingTemplate} loadingText={locale === "en" ? "Importing..." : "导入中..."}>
+                        <Upload className="mr-2 h-4 w-4" />
+                        {locale === "en" ? "Import as formal template" : "导入为正式模板"}
+                      </LoadingButton>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="rounded-xl border border-slate-200 p-4 space-y-4">
+                        <div>
+                          <h4 className="text-sm font-semibold text-slate-900">{t("knowledge.formalTemplateLibrary")}</h4>
+                          <p className="text-xs text-slate-500">{t("knowledge.formalTemplateHint")}</p>
+                        </div>
+                        <div className="space-y-4">
+                          {formalTemplates.map((item) => {
+                            const formal = (item.config?.formal || {}) as Partial<FormalDocumentTemplateConfig>;
+                            return (
+                              <div key={item.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
+                                <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                                  <div>
+                                    <h5 className="font-medium text-slate-900">{locale === "en" ? item.nameEn || item.name : item.name}</h5>
+                                    <p className="text-xs text-slate-500">{item.code || item.id}</p>
+                                  </div>
+                                  {item.isDefault ? (
+                                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-medium text-emerald-700">
+                                      {locale === "en" ? "Built-in default" : "内置默认模版"}
+                                    </span>
+                                  ) : null}
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-4">
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.renderMode")}</Label>
+                                    <Select
+                                      value={formal.renderMode || "classic"}
+                                      onValueChange={(value) => updateFormalTemplateField(item.id, "renderMode", value)}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder={t("knowledge.renderMode")} />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="classic">Classic</SelectItem>
+                                        <SelectItem value="figma_whitepaper">Figma White Paper</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.styleTemplate")}</Label>
+                                    <Select
+                                      value={formal.styleTemplate || "professional"}
+                                      onValueChange={(value) => updateFormalTemplateField(item.id, "styleTemplate", value)}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder={t("knowledge.styleTemplate")} />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="default">Default</SelectItem>
+                                        <SelectItem value="professional">Professional</SelectItem>
+                                        <SelectItem value="minimal">Minimal</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.colorScheme")}</Label>
+                                    <Select
+                                      value={formal.colorScheme || "blue"}
+                                      onValueChange={(value) => updateFormalTemplateField(item.id, "colorScheme", value)}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder={t("knowledge.colorScheme")} />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="blue">Blue</SelectItem>
+                                        <SelectItem value="green">Green</SelectItem>
+                                        <SelectItem value="gray">Gray</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.fontSize")}</Label>
+                                    <Input
+                                      type="number"
+                                      min={8}
+                                      max={18}
+                                      value={String(formal.fontSize ?? 11)}
+                                      onChange={(e) => updateFormalTemplateField(item.id, "fontSize", Number(e.target.value || 11))}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-4">
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.accentColor")}</Label>
+                                    <Input
+                                      value={formal.accentColor || "#f6645a"}
+                                      onChange={(e) => updateFormalTemplateField(item.id, "accentColor", e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.tocItemsPerPage")}</Label>
+                                    <Input
+                                      type="number"
+                                      min={4}
+                                      max={12}
+                                      value={String(formal.tocItemsPerPage ?? 6)}
+                                      onChange={(e) => updateFormalTemplateField(item.id, "tocItemsPerPage", Number(e.target.value || 6))}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.chapterFirstPageChars")}</Label>
+                                    <Input
+                                      type="number"
+                                      min={800}
+                                      max={4000}
+                                      step="100"
+                                      value={String(formal.chapterFirstPageChars ?? 1600)}
+                                      onChange={(e) => updateFormalTemplateField(item.id, "chapterFirstPageChars", Number(e.target.value || 1600))}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.chapterBodyPageChars")}</Label>
+                                    <Input
+                                      type="number"
+                                      min={1000}
+                                      max={5000}
+                                      step="100"
+                                      value={String(formal.chapterBodyPageChars ?? 2300)}
+                                      onChange={(e) => updateFormalTemplateField(item.id, "chapterBodyPageChars", Number(e.target.value || 2300))}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-2">
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.headerText")}</Label>
+                                    <Input
+                                      value={formal.headerText || ""}
+                                      onChange={(e) => updateFormalTemplateField(item.id, "headerText", e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.footerText")}</Label>
+                                    <Input
+                                      value={formal.footerText || ""}
+                                      onChange={(e) => updateFormalTemplateField(item.id, "footerText", e.target.value)}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-2">
+                                  <div className="space-y-2">
+                                    <Label>{locale === "en" ? "Imported Figma HTML source" : "导入的 Figma HTML 源码"}</Label>
+                                    <Textarea
+                                      rows={8}
+                                      className="font-mono text-xs"
+                                      value={formal.sourceHtml || ""}
+                                      onChange={(e) => updateFormalTemplateField(item.id, "sourceHtml", e.target.value)}
+                                      placeholder={locale === "en" ? "Optional: paste original Figma HTML for this template" : "可选：为该模板粘贴原始 Figma HTML"}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{locale === "en" ? "Custom CSS override" : "自定义 CSS 覆盖"}</Label>
+                                    <Textarea
+                                      rows={8}
+                                      className="font-mono text-xs"
+                                      value={formal.customCss || ""}
+                                      onChange={(e) => updateFormalTemplateField(item.id, "customCss", e.target.value)}
+                                      placeholder={locale === "en" ? "Optional: refine the imported visual skin with CSS" : "可选：使用 CSS 对导入样式做进一步微调"}
+                                    />
+                                    <p className="text-xs text-slate-500">
+                                      {locale === "en"
+                                        ? `Template contract: ${formal.templateContractVersion || "shcw-formal-v1"}`
+                                        : `模板契约：${formal.templateContractVersion || "shcw-formal-v1"}`}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.includeCover")}</Label>
+                                    <Switch checked={formal.includeCover ?? true} onCheckedChange={(value) => updateFormalTemplateField(item.id, "includeCover", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.includeToc")}</Label>
+                                    <Switch checked={formal.includeTableOfContents ?? true} onCheckedChange={(value) => updateFormalTemplateField(item.id, "includeTableOfContents", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.includeHeaders")}</Label>
+                                    <Switch checked={formal.includeHeaders ?? true} onCheckedChange={(value) => updateFormalTemplateField(item.id, "includeHeaders", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.includeFooters")}</Label>
+                                    <Switch checked={formal.includeFooters ?? true} onCheckedChange={(value) => updateFormalTemplateField(item.id, "includeFooters", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.includeReferences")}</Label>
+                                    <Switch checked={formal.includeReferences ?? true} onCheckedChange={(value) => updateFormalTemplateField(item.id, "includeReferences", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.includeChapters")}</Label>
+                                    <Switch checked={formal.includeChapters ?? true} onCheckedChange={(value) => updateFormalTemplateField(item.id, "includeChapters", value)} />
+                                  </div>
+                                </div>
+
+                                <LoadingButton
+                                  onClick={() => saveTemplateConfig(item)}
+                                  loading={templateSavingId === item.id}
+                                  loadingText={locale === "en" ? "Saving..." : "保存中..."}
+                                >
+                                  <Save className="mr-2 h-4 w-4" />
+                                  {t("knowledge.saveTemplate")}
+                                </LoadingButton>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <div className="rounded-xl border border-slate-200 p-4 space-y-4">
+                        <div>
+                          <h4 className="text-sm font-semibold text-slate-900">{t("knowledge.webTemplateLibrary")}</h4>
+                          <p className="text-xs text-slate-500">{t("knowledge.webTemplateHint")}</p>
+                        </div>
+                        <div className="space-y-4">
+                          {webTemplates.map((item) => {
+                            const web = (item.config?.webpage || {}) as Partial<WebpageTemplateConfig>;
+                            return (
+                              <div key={item.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4 space-y-4">
+                                <div className="flex flex-col gap-1 md:flex-row md:items-center md:justify-between">
+                                  <div>
+                                    <h5 className="font-medium text-slate-900">{locale === "en" ? item.nameEn || item.name : item.name}</h5>
+                                    <p className="text-xs text-slate-500">{item.code || item.id}</p>
+                                  </div>
+                                  {item.isDefault ? (
+                                    <span className="inline-flex items-center rounded-full bg-sky-100 px-2.5 py-1 text-xs font-medium text-sky-700">
+                                      {locale === "en" ? "Built-in default" : "内置默认模版"}
+                                    </span>
+                                  ) : null}
+                                </div>
+
+                                <div className="grid gap-4 md:grid-cols-4">
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.layout")}</Label>
+                                    <Select
+                                      value={web.layout || "standard"}
+                                      onValueChange={(value) => updateWebTemplateField(item.id, "layout", value)}
+                                    >
+                                      <SelectTrigger>
+                                        <SelectValue placeholder={t("knowledge.layout")} />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="standard">Standard</SelectItem>
+                                        <SelectItem value="minimal">Minimal</SelectItem>
+                                        <SelectItem value="detailed">Detailed</SelectItem>
+                                        <SelectItem value="card-based">Card Based</SelectItem>
+                                      </SelectContent>
+                                    </Select>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.accentColor")}</Label>
+                                    <Input
+                                      value={web.accentColor || "#0d9488"}
+                                      onChange={(e) => updateWebTemplateField(item.id, "accentColor", e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.maxContentWidth")}</Label>
+                                    <Input
+                                      type="number"
+                                      min={640}
+                                      max={1600}
+                                      value={String(web.maxContentWidth ?? 900)}
+                                      onChange={(e) => updateWebTemplateField(item.id, "maxContentWidth", Number(e.target.value || 900))}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label>{t("knowledge.lineHeight")}</Label>
+                                    <Input
+                                      type="number"
+                                      min={1}
+                                      max={2.4}
+                                      step="0.1"
+                                      value={String(web.lineHeight ?? 1.6)}
+                                      onChange={(e) => updateWebTemplateField(item.id, "lineHeight", Number(e.target.value || 1.6))}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.showToc")}</Label>
+                                    <Switch checked={web.showTableOfContents ?? true} onCheckedChange={(value) => updateWebTemplateField(item.id, "showTableOfContents", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.showKeyPoints")}</Label>
+                                    <Switch checked={web.showKeyPoints ?? true} onCheckedChange={(value) => updateWebTemplateField(item.id, "showKeyPoints", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.showRecommendations")}</Label>
+                                    <Switch checked={web.showRecommendations ?? true} onCheckedChange={(value) => updateWebTemplateField(item.id, "showRecommendations", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.showReferences")}</Label>
+                                    <Switch checked={web.showReferences ?? true} onCheckedChange={(value) => updateWebTemplateField(item.id, "showReferences", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.showMetadata")}</Label>
+                                    <Switch checked={web.showMetadata ?? true} onCheckedChange={(value) => updateWebTemplateField(item.id, "showMetadata", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.showDownloadLink")}</Label>
+                                    <Switch checked={web.showDownloadLink ?? true} onCheckedChange={(value) => updateWebTemplateField(item.id, "showDownloadLink", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.enablePdfExport")}</Label>
+                                    <Switch checked={web.enablePdfExport ?? true} onCheckedChange={(value) => updateWebTemplateField(item.id, "enablePdfExport", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.enableDocxExport")}</Label>
+                                    <Switch checked={web.enableDocxExport ?? true} onCheckedChange={(value) => updateWebTemplateField(item.id, "enableDocxExport", value)} />
+                                  </div>
+                                  <div className="flex items-center justify-between rounded-lg border bg-white px-3 py-2">
+                                    <Label>{t("knowledge.enablePrint")}</Label>
+                                    <Switch checked={web.enablePrint ?? true} onCheckedChange={(value) => updateWebTemplateField(item.id, "enablePrint", value)} />
+                                  </div>
+                                </div>
+
+                                <LoadingButton
+                                  onClick={() => saveTemplateConfig(item)}
+                                  loading={templateSavingId === item.id}
+                                  loadingText={locale === "en" ? "Saving..." : "保存中..."}
+                                >
+                                  <Save className="mr-2 h-4 w-4" />
+                                  {t("knowledge.saveTemplate")}
+                                </LoadingButton>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+          </TabsContent>
+
+          <TabsContent value="invitationTemplate" className="space-y-6">
         {/* Invitation Template Settings */}
         <Card className="border border-slate-200 shadow-sm">
           <CardHeader>
@@ -871,6 +1791,7 @@ export default function AdminSettingsPage() {
             )}
           </CardContent>
         </Card>
+
         {/* Signature Presets (EN) */}
         <Card className="border border-slate-200 shadow-sm">
           <CardHeader>
@@ -1305,6 +2226,8 @@ export default function AdminSettingsPage() {
             )}
           </CardContent>
         </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </AdminSectionGuard>
   );

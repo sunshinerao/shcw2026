@@ -1,5 +1,6 @@
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
+import { normalizeKnowledgeTypeSettings, type KnowledgeTypeSettingsMap } from "@/lib/knowledge-type-config";
 
 const SYSTEM_SETTINGS_KEY = "system_settings";
 const ENCRYPTION_PREFIX = "enc:v1";
@@ -14,6 +15,8 @@ type StoredSettingsExtra = {
   newsEnabled?: boolean;
   speakersEnabled?: boolean;
   partnersEnabled?: boolean;
+  homepageAttendeesEnabled?: boolean;
+  knowledgeTypeSettings?: KnowledgeTypeSettingsMap | null;
 };
 
 export type SystemSettings = {
@@ -25,6 +28,8 @@ export type SystemSettings = {
   newsEnabled: boolean;
   speakersEnabled: boolean;
   partnersEnabled: boolean;
+  homepageAttendeesEnabled: boolean;
+  knowledgeTypeSettings: KnowledgeTypeSettingsMap;
 };
 
 export type AdminSystemSettings = Omit<SystemSettings, "openaiApiKey"> & {
@@ -126,6 +131,8 @@ function normalizeExtra(extra: unknown): StoredSettingsExtra {
     newsEnabled: raw.newsEnabled !== false,
     speakersEnabled: raw.speakersEnabled !== false,
     partnersEnabled: raw.partnersEnabled !== false,
+    homepageAttendeesEnabled: raw.homepageAttendeesEnabled === true,
+    knowledgeTypeSettings: normalizeKnowledgeTypeSettings(raw.knowledgeTypeSettings),
   };
 }
 
@@ -207,6 +214,8 @@ export async function getSystemSettingsForServer(): Promise<SystemSettings> {
     newsEnabled: extra.newsEnabled !== false,
     speakersEnabled: extra.speakersEnabled !== false,
     partnersEnabled: extra.partnersEnabled !== false,
+    homepageAttendeesEnabled: extra.homepageAttendeesEnabled === true,
+    knowledgeTypeSettings: normalizeKnowledgeTypeSettings(extra.knowledgeTypeSettings),
   };
 }
 
@@ -223,6 +232,8 @@ export async function getSystemSettingsForAdmin(): Promise<AdminSystemSettings> 
     newsEnabled: serverSettings.newsEnabled,
     speakersEnabled: serverSettings.speakersEnabled,
     partnersEnabled: serverSettings.partnersEnabled,
+    homepageAttendeesEnabled: serverSettings.homepageAttendeesEnabled,
+    knowledgeTypeSettings: serverSettings.knowledgeTypeSettings,
   };
 }
 
@@ -235,6 +246,8 @@ export type UpdateSystemSettingsInput = {
   newsEnabled?: boolean;
   speakersEnabled?: boolean;
   partnersEnabled?: boolean;
+  homepageAttendeesEnabled?: boolean;
+  knowledgeTypeSettings?: KnowledgeTypeSettingsMap;
 };
 
 export async function updateSystemSettings(input: UpdateSystemSettingsInput) {
@@ -289,6 +302,14 @@ export async function updateSystemSettings(input: UpdateSystemSettingsInput) {
 
   if (input.partnersEnabled !== undefined) {
     next.partnersEnabled = Boolean(input.partnersEnabled);
+  }
+
+  if (input.homepageAttendeesEnabled !== undefined) {
+    next.homepageAttendeesEnabled = Boolean(input.homepageAttendeesEnabled);
+  }
+
+  if (input.knowledgeTypeSettings !== undefined) {
+    next.knowledgeTypeSettings = normalizeKnowledgeTypeSettings(input.knowledgeTypeSettings);
   }
 
   await prisma.siteContent.upsert({
