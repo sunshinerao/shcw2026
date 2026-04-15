@@ -71,6 +71,22 @@ test("user detail API does not expose passCode field", async () => {
   );
 });
 
+test("event registration APIs include registrant organization details", async () => {
+  const checks = [
+    "app/api/events/[id]/registrations/route.ts",
+    "app/api/v1/events/[id]/registrations/route.ts",
+  ];
+
+  for (const file of checks) {
+    const content = await readWorkspaceFile(file);
+    assert.match(
+      content,
+      /organization\s*:\s*\{\s*select\s*:\s*\{[\s\S]*name\s*:\s*true/,
+      `${file} should include user organization details in registration results`
+    );
+  }
+});
+
 test("poster templates API enforces requirePosterAdmin in GET and POST", async () => {
   const content = await readWorkspaceFile("app/api/posters/templates/route.ts");
 
