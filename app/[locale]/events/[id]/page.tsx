@@ -45,6 +45,7 @@ import {
 import { getEventDateRangeLabel, getEventScheduleLabel, getEventTimeSummaryLabel, getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors, type EventDateSlot } from "@/lib/data/events";
 import { Link } from "@/i18n/routing";
 import { normalizeAgendaDateKey } from "@/lib/agenda";
+import { buildEventMapLinks } from "@/lib/map-links";
 import { toast } from "sonner";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
@@ -700,16 +701,30 @@ export default function EventDetailPage() {
   const localizedCity = locale === "en"
     ? (event.cityEn || event.city || "Shanghai")
     : (event.city || "上海");
-  const mapsQuery = encodeURIComponent(
-    [localizedVenue, localizedAddress, localizedCity].filter(Boolean).join(", ")
-  );
-  const googleMapsEmbed = `https://maps.google.com/maps?q=${mapsQuery}&output=embed&hl=${locale === "zh" ? "zh-CN" : "en"}`;
-  const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
-  const gaodeQuery = encodeURIComponent(
-    [event.venue, event.address, event.city || "上海"].filter(Boolean).join(" ")
-  );
-  const gaodeLink = `https://www.amap.com/search?query=${gaodeQuery}`;
-  const baiduLink = `https://map.baidu.com/?wd=${encodeURIComponent([event.venue, event.address].filter(Boolean).join(" "))}`;
+  const {
+    googleMapsEmbed,
+    googleMapsLink,
+    appleMapsLink,
+    osmLink,
+    tencentMapsLink,
+    primaryActionLink,
+  } = buildEventMapLinks({
+    locale,
+    venue: localizedVenue,
+    address: localizedAddress,
+    city: localizedCity,
+  });
+
+  const handleCopyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(
+        [localizedVenue, localizedAddress, localizedCity].filter(Boolean).join(", ")
+      );
+      toast.success(t("locationCopied"));
+    } catch {
+      toast.error(t("loadError"));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 pt-16 lg:pt-20">
@@ -889,25 +904,25 @@ export default function EventDetailPage() {
                                             const topic = getAgendaTopic(item, speaker.id);
                                             return (
                                               <div key={speaker.id} className="flex items-start gap-2">
-                                                <Avatar className="h-5 w-5 shrink-0 mt-0.5">
+                                                <Avatar className="mt-0.5 h-5 w-5 shrink-0">
                                                   <AvatarImage src={speaker.avatar || undefined} />
                                                   <AvatarFallback className="text-[10px]">
                                                     {name.charAt(0)}
                                                   </AvatarFallback>
                                                 </Avatar>
-                                                <div>
-                                                  <div className="flex items-center gap-1.5">
-                                                    <span className="text-xs font-medium text-slate-700">
+                                                <div className="min-w-0 flex-1">
+                                                  <div className="flex min-h-5 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                                                    <span className="text-xs font-medium leading-5 text-slate-700">
                                                       {name}
                                                     </span>
                                                     {meta ? (
-                                                      <span className="text-xs text-slate-400">
+                                                      <span className="text-xs leading-5 text-slate-400">
                                                         {meta}
                                                       </span>
                                                     ) : null}
                                                   </div>
                                                   {topic && (
-                                                    <div className="text-xs font-bold text-slate-600 mt-0.5">{topic}</div>
+                                                    <div className="mt-0.5 text-xs font-bold leading-5 text-slate-600">{topic}</div>
                                                   )}
                                                 </div>
                                               </div>
@@ -917,25 +932,27 @@ export default function EventDetailPage() {
                                     </div>
                                   )}
                                   {item.moderator && (
-                                    <div className="flex items-center gap-2 mt-1 pl-0">
-                                      <span className="text-xs text-slate-400 shrink-0">
+                                    <div className="mt-1 flex items-start gap-2 pl-0">
+                                      <span className="shrink-0 pt-0.5 text-xs text-slate-400">
                                         {locale === "zh" ? "主持：" : "Host:"}
                                       </span>
-                                      <div className="flex items-center gap-2">
-                                        <Avatar className="h-5 w-5 shrink-0">
+                                      <div className="flex min-w-0 flex-1 items-start gap-2">
+                                        <Avatar className="mt-0.5 h-5 w-5 shrink-0">
                                           <AvatarImage src={item.moderator.avatar || undefined} />
                                           <AvatarFallback className="text-[10px]">
                                             {getAgendaSpeakerName(item.moderator).charAt(0)}
                                           </AvatarFallback>
                                         </Avatar>
-                                        <span className="text-xs font-medium text-amber-700">
-                                          {getAgendaSpeakerName(item.moderator)}
-                                        </span>
-                                        {getAgendaSpeakerMeta(item.moderator) ? (
-                                          <span className="text-xs text-slate-400">
-                                            {getAgendaSpeakerMeta(item.moderator)}
+                                        <div className="flex min-h-5 flex-wrap items-center gap-x-1.5 gap-y-0.5">
+                                          <span className="text-xs font-medium leading-5 text-amber-700">
+                                            {getAgendaSpeakerName(item.moderator)}
                                           </span>
-                                        ) : null}
+                                          {getAgendaSpeakerMeta(item.moderator) ? (
+                                            <span className="text-xs leading-5 text-slate-400">
+                                              {getAgendaSpeakerMeta(item.moderator)}
+                                            </span>
+                                          ) : null}
+                                        </div>
                                       </div>
                                     </div>
                                   )}
@@ -1087,7 +1104,7 @@ export default function EventDetailPage() {
                       />
                     ) : (
                       <a
-                        href={gaodeLink}
+                        href={primaryActionLink}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full h-full bg-gradient-to-br from-emerald-50 to-blue-50 flex flex-col items-center justify-center relative overflow-hidden"
@@ -1109,36 +1126,46 @@ export default function EventDetailPage() {
                   </div>
                   <p className="font-medium text-slate-900 mb-1">{localizedVenue}</p>
                   {localizedAddress ? <p className="text-sm text-slate-500 mb-3">{localizedAddress}</p> : null}
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {locale === "en" ? (
                       <>
-                        <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                        <a href={googleMapsLink} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[120px]">
                           <Button variant="outline" className="w-full" size="sm">
                             <ExternalLink className="w-4 h-4 mr-2" />
                             Google Maps
                           </Button>
                         </a>
-                        <a href={gaodeLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                        <a href={appleMapsLink} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[120px]">
                           <Button variant="outline" className="w-full" size="sm">
                             <ExternalLink className="w-4 h-4 mr-2" />
-                            Gaode Maps
+                            Apple Maps
+                          </Button>
+                        </a>
+                        <a href={osmLink} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[120px]">
+                          <Button variant="outline" className="w-full" size="sm">
+                            <ExternalLink className="w-4 h-4 mr-2" />
+                            OpenStreetMap
                           </Button>
                         </a>
                       </>
                     ) : (
                       <>
-                        <a href={gaodeLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                        <a href={tencentMapsLink} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[120px]">
                           <Button variant="outline" className="w-full" size="sm">
                             <ExternalLink className="w-4 h-4 mr-2" />
-                            高德地图
+                            腾讯地图
                           </Button>
                         </a>
-                        <a href={baiduLink} target="_blank" rel="noopener noreferrer" className="flex-1">
+                        <a href={appleMapsLink} target="_blank" rel="noopener noreferrer" className="flex-1 min-w-[120px]">
                           <Button variant="outline" className="w-full" size="sm">
                             <ExternalLink className="w-4 h-4 mr-2" />
-                            百度地图
+                            Apple 地图
                           </Button>
                         </a>
+                        <Button variant="outline" className="flex-1 min-w-[120px]" size="sm" onClick={() => void handleCopyAddress()}>
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          {t("copyAddress")}
+                        </Button>
                       </>
                     )}
                   </div>

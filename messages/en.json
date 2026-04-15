@@ -2272,7 +2272,9 @@
         },
         "locationTitle": "Location",
         "viewMap": "View Map",
-        "clickToViewMap": "Click to view map"
+        "clickToViewMap": "Click to view map",
+        "copyAddress": "Copy address",
+        "locationCopied": "Address copied. Paste it into any map app."
     },
     "aboutPage": {
         "hero": {

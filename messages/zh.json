@@ -2274,7 +2274,9 @@
         },
         "locationTitle": "活动地点",
         "viewMap": "查看地图",
-        "clickToViewMap": "点击查看地图"
+        "clickToViewMap": "点击查看地图",
+        "copyAddress": "复制地址",
+        "locationCopied": "地址已复制，可粘贴到任意地图应用中"
     },
     "aboutPage": {
         "hero": {
