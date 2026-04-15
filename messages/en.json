@@ -790,6 +790,8 @@
                 "workshop": "Workshop",
                 "sharing": "Sharing",
                 "launch": "Launch",
+                "ceremony": "Ceremony",
+                "summary": "Meeting Summary",
                 "break": "Break",
                 "networking": "Networking"
             },
@@ -2227,6 +2229,7 @@
                 "opening": "Opening Remarks",
                 "keynote": "Keynote",
                 "ceremony": "Ceremony",
+                "summary": "Meeting Summary",
                 "panel": "Panel",
                 "workshop": "Workshop",
                 "sharing": "Sharing",

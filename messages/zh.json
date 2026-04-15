@@ -790,6 +790,8 @@
                 "workshop": "工作坊",
                 "sharing": "分享",
                 "launch": "发布",
+                "ceremony": "仪式",
+                "summary": "会议总结",
                 "break": "休息",
                 "networking": "社交"
             },
@@ -2232,6 +2234,7 @@
                 "launch": "发布",
                 "break": "休息",
                 "ceremony": "仪式",
+                "summary": "会议总结",
                 "networking": "交流",
                 "registration": "签到"
             }

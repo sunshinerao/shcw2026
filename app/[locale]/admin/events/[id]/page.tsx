@@ -99,7 +99,7 @@ type EventInfo = {
   venue: string;
 };
 
-const AGENDA_TYPES = ["opening", "keynote", "panel", "workshop", "sharing", "launch", "break", "networking"] as const;
+const AGENDA_TYPES = ["opening", "keynote", "panel", "workshop", "sharing", "launch", "ceremony", "summary", "break", "networking"] as const;
 
 const EVENT_INSTITUTION_ROLES = [
   "organizer",
@@ -390,11 +390,14 @@ export default function EventAgendaPage({
   };
 
   const agendaTypeColors: Record<string, string> = {
+    opening: "bg-orange-100 text-orange-700",
     keynote: "bg-purple-100 text-purple-700",
     panel: "bg-blue-100 text-blue-700",
     workshop: "bg-amber-100 text-amber-700",
     sharing: "bg-teal-100 text-teal-700",
     launch: "bg-rose-100 text-rose-700",
+    ceremony: "bg-pink-100 text-pink-700",
+    summary: "bg-cyan-100 text-cyan-700",
     break: "bg-slate-100 text-slate-600",
     networking: "bg-emerald-100 text-emerald-700",
   };
