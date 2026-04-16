@@ -1748,6 +1748,7 @@
     "userMenu": {
         "pass": "Event Pass",
         "climatePassport": "Climate Passport",
+        "verifier": "Verifier check-in",
         "profile": "Profile"
     },
     "roles": {
@@ -2123,7 +2124,8 @@
             "pass": "View pass",
             "events": "Browse events",
             "schedule": "Manage my schedule",
-            "passport": "Open climate passport"
+            "passport": "Open climate passport",
+            "verifier": "Verifier check-in"
         },
         "upcoming": {
             "title": "Starting soon",

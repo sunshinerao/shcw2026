@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
-import { Calendar, Heart, Trophy, CheckCircle2, ArrowRight, MapPin, Loader2, BadgeCheck, Clock } from "lucide-react";
+import { Calendar, Heart, Trophy, CheckCircle2, ArrowRight, MapPin, Loader2, BadgeCheck, Clock, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useRouter } from "@/i18n/routing";
@@ -41,12 +41,13 @@ export default function DashboardPage() {
   const t = useTranslations("dashboardPage");
   const eventT = useTranslations("eventsPage");
   const locale = useLocale() as "zh" | "en";
-  const { status } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [registrations, setRegistrations] = useState<RegistrationItem[]>([]);
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [profile, setProfile] = useState<ProfileData | null>(null);
+  const canAccessVerifier = ["ADMIN", "STAFF", "VERIFIER"].includes(String(session?.user?.role || ""));
 
   const getEventSlotWindows = (event: RegistrationItem["event"]) =>
     normalizeEventDateSlots(event).map((slot) => ({
@@ -202,6 +203,14 @@ export default function DashboardPage() {
                   {t("quickActions.passport")}
                 </Button>
               </Link>
+              {canAccessVerifier && (
+                <Link href="/verifier">
+                  <Button variant="outline">
+                    <QrCode className="w-4 h-4 mr-2" />
+                    {t("quickActions.verifier")}
+                  </Button>
+                </Link>
+              )}
             </div>
           </CardContent>
         </Card>

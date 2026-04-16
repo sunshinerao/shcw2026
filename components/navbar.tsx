@@ -14,6 +14,7 @@ import {
   Ticket,
   LayoutDashboard,
   BadgeCheck,
+  QrCode,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -200,6 +201,16 @@ export function Navbar({
                             <BadgeCheck className="w-4 h-4 mr-2" />
                             {t("userMenu.climatePassport")}
                           </Link>
+                          {["ADMIN", "STAFF", "VERIFIER"].includes(String(user.role || "")) && (
+                            <Link
+                              href="/verifier"
+                              className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                              onClick={() => setIsUserMenuOpen(false)}
+                            >
+                              <QrCode className="w-4 h-4 mr-2" />
+                              {t("userMenu.verifier")}
+                            </Link>
+                          )}
                           <Link
                             href="/dashboard/profile"
                             className="flex items-center px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50"

@@ -1748,6 +1748,7 @@
     "userMenu": {
         "pass": "活动通行证",
         "climatePassport": "气候护照",
+        "verifier": "现场验码",
         "profile": "个人资料"
     },
     "roles": {
@@ -2123,7 +2124,8 @@
             "pass": "查看通行证",
             "events": "浏览活动",
             "schedule": "管理我的日程",
-            "passport": "打开气候护照"
+            "passport": "打开气候护照",
+            "verifier": "现场验码"
         },
         "upcoming": {
             "title": "即将开始的活动",

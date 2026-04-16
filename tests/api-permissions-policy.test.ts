@@ -224,6 +224,30 @@ test("check-in flow writes back climate passport progress and rewards", async ()
   );
 });
 
+test("dashboard and user menu expose a verifier entry", async () => {
+  const dashboardContent = await readWorkspaceFile("app/[locale]/dashboard/page.tsx");
+  const navbarContent = await readWorkspaceFile("components/navbar.tsx");
+
+  assert.match(
+    dashboardContent,
+    /href="\/verifier"/,
+    "Dashboard quick actions should include a direct verifier entry"
+  );
+
+  assert.match(
+    navbarContent,
+    /href="\/verifier"/,
+    "Logged-in user menu should include a verifier entry for authorized roles"
+  );
+});
+
+test("README hides default admin and verifier passwords", async () => {
+  const readme = await readWorkspaceFile("README.md");
+
+  assert.doesNotMatch(readme, /admin123/, "README should not expose the default administrator password");
+  assert.doesNotMatch(readme, /verifier123/, "README should not expose the default verifier password");
+});
+
 test("v1 institutions detail route keeps orgType whitelist", async () => {
   const content = await readWorkspaceFile("app/api/v1/institutions/[id]/route.ts");
 
