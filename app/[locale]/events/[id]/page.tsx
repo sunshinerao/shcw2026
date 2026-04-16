@@ -84,6 +84,19 @@ type AgendaItem = {
   } | null;
 };
 
+type EventInstitution = {
+  institutionId: string;
+  role?: string | null;
+  institution: {
+    id: string;
+    slug: string;
+    name: string;
+    nameEn?: string | null;
+    logo?: string | null;
+    orgType?: string | null;
+  };
+};
+
 type PublicEvent = {
   id: string;
   title: string;
@@ -112,6 +125,7 @@ type PublicEvent = {
   highlights?: string[] | null;
   highlightsEn?: string[] | null;
   agendaItems?: AgendaItem[];
+  institutions?: EventInstitution[];
 };
 
 type RelatedInsight = {
@@ -168,6 +182,75 @@ function getFullDescription(event: PublicEvent, locale: string) {
   }
 
   return event.description;
+}
+
+function wrapCanvasTextLines(
+  context: CanvasRenderingContext2D,
+  text: string,
+  maxWidth: number,
+  maxLines = Number.MAX_SAFE_INTEGER
+) {
+  const safeText = text.trim();
+  if (!safeText) {
+    return [] as string[];
+  }
+
+  const tokens = safeText.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]|[^\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\s]+|\s+/g) || [safeText];
+  const lines: string[] = [];
+  let currentLine = "";
+
+  tokens.forEach((token) => {
+    if (/^\s+$/.test(token)) {
+      return;
+    }
+
+    const separator = currentLine && !/[\u4e00-\u9fff]/.test(token) && !/[\u4e00-\u9fff]/.test(currentLine.slice(-1))
+      ? " "
+      : "";
+    const testLine = currentLine ? `${currentLine}${separator}${token}` : token;
+
+    if (context.measureText(testLine).width <= maxWidth) {
+      currentLine = testLine;
+      return;
+    }
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+    currentLine = token;
+  });
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  if (lines.length <= maxLines) {
+    return lines;
+  }
+
+  const clipped = lines.slice(0, maxLines);
+  if (clipped.length > 0) {
+    const lastIndex = clipped.length - 1;
+    clipped[lastIndex] = `${clipped[lastIndex].replace(/[，。；、,:;·\s]+$/u, "")}…`;
+  }
+  return clipped;
+}
+
+function humanizeInstitutionRole(role: string | null | undefined, locale: string) {
+  if (!role) {
+    return "";
+  }
+
+  const normalized = role.replace(/_/g, " ").trim();
+  if (!normalized) {
+    return "";
+  }
+
+  if (locale !== "en") {
+    return normalized;
+  }
+
+  return normalized.replace(/\b\w/g, (letter) => letter.toUpperCase());
 }
 
 export default function EventDetailPage() {
@@ -425,56 +508,16 @@ export default function EventDetailPage() {
     lineHeight: number,
     maxLines: number
   ) => {
-    // Split into tokens: Chinese chars are split individually, Latin words kept together
-    const tokens = text.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]|[^\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\s]+|\s+/g) || [text];
-    const lines: string[] = [];
-    let currentLine = "";
-
-    tokens.forEach((token) => {
-      if (/^\s+$/.test(token)) return; // skip pure whitespace tokens
-      const separator = currentLine && !/[\u4e00-\u9fff]/.test(token) && !/[\u4e00-\u9fff]/.test(currentLine.slice(-1)) ? " " : "";
-      const testLine = currentLine ? `${currentLine}${separator}${token}` : token;
-      if (context.measureText(testLine).width <= maxWidth) {
-        currentLine = testLine;
-      } else {
-        if (currentLine) {
-          lines.push(currentLine);
-        }
-        currentLine = token;
-      }
-    });
-
-    if (currentLine) {
-      lines.push(currentLine);
-    }
-
-    lines.slice(0, maxLines).forEach((line, index) => {
+    wrapCanvasTextLines(context, text, maxWidth, maxLines).forEach((line, index) => {
       context.fillText(line, x, y + index * lineHeight);
     });
   };
 
-  // Returns estimated line count for text at current font settings
   const estimateLineCount = (
     context: CanvasRenderingContext2D,
     text: string,
     maxWidth: number
-  ) => {
-    const tokens = text.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]|[^\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\s]+|\s+/g) || [text];
-    let lines = 1;
-    let currentLine = "";
-    tokens.forEach((token) => {
-      if (/^\s+$/.test(token)) return;
-      const separator = currentLine && !/[\u4e00-\u9fff]/.test(token) && !/[\u4e00-\u9fff]/.test(currentLine.slice(-1)) ? " " : "";
-      const testLine = currentLine ? `${currentLine}${separator}${token}` : token;
-      if (context.measureText(testLine).width <= maxWidth) {
-        currentLine = testLine;
-      } else {
-        lines++;
-        currentLine = token;
-      }
-    });
-    return lines;
-  };
+  ) => wrapCanvasTextLines(context, text, maxWidth).length;
 
   const buildPosterImage = async (shareUrl: string) => {
     if (!event) {
@@ -562,7 +605,282 @@ export default function EventDetailPage() {
     return canvas.toDataURL("image/png");
   };
 
-  const handleGenerateQr = async (mode: "poster" | "qr") => {
+  const buildEventPosterImage = async (shareUrl: string) => {
+    if (!event) {
+      throw new Error("Event not found");
+    }
+
+    const canvas = document.createElement("canvas");
+    canvas.width = 1240;
+    const context = canvas.getContext("2d");
+
+    if (!context) {
+      throw new Error("Canvas context unavailable");
+    }
+
+    const title = getLocalizedTitle(event, locale);
+    const description = (getFullDescription(event, locale) || getLocalizedDescription(event, locale)).trim();
+    const venue = locale === "en" ? event.venueEn || event.venue : event.venue;
+    const address = locale === "en"
+      ? event.addressEn || event.address || venue
+      : event.address || venue;
+    const scheduleLabel = getEventScheduleLabel(event, locale);
+    const posterTitle = locale === "en" ? "Event Poster" : "活动海报";
+    const overviewTitle = locale === "en" ? "Event Overview" : "活动信息";
+    const agendaTitle = locale === "en" ? "Agenda" : "活动议程";
+    const speakersTitle = locale === "en" ? "Featured Speakers" : "主要嘉宾";
+    const institutionsTitle = locale === "en" ? "Partner Institutions" : "合作机构";
+    const registerTitle = locale === "en" ? "Registration" : "报名方式";
+    const defaultAgendaText = locale === "en" ? "Detailed agenda will be announced soon." : "详细议程将于近期公布。";
+    const defaultSpeakerText = locale === "en" ? "Speaker lineup is being updated." : "嘉宾信息持续更新中。";
+    const defaultInstitutionText = locale === "en" ? "Partner institutions are being updated." : "合作机构持续更新中。";
+
+    context.font = "700 68px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    const titleLines = wrapCanvasTextLines(context, title, 960, 4);
+
+    context.font = "400 30px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    const descriptionLines = wrapCanvasTextLines(context, description, 960, 16);
+
+    context.font = "600 28px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    const scheduleLines = wrapCanvasTextLines(context, scheduleLabel, 880, 3);
+
+    context.font = "400 25px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    const venueLines = wrapCanvasTextLines(context, address, 880, 3);
+
+    const agendaEntries: Array<{ text: string; tone: "heading" | "body" }> = [];
+    context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    if (groupedAgendaItems.length > 0) {
+      groupedAgendaItems.forEach((group) => {
+        agendaEntries.push({ text: formatAgendaDateLabel(group.date, locale), tone: "heading" });
+        group.items.forEach((item) => {
+          wrapCanvasTextLines(
+            context,
+            `${item.startTime}-${item.endTime} ${getAgendaTitle(item)}`,
+            900,
+            3
+          ).forEach((line) => {
+            agendaEntries.push({ text: line, tone: "body" });
+          });
+        });
+      });
+    } else {
+      agendaEntries.push({ text: defaultAgendaText, tone: "body" });
+    }
+
+    const speakerMap = new Map<string, AgendaSpeaker>();
+    (event.agendaItems ?? []).forEach((item) => {
+      item.speakers.forEach((speaker) => {
+        speakerMap.set(speaker.id, speaker);
+      });
+      if (item.moderator) {
+        speakerMap.set(item.moderator.id, item.moderator);
+      }
+    });
+
+    context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    const speakerEntries = Array.from(speakerMap.values())
+      .sort((left, right) => Number(right.isKeynote) - Number(left.isKeynote))
+      .slice(0, 12)
+      .flatMap((speaker) => {
+        const meta = getAgendaSpeakerMeta(speaker) || (locale === "en" ? "Guest speaker" : "嘉宾");
+        return wrapCanvasTextLines(
+          context,
+          `${getAgendaSpeakerName(speaker)} · ${meta}`,
+          900,
+          2
+        );
+      });
+
+    context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    const institutionEntries = (event.institutions ?? []).flatMap((item) => {
+      const institutionName = locale === "en"
+        ? item.institution.nameEn || item.institution.name
+        : item.institution.name;
+      const relation = humanizeInstitutionRole(item.role, locale);
+      return wrapCanvasTextLines(
+        context,
+        relation ? `${institutionName} · ${relation}` : institutionName,
+        900,
+        2
+      );
+    });
+
+    const agendaHeight = agendaEntries.reduce((total, entry) => total + (entry.tone === "heading" ? 42 : 34), 0);
+    const speakerHeight = (speakerEntries.length > 0 ? speakerEntries.length : 1) * 34;
+    const institutionHeight = (institutionEntries.length > 0 ? institutionEntries.length : 1) * 34;
+    const infoBlockHeight = 140 + scheduleLines.length * 36 + venueLines.length * 32;
+    const estimatedHeight = 260 + titleLines.length * 78 + descriptionLines.length * 42 + infoBlockHeight + agendaHeight + speakerHeight + institutionHeight + 520;
+
+    canvas.height = Math.max(2200, Math.min(7600, estimatedHeight));
+
+    const background = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+    background.addColorStop(0, "#052e2b");
+    background.addColorStop(0.45, "#0b4f46");
+    background.addColorStop(1, "#e6fffb");
+    context.fillStyle = background;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(52, 52, canvas.width - 104, canvas.height - 104);
+
+    let y = 128;
+
+    context.fillStyle = "#0f766e";
+    context.font = "600 28px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.fillText(`Shanghai Climate Week 2026 · ${posterTitle}`, 110, y);
+    y += 62;
+
+    context.fillStyle = "#0f172a";
+    context.font = "700 68px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    titleLines.forEach((line) => {
+      context.fillText(line, 110, y);
+      y += 78;
+    });
+
+    context.fillStyle = "#334155";
+    context.font = "400 30px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    descriptionLines.forEach((line) => {
+      context.fillText(line, 110, y);
+      y += 42;
+    });
+
+    y += 18;
+    context.fillStyle = "#ecfdf5";
+    context.fillRect(110, y, 1020, infoBlockHeight);
+
+    const metaText = [
+      getEventTypeLabel(event.type, locale),
+      getEventLayerLabel(event.eventLayer as any, locale),
+      getEventHostTypeLabel(event.hostType as any, locale),
+    ].filter(Boolean).join(" · ");
+
+    context.fillStyle = "#0f172a";
+    context.font = "700 32px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.fillText(overviewTitle, 140, y + 48);
+
+    context.fillStyle = "#0f766e";
+    context.font = "600 28px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    scheduleLines.forEach((line, index) => {
+      context.fillText(line, 140, y + 92 + index * 36);
+    });
+
+    context.fillStyle = "#475569";
+    context.font = "400 25px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    venueLines.forEach((line, index) => {
+      context.fillText(line, 140, y + 92 + scheduleLines.length * 36 + 18 + index * 32);
+    });
+
+    if (metaText) {
+      context.fillStyle = "#64748b";
+      context.font = "500 22px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+      context.fillText(metaText, 140, y + infoBlockHeight - 18);
+    }
+
+    y += infoBlockHeight + 48;
+
+    const drawSectionHeader = (label: string) => {
+      context.fillStyle = "#0f172a";
+      context.font = "700 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+      context.fillText(label, 110, y);
+      context.strokeStyle = "#99f6e4";
+      context.lineWidth = 4;
+      context.beginPath();
+      context.moveTo(330, y - 10);
+      context.lineTo(1130, y - 10);
+      context.stroke();
+      y += 38;
+    };
+
+    drawSectionHeader(agendaTitle);
+    agendaEntries.forEach((entry) => {
+      if (entry.tone === "heading") {
+        context.fillStyle = "#047857";
+        context.font = "600 26px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+        context.fillText(entry.text, 120, y);
+        y += 40;
+        return;
+      }
+
+      context.fillStyle = "#334155";
+      context.font = "400 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+      context.fillText(entry.text, 140, y);
+      y += 34;
+    });
+
+    y += 20;
+    drawSectionHeader(speakersTitle);
+    const speakerLinesToDraw = speakerEntries.length > 0 ? speakerEntries : [defaultSpeakerText];
+    context.fillStyle = "#334155";
+    context.font = "400 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    speakerLinesToDraw.forEach((line) => {
+      context.fillText(line, 140, y);
+      y += 34;
+    });
+
+    y += 20;
+    drawSectionHeader(institutionsTitle);
+    const institutionLinesToDraw = institutionEntries.length > 0 ? institutionEntries : [defaultInstitutionText];
+    context.fillStyle = "#334155";
+    context.font = "400 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    institutionLinesToDraw.forEach((line) => {
+      context.fillText(line, 140, y);
+      y += 34;
+    });
+
+    y += 24;
+
+    const qrBlockY = y;
+    context.fillStyle = "#0f766e";
+    context.fillRect(110, qrBlockY, 1020, 320);
+
+    context.fillStyle = "#ffffff";
+    context.font = "700 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.fillText(registerTitle, 150, qrBlockY + 58);
+
+    context.font = "400 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    drawWrappedText(
+      context,
+      locale === "en"
+        ? "Scan the QR code to register and view the full event details."
+        : "扫描二维码即可报名并查看完整活动详情。",
+      150,
+      qrBlockY + 106,
+      560,
+      32,
+      3
+    );
+
+    drawWrappedText(
+      context,
+      `${locale === "en" ? "Event link" : "活动链接"}: ${shareUrl}`,
+      150,
+      qrBlockY + 186,
+      560,
+      30,
+      4
+    );
+
+    context.fillStyle = "#ffffff";
+    context.fillRect(842, qrBlockY + 35, 220, 220);
+
+    const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+      width: 220,
+      margin: 1,
+      color: { dark: "#0f172a", light: "#ffffff" },
+    });
+    const qrImage = await loadImageElement(qrDataUrl);
+    context.drawImage(qrImage, 842, qrBlockY + 35, 220, 220);
+
+    context.fillStyle = "#ffffff";
+    context.font = "600 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.textAlign = "center";
+    context.fillText(t("register.sharePosterScan"), 952, qrBlockY + 286);
+    context.textAlign = "start";
+
+    return canvas.toDataURL("image/png");
+  };
+
+  const handleGenerateQr = async (mode: "poster" | "qr" | "event-poster") => {
     if (!event) {
       return;
     }
@@ -578,6 +896,17 @@ export default function EventDetailPage() {
         .replace(/^-|-$/g, "")
         .slice(0, 40);
       const baseName = `event-${dateSlug}-${titleSlug}-${mode}`;
+
+      if (mode === "event-poster") {
+        const poster = await buildEventPosterImage(shareUrl);
+        setSharePreviewImage(poster);
+        setSharePreviewTitle(locale === "en" ? "Generate event poster" : "生成活动海报");
+        setSharePreviewFileName(`${baseName}.png`);
+        setSharePreviewOpen(true);
+        downloadDataUrl(poster, `${baseName}.png`);
+        toast.success(locale === "en" ? "Event poster generated and downloading" : "活动海报已生成并开始下载");
+        return;
+      }
 
       if (mode === "poster") {
         const poster = await buildPosterImage(shareUrl);
@@ -1062,6 +1391,9 @@ export default function EventDetailPage() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="w-56">
+                        <DropdownMenuItem onClick={() => void handleGenerateQr("event-poster")}>
+                          {locale === "en" ? "Generate event poster" : "生成活动海报"}
+                        </DropdownMenuItem>
                         <DropdownMenuSub>
                           <DropdownMenuSubTrigger>{t("register.shareQr")}</DropdownMenuSubTrigger>
                           <DropdownMenuSubContent className="w-48">
@@ -1177,7 +1509,7 @@ export default function EventDetailPage() {
       </section>
 
       <Dialog open={sharePreviewOpen} onOpenChange={setSharePreviewOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{sharePreviewTitle}</DialogTitle>
             <DialogDescription>{t("register.sharePreviewDescription")}</DialogDescription>

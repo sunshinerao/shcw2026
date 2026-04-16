@@ -113,6 +113,33 @@ test("agenda admin page loads the full speaker library for the picker", async ()
   );
 });
 
+test("forgot-password route normalizes email before lookup", async () => {
+  const content = await readWorkspaceFile("app/api/forgot-password/route.ts");
+
+  assert.match(
+    content,
+    /normalizeUserEmail|email\.trim\(\)\.toLowerCase\(\)/,
+    "Forgot-password route should normalize email before querying the user"
+  );
+});
+
+test("event detail page supports generating a full event poster", async () => {
+  const pageContent = await readWorkspaceFile("app/[locale]/events/[id]/page.tsx");
+  const routeContent = await readWorkspaceFile("app/api/events/[id]/route.ts");
+
+  assert.match(
+    pageContent,
+    /handleGenerateQr\("event-poster"\)|shareEventPoster/,
+    "Event detail page should offer a dedicated full event poster action"
+  );
+
+  assert.match(
+    routeContent,
+    /institutions\s*:\s*\{/,
+    "Public event detail route should expose related institutions for poster generation"
+  );
+});
+
 test("v1 institutions detail route keeps orgType whitelist", async () => {
   const content = await readWorkspaceFile("app/api/v1/institutions/[id]/route.ts");
 

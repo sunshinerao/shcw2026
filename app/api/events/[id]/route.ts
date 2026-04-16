@@ -132,6 +132,21 @@ export async function GET(
             order: true,
           },
         },
+        institutions: {
+          orderBy: [{ order: "asc" }],
+          include: {
+            institution: {
+              select: {
+                id: true,
+                slug: true,
+                name: true,
+                nameEn: true,
+                logo: true,
+                orgType: true,
+              },
+            },
+          },
+        },
         agendaItems: {
           include: {
             speakers: {

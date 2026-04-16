@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { randomBytes } from "crypto";
 import { sendPasswordResetEmail } from "@/lib/mailer";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
+import { normalizeUserEmail } from "@/lib/user-identity";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,8 +11,10 @@ export async function POST(req: NextRequest) {
     const { email, locale } = body;
     const requestLocale = resolveRequestLocale(req, locale);
 
+    const normalizedEmail = typeof email === "string" ? normalizeUserEmail(email) : "";
+
     // 验证邮箱格式
-    if (!email || typeof email !== "string") {
+    if (!normalizedEmail) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "invalidEmailRequired") },
         { status: 400 }
@@ -20,7 +23,7 @@ export async function POST(req: NextRequest) {
 
     // 查找用户
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     // 无论邮箱是否存在，都返回相同消息以保护隐私
