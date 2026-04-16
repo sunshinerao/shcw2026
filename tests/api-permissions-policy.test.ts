@@ -123,7 +123,7 @@ test("forgot-password route normalizes email before lookup", async () => {
   );
 });
 
-test("event detail page supports generating a full event poster", async () => {
+test("event detail page keeps all poster and QR share actions visible", async () => {
   const pageContent = await readWorkspaceFile("app/[locale]/events/[id]/page.tsx");
   const routeContent = await readWorkspaceFile("app/api/events/[id]/route.ts");
 
@@ -131,6 +131,24 @@ test("event detail page supports generating a full event poster", async () => {
     pageContent,
     /handleGenerateQr\("event-poster"\)|shareEventPoster/,
     "Event detail page should offer a dedicated full event poster action"
+  );
+
+  assert.match(
+    pageContent,
+    /handleGenerateQr\("poster"\)/,
+    "Event detail page should keep the original poster-with-QR action"
+  );
+
+  assert.match(
+    pageContent,
+    /handleGenerateQr\("qr"\)/,
+    "Event detail page should keep the original QR-only action"
+  );
+
+  assert.doesNotMatch(
+    pageContent,
+    /DropdownMenuSubTrigger>\{t\("register\.shareQr"\)\}<\/DropdownMenuSubTrigger>/,
+    "The old share actions should stay directly visible instead of being hidden in a submenu"
   );
 
   assert.match(

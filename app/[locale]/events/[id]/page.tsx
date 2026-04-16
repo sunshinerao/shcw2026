@@ -30,9 +30,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -900,11 +897,11 @@ export default function EventDetailPage() {
       if (mode === "event-poster") {
         const poster = await buildEventPosterImage(shareUrl);
         setSharePreviewImage(poster);
-        setSharePreviewTitle(locale === "en" ? "Generate event poster" : "生成活动海报");
+        setSharePreviewTitle(t("register.shareEventPoster"));
         setSharePreviewFileName(`${baseName}.png`);
         setSharePreviewOpen(true);
         downloadDataUrl(poster, `${baseName}.png`);
-        toast.success(locale === "en" ? "Event poster generated and downloading" : "活动海报已生成并开始下载");
+        toast.success(t("register.shareEventPosterReady"));
         return;
       }
 
@@ -1390,21 +1387,16 @@ export default function EventDetailPage() {
                           {t("register.share")}
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuContent align="end" className="w-60">
                         <DropdownMenuItem onClick={() => void handleGenerateQr("event-poster")}>
-                          {locale === "en" ? "Generate event poster" : "生成活动海报"}
+                          {t("register.shareEventPoster")}
                         </DropdownMenuItem>
-                        <DropdownMenuSub>
-                          <DropdownMenuSubTrigger>{t("register.shareQr")}</DropdownMenuSubTrigger>
-                          <DropdownMenuSubContent className="w-48">
-                            <DropdownMenuItem onClick={() => void handleGenerateQr("poster")}>
-                              {t("register.sharePoster")}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => void handleGenerateQr("qr")}>
-                              {t("register.shareQrOnly")}
-                            </DropdownMenuItem>
-                          </DropdownMenuSubContent>
-                        </DropdownMenuSub>
+                        <DropdownMenuItem onClick={() => void handleGenerateQr("poster")}>
+                          {t("register.sharePoster")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => void handleGenerateQr("qr")}>
+                          {t("register.shareQrOnly")}
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => void handleShareLink("wechat")}>
                           {t("register.shareWechat")}
                         </DropdownMenuItem>
