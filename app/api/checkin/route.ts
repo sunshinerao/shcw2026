@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale, type ApiLocale } from "@/lib/api-i18n";
-import { EVENT_PASS_QR_TTL_MS, getEventPassState } from "@/lib/climate-passport";
+import { getEventPassState } from "@/lib/climate-passport";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -73,10 +73,11 @@ export async function POST(req: NextRequest) {
 
     // 解析二维码数据
     // 格式1: SCW2026://PASSPORT/{userId}/{passCode}
-    // 格式2: SCW2026://EVENT/{eventId}/{userId}/{registrationId}/{timestamp}
-    
+    // 格式2: SCW2026://EVENT/{eventId}/{userId}/{registrationId}
+    // 兼容旧格式: SCW2026://EVENT/{eventId}/{userId}/{registrationId}/{timestamp}
+
     const passportMatch = qrData.match(/^SCW2026:\/\/PASSPORT\/([^\/]+)\/([^\/]+)$/);
-    const eventMatch = qrData.match(/^SCW2026:\/\/EVENT\/([^\/]+)\/([^\/]+)\/([^\/]+)\/(\d+)$/);
+    const eventMatch = qrData.match(/^SCW2026:\/\/EVENT\/([^\/]+)\/([^\/]+)\/([^\/]+)(?:\/(\d+))?$/);
 
     let result;
     
@@ -89,7 +90,7 @@ export async function POST(req: NextRequest) {
       }
       // 气候护照二维码 - 只验证身份
       const [, userId, passCode] = passportMatch;
-      result = await verifyPassport(userId, passCode);
+      result = await verifyPassport(userId, passCode, requestLocale);
     } else if (eventMatch) {
       // 活动通行证二维码 - 验证并签到
       const [, eventId, userId, registrationId, timestamp] = eventMatch;
@@ -113,7 +114,7 @@ export async function POST(req: NextRequest) {
         eventId,
         userId,
         registrationId,
-        parseInt(timestamp),
+        timestamp ? Number.parseInt(timestamp, 10) : null,
         requestLocale,
         session.user.id,
         targetEventId
@@ -182,20 +183,12 @@ async function verifyAndCheckIn(
   eventId: string,
   userId: string,
   registrationId: string,
-  timestamp: number,
+  _timestamp: number | null,
   locale: ApiLocale,
   verifierId: string,
   targetEventId?: string
 ) {
-  // 检查二维码是否过期（短时动态有效）
-  const now = Date.now();
-  
-  if (now - timestamp > EVENT_PASS_QR_TTL_MS) {
-    return {
-      success: false,
-      error: apiMessage(locale, "qrExpired"),
-    };
-  }
+  // 旧版二维码可能带有时间戳片段，这里继续兼容解析，但不再要求 60 秒内刷新。
 
   // 如果指定了目标活动，检查是否匹配
   if (targetEventId && targetEventId !== eventId) {

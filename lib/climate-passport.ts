@@ -1,7 +1,7 @@
 import { normalizeEventDateSlots, type EventDateSlot } from "@/lib/data/events";
 
-export const EVENT_PASS_ENTRY_WINDOW_MS = 90 * 60 * 1000;
-export const EVENT_PASS_QR_TTL_MS = 60 * 1000;
+export const EVENT_PASS_ENTRY_WINDOW_MS = 24 * 60 * 60 * 1000;
+export const EVENT_PASS_QR_TTL_MS = 24 * 60 * 60 * 1000;
 
 export type SupportedLocale = "zh" | "en";
 export type EventPassState = "upcoming" | "active" | "checkedIn" | "expired" | "pendingApproval" | "rejected";

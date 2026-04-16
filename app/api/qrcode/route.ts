@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import QRCode from "qrcode";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
-import { EVENT_PASS_QR_TTL_MS, getEventPassState } from "@/lib/climate-passport";
+import { EVENT_PASS_ENTRY_WINDOW_MS, getEventPassState } from "@/lib/climate-passport";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -148,9 +148,9 @@ export async function GET(req: NextRequest) {
         );
       }
       
-      // 格式: SCW2026://EVENT/{eventId}/{userId}/{registrationId}/{timestamp}
-      const timestamp = Date.now();
-      qrData = `SCW2026://EVENT/${eventId}/${session.user.id}/${registration.id}/${timestamp}`;
+      // 格式: SCW2026://EVENT/{eventId}/{userId}/{registrationId}
+      // 不再使用 60 秒动态时间戳，二维码在开放入场窗口内保持稳定可验。
+      qrData = `SCW2026://EVENT/${eventId}/${session.user.id}/${registration.id}`;
     } else {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "qrUnsupportedType") },
@@ -173,8 +173,9 @@ export async function GET(req: NextRequest) {
       success: true,
       data: {
         qrCode: qrCodeSvg,
+        qrData,
         type: type,
-        expiresInMs: type === "event" ? EVENT_PASS_QR_TTL_MS : null,
+        expiresInMs: type === "event" ? EVENT_PASS_ENTRY_WINDOW_MS : null,
       },
     });
   } catch (error) {

@@ -158,6 +158,72 @@ test("event detail page keeps all poster and QR share actions visible", async ()
   );
 });
 
+test("event pass opens within 24 hours and disables 60-second QR refresh", async () => {
+  const passportLib = await readWorkspaceFile("lib/climate-passport.ts");
+  const passPage = await readWorkspaceFile("app/[locale]/dashboard/pass/page.tsx");
+  const qrRoute = await readWorkspaceFile("app/api/qrcode/route.ts");
+  const checkinRoute = await readWorkspaceFile("app/api/checkin/route.ts");
+
+  assert.match(
+    passportLib,
+    /EVENT_PASS_ENTRY_WINDOW_MS\s*=\s*24\s*\*\s*60\s*\*\s*60\s*\*\s*1000/,
+    "Event pass QR availability should open 24 hours before the activity starts"
+  );
+
+  assert.doesNotMatch(
+    passPage,
+    /setInterval\([\s\S]*EVENT_PASS_QR_TTL_MS/,
+    "Pass page should no longer auto-refresh the QR code every 60 seconds"
+  );
+
+  assert.doesNotMatch(
+    passPage,
+    /RefreshCw|qrRefreshWindow|qrRefreshed/,
+    "Pass page should no longer show the manual refresh affordance or 60-second refresh messaging"
+  );
+
+  assert.doesNotMatch(
+    qrRoute,
+    /SCW2026:\/\/EVENT\/\$\{eventId\}\/\$\{session\.user\.id\}\/\$\{registration\.id\}\/\$\{timestamp\}/,
+    "New event QR codes should no longer depend on a 60-second timestamp suffix"
+  );
+
+  assert.doesNotMatch(
+    checkinRoute,
+    /now\s*-\s*timestamp\s*>\s*EVENT_PASS_QR_TTL_MS/,
+    "Verifier check-in should no longer reject a valid event pass just because a 60-second TTL elapsed"
+  );
+});
+
+test("check-in flow writes back climate passport progress and rewards", async () => {
+  const checkinRoute = await readWorkspaceFile("app/api/checkin/route.ts");
+  const passportPage = await readWorkspaceFile("app/[locale]/dashboard/climate-passport/page.tsx");
+
+  assert.match(
+    checkinRoute,
+    /checkedInAt\s*:\s*new Date\(\)/,
+    "Verifier check-in should persist the attended timestamp"
+  );
+
+  assert.match(
+    checkinRoute,
+    /points\s*:\s*\{[\s\S]*increment\s*:\s*pointsToAward/,
+    "Verifier check-in should award climate passport points"
+  );
+
+  assert.match(
+    checkinRoute,
+    /pointTransaction\.create\(/,
+    "Verifier check-in should record a points transaction for auditability"
+  );
+
+  assert.match(
+    passportPage,
+    /buildPassportAchievements\([\s\S]*attendedCount[\s\S]*profile\?\.points/,
+    "Climate passport achievements should unlock from attended events and accumulated points"
+  );
+});
+
 test("v1 institutions detail route keeps orgType whitelist", async () => {
   const content = await readWorkspaceFile("app/api/v1/institutions/[id]/route.ts");
 

@@ -69,7 +69,7 @@
         "passportQr": {
             "title": "Climate Passport QR code",
             "badge": "Site-wide",
-            "description": "Use this QR code for identity verification on site. It remains valid for 5 minutes."
+            "description": "Use this QR code for on-site identity verification."
         },
         "passTypes": {
             "vip": "VIP Pass",
@@ -101,7 +101,7 @@
             "checkedInTitle": "Entry confirmed",
             "checkedInDescription": "You have checked in successfully. Enjoy the event.",
             "upcomingTitle": "Entry not open yet",
-            "upcomingDescription": "Your QR code will be issued automatically 90 minutes before the event starts.",
+            "upcomingDescription": "Your entry QR code will be issued automatically within 24 hours before the event starts.",
             "expiredTitle": "Pass expired",
             "expiredDescription": "This event has ended, so the event pass is no longer valid.",
             "pendingApprovalTitle": "Pending Approval",
@@ -121,11 +121,10 @@
         "messages": {
             "loadError": "Failed to load passes.",
             "passportQrError": "Failed to load passport QR code.",
-            "qrRefreshed": "QR code refreshed.",
             "passDownloaded": "Pass download is ready.",
             "shareUnavailable": "Sharing is not available on this device.",
-            "qrRefreshWindow": "The event-entry QR code refreshes automatically every 60 seconds while active.",
-            "inactiveQr": "The QR code is only issued during the event entry window and becomes invalid after check-in or after the event ends.",
+            "qrAvailability": "The entry QR code becomes available within 24 hours before the event and remains valid until check-in or the event ends.",
+            "inactiveQr": "The entry QR code is only issued within 24 hours before the event and becomes invalid after check-in or after the event ends.",
             "antiShare": "One registration supports one entry only. On-site staff can cross-check your name, role, and photo when scanning."
         },
         "instructions": {

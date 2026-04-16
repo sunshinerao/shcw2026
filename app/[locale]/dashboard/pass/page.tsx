@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import QRCode from "qrcode";
-import { Download, Share2, QrCode, Ticket, CheckCircle, Loader2, RefreshCw, ShieldCheck } from "lucide-react";
+import { Download, Share2, QrCode, Ticket, CheckCircle, Loader2, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Link } from "@/i18n/routing";
-import { EVENT_PASS_QR_TTL_MS, getEventPassState, type EventPassState } from "@/lib/climate-passport";
+import { getEventPassState, type EventPassState } from "@/lib/climate-passport";
 import { getEventDateRangeLabel, getEventScheduleLabel, getEventTimeSummaryLabel, type EventDateSlot } from "@/lib/data/events";
 import { toast } from "sonner";
 
@@ -71,7 +71,6 @@ export default function PassPage() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [selectedPassId, setSelectedPassId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [passportQrCode, setPassportQrCode] = useState<string | null>(null);
   const [sharePreviewOpen, setSharePreviewOpen] = useState(false);
   const [sharePreviewImage, setSharePreviewImage] = useState("");
@@ -179,24 +178,7 @@ export default function PassPage() {
     fetchPassportQrCode();
   }, [fetchPasses, fetchPassportQrCode]);
 
-  useEffect(() => {
-    if (!selectedPass || selectedPass.passState !== "active") {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      fetchPasses();
-    }, EVENT_PASS_QR_TTL_MS);
-
-    return () => window.clearInterval(intervalId);
-  }, [fetchPasses, selectedPass]);
-
-  const refreshQrCode = async () => {
-    setRefreshing(true);
-    await fetchPasses();
-    setRefreshing(false);
-    toast.success(t("messages.qrRefreshed"));
-  };
+  
 
   const downloadPass = () => {
     toast.success(t("messages.passDownloaded"));
@@ -572,45 +554,32 @@ export default function PassPage() {
                         <p className="text-xs leading-5">{t("messages.inactiveQr")}</p>
                       </div>
                     )}
-                    {selectedPass.passState === "active" && (
-                      <button
-                        onClick={refreshQrCode}
-                        disabled={refreshing}
-                        className="absolute -top-2 -right-2 w-8 h-8 bg-emerald-600 text-white rounded-full flex items-center justify-center shadow-lg hover:bg-emerald-700 transition-colors disabled:opacity-50"
-                      >
-                        <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-                      </button>
-                    )}
                   </div>
                   <p className="text-sm text-slate-500 mt-4 text-center">{t("showQr")}</p>
-                  <p className="text-xs text-slate-400 mt-1 text-center">{t("messages.qrRefreshWindow")}</p>
+                  <p className="text-xs text-slate-400 mt-1 text-center">{t("messages.qrAvailability")}</p>
                 </div>
 
                 <div className="space-y-6">
                   <div>
                     <h3 className="text-lg font-bold text-slate-900 mb-4">{locale === "en" ? selectedPass.eventTitleEn : selectedPass.eventTitle}</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center text-slate-600">
-                        <span className="w-20 text-slate-400">{t("fields.date")}</span>
-                        <span>{getEventDateRangeLabel(selectedPass, locale)}</span>
-                      </div>
-                      <div className="flex items-center text-slate-600">
-                        <span className="w-20 text-slate-400">{t("fields.time")}</span>
-                        <span>{getEventTimeSummaryLabel(selectedPass, locale)}</span>
-                      </div>
-                      <div className="flex items-center text-slate-600">
-                        <span className="w-20 text-slate-400">{t("fields.venue")}</span>
-                        <span>{locale === "en" ? selectedPass.venueEn : selectedPass.venue}</span>
-                      </div>
-                      <div className="flex items-center text-slate-600">
-                        <span className="w-20 text-slate-400">{t("fields.ticket")}</span>
-                        <span className="font-mono">{selectedPass.id.slice(0, 12).toUpperCase()}</span>
-                      </div>
+                    <div className="grid grid-cols-[72px_1fr] gap-x-4 gap-y-3 text-slate-600">
+                      <span className="text-slate-400">{t("fields.date")}</span>
+                      <span className="min-w-0 leading-6">{getEventDateRangeLabel(selectedPass, locale)}</span>
+
+                      <span className="text-slate-400">{t("fields.time")}</span>
+                      <span className="min-w-0 leading-6">{getEventTimeSummaryLabel(selectedPass, locale)}</span>
+
+                      <span className="text-slate-400">{t("fields.venue")}</span>
+                      <span className="min-w-0 leading-6">{locale === "en" ? selectedPass.venueEn : selectedPass.venue}</span>
+
+                      <span className="text-slate-400">{t("fields.ticket")}</span>
+                      <span className="font-mono leading-6">{selectedPass.id.slice(0, 12).toUpperCase()}</span>
+
                       {selectedPass.checkedIn && selectedPass.pointsEarned > 0 && (
-                        <div className="flex items-center text-emerald-600">
-                          <span className="w-20 text-emerald-500">{t("fields.pointsEarned")}</span>
-                          <span className="font-bold">+{selectedPass.pointsEarned}</span>
-                        </div>
+                        <>
+                          <span className="text-emerald-500">{t("fields.pointsEarned")}</span>
+                          <span className="font-bold text-emerald-600 leading-6">+{selectedPass.pointsEarned}</span>
+                        </>
                       )}
                     </div>
                   </div>

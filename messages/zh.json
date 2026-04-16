@@ -69,7 +69,7 @@
         "passportQr": {
             "title": "气候护照二维码（通用身份验证）",
             "badge": "全场通用",
-            "description": "此二维码可用于现场身份验证，5分钟内有效"
+            "description": "此二维码可用于现场身份验证。"
         },
         "passTypes": {
             "vip": "VIP 通行证",
@@ -101,7 +101,7 @@
             "checkedInTitle": "已入场",
             "checkedInDescription": "您已成功入场，欢迎参加活动！",
             "upcomingTitle": "暂未开放入场",
-            "upcomingDescription": "活动开始前 90 分钟内才会生成入场二维码。",
+            "upcomingDescription": "活动开始前 24 小时内会自动生成入场二维码。",
             "expiredTitle": "通行证已失效",
             "expiredDescription": "活动已结束，活动通行证自动失效。",
             "pendingApprovalTitle": "等待审批",
@@ -121,11 +121,10 @@
         "messages": {
             "loadError": "获取通行证失败",
             "passportQrError": "获取护照二维码失败",
-            "qrRefreshed": "二维码已刷新",
             "passDownloaded": "通行证已下载",
             "shareUnavailable": "分享功能在此设备上不可用",
-            "qrRefreshWindow": "活动入场二维码在激活状态下每 60 秒自动刷新",
-            "inactiveQr": "二维码只有在活动开放入场时段内才会签发；验码成功或活动结束后自动失效。",
+            "qrAvailability": "活动二维码将在开始前 24 小时开放，验码成功或活动结束后自动失效。",
+            "inactiveQr": "活动开始前 24 小时内才会生成入场二维码；验码成功或活动结束后自动失效。",
             "antiShare": "一人一报名一人一码。现场验证人员可同时核对姓名、身份与头像，降低二维码转借风险。"
         },
         "instructions": {
@@ -2661,7 +2660,7 @@
             "continueScanning": "继续扫描",
             "eventInfo": "活动信息",
             "pointsAwarded": "+{points} 积分",
-            "pointsDescription": "用户已获得活动积分奖励",
+            "pointsDescription": "积分已写入用户的 Climate Passport 记录，并可触发对应徽章进度。",
             "alreadyCheckedIn": "该用户已完成签到",
             "checkedInTime": "验码时间: {time}"
         },
