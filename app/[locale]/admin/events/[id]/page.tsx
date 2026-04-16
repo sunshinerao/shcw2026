@@ -229,6 +229,7 @@ export default function EventAgendaPage({
   const [speakerSearch, setSpeakerSearch] = useState("");
   const [newSpeakerForm, setNewSpeakerForm] = useState<NewSpeakerForm>(initialNewSpeakerForm);
   const canManageSpeakersFlag = currentUserRole === "ADMIN" || currentUserRole === "EVENT_MANAGER" || (currentUserStaffPermissions?.includes("speakers") ?? false);
+  const canViewHiddenSpeakers = currentUserRole === "ADMIN" || (currentUserStaffPermissions?.includes("speakers") ?? false);
 
   // Institution association state
   const [eventInstitutions, setEventInstitutions] = useState<EventInstitutionItem[]>([]);
@@ -271,11 +272,22 @@ export default function EventAgendaPage({
   // Load all speakers from library
   const loadSpeakers = useCallback(async () => {
     try {
-      const res = await fetch("/api/speakers?limit=200");
-      const data = await res.json();
-      if (res.ok && data.data) {
-        setAllSpeakers(
-          (data.data as AgendaSpeaker[]).map((s) => ({
+      const collected: AgendaSpeaker[] = [];
+      let page = 1;
+      let totalPages = 1;
+
+      while (page <= totalPages) {
+        const query = `/api/speakers?page=${page}&limit=200${canViewHiddenSpeakers ? "&includeHidden=true" : ""}`;
+        const res = await fetch(query, { cache: "no-store" });
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data?.error || "Failed to load speakers");
+        }
+
+        const pageItems = Array.isArray(data?.data) ? (data.data as AgendaSpeaker[]) : [];
+        collected.push(
+          ...pageItems.map((s) => ({
             id: s.id,
             name: s.name,
             nameEn: s.nameEn,
@@ -287,11 +299,17 @@ export default function EventAgendaPage({
             isKeynote: s.isKeynote,
           }))
         );
+
+        totalPages = Math.max(1, Number(data?.pagination?.totalPages || 1));
+        page += 1;
       }
+
+      const deduped = Array.from(new Map(collected.map((speaker) => [speaker.id, speaker])).values());
+      setAllSpeakers(deduped);
     } catch {
       // ignore
     }
-  }, []);
+  }, [canViewHiddenSpeakers]);
 
   // Load institutions linked to this event
   const loadEventInstitutions = useCallback(async () => {

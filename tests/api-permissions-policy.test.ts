@@ -97,6 +97,22 @@ test("poster templates API enforces requirePosterAdmin in GET and POST", async (
   );
 });
 
+test("agenda admin page loads the full speaker library for the picker", async () => {
+  const content = await readWorkspaceFile("app/[locale]/admin/events/[id]/page.tsx");
+
+  assert.match(
+    content,
+    /while\s*\(page\s*<=\s*totalPages\)/,
+    "Agenda speaker picker should paginate through all speaker pages"
+  );
+
+  assert.match(
+    content,
+    /includeHidden=true/,
+    "Agenda speaker picker should request hidden speakers when the current user can manage them"
+  );
+});
+
 test("v1 institutions detail route keeps orgType whitelist", async () => {
   const content = await readWorkspaceFile("app/api/v1/institutions/[id]/route.ts");
 
