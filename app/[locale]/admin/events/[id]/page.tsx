@@ -516,10 +516,11 @@ export default function EventAgendaPage({
     const [h, m] = lastEndTime.split(":").map(Number);
     const endMinutes = h * 60 + m + 30;
     const autoEnd = `${String(Math.floor(endMinutes / 60) % 24).padStart(2, "0")}:${String(endMinutes % 60).padStart(2, "0")}`;
+    const nextOrder = agendaItems.reduce((max, item) => Math.max(max, item.order), -1) + 1;
     setForm({
       ...initialAgendaForm,
       agendaDate: defaultDate,
-      order: agendaItems.length,
+      order: nextOrder,
       startTime: lastEndTime,
       endTime: autoEnd,
     });
@@ -904,14 +905,14 @@ export default function EventAgendaPage({
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {agendaItems.map((item) => (
+                  {agendaItems.map((item, index) => (
                     <div
                       key={item.id}
                       className="flex flex-col gap-3 rounded-xl border border-slate-100 p-4 transition-all hover:border-emerald-200 hover:shadow-sm lg:flex-row lg:items-center lg:justify-between"
                     >
                       <div className="flex items-start gap-4">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-slate-50 text-slate-500 text-sm font-medium">
-                          {item.order + 1}
+                          {index + 1}
                         </div>
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2 mb-1">

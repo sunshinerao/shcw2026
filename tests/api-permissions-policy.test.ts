@@ -248,6 +248,22 @@ test("README hides default admin and verifier passwords", async () => {
   assert.doesNotMatch(readme, /verifier123/, "README should not expose the default verifier password");
 });
 
+test("admin agenda page shows continuous display numbering", async () => {
+  const content = await readWorkspaceFile("app/[locale]/admin/events/[id]/page.tsx");
+
+  assert.match(
+    content,
+    /agendaItems\.map\(\(item,\s*index\)/,
+    "Agenda list should use the rendered list index when showing the front number"
+  );
+
+  assert.doesNotMatch(
+    content,
+    /\{item\.order \+ 1\}/,
+    "Agenda badge should not expose the raw order field because gaps appear after deletions"
+  );
+});
+
 test("v1 institutions detail route keeps orgType whitelist", async () => {
   const content = await readWorkspaceFile("app/api/v1/institutions/[id]/route.ts");
 

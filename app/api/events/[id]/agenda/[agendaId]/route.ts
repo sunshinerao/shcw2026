@@ -318,8 +318,23 @@ export async function DELETE(
       );
     }
 
-    await prisma.agendaItem.delete({
-      where: { id: params.agendaId },
+    await prisma.$transaction(async (tx) => {
+      await tx.agendaItem.delete({
+        where: { id: params.agendaId },
+      });
+
+      const remainingItems = await tx.agendaItem.findMany({
+        where: { eventId: params.id },
+        orderBy: [{ agendaDate: "asc" }, { order: "asc" }, { startTime: "asc" }],
+        select: { id: true },
+      });
+
+      for (const [index, item] of remainingItems.entries()) {
+        await tx.agendaItem.update({
+          where: { id: item.id },
+          data: { order: index },
+        });
+      }
     });
 
     return NextResponse.json({
