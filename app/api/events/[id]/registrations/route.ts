@@ -5,6 +5,11 @@ import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { prisma } from "@/lib/prisma";
 
+function escapeCsvValue(value: unknown) {
+  const normalized = String(value ?? "").replace(/\r?\n|\r/g, " ").trim();
+  return `"${normalized.replace(/"/g, '""')}"`;
+}
+
 async function canManageTargetEvent(userId: string, role: string | null | undefined, eventId: string) {
   if (role === "ADMIN") {
     return true;
@@ -58,10 +63,22 @@ export async function GET(
 
     const { searchParams } = new URL(req.url);
     const status = searchParams.get("status");
+    const format = searchParams.get("format");
+    const query = searchParams.get("query")?.trim();
 
     const where: Record<string, unknown> = { eventId: params.id };
     if (status && Object.values(RegistrationStatus).includes(status as RegistrationStatus)) {
       where.status = status;
+    }
+
+    if (query) {
+      where.user = {
+        OR: [
+          { name: { contains: query, mode: "insensitive" } },
+          { email: { contains: query, mode: "insensitive" } },
+          { climatePassportId: { contains: query, mode: "insensitive" } },
+        ],
+      };
     }
 
     const event = await prisma.event.findUnique({
@@ -120,6 +137,52 @@ export async function GET(
         },
       }),
     ]);
+
+    if (format === "csv") {
+      const header = [
+        requestLocale === "en" ? "Name" : "姓名",
+        requestLocale === "en" ? "Email" : "邮箱",
+        requestLocale === "en" ? "Phone" : "电话",
+        requestLocale === "en" ? "Title" : "职位",
+        requestLocale === "en" ? "Organization" : "机构",
+        requestLocale === "en" ? "Passport ID" : "护照编号",
+        requestLocale === "en" ? "Status" : "报名状态",
+        requestLocale === "en" ? "Registered At" : "报名时间",
+        requestLocale === "en" ? "Checked In At" : "签到时间",
+        requestLocale === "en" ? "Points Earned" : "获得积分",
+        requestLocale === "en" ? "Notes" : "备注",
+      ];
+
+      const rows = registrations.map((registration) => [
+        registration.user.name,
+        registration.user.email,
+        registration.user.phone || "",
+        registration.user.title || "",
+        registration.user.organization?.name || "",
+        registration.user.climatePassportId || "",
+        registration.status,
+        registration.createdAt.toISOString(),
+        registration.checkedInAt?.toISOString() || "",
+        registration.pointsEarned,
+        registration.notes || "",
+      ]);
+
+      const csvContent = [header, ...rows]
+        .map((row) => row.map((cell) => escapeCsvValue(cell)).join(","))
+        .join("\n");
+
+      const safeTitle = (requestLocale === "en" ? event.titleEn || event.title : event.title)
+        .replace(/[^\p{L}\p{N}]+/gu, "-")
+        .replace(/^-+|-+$/g, "") || "event";
+
+      return new NextResponse(`\uFEFF${csvContent}`, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/csv; charset=utf-8",
+          "Content-Disposition": `attachment; filename="${safeTitle}-registrations.csv"`,
+        },
+      });
+    }
 
     return NextResponse.json({
       success: true,

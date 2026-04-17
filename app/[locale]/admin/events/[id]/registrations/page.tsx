@@ -9,6 +9,7 @@ import {
   Check,
   CheckCircle,
   Clock,
+  Download,
   MapPin,
   Search,
   Users,
@@ -168,6 +169,23 @@ export default function EventRegistrationsPage({
     });
   };
 
+  const handleExportRegistrations = () => {
+    const params = new URLSearchParams({ locale, format: "csv" });
+    if (filterStatus !== "all") {
+      params.set("status", filterStatus);
+    }
+    if (searchQuery.trim()) {
+      params.set("query", searchQuery.trim());
+    }
+
+    const anchor = document.createElement("a");
+    anchor.href = `/api/events/${eventId}/registrations?${params.toString()}`;
+    anchor.download = `${eventId}-registrations.csv`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+  };
+
   const submitAction = async (action: "approve" | "reject") => {
     const ids = Array.from(selectedIds);
     if (ids.length === 0) return;
@@ -244,13 +262,17 @@ export default function EventRegistrationsPage({
             </div>
           )}
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-xl font-semibold text-slate-900">
                 {t("title")}
               </h2>
               <p className="text-sm text-slate-600">{t("subtitle")}</p>
             </div>
+            <Button variant="outline" onClick={handleExportRegistrations}>
+              <Download className="mr-2 h-4 w-4" />
+              {t("export")}
+            </Button>
           </div>
         </motion.div>
 

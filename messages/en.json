@@ -836,6 +836,7 @@
             "selected": "{count} selected",
             "approve": "Approve",
             "reject": "Reject",
+            "export": "Export list",
             "actionFailed": "Action failed.",
             "empty": "No registrations found.",
             "statuses": {

@@ -2,6 +2,7 @@ import { normalizeEventDateSlots, type EventDateSlot } from "@/lib/data/events";
 
 export const EVENT_PASS_ENTRY_WINDOW_MS = 24 * 60 * 60 * 1000;
 export const EVENT_PASS_QR_TTL_MS = 24 * 60 * 60 * 1000;
+const EVENT_TIMEZONE_OFFSET_MINUTES = 8 * 60;
 
 export type SupportedLocale = "zh" | "en";
 export type EventPassState = "upcoming" | "active" | "checkedIn" | "expired" | "pendingApproval" | "rejected";
@@ -22,12 +23,34 @@ interface PassportAchievement {
   unlocked: boolean;
 }
 
+function getEventDateParts(dateValue: Date | string) {
+  if (typeof dateValue === "string") {
+    const directMatch = dateValue.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (directMatch) {
+      return {
+        year: Number.parseInt(directMatch[1], 10),
+        monthIndex: Number.parseInt(directMatch[2], 10) - 1,
+        day: Number.parseInt(directMatch[3], 10),
+      };
+    }
+  }
+
+  const parsedDate = new Date(dateValue);
+  return {
+    year: parsedDate.getUTCFullYear(),
+    monthIndex: parsedDate.getUTCMonth(),
+    day: parsedDate.getUTCDate(),
+  };
+}
+
 export function combineEventDateTime(dateValue: Date | string, timeValue: string) {
-  const eventDate = new Date(dateValue);
+  const { year, monthIndex, day } = getEventDateParts(dateValue);
   const [hours, minutes] = timeValue.split(":").map((part) => Number.parseInt(part, 10));
-  const combined = new Date(eventDate);
-  combined.setHours(hours || 0, minutes || 0, 0, 0);
-  return combined;
+
+  return new Date(
+    Date.UTC(year, monthIndex, day, hours || 0, minutes || 0, 0, 0) -
+      EVENT_TIMEZONE_OFFSET_MINUTES * 60 * 1000
+  );
 }
 
 export function getEventDurationMinutes(dateValue: Date | string, startTime: string, endTime: string) {

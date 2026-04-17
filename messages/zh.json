@@ -836,6 +836,7 @@
             "selected": "已选 {count} 项",
             "approve": "批准",
             "reject": "拒绝",
+            "export": "导出名单",
             "actionFailed": "操作失败。",
             "empty": "暂无报名记录。",
             "statuses": {

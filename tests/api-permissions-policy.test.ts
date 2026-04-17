@@ -195,6 +195,29 @@ test("event pass opens within 24 hours and disables 60-second QR refresh", async
   );
 });
 
+test("event pass timing stays timezone-stable and refreshes when the window opens", async () => {
+  const passportLib = await readWorkspaceFile("lib/climate-passport.ts");
+  const passPage = await readWorkspaceFile("app/[locale]/dashboard/pass/page.tsx");
+
+  assert.match(
+    passportLib,
+    /Date\.UTC|getUTCFullYear|getUTCDate/,
+    "Pass state calculation should be based on a timezone-stable date conversion instead of server-local clock rules"
+  );
+
+  assert.doesNotMatch(
+    passportLib,
+    /combined\.setHours\(/,
+    "Pass timing should not depend on mutating a local-time Date object because deployment timezone can shift the QR opening window"
+  );
+
+  assert.match(
+    passPage,
+    /setTimeout\(|visibilitychange|addEventListener\("focus"/,
+    "Pass page should re-check eligibility when the 24-hour window opens or the user returns to the page"
+  );
+});
+
 test("check-in flow writes back climate passport progress and rewards", async () => {
   const checkinRoute = await readWorkspaceFile("app/api/checkin/route.ts");
   const passportPage = await readWorkspaceFile("app/[locale]/dashboard/climate-passport/page.tsx");
@@ -238,6 +261,23 @@ test("dashboard and user menu expose a verifier entry", async () => {
     navbarContent,
     /href="\/verifier"/,
     "Logged-in user menu should include a verifier entry for authorized roles"
+  );
+});
+
+test("admin registrations support exporting registrant lists", async () => {
+  const pageContent = await readWorkspaceFile("app/[locale]/admin/events/[id]/registrations/page.tsx");
+  const routeContent = await readWorkspaceFile("app/api/events/[id]/registrations/route.ts");
+
+  assert.match(
+    pageContent,
+    /handleExport|exportRegistrations|download.*csv/i,
+    "The admin registrations page should expose a direct export action"
+  );
+
+  assert.match(
+    routeContent,
+    /text\/csv|Content-Disposition|registrations\.csv/i,
+    "The registrations API should be able to return a downloadable CSV export"
   );
 });
 

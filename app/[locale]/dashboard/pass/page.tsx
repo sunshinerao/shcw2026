@@ -26,8 +26,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Link } from "@/i18n/routing";
-import { getEventPassState, type EventPassState } from "@/lib/climate-passport";
-import { getEventDateRangeLabel, getEventScheduleLabel, getEventTimeSummaryLabel, type EventDateSlot } from "@/lib/data/events";
+import { EVENT_PASS_ENTRY_WINDOW_MS, combineEventDateTime, getEventPassState, type EventPassState } from "@/lib/climate-passport";
+import { getEventDateRangeLabel, getEventScheduleLabel, getEventTimeSummaryLabel, normalizeEventDateSlots, type EventDateSlot } from "@/lib/data/events";
 import { toast } from "sonner";
 
 interface PassData {
@@ -178,7 +178,72 @@ export default function PassPage() {
     fetchPassportQrCode();
   }, [fetchPasses, fetchPassportQrCode]);
 
-  
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const handleFocusRefresh = () => {
+      void fetchPasses();
+    };
+
+    const handleVisibilityRefresh = () => {
+      if (!document.hidden) {
+        void fetchPasses();
+      }
+    };
+
+    window.addEventListener("focus", handleFocusRefresh);
+    document.addEventListener("visibilitychange", handleVisibilityRefresh);
+
+    return () => {
+      window.removeEventListener("focus", handleFocusRefresh);
+      document.removeEventListener("visibilitychange", handleVisibilityRefresh);
+    };
+  }, [fetchPasses]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || passes.length === 0) {
+      return;
+    }
+
+    const now = Date.now();
+    const upcomingTransitions = passes.flatMap((pass) => {
+      if (pass.passState === "checkedIn" || pass.passState === "expired" || pass.passState === "rejected") {
+        return [] as number[];
+      }
+
+      const slots = normalizeEventDateSlots({
+        startDate: pass.startDate,
+        endDate: pass.endDate,
+        startTime: pass.startTime,
+        endTime: pass.endTime,
+        eventDateSlots: pass.eventDateSlots,
+      });
+
+      return slots.flatMap((slot) => {
+        const startAt = combineEventDateTime(slot.scheduleDate, slot.startTime).getTime();
+        const endAt = combineEventDateTime(slot.scheduleDate, slot.endTime).getTime();
+        const entryOpenAt = startAt - EVENT_PASS_ENTRY_WINDOW_MS;
+        return [entryOpenAt, endAt].filter((point) => point > now);
+      });
+    });
+
+    if (upcomingTransitions.length === 0) {
+      return;
+    }
+
+    const nextTransitionAt = Math.min(...upcomingTransitions);
+    const timeoutMs = Math.max(1000, Math.min(nextTransitionAt - now + 1000, 2147483647));
+    const refreshTimer = window.setTimeout(() => {
+      void fetchPasses();
+    }, timeoutMs);
+
+    return () => {
+      window.clearTimeout(refreshTimer);
+    };
+  }, [passes, fetchPasses]);
+
 
   const downloadPass = () => {
     toast.success(t("messages.passDownloaded"));
