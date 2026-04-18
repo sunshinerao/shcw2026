@@ -209,7 +209,9 @@ export default function EventRegistrationsPage({
       document.body.appendChild(anchor);
       anchor.click();
       anchor.remove();
-      window.URL.revokeObjectURL(objectUrl);
+      window.setTimeout(() => {
+        window.URL.revokeObjectURL(objectUrl);
+      }, 30000);
       setMessage("success", t("exportSuccess"));
     } catch (error) {
       setMessage("error", error instanceof Error ? error.message : t("exportFailed"));

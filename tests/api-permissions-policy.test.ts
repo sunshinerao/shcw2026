@@ -281,6 +281,12 @@ test("admin registrations support exporting registrant lists", async () => {
   );
 
   assert.match(
+    pageContent,
+    /setTimeout\([\s\S]*revokeObjectURL/,
+    "The blob URL should be revoked after a short delay instead of immediately, otherwise some browsers cancel the download"
+  );
+
+  assert.match(
     routeContent,
     /text\/csv|Content-Disposition|registrations\.csv/i,
     "The registrations API should be able to return a downloadable CSV export"
