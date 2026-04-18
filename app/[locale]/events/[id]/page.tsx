@@ -827,37 +827,7 @@ export default function EventDetailPage() {
       36 + qrBlockHeight + bottomPadding;
     const a4MinHeight = Math.round(canvas.width * 1.414);
 
-    canvas.height = Math.max(a4MinHeight, Math.min(7800, estimatedHeight));
-
-    const background = context.createLinearGradient(0, 0, canvas.width, canvas.height);
-    background.addColorStop(0, "#032b29");
-    background.addColorStop(0.38, "#0d5c56");
-    background.addColorStop(1, "#dbf6f1");
-    context.fillStyle = background;
-    context.fillRect(0, 0, canvas.width, canvas.height);
-
-    context.fillStyle = "rgba(255,255,255,0.08)";
-    context.beginPath();
-    context.arc(1060, 160, 170, 0, Math.PI * 2);
-    context.fill();
-    context.beginPath();
-    context.arc(170, canvas.height - 140, 190, 0, Math.PI * 2);
-    context.fill();
-
-    context.strokeStyle = "rgba(255,255,255,0.12)";
-    context.lineWidth = 1;
-    context.beginPath();
-    context.arc(1060, 160, 220, 0, Math.PI * 2);
-    context.stroke();
-
-    context.save();
-    context.shadowColor = "rgba(15, 23, 42, 0.16)";
-    context.shadowBlur = 36;
-    context.shadowOffsetY = 12;
-    context.fillStyle = "#ffffff";
-    drawRoundedRect(context, cardLeft, cardTop, cardWidth, canvas.height - cardTop * 2, 36);
-    context.fill();
-    context.restore();
+    canvas.height = Math.max(a4MinHeight, Math.min(7800, estimatedHeight + 200));
 
     let y = 118;
 
@@ -907,7 +877,7 @@ export default function EventDetailPage() {
     context.strokeStyle = "#99f6e4";
     context.lineWidth = 3;
     context.beginPath();
-    context.moveTo(330, y + 64);
+    context.moveTo(140, y + 64);
     context.lineTo(1110, y + 64);
     context.stroke();
 
@@ -1013,14 +983,10 @@ export default function EventDetailPage() {
     const qrSize = 188;
     const qrX = qrBlockX + qrBlockWidth - qrSize - 42;
     const qrLabelY = qrBlockY + 270;
-    const displayUrl = shareUrl.replace(/^https?:\/\//i, "");
+    const displayUrl = shareUrl;
 
     context.fillStyle = "#0b5d56";
     drawRoundedRect(context, qrBlockX, qrBlockY, qrBlockWidth, qrBlockHeight, 30);
-    context.fill();
-
-    context.fillStyle = "rgba(255,255,255,0.08)";
-    drawRoundedRect(context, 136, qrBlockY + 24, 612, 122, 18);
     context.fill();
 
     context.fillStyle = "#ffffff";
@@ -1065,12 +1031,12 @@ export default function EventDetailPage() {
     context.drawImage(qrImage, qrX, qrBlockY + 40, qrSize, qrSize);
 
     context.fillStyle = "#ffffff";
-    context.font = "600 22px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.font = "500 18px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     context.textAlign = "center";
     context.fillText(t("register.sharePosterScan"), qrX + qrSize / 2, qrLabelY);
     context.textAlign = "start";
 
-    const finalCanvasHeight = Math.min(canvas.height, qrBlockY + qrBlockHeight + cardInset + bottomPadding);
+    const finalCanvasHeight = qrBlockY + qrBlockHeight + cardInset + bottomPadding;
     const outputCanvas = document.createElement("canvas");
     outputCanvas.width = canvas.width;
     outputCanvas.height = finalCanvasHeight;
@@ -1079,6 +1045,35 @@ export default function EventDetailPage() {
     if (!outputContext) {
       throw new Error("Canvas context unavailable");
     }
+
+    const outputBg = outputContext.createLinearGradient(0, 0, outputCanvas.width, outputCanvas.height);
+    outputBg.addColorStop(0, "#032b29");
+    outputBg.addColorStop(0.38, "#0d5c56");
+    outputBg.addColorStop(1, "#dbf6f1");
+    outputContext.fillStyle = outputBg;
+    outputContext.fillRect(0, 0, outputCanvas.width, outputCanvas.height);
+
+    outputContext.fillStyle = "rgba(255,255,255,0.08)";
+    outputContext.beginPath();
+    outputContext.arc(1060, 160, 170, 0, Math.PI * 2);
+    outputContext.fill();
+    outputContext.beginPath();
+    outputContext.arc(170, outputCanvas.height - 140, 190, 0, Math.PI * 2);
+    outputContext.fill();
+    outputContext.strokeStyle = "rgba(255,255,255,0.12)";
+    outputContext.lineWidth = 1;
+    outputContext.beginPath();
+    outputContext.arc(1060, 160, 220, 0, Math.PI * 2);
+    outputContext.stroke();
+
+    outputContext.save();
+    outputContext.shadowColor = "rgba(15, 23, 42, 0.16)";
+    outputContext.shadowBlur = 36;
+    outputContext.shadowOffsetY = 12;
+    outputContext.fillStyle = "#ffffff";
+    drawRoundedRect(outputContext, cardLeft, cardTop, cardWidth, outputCanvas.height - cardTop * 2, 36);
+    outputContext.fill();
+    outputContext.restore();
 
     outputContext.drawImage(canvas, 0, 0);
     return outputCanvas.toDataURL("image/png");
