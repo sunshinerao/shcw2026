@@ -173,15 +173,17 @@ export async function GET(
         .map((row) => row.map((cell) => escapeCsvValue(cell)).join(","))
         .join("\n");
 
-      const safeTitle = (requestLocale === "en" ? event.titleEn || event.title : event.title)
+      const rawTitle = (requestLocale === "en" ? event.titleEn || event.title : event.title)
         .replace(/[^\p{L}\p{N}]+/gu, "-")
         .replace(/^-+|-+$/g, "") || "event";
+      const asciiFilename = rawTitle.replace(/[^\x20-\x7E]/g, "").replace(/[^a-zA-Z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "event";
+      const utf8Filename = encodeURIComponent(`${rawTitle}-registrations.csv`);
 
       return new NextResponse(`\uFEFF${csvContent}`, {
         status: 200,
         headers: {
           "Content-Type": "text/csv; charset=utf-8",
-          "Content-Disposition": `attachment; filename="${safeTitle}-registrations.csv"`,
+          "Content-Disposition": `attachment; filename="${asciiFilename}-registrations.csv"; filename*=UTF-8''${utf8Filename}`,
         },
       });
     }

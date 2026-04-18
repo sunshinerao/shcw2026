@@ -652,12 +652,19 @@ type EventScheduleSource = {
   eventDateSlots?: EventDateSlot[] | null;
 };
 
+function toDateString(value: string | Date): string {
+  if (value instanceof Date) {
+    return value.toISOString().slice(0, 10);
+  }
+  return String(value).slice(0, 10);
+}
+
 export function normalizeEventDateSlots(event: EventScheduleSource): EventDateSlot[] {
   if (Array.isArray(event.eventDateSlots) && event.eventDateSlots.length > 0) {
     return [...event.eventDateSlots]
       .filter((slot) => slot?.scheduleDate && slot?.startTime && slot?.endTime)
       .map((slot) => ({
-        scheduleDate: String(slot.scheduleDate).slice(0, 10),
+        scheduleDate: toDateString(slot.scheduleDate),
         startTime: slot.startTime,
         endTime: slot.endTime,
       }))
@@ -673,7 +680,7 @@ export function normalizeEventDateSlots(event: EventScheduleSource): EventDateSl
 
   return [
     {
-      scheduleDate: String(event.startDate).slice(0, 10),
+      scheduleDate: toDateString(event.startDate),
       startTime: event.startTime,
       endTime: event.endTime,
     },
@@ -682,8 +689,8 @@ export function normalizeEventDateSlots(event: EventScheduleSource): EventDateSl
 
 export function getEventDateRangeLabel(event: EventScheduleSource, locale = "zh"): string {
   const slots = normalizeEventDateSlots(event);
-  const firstDate = slots[0]?.scheduleDate || String(event.startDate).slice(0, 10);
-  const lastDate = slots[slots.length - 1]?.scheduleDate || String(event.endDate || event.startDate).slice(0, 10);
+  const firstDate = slots[0]?.scheduleDate || toDateString(event.startDate);
+  const lastDate = slots[slots.length - 1]?.scheduleDate || toDateString(event.endDate || event.startDate);
 
   if (firstDate === lastDate) {
     return getEventDateLabel(String(firstDate), locale);
