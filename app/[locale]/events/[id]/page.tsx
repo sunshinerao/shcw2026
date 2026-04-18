@@ -146,6 +146,7 @@ function parseHighlights(value: unknown): string[] {
 
 function formatEventDateLabel(dateValue: string, locale: string) {
   return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "zh-CN", {
+    year: "numeric",
     month: "long",
     day: "numeric",
     weekday: "long",
@@ -155,10 +156,15 @@ function formatEventDateLabel(dateValue: string, locale: string) {
 function formatAgendaDateLabel(dateValue: string, locale: string) {
   const normalized = normalizeAgendaDateKey(dateValue);
   return new Intl.DateTimeFormat(locale === "en" ? "en-US" : "zh-CN", {
+    year: "numeric",
     month: "long",
     day: "numeric",
     weekday: "long",
   }).format(new Date(`${normalized}T12:00:00`));
+}
+
+function hasChineseCharacters(value: string | null | undefined) {
+  return Boolean(value && /[\u4e00-\u9fff]/.test(value));
 }
 
 function getLocalizedTitle(event: PublicEvent, locale: string) {
@@ -179,6 +185,26 @@ function getFullDescription(event: PublicEvent, locale: string) {
   }
 
   return event.description;
+}
+
+function getLocalizedVenueText(event: PublicEvent, locale: string) {
+  return locale === "en" ? event.venueEn || event.venue : event.venue || event.venueEn || "";
+}
+
+function getLocalizedAddressText(event: PublicEvent, locale: string) {
+  const localizedVenue = getLocalizedVenueText(event, locale);
+
+  if (locale === "en") {
+    return event.addressEn || event.address || localizedVenue;
+  }
+
+  if (hasChineseCharacters(event.address)) {
+    return event.address || localizedVenue;
+  }
+
+  const city = event.city || event.cityEn || "";
+  const combined = [localizedVenue, city].filter(Boolean).join(" · ");
+  return combined || event.address || localizedVenue;
 }
 
 function splitLongCanvasToken(
@@ -222,15 +248,20 @@ function wrapCanvasTextLines(
   const tokens = safeText.match(/[\u4e00-\u9fff\u3000-\u303f\uff00-\uffef]|[^\u4e00-\u9fff\u3000-\u303f\uff00-\uffef\s]+|\s+/g) || [safeText];
   const lines: string[] = [];
   let currentLine = "";
+  let pendingSpace = false;
 
   const appendToken = (token: string) => {
-    if (!token || /^\s+$/.test(token)) {
+    if (!token) {
       return;
     }
 
-    const separator = currentLine && !/[\u4e00-\u9fff]/.test(token) && !/[\u4e00-\u9fff]/.test(currentLine.slice(-1))
-      ? " "
-      : "";
+    if (/^\s+$/.test(token)) {
+      pendingSpace = currentLine.length > 0;
+      return;
+    }
+
+    const separator = currentLine && pendingSpace ? " " : "";
+    pendingSpace = false;
     const testLine = currentLine ? `${currentLine}${separator}${token}` : token;
 
     if (context.measureText(testLine).width <= maxWidth) {
@@ -245,11 +276,7 @@ function wrapCanvasTextLines(
   };
 
   tokens.forEach((token) => {
-    if (/^\s+$/.test(token)) {
-      return;
-    }
-
-    const tokenParts = context.measureText(token).width > maxWidth
+    const tokenParts = !/^\s+$/.test(token) && context.measureText(token).width > maxWidth
       ? splitLongCanvasToken(context, token, maxWidth)
       : [token];
 
@@ -678,10 +705,8 @@ export default function EventDetailPage() {
 
     const title = getLocalizedTitle(event, locale);
     const description = (getFullDescription(event, locale) || getLocalizedDescription(event, locale)).trim();
-    const venue = locale === "en" ? event.venueEn || event.venue : event.venue;
-    const address = locale === "en"
-      ? event.addressEn || event.address || venue
-      : event.address || venue;
+    const venue = getLocalizedVenueText(event, locale);
+    const address = getLocalizedAddressText(event, locale);
     const scheduleLabel = getEventScheduleLabel(event, locale);
     const posterTitle = locale === "en" ? "Event Poster" : "活动海报";
     const overviewTitle = locale === "en" ? "Event Overview" : "活动信息";
@@ -1162,8 +1187,8 @@ export default function EventDetailPage() {
   const localizedTitle = getLocalizedTitle(event, locale);
   const localizedDescription = getLocalizedDescription(event, locale);
   const fullDescription = getFullDescription(event, locale);
-  const localizedVenue = locale === "en" ? event.venueEn || event.venue : event.venue;
-  const localizedAddress = locale === "en" ? event.addressEn || event.address || "" : event.address || "";
+  const localizedVenue = getLocalizedVenueText(event, locale);
+  const localizedAddress = getLocalizedAddressText(event, locale);
   const localizedCity = locale === "en"
     ? (event.cityEn || event.city || "Shanghai")
     : (event.city || "上海");

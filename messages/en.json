@@ -2272,7 +2272,7 @@
             "shareSystemCopied": "Link copied and ready to share",
             "shareWechatCopied": "Link copied. Paste it into WeChat to share",
             "shareXiaohongshuCopied": "Link copied. Paste it into Xiaohongshu to post",
-            "shareEventPosterReady": "Event poster generated and downloading",
+            "shareEventPosterReady": "Event poster generated. Click download to save", 
             "sharePosterScan": "Scan to view event details",
             "sharePosterReady": "Poster generated",
             "shareQrReady": "QR code generated",

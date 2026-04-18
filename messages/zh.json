@@ -2274,7 +2274,7 @@
             "shareSystemCopied": "链接已复制，可直接分享",
             "shareWechatCopied": "链接已复制，请在微信中粘贴发送",
             "shareXiaohongshuCopied": "链接已复制，请在小红书中粘贴发布",
-            "shareEventPosterReady": "活动海报已生成并开始下载",
+            "shareEventPosterReady": "活动海报已生成，可点击下载保存",
             "sharePosterScan": "扫码查看活动详情",
             "sharePosterReady": "海报已生成",
             "shareQrReady": "二维码已生成",

@@ -633,6 +633,7 @@ export function getEventDateLabel(dateStr: string, locale = "zh"): string {
   const day = date.getDate();
   if (locale === "en") {
     return new Intl.DateTimeFormat("en-US", {
+      year: "numeric",
       month: "long",
       day: "numeric",
       weekday: "short",
@@ -641,7 +642,7 @@ export function getEventDateLabel(dateStr: string, locale = "zh"): string {
 
   const weekdays = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
   const weekday = weekdays[date.getDay()];
-  return `${month}月${day}日 (${weekday})`;
+  return `${date.getFullYear()}年${month}月${day}日 (${weekday})`;
 }
 
 type EventScheduleSource = {
