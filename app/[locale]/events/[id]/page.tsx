@@ -771,7 +771,16 @@ export default function EventDetailPage() {
     const speakersInOrder: AgendaSpeaker[] = [];
     groupedAgendaItems.forEach((group) => {
       group.items.forEach((item) => {
-        for (const speaker of item.speakers) {
+        const speakerById = new Map(item.speakers.map((s) => [s.id, s]));
+        const orderedIds = item.speakerMeta?.orderedIds;
+        const ordered: AgendaSpeaker[] = orderedIds
+          ? orderedIds.map((id) => speakerById.get(id)).filter((s): s is AgendaSpeaker => !!s)
+          : item.speakers;
+        // Append any speakers not in orderedIds
+        for (const s of item.speakers) {
+          if (!ordered.includes(s)) ordered.push(s);
+        }
+        for (const speaker of ordered) {
           if (!speakerSeen.has(speaker.id)) {
             speakerSeen.add(speaker.id);
             speakersInOrder.push(speaker);
