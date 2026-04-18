@@ -715,14 +715,18 @@ export default function EventAgendaPage({
   const downloadCheckinPoster = async () => {
     if (!venueCheckinUrl || !event) return;
 
-    const W = 2480; // A4 300dpi
+    // A4 at 300dpi: 2480 × 3508
+    const W = 2480;
     const H = 3508;
+    // 1mm = 2480/210 ≈ 11.81px
+    const mm = (v: number) => Math.round(v * W / 210);
     const canvas = document.createElement("canvas");
     canvas.width = W;
     canvas.height = H;
     const ctx = canvas.getContext("2d")!;
+    const font = (w: string, s: number) => `${w} ${s}px 'PingFang SC', 'Microsoft YaHei', 'Inter', sans-serif`;
 
-    // Background
+    // --- Background ---
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, "#08111f");
     bg.addColorStop(0.45, "#0b172c");
@@ -730,39 +734,35 @@ export default function EventAgendaPage({
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // Grid overlay
+    // Radial glows (matching CSS radial-gradient)
+    const drawRadial = (cx: number, cy: number, r: number, color: string) => {
+      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+      g.addColorStop(0, color);
+      g.addColorStop(0.6, color.replace(/[\d.]+\)$/, "0.03)"));
+      g.addColorStop(1, "transparent");
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+    };
+    drawRadial(W * 0.15, H * 0.20, mm(60), "rgba(59,130,246,0.22)");
+    drawRadial(W * 0.85, H * 0.18, mm(55), "rgba(34,197,94,0.18)");
+    drawRadial(W * 0.50, H * 0.82, mm(60), "rgba(14,165,233,0.16)");
+
+    // Grid overlay (28px CSS ≈ mm(2.4))
+    const gridStep = mm(2.4);
     ctx.strokeStyle = "rgba(255,255,255,0.04)";
     ctx.lineWidth = 1;
-    for (let gx = 0; gx < W; gx += 56) {
+    for (let gx = 0; gx < W; gx += gridStep) {
       ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
     }
-    for (let gy = 0; gy < H; gy += 56) {
+    for (let gy = 0; gy < H; gy += gridStep) {
       ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
     }
 
     // Decorative orbs
-    const drawOrb = (cx: number, cy: number, r: number, color: string) => {
-      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      grad.addColorStop(0, color);
-      grad.addColorStop(0.6, color.replace(/[\d.]+\)$/, "0.03)"));
-      grad.addColorStop(1, "transparent");
-      ctx.fillStyle = grad;
-      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
-    };
-    drawOrb(W * 0.85, H * 0.18, 700, "rgba(34,197,94,0.18)");
-    drawOrb(W * 0.15, H * 0.82, 500, "rgba(56,189,248,0.16)");
+    drawRadial(W + mm(-45), mm(-60) + mm(90), mm(90), "rgba(34,197,94,0.15)");
+    drawRadial(mm(-20) + mm(60), H - mm(35), mm(60), "rgba(56,189,248,0.12)");
 
-    const px = 190; // left padding
-    let y = 210;
-    const font = (w: string, s: number) => `${w} ${s}px 'PingFang SC', 'Microsoft YaHei', 'Inter', sans-serif`;
-
-    // Tag pill
-    ctx.fillStyle = "rgba(255,255,255,0.06)";
-    ctx.strokeStyle = "rgba(255,255,255,0.16)";
-    ctx.lineWidth = 2;
-    const tagText = "Climate Check-in · Event Access";
-    ctx.font = font("500", 28);
-    const tagW = ctx.measureText(tagText).width + 70;
+    // Rounded rect helper
     const drawPill = (x: number, py: number, pw: number, ph: number, r: number) => {
       ctx.beginPath();
       ctx.moveTo(x + r, py); ctx.lineTo(x + pw - r, py);
@@ -775,114 +775,159 @@ export default function EventAgendaPage({
       ctx.arcTo(x, py, x + r, py, r);
       ctx.closePath();
     };
-    drawPill(px, y, tagW, 56, 28);
-    ctx.fill(); ctx.stroke();
-    // Tag dot
-    const gDot = ctx.createLinearGradient(px + 24, y + 20, px + 40, y + 36);
-    gDot.addColorStop(0, "#4ade80"); gDot.addColorStop(1, "#38bdf8");
-    ctx.fillStyle = gDot;
-    ctx.beginPath(); ctx.arc(px + 32, y + 28, 10, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "rgba(255,255,255,0.88)";
-    ctx.font = font("500", 28);
-    ctx.fillText(tagText, px + 54, y + 38);
-    y += 150;
 
-    // Headline CN
+    // Text wrap helper (wraps at word/char boundary, returns final y)
+    const wrapTextAt = (text: string, tx: number, ty: number, maxW: number, lineH: number): number => {
+      let line = "";
+      for (const ch of text.split("")) {
+        if (ctx.measureText(line + ch).width > maxW) {
+          ctx.fillText(line, tx, ty); ty += lineH; line = ch;
+        } else { line += ch; }
+      }
+      if (line) { ctx.fillText(line, tx, ty); ty += lineH; }
+      return ty;
+    };
+
+    // Layout constants (from CSS mm units)
+    const padLeft = mm(16);    // padding: 16mm sides
+    const padRight = mm(16);
+    const padTop = mm(18);     // padding: 18mm top
+    const contentW = W - padLeft - padRight; // 178mm
+    let y = padTop;
+
+    // ===== TAG =====
+    const tagText = "Climate Check-in · Event Access";
+    ctx.font = font("500", mm(1.4));
+    const tagTW = ctx.measureText(tagText).width + mm(4);
+    const tagH = mm(3.2);
+    ctx.fillStyle = "rgba(255,255,255,0.06)";
+    ctx.strokeStyle = "rgba(255,255,255,0.16)";
+    ctx.lineWidth = 2;
+    drawPill(padLeft, y, tagTW, tagH, tagH / 2);
+    ctx.fill(); ctx.stroke();
+    // Dot
+    const dotGrad = ctx.createLinearGradient(padLeft + mm(1.2), y + tagH / 2 - mm(0.5), padLeft + mm(2), y + tagH / 2 + mm(0.5));
+    dotGrad.addColorStop(0, "#4ade80"); dotGrad.addColorStop(1, "#38bdf8");
+    ctx.fillStyle = dotGrad;
+    ctx.beginPath(); ctx.arc(padLeft + mm(1.8), y + tagH / 2, mm(0.5), 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "rgba(255,255,255,0.88)";
+    ctx.font = font("500", mm(1.4));
+    ctx.fillText(tagText, padLeft + mm(3.2), y + tagH / 2 + mm(0.5));
+
+    // ===== HEADLINE (margin-top: 16mm) =====
+    y += tagH + mm(16);
+    // CN line 1: 27px CSS → mm(3.2)
     ctx.fillStyle = "#ffffff";
-    ctx.font = font("700", 56);
-    ctx.fillText("扫码签到，留下您的气候足迹", px, y);
-    y += 80;
-    // Big headline with gradient
-    ctx.font = font("800", 86);
-    const headGrad = ctx.createLinearGradient(px, y, px + 800, y);
+    ctx.font = font("700", mm(3.2));
+    ctx.fillText("扫码签到，留下您的气候足迹", padLeft, y);
+    // CN strong: margin-top 8px → mm(1), font 41px → mm(4.8)
+    y += mm(5.2);
+    ctx.font = font("800", mm(4.8));
+    const headGrad = ctx.createLinearGradient(padLeft, y, padLeft + mm(80), y);
     headGrad.addColorStop(0, "#ffffff");
     headGrad.addColorStop(0.38, "#c7f9d4");
     headGrad.addColorStop(1, "#a5f3fc");
     ctx.fillStyle = headGrad;
-    ctx.fillText("开启您的气候之旅", px, y);
-    y += 80;
+    ctx.fillText("开启您的气候之旅", padLeft, y);
 
-    // Headline EN
+    // EN headline: margin-top 10px → mm(1.2), font 17px → mm(2)
+    y += mm(6);
     ctx.fillStyle = "rgba(255,255,255,0.8)";
-    ctx.font = font("500", 36);
-    ctx.fillText("Scan to check in, leave your climate footprint,", px, y);
-    y += 52;
-    ctx.fillText("and begin your climate journey.", px, y);
-    y += 120;
+    ctx.font = font("500", mm(2));
+    ctx.fillText("Scan to check in, leave your climate footprint,", padLeft, y);
+    y += mm(3.2);
+    ctx.fillText("and begin your climate journey.", padLeft, y);
 
-    // Subtext CN
+    // ===== SUBTEXT (margin-top: 12mm) =====
+    y += mm(12);
+    // CN: font 14px → mm(1.65), line-height 1.9 → lineH = mm(3.1)
     ctx.fillStyle = "rgba(255,255,255,0.84)";
-    ctx.font = font("400", 32);
+    ctx.font = font("400", mm(1.65));
     const subCn = "欢迎来到本场活动。完成签到后，系统将为您记录本次参与行为，创建本场活动证书，并持续积累您的气候信用，沉淀成为您个人\u201C气候护照\u201D的重要行动记录。";
-    const wrapText = (text: string, maxW: number, lineH: number) => {
-      const chars = text.split("");
-      let line = "";
-      for (const ch of chars) {
-        if (ctx.measureText(line + ch).width > maxW) {
-          ctx.fillText(line, px, y); y += lineH; line = ch;
-        } else { line += ch; }
-      }
-      if (line) { ctx.fillText(line, px, y); y += lineH; }
-    };
-    wrapText(subCn, W - px * 2, 60);
-    y += 16;
-
-    // Subtext EN
+    y = wrapTextAt(subCn, padLeft, y, contentW, mm(3.1));
+    // EN: gap 10px → mm(1.2), font 13.5px → mm(1.6)
+    y += mm(1.2);
     ctx.fillStyle = "rgba(255,255,255,0.72)";
-    ctx.font = font("400", 30);
+    ctx.font = font("400", mm(1.6));
     const subEn = "Welcome to this event. After check-in, your participation will be recorded in the system, an event certificate will be created for you, and your climate credit will continue to accumulate as part of your personal Climate Passport journey.";
-    wrapText(subEn, W - px * 2, 54);
-    y += 80;
+    y = wrapTextAt(subEn, padLeft, y, contentW, mm(2.8));
 
-    // Feature cards
+    // ===== FEATURE CARDS (margin-top: 10mm) =====
+    y += mm(10);
+    const featureGap = mm(1.2); // gap: 10px CSS
+    const featureW = (contentW - featureGap * 2) / 3;
+    const featureH = mm(10); // min-height: 82px CSS
+    const featurePad = mm(1.4); // padding
     const features = [
-      { label: "Check-in", cn: "现场扫码签到", en: "Scan on-site for verified event check-in" },
-      { label: "Certificate", cn: "自动生成活动证书", en: "Generate your event certificate automatically" },
-      { label: "Climate Credit", cn: "积累个人气候信用", en: "Build your personal climate credit record" },
+      { label: "CHECK-IN", cn: "现场扫码签到", en: "Scan on-site for verified event check-in" },
+      { label: "CERTIFICATE", cn: "自动生成活动证书", en: "Generate your event certificate automatically" },
+      { label: "CLIMATE CREDIT", cn: "积累个人气候信用", en: "Build your personal climate credit record" },
     ];
-    const cardW = (W - px * 2 - 40) / 3;
-    const cardH = 200;
     features.forEach((f, i) => {
-      const cx = px + i * (cardW + 20);
+      const fx = padLeft + i * (featureW + featureGap);
       ctx.fillStyle = "rgba(255,255,255,0.06)";
       ctx.strokeStyle = "rgba(255,255,255,0.12)";
       ctx.lineWidth = 2;
-      drawPill(cx, y, cardW, cardH, 36);
+      drawPill(fx, y, featureW, featureH, mm(2.2));
       ctx.fill(); ctx.stroke();
+      // Label
       ctx.fillStyle = "rgba(255,255,255,0.55)";
-      ctx.font = font("500", 24);
-      ctx.fillText(f.label.toUpperCase(), cx + 30, y + 44);
+      ctx.font = font("500", mm(1.3));
+      ctx.fillText(f.label, fx + featurePad, y + mm(2.4));
+      // CN value
       ctx.fillStyle = "rgba(255,255,255,0.95)";
-      ctx.font = font("600", 36);
-      ctx.fillText(f.cn, cx + 30, y + 100);
+      ctx.font = font("600", mm(1.9));
+      ctx.fillText(f.cn, fx + featurePad, y + mm(5.2));
+      // EN value
       ctx.fillStyle = "rgba(255,255,255,0.66)";
-      ctx.font = font("400", 24);
-      ctx.fillText(f.en, cx + 30, y + 146);
-      // Wrap en text if needed
-      if (ctx.measureText(f.en).width > cardW - 60) {
-        // Already handled by shorter text, OK
+      ctx.font = font("400", mm(1.4));
+      // Wrap EN text within card
+      const enMaxW = featureW - featurePad * 2;
+      let ey = y + mm(7.4);
+      let eLine = "";
+      for (const ch of f.en.split("")) {
+        if (ctx.measureText(eLine + ch).width > enMaxW) {
+          ctx.fillText(eLine, fx + featurePad, ey); ey += mm(1.9); eLine = ch;
+        } else { eLine += ch; }
       }
+      if (eLine) ctx.fillText(eLine, fx + featurePad, ey);
     });
-    y += cardH + 80;
 
-    // Bottom section: Steps (left) + QR panel (right)
-    const bottomY = y;
-    const qrPanelW = 520;
-    const qrPanelH = 680;
-    const stepsW = W - px * 2 - qrPanelW - 120;
-    const stepsX = px;
-    const qrPanelX = W - px - qrPanelW;
+    // ===== BOTTOM SECTION (margin-top: auto → anchored to bottom) =====
+    // Footer sits at bottom 10mm = mm(10)
+    const footerY = H - mm(10);
+    // Bottom section: sits above footer with some gap
+    // CSS: .bottom { margin-top: auto; grid-template-columns: 1.1fr 0.9fr; gap: 14mm; }
+    // QR panel max-width: 56mm
+    const bottomGap = mm(14);
+    const qrPanelW = mm(56);
+    const stepsW = contentW - qrPanelW - bottomGap;
+    const stepsX = padLeft;
+    const qrPanelX = padLeft + stepsW + bottomGap;
+
+    // Calculate bottom section height: position it so it ends ~mm(18) above footer
+    const bottomEndY = footerY - mm(8);
+
+    // Steps panel height: determined by content. ~mm(62) based on HTML
+    // QR panel: padding 12px, qr + text ~= mm(58)
+    const qrPanelH = mm(60);
+    // Steps height = max(steps content, qrPanelH)
+    const stepsH = qrPanelH;
+
+    // Align bottom of both panels
+    const bottomY = bottomEndY - Math.max(stepsH, qrPanelH);
 
     // Steps card
     ctx.fillStyle = "rgba(255,255,255,0.06)";
     ctx.strokeStyle = "rgba(255,255,255,0.12)";
     ctx.lineWidth = 2;
-    drawPill(stepsX, bottomY, stepsW, qrPanelH, 48);
+    drawPill(stepsX, bottomY, stepsW, stepsH, mm(2.8));
     ctx.fill(); ctx.stroke();
 
+    // Steps title
     ctx.fillStyle = "rgba(255,255,255,0.62)";
-    ctx.font = font("500", 28);
-    ctx.fillText("How it works · 签到流程", stepsX + 40, bottomY + 56);
+    ctx.font = font("500", mm(1.5));
+    ctx.fillText("How it works · 签到流程", stepsX + mm(2.2), bottomY + mm(3.4));
 
     const steps = [
       { cn: "使用手机扫描右侧二维码，进入活动签到页面。", en: "Use your phone to scan the QR code and enter the event check-in page." },
@@ -890,66 +935,55 @@ export default function EventAgendaPage({
       { cn: "活动结束后，您将获得本场活动证书，并沉淀可持续行动信用。", en: "After the event, you will receive an event certificate and accumulate verified sustainability action credit." },
     ];
 
-    let sy = bottomY + 110;
+    let sy = bottomY + mm(7);
+    const stepTextX = stepsX + mm(6.6);
+    const stepTextMaxW = stepsW - mm(9);
     steps.forEach((s, i) => {
-      // Number circle
-      const numGrad = ctx.createLinearGradient(stepsX + 40, sy, stepsX + 100, sy + 20);
+      // Number circle (28px CSS → mm(3.3))
+      const circR = mm(1.6);
+      const numGrad = ctx.createLinearGradient(stepsX + mm(2.2), sy, stepsX + mm(5), sy);
       numGrad.addColorStop(0, "#4ade80"); numGrad.addColorStop(1, "#38bdf8");
       ctx.fillStyle = numGrad;
-      ctx.beginPath(); ctx.arc(stepsX + 62, sy + 6, 30, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(stepsX + mm(3.6), sy + circR, circR, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = "#04111d";
-      ctx.font = font("700", 28);
-      ctx.fillText(String(i + 1), stepsX + 53, sy + 16);
+      ctx.font = font("700", mm(1.5));
+      ctx.textAlign = "center";
+      ctx.fillText(String(i + 1), stepsX + mm(3.6), sy + circR + mm(0.55));
+      ctx.textAlign = "start";
 
-      // Step text
-      const textX = stepsX + 110;
-      const textMaxW = stepsW - 150;
+      // CN text: font 14px → mm(1.65), line-height 1.7
       ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.font = font("400", 30);
-      // Wrap CN
-      let line = "";
-      let ty = sy;
-      for (const ch of s.cn.split("")) {
-        if (ctx.measureText(line + ch).width > textMaxW) {
-          ctx.fillText(line, textX, ty); ty += 48; line = ch;
-        } else { line += ch; }
-      }
-      if (line) { ctx.fillText(line, textX, ty); ty += 48; }
-
+      ctx.font = font("400", mm(1.65));
+      sy = wrapTextAt(s.cn, stepTextX, sy + mm(0.4), stepTextMaxW, mm(2.8));
+      // EN text: font 12px → mm(1.4), line-height 1.6
       ctx.fillStyle = "rgba(255,255,255,0.62)";
-      ctx.font = font("400", 26);
-      line = "";
-      for (const ch of s.en.split("")) {
-        if (ctx.measureText(line + ch).width > textMaxW) {
-          ctx.fillText(line, textX, ty); ty += 42; line = ch;
-        } else { line += ch; }
-      }
-      if (line) { ctx.fillText(line, textX, ty); ty += 42; }
-
-      sy = ty + 24;
+      ctx.font = font("400", mm(1.4));
+      sy = wrapTextAt(s.en, stepTextX, sy + mm(0.2), stepTextMaxW, mm(2.4));
+      sy += mm(1.6); // margin-bottom: 14px
     });
 
-    // QR panel (white card)
+    // QR panel (white card, align-self: end → bottom aligned)
+    const qrPanelY = bottomEndY - qrPanelH;
     ctx.fillStyle = "rgba(255,255,255,0.96)";
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,0.25)";
-    ctx.shadowBlur = 36;
-    ctx.shadowOffsetY = 18;
-    drawPill(qrPanelX, bottomY, qrPanelW, qrPanelH, 44);
+    ctx.shadowBlur = mm(3);
+    ctx.shadowOffsetY = mm(1.5);
+    drawPill(qrPanelX, qrPanelY, qrPanelW, qrPanelH, mm(2.6));
     ctx.fill();
     ctx.restore();
 
     // QR code
-    const qrSize = 340;
+    const qrSize = mm(36);
     const qrX = qrPanelX + (qrPanelW - qrSize) / 2;
-    const qrY = bottomY + 30;
-    // White border
+    const qrY = qrPanelY + mm(2);
+    // White border + outline
     ctx.fillStyle = "#ffffff";
-    drawPill(qrX - 16, qrY, qrSize + 32, qrSize + 32, 32);
+    drawPill(qrX - mm(1), qrY, qrSize + mm(2), qrSize + mm(2), mm(1.8));
     ctx.fill();
     ctx.strokeStyle = "rgba(15,23,42,0.08)";
     ctx.lineWidth = 2;
-    drawPill(qrX - 16, qrY, qrSize + 32, qrSize + 32, 32);
+    drawPill(qrX - mm(1), qrY, qrSize + mm(2), qrSize + mm(2), mm(1.8));
     ctx.stroke();
 
     const qrDataUrl = await QRCode.toDataURL(venueCheckinUrl, {
@@ -962,33 +996,41 @@ export default function EventAgendaPage({
       img.onload = () => resolve(img);
       img.src = qrDataUrl;
     });
-    ctx.drawImage(qrImg, qrX, qrY + 16, qrSize, qrSize);
+    ctx.drawImage(qrImg, qrX, qrY + mm(1), qrSize, qrSize);
 
     // QR panel text
-    const qrTextY = qrY + qrSize + 60;
-    ctx.fillStyle = "#0f172a";
-    ctx.font = font("700", 40);
+    const qrCenterX = qrPanelX + qrPanelW / 2;
+    let qrTextY = qrY + qrSize + mm(4.5);
     ctx.textAlign = "center";
-    ctx.fillText("请扫码签到", qrPanelX + qrPanelW / 2, qrTextY);
+    // "请扫码签到": font 18px → mm(2.1)
+    ctx.fillStyle = "#0f172a";
+    ctx.font = font("700", mm(2.1));
+    ctx.fillText("请扫码签到", qrCenterX, qrTextY);
+    qrTextY += mm(3.6);
+    // CN subtitle: 13px → mm(1.5)
     ctx.fillStyle = "#1e293b";
-    ctx.font = font("400", 28);
-    ctx.fillText("完成签到，留下您可信的气候行动记录", qrPanelX + qrPanelW / 2, qrTextY + 52);
+    ctx.font = font("400", mm(1.5));
+    ctx.fillText("完成签到，留下您可信的", qrCenterX, qrTextY);
+    qrTextY += mm(2.4);
+    ctx.fillText("气候行动记录", qrCenterX, qrTextY);
+    qrTextY += mm(3);
+    // EN subtitle: 11.5px → mm(1.35)
     ctx.fillStyle = "#475569";
-    ctx.font = font("400", 24);
-    ctx.fillText("Scan to check in and start building", qrPanelX + qrPanelW / 2, qrTextY + 104);
-    ctx.fillText("your verified climate footprint.", qrPanelX + qrPanelW / 2, qrTextY + 138);
+    ctx.font = font("400", mm(1.35));
+    ctx.fillText("Scan to check in and start building", qrCenterX, qrTextY);
+    qrTextY += mm(2.2);
+    ctx.fillText("your verified climate footprint.", qrCenterX, qrTextY);
     ctx.textAlign = "start";
 
-    // Footer
-    const footY = H - 100;
+    // ===== FOOTER (position: absolute; bottom: 10mm) =====
     ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.font = font("600", 24);
-    ctx.fillText("Climate Passport · Event Check-in Poster", px, footY);
+    ctx.font = font("600", mm(1.3));
+    ctx.fillText("Climate Passport · Event Check-in Poster", padLeft, footerY);
     ctx.fillStyle = "rgba(255,255,255,0.45)";
-    ctx.font = font("400", 22);
+    ctx.font = font("400", mm(1.2));
     ctx.textAlign = "right";
-    ctx.fillText("请将此海报打印后张贴在会场入口", W - px, footY - 12);
-    ctx.fillText("Print this poster and place it at the venue entrance.", W - px, footY + 20);
+    ctx.fillText("请将此海报打印后张贴在会场入口", W - padRight, footerY - mm(1));
+    ctx.fillText("Print this poster and place it at the venue entrance.", W - padRight, footerY + mm(1.5));
     ctx.textAlign = "start";
 
     // Download
