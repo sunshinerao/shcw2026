@@ -121,7 +121,10 @@ export default function PassPage() {
 
             let qrCodeSvg = "";
             if (passState === "active") {
-              const qrResponse = await fetch(`/api/qrcode?type=event&eventId=${event.id}&locale=${locale}`);
+              const qrResponse = await fetch(
+                `/api/qrcode?type=event&eventId=${event.id}&locale=${locale}&t=${Date.now()}`,
+                { cache: "no-store" }
+              );
               const qrData = await qrResponse.json();
               if (qrData.success) {
                 qrCodeSvg = qrData.data.qrCode;
@@ -163,7 +166,9 @@ export default function PassPage() {
 
   const fetchPassportQrCode = useCallback(async () => {
     try {
-      const response = await fetch(`/api/qrcode?type=passport&locale=${locale}`);
+      const response = await fetch(`/api/qrcode?type=passport&locale=${locale}&t=${Date.now()}`, {
+        cache: "no-store",
+      });
       const data = await response.json();
       if (data.success) {
         setPassportQrCode(data.data.qrCode);
@@ -173,10 +178,43 @@ export default function PassPage() {
     }
   }, [locale, t]);
 
+  const fetchEventQrCode = useCallback(
+    async (passId: string, eventId: string) => {
+      try {
+        const response = await fetch(
+          `/api/qrcode?type=event&eventId=${eventId}&locale=${locale}&t=${Date.now()}`,
+          { cache: "no-store" }
+        );
+        const data = await response.json();
+
+        if (!data.success) {
+          return;
+        }
+
+        setPasses((current) =>
+          current.map((pass) =>
+            pass.id === passId ? { ...pass, qrCodeSvg: data.data.qrCode } : pass
+          )
+        );
+      } catch {
+        // ignore QR retry failures and keep the existing state
+      }
+    },
+    [locale]
+  );
+
   useEffect(() => {
     fetchPasses();
     fetchPassportQrCode();
   }, [fetchPasses, fetchPassportQrCode]);
+
+  useEffect(() => {
+    if (!selectedPass || selectedPass.passState !== "active" || selectedPass.qrCodeSvg) {
+      return;
+    }
+
+    void fetchEventQrCode(selectedPass.id, selectedPass.eventId);
+  }, [selectedPass, fetchEventQrCode]);
 
   useEffect(() => {
     if (typeof window === "undefined") {

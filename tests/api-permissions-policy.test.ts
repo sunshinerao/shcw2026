@@ -218,6 +218,23 @@ test("event pass timing stays timezone-stable and refreshes when the window open
   );
 });
 
+test("event pass QR always requests a fresh uncached token when active", async () => {
+  const passPage = await readWorkspaceFile("app/[locale]/dashboard/pass/page.tsx");
+  const qrRoute = await readWorkspaceFile("app/api/qrcode/route.ts");
+
+  assert.match(
+    passPage,
+    /cache\s*:\s*"no-store"|Date\.now\(\)/,
+    "The pass page should bypass browser cache when requesting an active event QR"
+  );
+
+  assert.match(
+    qrRoute,
+    /Cache-Control[\s\S]*no-store|no-cache/,
+    "The QR API should mark event-pass responses as non-cacheable so stale inactive responses are not reused"
+  );
+});
+
 test("check-in flow writes back climate passport progress and rewards", async () => {
   const checkinRoute = await readWorkspaceFile("app/api/checkin/route.ts");
   const passportPage = await readWorkspaceFile("app/[locale]/dashboard/climate-passport/page.tsx");
@@ -290,6 +307,12 @@ test("admin registrations support exporting registrant lists", async () => {
     routeContent,
     /text\/csv|Content-Disposition|registrations\.csv/i,
     "The registrations API should be able to return a downloadable CSV export"
+  );
+
+  assert.match(
+    routeContent,
+    /where\.user\s*=\s*\{[\s\S]*is:\s*\{[\s\S]*OR:/,
+    "The export route should search registrants through Prisma's relation filter shape so CSV export still works when a search query is applied"
   );
 });
 

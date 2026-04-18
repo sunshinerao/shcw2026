@@ -73,11 +73,13 @@ export async function GET(
 
     if (query) {
       where.user = {
-        OR: [
-          { name: { contains: query, mode: "insensitive" } },
-          { email: { contains: query, mode: "insensitive" } },
-          { climatePassportId: { contains: query, mode: "insensitive" } },
-        ],
+        is: {
+          OR: [
+            { name: { contains: query, mode: "insensitive" } },
+            { email: { contains: query, mode: "insensitive" } },
+            { climatePassportId: { contains: query, mode: "insensitive" } },
+          ],
+        },
       };
     }
 

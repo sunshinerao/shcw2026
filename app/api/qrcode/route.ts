@@ -6,6 +6,22 @@ import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { EVENT_PASS_ENTRY_WINDOW_MS, getEventPassState } from "@/lib/climate-passport";
 import { prisma } from "@/lib/prisma";
 
+const NO_STORE_HEADERS = {
+  "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
+  Pragma: "no-cache",
+  Expires: "0",
+};
+
+function jsonNoStore(body: unknown, init?: ResponseInit) {
+  return NextResponse.json(body, {
+    ...init,
+    headers: {
+      ...NO_STORE_HEADERS,
+      ...(init?.headers || {}),
+    },
+  });
+}
+
 /**
  * 生成用户通行证二维码
  * GET /api/qrcode?type=passport|event&eventId=xxx
@@ -20,7 +36,7 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.id) {
-      return NextResponse.json(
+      return jsonNoStore(
         { success: false, error: apiMessage(requestLocale, "unauthorized") },
         { status: 401 }
       );
@@ -46,7 +62,7 @@ export async function GET(req: NextRequest) {
       });
       
       if (!user) {
-        return NextResponse.json(
+        return jsonNoStore(
           { success: false, error: apiMessage(requestLocale, "userNotFound") },
           { status: 404 }
         );
@@ -60,7 +76,7 @@ export async function GET(req: NextRequest) {
     } else if (type === "event") {
       // 生成活动通行证二维码
       if (!eventId) {
-        return NextResponse.json(
+        return jsonNoStore(
           { success: false, error: apiMessage(requestLocale, "qrMissingEventId") },
           { status: 400 }
         );
@@ -91,28 +107,28 @@ export async function GET(req: NextRequest) {
       });
       
       if (!registration) {
-        return NextResponse.json(
+        return jsonNoStore(
           { success: false, error: apiMessage(requestLocale, "qrEventNotRegistered") },
           { status: 403 }
         );
       }
       
       if (registration.status === "CANCELLED") {
-        return NextResponse.json(
+        return jsonNoStore(
           { success: false, error: apiMessage(requestLocale, "qrRegistrationCancelled") },
           { status: 403 }
         );
       }
 
       if (registration.status === "PENDING_APPROVAL") {
-        return NextResponse.json(
+        return jsonNoStore(
           { success: false, error: apiMessage(requestLocale, "qrRegistrationPendingApproval") },
           { status: 403 }
         );
       }
 
       if (registration.status === "REJECTED") {
-        return NextResponse.json(
+        return jsonNoStore(
           { success: false, error: apiMessage(requestLocale, "qrRegistrationRejected") },
           { status: 403 }
         );
@@ -128,21 +144,21 @@ export async function GET(req: NextRequest) {
       });
 
       if (passState === "checkedIn") {
-        return NextResponse.json(
+        return jsonNoStore(
           { success: false, error: apiMessage(requestLocale, "qrAlreadyUsed") },
           { status: 403 }
         );
       }
 
       if (passState === "upcoming") {
-        return NextResponse.json(
+        return jsonNoStore(
           { success: false, error: apiMessage(requestLocale, "qrNotActiveYet") },
           { status: 403 }
         );
       }
 
       if (passState === "expired") {
-        return NextResponse.json(
+        return jsonNoStore(
           { success: false, error: apiMessage(requestLocale, "qrEventEnded") },
           { status: 403 }
         );
@@ -152,7 +168,7 @@ export async function GET(req: NextRequest) {
       // 不再使用 60 秒动态时间戳，二维码在开放入场窗口内保持稳定可验。
       qrData = `SCW2026://EVENT/${eventId}/${session.user.id}/${registration.id}`;
     } else {
-      return NextResponse.json(
+      return jsonNoStore(
         { success: false, error: apiMessage(requestLocale, "qrUnsupportedType") },
         { status: 400 }
       );
@@ -169,7 +185,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({
+    return jsonNoStore({
       success: true,
       data: {
         qrCode: qrCodeSvg,
@@ -180,7 +196,7 @@ export async function GET(req: NextRequest) {
     });
   } catch (error) {
     console.error("生成二维码失败:", error);
-    return NextResponse.json(
+    return jsonNoStore(
       { success: false, error: apiMessage(requestLocale, "qrGenerateFailed") },
       { status: 500 }
     );
