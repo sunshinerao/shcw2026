@@ -747,7 +747,7 @@ export default function EventDetailPage() {
     context.font = "400 25px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     const venueLines = wrapCanvasTextLines(context, address, 880, 3);
 
-    const agendaEntries: Array<{ text: string; tone: "heading" | "body"; continuation?: boolean }> = [];
+    const agendaEntries: Array<{ text: string; tone: "heading" | "body" | "topic"; continuation?: boolean }> = [];
     context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     if (groupedAgendaItems.length > 0) {
       groupedAgendaItems.forEach((group) => {
@@ -760,6 +760,26 @@ export default function EventDetailPage() {
             3
           ).forEach((line, index) => {
             agendaEntries.push({ text: line, tone: "body", continuation: index > 0 });
+          });
+          // Add speaker topics under this agenda item
+          const speakerById = new Map(item.speakers.map((s) => [s.id, s]));
+          const orderedIds = item.speakerMeta?.orderedIds;
+          const orderedSpeakers: AgendaSpeaker[] = orderedIds
+            ? orderedIds.map((id) => speakerById.get(id)).filter((s): s is AgendaSpeaker => !!s)
+            : item.speakers;
+          for (const s of item.speakers) {
+            if (!orderedSpeakers.includes(s)) orderedSpeakers.push(s);
+          }
+          orderedSpeakers.forEach((speaker) => {
+            const topic = getAgendaTopic(item, speaker.id);
+            const label = topic
+              ? `${getAgendaSpeakerName(speaker)}：${topic}`
+              : getAgendaSpeakerName(speaker);
+            context.font = "400 21px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+            wrapCanvasTextLines(context, label, 860, 2).forEach((line, index) => {
+              agendaEntries.push({ text: line, tone: "topic", continuation: index > 0 });
+            });
+            context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
           });
         });
       });
@@ -795,7 +815,6 @@ export default function EventDetailPage() {
 
     context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     const speakerEntries = speakersInOrder
-      .slice(0, 12)
       .flatMap((speaker) => {
         const meta = getAgendaSpeakerMeta(speaker) || (locale === "en" ? "Guest speaker" : "嘉宾");
         return wrapCanvasTextLines(
@@ -820,8 +839,9 @@ export default function EventDetailPage() {
       ).map((line, index) => ({ text: line, continuation: index > 0 }));
     });
 
+    const topicLineHeight = 34;
     const agendaHeight = agendaEntries.reduce(
-      (total, entry) => total + (entry.tone === "heading" ? sectionHeadingGap : sectionBodyGap),
+      (total, entry) => total + (entry.tone === "heading" ? sectionHeadingGap : entry.tone === "topic" ? topicLineHeight : sectionBodyGap),
       0
     );
     const speakerHeight = (speakerEntries.length > 0 ? speakerEntries.length : 1) * sectionBodyGap;
@@ -943,6 +963,14 @@ export default function EventDetailPage() {
         context.font = "700 26px 'PingFang SC', 'Microsoft YaHei', sans-serif";
         context.fillText(entry.text, 120, y);
         y += sectionHeadingGap;
+        return;
+      }
+
+      if (entry.tone === "topic") {
+        context.fillStyle = "#64748b";
+        context.font = "400 21px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+        context.fillText(entry.text, 164, y);
+        y += topicLineHeight;
         return;
       }
 
