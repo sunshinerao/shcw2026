@@ -2675,7 +2675,29 @@
             "empty": "暂无验码记录",
             "passportVerify": "护照验证"
         },
-        "noPermission": "您没有验证人员权限"
+        "noPermission": "您没有验证人员权限",
+        "eventSelector": {
+            "label": "选择要验证的活动",
+            "selectRequired": "请先选择活动再开始扫描",
+            "noEvents": "暂无分配的活动",
+            "contactAdmin": "请联系管理员为您分配活动"
+        }
+    },
+    "selfCheckinPage": {
+        "invalidQr": "无效的二维码",
+        "invalidQrDesc": "该二维码无效或已过期，请重新扫描现场二维码。",
+        "loginRequired": "需要登录",
+        "loginRequiredDesc": "请先登录后再进行签到。",
+        "loginBtn": "立即登录",
+        "checking": "正在签到...",
+        "checkingDesc": "请稍候，正在处理您的签到。",
+        "success": "签到成功！",
+        "failed": "签到失败",
+        "networkError": "网络错误，请重试。",
+        "points": "积分",
+        "pointsDesc": "积分已添加到您的 Climate Passport。",
+        "alreadyCheckedIn": "您已经签到过了",
+        "viewPass": "查看我的通行证"
     },
     "speakersSection": {
         "title": "特邀嘉宾",

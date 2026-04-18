@@ -66,6 +66,13 @@ export async function POST(req: NextRequest) {
 
     if (!qrData) {
       return NextResponse.json(
+        { success: false, error: apiMessage(requestLocale, "checkinForbidden") },
+        { status: 403 }
+      );
+    }
+
+    if (!qrData) {
+      return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "checkinQrDataRequired") },
         { status: 400 }
       );
@@ -94,6 +101,27 @@ export async function POST(req: NextRequest) {
     } else if (eventMatch) {
       // 活动通行证二维码 - 验证并签到
       const [, eventId, userId, registrationId, timestamp] = eventMatch;
+
+      // VERIFIER 角色：验证是否被分配到该活动
+      if (operator.role === "VERIFIER") {
+        // 如果验证人员指定了 targetEventId，检查扫描的二维码是否属于该活动
+        if (targetEventId && targetEventId !== eventId) {
+          return NextResponse.json(
+            { success: false, error: apiMessage(requestLocale, "qrWrongEvent") },
+            { status: 400 }
+          );
+        }
+        // 检查验证人员是否被分配到该活动
+        const assignment = await prisma.eventVerifier.findUnique({
+          where: { userId_eventId: { userId: operator.id, eventId } },
+        });
+        if (!assignment) {
+          return NextResponse.json(
+            { success: false, error: apiMessage(requestLocale, "verifierNotAssigned") },
+            { status: 403 }
+          );
+        }
+      }
 
       if (!hasPermission && operator.role === "EVENT_MANAGER") {
         const targetEvent = await prisma.event.findUnique({

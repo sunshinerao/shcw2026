@@ -176,6 +176,7 @@ model User {
   contactMessages ContactMessage[]     // 联系留言
   managedEvents  Event[]   @relation("EventManager")
   specialPasses  SpecialPass[]         // 特别通行证申请
+  assignedEvents EventVerifier[]       // 被分配验证的活动
   
   // 密码重置
   resetToken    String?   @unique
@@ -338,6 +339,10 @@ model Event {
   institutions  EventInstitution[]
   knowledgeAssets KnowledgeAssetEvent[]
   posterJobs    PosterJob[]
+  verifiers     EventVerifier[]       // 该活动的验证人员
+  
+  // 现场自助签到二维码密钥（由管理员生成）
+  venueCheckinSecret String?  @unique
   
   // 邀请函独立正文内容（可选，覆盖全局模板设置）
   invitationContentHtml_zh String?  @db.Text
@@ -361,6 +366,23 @@ model Event {
   @@index([managerUserId])
   @@index([isPinned, startDate, startTime])
   @@map("events")
+}
+
+// 验证人员与活动的绑定关系
+model EventVerifier {
+  id        String   @id @default(uuid())
+  userId    String
+  eventId   String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+  @@map("event_verifiers")
 }
 
 model EventDateSlot {

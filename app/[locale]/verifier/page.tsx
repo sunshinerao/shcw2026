@@ -17,7 +17,10 @@ import {
   History,
   AlertTriangle,
   QrCode,
-  Award
+  Award,
+  ChevronDown,
+  MapPin,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -81,6 +84,18 @@ interface CheckInRecord {
   };
 }
 
+interface AssignedEvent {
+  id: string;
+  title: string;
+  titleEn?: string | null;
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  venue: string;
+  type: string;
+}
+
 export default function VerifierPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -91,6 +106,9 @@ export default function VerifierPage() {
   const [recentCheckIns, setRecentCheckIns] = useState<CheckInRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+  const [assignedEvents, setAssignedEvents] = useState<AssignedEvent[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [showEventSelector, setShowEventSelector] = useState(false);
 
   const fetchRecentCheckIns = useCallback(async () => {
     try {
@@ -101,6 +119,22 @@ export default function VerifierPage() {
       }
     } catch (error) {
       console.error("获取验码记录失败", error);
+    }
+  }, []);
+
+  const fetchAssignedEvents = useCallback(async () => {
+    try {
+      const response = await fetch("/api/verifier/events");
+      const data = await response.json();
+      if (data.success) {
+        setAssignedEvents(data.data);
+        // Auto-select if only one event
+        if (data.data.length === 1) {
+          setSelectedEventId(data.data[0].id);
+        }
+      }
+    } catch (error) {
+      console.error("获取分配活动失败", error);
     }
   }, []);
 
@@ -122,7 +156,8 @@ export default function VerifierPage() {
 
     setLoading(false);
     void fetchRecentCheckIns();
-  }, [fetchRecentCheckIns, router, session, status, t]);
+    void fetchAssignedEvents();
+  }, [fetchRecentCheckIns, fetchAssignedEvents, router, session, status, t]);
 
   // 处理扫描结果
   const onNewScanResult = useCallback(async (decodedText: string) => {
@@ -134,7 +169,7 @@ export default function VerifierPage() {
       const response = await fetch("/api/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ qrData: decodedText }),
+        body: JSON.stringify({ qrData: decodedText, eventId: selectedEventId }),
       });
 
       const data = await response.json();
@@ -149,7 +184,7 @@ export default function VerifierPage() {
     } catch (error) {
       toast.error(t("result.requestFailed"));
     }
-  }, [fetchRecentCheckIns, scanning, t]);
+  }, [fetchRecentCheckIns, scanning, selectedEventId, t]);
 
   // 重新开始扫描
   const restartScan = () => {
@@ -195,13 +230,83 @@ export default function VerifierPage() {
       <main className="max-w-4xl mx-auto px-4 py-6">
         <AnimatePresence mode="wait">
           {!scanning && !result ? (
-            // 初始状态 - 开始扫描
+            // 初始状态 - 选择活动 + 开始扫描
             <motion.div
               key="start"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
+              className="space-y-4"
             >
+              {/* 活动选择器 */}
+              {assignedEvents.length > 0 && (
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Shield className="w-4 h-4 text-emerald-600" />
+                      <span className="text-sm font-medium text-slate-700">{t("eventSelector.label")}</span>
+                    </div>
+                    <div className="space-y-2">
+                      {assignedEvents.map((ev) => {
+                        const isSelected = selectedEventId === ev.id;
+                        const eventTitle = locale === "en" && ev.titleEn ? ev.titleEn : ev.title;
+                        return (
+                          <button
+                            key={ev.id}
+                            type="button"
+                            onClick={() => setSelectedEventId(isSelected ? null : ev.id)}
+                            className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                              isSelected
+                                ? "border-emerald-500 bg-emerald-50"
+                                : "border-slate-200 hover:border-slate-300 bg-white"
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex-1 min-w-0">
+                                <p className={`font-medium truncate ${isSelected ? "text-emerald-900" : "text-slate-900"}`}>
+                                  {eventTitle}
+                                </p>
+                                <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                                  <span className="flex items-center gap-1">
+                                    <Calendar className="w-3 h-3" />
+                                    {new Date(ev.startDate).toLocaleDateString(locale === "en" ? "en-US" : "zh-CN", { month: "short", day: "numeric" })}
+                                  </span>
+                                  {ev.venue && (
+                                    <span className="flex items-center gap-1">
+                                      <MapPin className="w-3 h-3" />
+                                      {ev.venue}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                              {isSelected && (
+                                <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0 ml-2" />
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {!selectedEventId && session?.user?.role === "VERIFIER" && (
+                      <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                        <AlertTriangle className="w-3 h-3" />
+                        {t("eventSelector.selectRequired")}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+
+              {assignedEvents.length === 0 && session?.user?.role === "VERIFIER" && (
+                <Card className="border-amber-200 bg-amber-50">
+                  <CardContent className="p-6 text-center">
+                    <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
+                    <p className="text-amber-800 font-medium">{t("eventSelector.noEvents")}</p>
+                    <p className="text-sm text-amber-600 mt-1">{t("eventSelector.contactAdmin")}</p>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card className="text-center p-8">
                 <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <QrCode className="w-10 h-10 text-emerald-600" />
@@ -214,6 +319,7 @@ export default function VerifierPage() {
                   size="lg" 
                   className="bg-emerald-600 hover:bg-emerald-700"
                   onClick={() => setScanning(true)}
+                  disabled={session?.user?.role === "VERIFIER" && !selectedEventId}
                 >
                   <Scan className="w-5 h-5 mr-2" />
                   {t("ready.start")}
@@ -245,6 +351,17 @@ export default function VerifierPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
+                  {selectedEventId && (
+                    <div className="mb-3 p-2 bg-emerald-50 rounded-lg flex items-center gap-2 text-sm">
+                      <Shield className="w-4 h-4 text-emerald-600" />
+                      <span className="text-emerald-800 font-medium truncate">
+                        {(() => {
+                          const ev = assignedEvents.find(e => e.id === selectedEventId);
+                          return ev ? (locale === "en" && ev.titleEn ? ev.titleEn : ev.title) : "";
+                        })()}
+                      </span>
+                    </div>
+                  )}
                   <Html5QrcodePlugin
                     fps={10}
                     disableFlip={false}

@@ -2703,5 +2703,61 @@
         },
         "submit": "Submit Application",
         "submitting": "Submitting..."
+    },
+    "verifierPage": {
+        "header": {
+            "title": "On-site Verification",
+            "subtitle": "Scan attendee QR codes for verification"
+        },
+        "history": "History",
+        "ready": {
+            "title": "Ready to Scan",
+            "description": "Tap the start button and point your camera at the attendee's QR code to verify",
+            "start": "Start Scanning"
+        },
+        "scanning": {
+            "title": "Scanning QR Code",
+            "cancel": "Cancel",
+            "hint": "Place the QR code inside the frame to scan automatically"
+        },
+        "result": {
+            "success": "Verification Successful",
+            "failed": "Verification Failed",
+            "requestFailed": "Verification request failed",
+            "continueScanning": "Continue Scanning",
+            "eventInfo": "Event Info",
+            "pointsAwarded": "+{points} points",
+            "pointsDescription": "Points have been added to the user's Climate Passport and may trigger badge progress.",
+            "alreadyCheckedIn": "This user has already checked in",
+            "checkedInTime": "Checked in at: {time}"
+        },
+        "historyPanel": {
+            "title": "Recent Verifications",
+            "empty": "No verification records yet",
+            "passportVerify": "Passport Verification"
+        },
+        "noPermission": "You do not have verifier permissions",
+        "eventSelector": {
+            "label": "Select event to verify",
+            "selectRequired": "Please select an event before scanning",
+            "noEvents": "No events assigned",
+            "contactAdmin": "Please contact an administrator to assign events to you"
+        }
+    },
+    "selfCheckinPage": {
+        "invalidQr": "Invalid QR Code",
+        "invalidQrDesc": "This QR code is invalid or has expired. Please scan the venue QR code again.",
+        "loginRequired": "Login Required",
+        "loginRequiredDesc": "Please log in to check in for this event.",
+        "loginBtn": "Log In",
+        "checking": "Checking In...",
+        "checkingDesc": "Please wait while we process your check-in.",
+        "success": "Check-in Successful!",
+        "failed": "Check-in Failed",
+        "networkError": "Network error. Please try again.",
+        "points": "points",
+        "pointsDesc": "Points added to your Climate Passport.",
+        "alreadyCheckedIn": "You have already checked in",
+        "viewPass": "View My Event Pass"
     }
 }

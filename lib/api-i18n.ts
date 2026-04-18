@@ -515,6 +515,14 @@ const apiMessages = {
     zh: "该通行证不属于当前活动",
     en: "This pass does not belong to the current event.",
   },
+  verifierNotAssigned: {
+    zh: "您未被分配验证此活动，请联系管理员",
+    en: "You are not assigned to verify this event. Please contact the administrator.",
+  },
+  selfCheckinNotRegistered: {
+    zh: "您尚未报名此活动，无法签到",
+    en: "You have not registered for this event and cannot check in.",
+  },
   invalidRegistration: {
     zh: "无效的报名记录",
     en: "Invalid registration record.",
