@@ -722,21 +722,21 @@ export default function EventDetailPage() {
       getEventLayerLabel(event.eventLayer as any, locale),
       getEventHostTypeLabel(event.hostType as any, locale),
     ].filter(Boolean).join(" · ");
-    const titleLineHeight = 98;
+    const titleLineHeight = 90;
     const descriptionLineHeight = 50;
     const scheduleLineHeight = 40;
     const venueLineHeight = 36;
     const sectionHeadingGap = 50;
     const sectionBodyGap = 40;
     const qrBlockHeight = 320;
-    const bottomPadding = 96;
+    const bottomPadding = 44;
     const cardInset = 52;
     const cardLeft = cardInset;
     const cardTop = cardInset;
     const cardWidth = canvas.width - cardInset * 2;
 
-    context.font = "700 68px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    const titleLines = wrapCanvasTextLines(context, title, 960, 4);
+    context.font = "700 62px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    const titleLines = wrapCanvasTextLines(context, title, 960, 5);
 
     context.font = "400 30px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     const descriptionLines = wrapCanvasTextLines(context, description, 960, 16);
@@ -747,7 +747,7 @@ export default function EventDetailPage() {
     context.font = "400 25px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     const venueLines = wrapCanvasTextLines(context, address, 880, 3);
 
-    const agendaEntries: Array<{ text: string; tone: "heading" | "body" }> = [];
+    const agendaEntries: Array<{ text: string; tone: "heading" | "body"; continuation?: boolean }> = [];
     context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     if (groupedAgendaItems.length > 0) {
       groupedAgendaItems.forEach((group) => {
@@ -758,8 +758,8 @@ export default function EventDetailPage() {
             `${item.startTime}-${item.endTime} ${getAgendaTitle(item)}`,
             900,
             3
-          ).forEach((line) => {
-            agendaEntries.push({ text: line, tone: "body" });
+          ).forEach((line, index) => {
+            agendaEntries.push({ text: line, tone: "body", continuation: index > 0 });
           });
         });
       });
@@ -788,7 +788,7 @@ export default function EventDetailPage() {
           `${getAgendaSpeakerName(speaker)} · ${meta}`,
           900,
           2
-        );
+        ).map((line, index) => ({ text: line, continuation: index > 0 }));
       });
 
     context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
@@ -802,7 +802,7 @@ export default function EventDetailPage() {
         relation ? `${institutionName} · ${relation}` : institutionName,
         900,
         2
-      );
+      ).map((line, index) => ({ text: line, continuation: index > 0 }));
     });
 
     const agendaHeight = agendaEntries.reduce(
@@ -878,7 +878,7 @@ export default function EventDetailPage() {
     context.fill();
 
     context.fillStyle = "#0f172a";
-    context.font = "700 68px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.font = "700 62px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     titleLines.forEach((line) => {
       context.fillText(line, 138, y);
       y += titleLineHeight;
@@ -961,10 +961,12 @@ export default function EventDetailPage() {
         return;
       }
 
-      context.fillStyle = "#14b8a6";
-      context.beginPath();
-      context.arc(126, y - 7, 3.5, 0, Math.PI * 2);
-      context.fill();
+      if (!entry.continuation) {
+        context.fillStyle = "#14b8a6";
+        context.beginPath();
+        context.arc(126, y - 7, 3.5, 0, Math.PI * 2);
+        context.fill();
+      }
       context.fillStyle = "#334155";
       context.font = "400 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
       context.fillText(entry.text, 140, y);
@@ -973,29 +975,33 @@ export default function EventDetailPage() {
 
     y += 24;
     drawSectionHeader(speakersTitle);
-    const speakerLinesToDraw = speakerEntries.length > 0 ? speakerEntries : [defaultSpeakerText];
-    speakerLinesToDraw.forEach((line) => {
-      context.fillStyle = "#14b8a6";
-      context.beginPath();
-      context.arc(126, y - 7, 3.5, 0, Math.PI * 2);
-      context.fill();
+    const speakerLinesToDraw = speakerEntries.length > 0 ? speakerEntries : [{ text: defaultSpeakerText, continuation: false }];
+    speakerLinesToDraw.forEach((entry) => {
+      if (!entry.continuation) {
+        context.fillStyle = "#14b8a6";
+        context.beginPath();
+        context.arc(126, y - 7, 3.5, 0, Math.PI * 2);
+        context.fill();
+      }
       context.fillStyle = "#334155";
       context.font = "400 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-      context.fillText(line, 140, y);
+      context.fillText(entry.text, 140, y);
       y += sectionBodyGap;
     });
 
     y += 24;
     drawSectionHeader(institutionsTitle);
-    const institutionLinesToDraw = institutionEntries.length > 0 ? institutionEntries : [defaultInstitutionText];
-    institutionLinesToDraw.forEach((line) => {
-      context.fillStyle = "#14b8a6";
-      context.beginPath();
-      context.arc(126, y - 7, 3.5, 0, Math.PI * 2);
-      context.fill();
+    const institutionLinesToDraw = institutionEntries.length > 0 ? institutionEntries : [{ text: defaultInstitutionText, continuation: false }];
+    institutionLinesToDraw.forEach((entry) => {
+      if (!entry.continuation) {
+        context.fillStyle = "#14b8a6";
+        context.beginPath();
+        context.arc(126, y - 7, 3.5, 0, Math.PI * 2);
+        context.fill();
+      }
       context.fillStyle = "#334155";
       context.font = "400 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-      context.fillText(line, 140, y);
+      context.fillText(entry.text, 140, y);
       y += sectionBodyGap;
     });
 
@@ -1064,7 +1070,18 @@ export default function EventDetailPage() {
     context.fillText(t("register.sharePosterScan"), qrX + qrSize / 2, qrLabelY);
     context.textAlign = "start";
 
-    return canvas.toDataURL("image/png");
+    const finalCanvasHeight = Math.min(canvas.height, qrBlockY + qrBlockHeight + cardInset + bottomPadding);
+    const outputCanvas = document.createElement("canvas");
+    outputCanvas.width = canvas.width;
+    outputCanvas.height = finalCanvasHeight;
+    const outputContext = outputCanvas.getContext("2d");
+
+    if (!outputContext) {
+      throw new Error("Canvas context unavailable");
+    }
+
+    outputContext.drawImage(canvas, 0, 0);
+    return outputCanvas.toDataURL("image/png");
   };
 
   const handleGenerateQr = async (mode: "poster" | "qr" | "event-poster") => {
