@@ -535,6 +535,28 @@ export default function EventDetailPage() {
       image.src = src;
     });
 
+  const drawRoundedRect = (
+    context: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    radius: number
+  ) => {
+    const safeRadius = Math.min(radius, width / 2, height / 2);
+    context.beginPath();
+    context.moveTo(x + safeRadius, y);
+    context.lineTo(x + width - safeRadius, y);
+    context.quadraticCurveTo(x + width, y, x + width, y + safeRadius);
+    context.lineTo(x + width, y + height - safeRadius);
+    context.quadraticCurveTo(x + width, y + height, x + width - safeRadius, y + height);
+    context.lineTo(x + safeRadius, y + height);
+    context.quadraticCurveTo(x, y + height, x, y + height - safeRadius);
+    context.lineTo(x, y + safeRadius);
+    context.quadraticCurveTo(x, y, x + safeRadius, y);
+    context.closePath();
+  };
+
   const drawWrappedText = (
     context: CanvasRenderingContext2D,
     text: string,
@@ -675,12 +697,16 @@ export default function EventDetailPage() {
       getEventLayerLabel(event.eventLayer as any, locale),
       getEventHostTypeLabel(event.hostType as any, locale),
     ].filter(Boolean).join(" · ");
-    const titleLineHeight = 92;
-    const descriptionLineHeight = 48;
+    const titleLineHeight = 98;
+    const descriptionLineHeight = 50;
     const scheduleLineHeight = 40;
     const venueLineHeight = 36;
-    const sectionHeadingGap = 48;
+    const sectionHeadingGap = 50;
     const sectionBodyGap = 40;
+    const cardInset = 52;
+    const cardLeft = cardInset;
+    const cardTop = cardInset;
+    const cardWidth = canvas.width - cardInset * 2;
 
     context.font = "700 68px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     const titleLines = wrapCanvasTextLines(context, title, 960, 4);
@@ -759,26 +785,40 @@ export default function EventDetailPage() {
     const speakerHeight = (speakerEntries.length > 0 ? speakerEntries.length : 1) * sectionBodyGap;
     const institutionHeight = (institutionEntries.length > 0 ? institutionEntries.length : 1) * sectionBodyGap;
     const infoBlockHeight = 156 + scheduleLines.length * scheduleLineHeight + venueLines.length * venueLineHeight + (metaText ? 36 : 0);
-    const estimatedHeight = 280 + titleLines.length * titleLineHeight + descriptionLines.length * descriptionLineHeight + infoBlockHeight + agendaHeight + speakerHeight + institutionHeight + 620;
+    const estimatedHeight = 320 + titleLines.length * titleLineHeight + descriptionLines.length * descriptionLineHeight + infoBlockHeight + agendaHeight + speakerHeight + institutionHeight + 760;
 
-    canvas.height = Math.max(2200, Math.min(7600, estimatedHeight));
+    canvas.height = Math.max(2280, Math.min(7800, estimatedHeight));
 
     const background = context.createLinearGradient(0, 0, canvas.width, canvas.height);
-    background.addColorStop(0, "#052e2b");
-    background.addColorStop(0.45, "#0b4f46");
-    background.addColorStop(1, "#e6fffb");
+    background.addColorStop(0, "#042f2e");
+    background.addColorStop(0.35, "#0b5d56");
+    background.addColorStop(1, "#dffaf4");
     context.fillStyle = background;
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    context.fillStyle = "#ffffff";
-    context.fillRect(52, 52, canvas.width - 104, canvas.height - 104);
+    context.fillStyle = "rgba(255,255,255,0.08)";
+    context.beginPath();
+    context.arc(1040, 180, 160, 0, Math.PI * 2);
+    context.fill();
+    context.beginPath();
+    context.arc(160, canvas.height - 140, 180, 0, Math.PI * 2);
+    context.fill();
 
-    let y = 128;
+    context.save();
+    context.shadowColor = "rgba(15, 23, 42, 0.14)";
+    context.shadowBlur = 32;
+    context.shadowOffsetY = 10;
+    context.fillStyle = "#ffffff";
+    drawRoundedRect(context, cardLeft, cardTop, cardWidth, canvas.height - cardTop * 2, 30);
+    context.fill();
+    context.restore();
+
+    let y = 132;
 
     context.fillStyle = "#0f766e";
     context.font = "600 28px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     context.fillText(`Shanghai Climate Week 2026 · ${posterTitle}`, 110, y);
-    y += 62;
+    y += 86;
 
     context.fillStyle = "#0f172a";
     context.font = "700 68px 'PingFang SC', 'Microsoft YaHei', sans-serif";
@@ -794,9 +834,10 @@ export default function EventDetailPage() {
       y += descriptionLineHeight;
     });
 
-    y += 24;
+    y += 28;
     context.fillStyle = "#ecfdf5";
-    context.fillRect(110, y, 1020, infoBlockHeight);
+    drawRoundedRect(context, 110, y, 1020, infoBlockHeight, 24);
+    context.fill();
 
     context.fillStyle = "#0f172a";
     context.font = "700 32px 'PingFang SC', 'Microsoft YaHei', sans-serif";
@@ -874,18 +915,21 @@ export default function EventDetailPage() {
     y += 32;
 
     const qrBlockY = y;
-    const qrBlockHeight = 360;
-    const qrSize = 200;
-    const qrX = 886;
-    const qrLabelY = qrBlockY + 288;
+    const qrBlockX = 96;
+    const qrBlockWidth = 1048;
+    const qrBlockHeight = 344;
+    const qrSize = 196;
+    const qrX = qrBlockX + qrBlockWidth - qrSize - 48;
+    const qrLabelY = qrBlockY + 286;
     const displayUrl = shareUrl.replace(/^https?:\/\//i, "");
 
     context.fillStyle = "#0f766e";
-    context.fillRect(110, qrBlockY, 1020, qrBlockHeight);
+    drawRoundedRect(context, qrBlockX, qrBlockY, qrBlockWidth, qrBlockHeight, 28);
+    context.fill();
 
     context.fillStyle = "#ffffff";
     context.font = "700 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    context.fillText(registerTitle, 150, qrBlockY + 60);
+    context.fillText(registerTitle, 136, qrBlockY + 62);
 
     context.font = "400 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     drawWrappedText(
@@ -893,21 +937,28 @@ export default function EventDetailPage() {
       locale === "en"
         ? "Scan the QR code to register and view the full event details."
         : "扫描二维码即可报名并查看完整活动详情。",
-      150,
-      qrBlockY + 112,
-      620,
+      136,
+      qrBlockY + 114,
+      600,
       36,
       3
     );
 
-    context.font = "600 22px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    context.fillText(locale === "en" ? "Event link" : "活动链接", 150, qrBlockY + 224);
+    context.fillStyle = "rgba(255,255,255,0.14)";
+    drawRoundedRect(context, 136, qrBlockY + 218, 600, 92, 16);
+    context.fill();
 
-    context.font = "400 20px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    drawWrappedText(context, displayUrl, 150, qrBlockY + 256, 620, 30, 4);
+    context.fillStyle = "#d1fae5";
+    context.font = "600 20px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.fillText(locale === "en" ? "Event link" : "活动链接", 156, qrBlockY + 244);
 
     context.fillStyle = "#ffffff";
-    context.fillRect(qrX, qrBlockY + 42, qrSize, qrSize);
+    context.font = "400 19px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    drawWrappedText(context, displayUrl, 156, qrBlockY + 274, 560, 24, 3);
+
+    context.fillStyle = "#ffffff";
+    drawRoundedRect(context, qrX - 12, qrBlockY + 32, qrSize + 24, qrSize + 24, 18);
+    context.fill();
 
     const qrDataUrl = await QRCode.toDataURL(shareUrl, {
       width: qrSize,
@@ -949,7 +1000,6 @@ export default function EventDetailPage() {
         setSharePreviewTitle(t("register.shareEventPoster"));
         setSharePreviewFileName(`${baseName}.png`);
         setSharePreviewOpen(true);
-        downloadDataUrl(poster, `${baseName}.png`);
         toast.success(t("register.shareEventPosterReady"));
         return;
       }
