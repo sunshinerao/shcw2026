@@ -10,6 +10,16 @@ function escapeCsvValue(value: unknown) {
   return `"${normalized.replace(/"/g, '""')}"`;
 }
 
+function buildExportBaseName(eventTitle: string, locale: string) {
+  const safeTitle = (eventTitle || "event")
+    .replace(/[\\/:*?"<>|]/g, "-")
+    .replace(/\s+/g, " ")
+    .trim();
+  const suffix = locale === "en" ? "registrations" : "报名";
+  const dateStamp = new Date().toISOString().slice(0, 10);
+  return `${safeTitle}-${suffix}-${dateStamp}`;
+}
+
 async function canManageTargetEvent(userId: string, role: string | null | undefined, eventId: string) {
   if (role === "ADMIN") {
     return true;
@@ -173,17 +183,21 @@ export async function GET(
         .map((row) => row.map((cell) => escapeCsvValue(cell)).join(","))
         .join("\n");
 
-      const rawTitle = (requestLocale === "en" ? event.titleEn || event.title : event.title)
-        .replace(/[^\p{L}\p{N}]+/gu, "-")
-        .replace(/^-+|-+$/g, "") || "event";
-      const asciiFilename = rawTitle.replace(/[^\x20-\x7E]/g, "").replace(/[^a-zA-Z0-9-]+/g, "-").replace(/^-+|-+$/g, "") || "event";
-      const utf8Filename = encodeURIComponent(`${rawTitle}-registrations.csv`);
+      const preferredTitle = requestLocale === "en" ? event.titleEn || event.title : event.title;
+      const exportBaseName = buildExportBaseName(preferredTitle, requestLocale);
+      const asciiFilename = exportBaseName
+        .replace(/[^\x20-\x7E]/g, "")
+        .replace(/[^a-zA-Z0-9-_. ]+/g, "-")
+        .replace(/\s+/g, "-")
+        .replace(/-+/g, "-")
+        .replace(/^-+|-+$/g, "") || "event-registrations-export";
+      const utf8Filename = encodeURIComponent(`${exportBaseName}.csv`);
 
       return new NextResponse(`\uFEFF${csvContent}`, {
         status: 200,
         headers: {
           "Content-Type": "text/csv; charset=utf-8",
-          "Content-Disposition": `attachment; filename="${asciiFilename}-registrations.csv"; filename*=UTF-8''${utf8Filename}`,
+          "Content-Disposition": `attachment; filename="${asciiFilename}.csv"; filename*=UTF-8''${utf8Filename}`,
         },
       });
     }
