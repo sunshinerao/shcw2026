@@ -690,6 +690,28 @@ export default function EventAgendaPage({
     }
   };
 
+  const downloadVenueQr = () => {
+    if (!venueQrSvg || !event) return;
+
+    const eventTitle = (locale === "en" && event.titleEn ? event.titleEn : event.title)
+      .replace(/[\\/:*?"<>|]/g, "-")
+      .replace(/\s+/g, " ")
+      .trim();
+    const fileBaseName = locale === "zh"
+      ? `${eventTitle}-现场签到二维码`
+      : `${eventTitle}-venue-checkin-qr`;
+
+    const blob = new Blob([venueQrSvg], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `${fileBaseName}.svg`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    anchor.remove();
+    window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+  };
+
   const openCreateDialog = () => {
     setEditingItem(null);
     const defaultDate = event ? normalizeAgendaDateKey(event.startDate) : "";
@@ -1176,10 +1198,16 @@ export default function EventAgendaPage({
                       : (locale === "zh" ? "生成二维码" : "Generate QR")}
                   </Button>
                   {venueCheckinUrl && (
-                    <Button variant="outline" onClick={() => void copyVenueCheckinLink()}>
-                      <Copy className="mr-2 h-4 w-4" />
-                      {locale === "zh" ? "复制签到链接" : "Copy check-in link"}
-                    </Button>
+                    <>
+                      <Button variant="outline" onClick={() => void copyVenueCheckinLink()}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "复制签到链接" : "Copy check-in link"}
+                      </Button>
+                      <Button variant="outline" onClick={downloadVenueQr}>
+                        <ArrowLeft className="mr-2 h-4 w-4 rotate-[270deg]" />
+                        {locale === "zh" ? "下载二维码" : "Download QR"}
+                      </Button>
+                    </>
                   )}
                 </div>
 
