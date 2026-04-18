@@ -216,7 +216,8 @@ export default function EventRegisterPage() {
       if (
         formData.name !== (userProfile?.name || "") ||
         formData.phone !== (userProfile?.phone || "") ||
-        formData.title !== (userProfile?.title || "")
+        formData.title !== (userProfile?.title || "") ||
+        formData.organization !== (userProfile?.organization?.name || "")
       ) {
         const profileResponse = await fetch("/api/user/profile", {
           method: "PUT",
@@ -228,6 +229,7 @@ export default function EventRegisterPage() {
             name: formData.name,
             phone: formData.phone,
             title: formData.title,
+            organization: { name: formData.organization },
           }),
         });
         const profilePayload = await profileResponse.json();
@@ -415,30 +417,33 @@ export default function EventRegisterPage() {
 
                   <div className="grid sm:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="phone">{t("form.phone")}</Label>
+                      <Label htmlFor="phone">{t("form.phone")} *</Label>
                       <Input
                         id="phone"
                         value={formData.phone}
                         onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        required
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="title">{t("form.title")}</Label>
+                      <Label htmlFor="title">{t("form.title")} *</Label>
                       <Input
                         id="title"
                         value={formData.title}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         placeholder={t("form.titlePlaceholder")}
+                        required
                       />
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="organization">{t("form.organization")}</Label>
+                    <Label htmlFor="organization">{t("form.organization")} *</Label>
                     <Input
                       id="organization"
                       value={formData.organization}
                       onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                      required
                     />
                   </div>
 
