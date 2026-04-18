@@ -500,7 +500,7 @@ const apiMessages = {
     en: "The QR code has expired. Please ask the user to refresh it.",
   },
   qrNotActiveYet: {
-    zh: "活动尚未进入检票时段，请在入场开放后再出示二维码",
+    zh: "活动尚未进入检票时段，请在入场开放后再扫描二维码签到",
     en: "This event pass is not active yet. Please present it once entry opens.",
   },
   qrEventEnded: {
