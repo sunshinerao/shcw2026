@@ -837,6 +837,9 @@
             "approve": "批准",
             "reject": "拒绝",
             "export": "导出名单",
+            "exporting": "导出中...",
+            "exportSuccess": "报名名单导出成功。",
+            "exportFailed": "导出报名名单失败。",
             "actionFailed": "操作失败。",
             "empty": "暂无报名记录。",
             "statuses": {

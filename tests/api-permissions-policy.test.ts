@@ -275,6 +275,12 @@ test("admin registrations support exporting registrant lists", async () => {
   );
 
   assert.match(
+    pageContent,
+    /fetch\([\s\S]*format=\\"csv\\"|response\.blob\(|URL\.createObjectURL/,
+    "The export action should download the CSV through an authenticated blob request so browsers reliably save the file"
+  );
+
+  assert.match(
     routeContent,
     /text\/csv|Content-Disposition|registrations\.csv/i,
     "The registrations API should be able to return a downloadable CSV export"

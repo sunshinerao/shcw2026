@@ -87,6 +87,7 @@ export default function EventRegistrationsPage({
   const [statusMessage, setStatusMessage] = useState("");
   const [statusTone, setStatusTone] = useState<"success" | "error">("success");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Filters
   const [filterStatus, setFilterStatus] = useState("all");
@@ -169,21 +170,52 @@ export default function EventRegistrationsPage({
     });
   };
 
-  const handleExportRegistrations = () => {
-    const params = new URLSearchParams({ locale, format: "csv" });
-    if (filterStatus !== "all") {
-      params.set("status", filterStatus);
-    }
-    if (searchQuery.trim()) {
-      params.set("query", searchQuery.trim());
-    }
+  const handleExportRegistrations = async () => {
+    setIsExporting(true);
 
-    const anchor = document.createElement("a");
-    anchor.href = `/api/events/${eventId}/registrations?${params.toString()}`;
-    anchor.download = `${eventId}-registrations.csv`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
+    try {
+      const params = new URLSearchParams({ locale, format: "csv" });
+      if (filterStatus !== "all") {
+        params.set("status", filterStatus);
+      }
+      if (searchQuery.trim()) {
+        params.set("query", searchQuery.trim());
+      }
+
+      const response = await fetch(`/api/events/${eventId}/registrations?${params.toString()}`, {
+        credentials: "same-origin",
+      });
+
+      if (!response.ok) {
+        let errorMessage = t("exportFailed");
+        try {
+          const payload = await response.json();
+          errorMessage = payload?.error || errorMessage;
+        } catch {
+          // ignore JSON parse failure and keep fallback message
+        }
+        throw new Error(errorMessage);
+      }
+
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
+      const disposition = response.headers.get("Content-Disposition") || "";
+      const fileNameMatch = disposition.match(/filename="([^"]+)"/i);
+      const fileName = fileNameMatch?.[1] || `${eventId}-registrations.csv`;
+
+      const anchor = document.createElement("a");
+      anchor.href = objectUrl;
+      anchor.download = fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.URL.revokeObjectURL(objectUrl);
+      setMessage("success", t("exportSuccess"));
+    } catch (error) {
+      setMessage("error", error instanceof Error ? error.message : t("exportFailed"));
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   const submitAction = async (action: "approve" | "reject") => {
@@ -269,10 +301,15 @@ export default function EventRegistrationsPage({
               </h2>
               <p className="text-sm text-slate-600">{t("subtitle")}</p>
             </div>
-            <Button variant="outline" onClick={handleExportRegistrations}>
+            <LoadingButton
+              variant="outline"
+              onClick={() => void handleExportRegistrations()}
+              loading={isExporting}
+              loadingText={t("exporting")}
+            >
               <Download className="mr-2 h-4 w-4" />
               {t("export")}
-            </Button>
+            </LoadingButton>
           </div>
         </motion.div>
 

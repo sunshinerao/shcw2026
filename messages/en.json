@@ -837,6 +837,9 @@
             "approve": "Approve",
             "reject": "Reject",
             "export": "Export list",
+            "exporting": "Exporting...",
+            "exportSuccess": "Registration list exported successfully.",
+            "exportFailed": "Failed to export the registration list.",
             "actionFailed": "Action failed.",
             "empty": "No registrations found.",
             "statuses": {
