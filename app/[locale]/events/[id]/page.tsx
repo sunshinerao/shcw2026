@@ -767,19 +767,25 @@ export default function EventDetailPage() {
       agendaEntries.push({ text: defaultAgendaText, tone: "body" });
     }
 
-    const speakerMap = new Map<string, AgendaSpeaker>();
-    (event.agendaItems ?? []).forEach((item) => {
-      item.speakers.forEach((speaker) => {
-        speakerMap.set(speaker.id, speaker);
+    const speakerSeen = new Set<string>();
+    const speakersInOrder: AgendaSpeaker[] = [];
+    groupedAgendaItems.forEach((group) => {
+      group.items.forEach((item) => {
+        for (const speaker of item.speakers) {
+          if (!speakerSeen.has(speaker.id)) {
+            speakerSeen.add(speaker.id);
+            speakersInOrder.push(speaker);
+          }
+        }
+        if (item.moderator && !speakerSeen.has(item.moderator.id)) {
+          speakerSeen.add(item.moderator.id);
+          speakersInOrder.push(item.moderator);
+        }
       });
-      if (item.moderator) {
-        speakerMap.set(item.moderator.id, item.moderator);
-      }
     });
 
     context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    const speakerEntries = Array.from(speakerMap.values())
-      .sort((left, right) => Number(right.isKeynote) - Number(left.isKeynote))
+    const speakerEntries = speakersInOrder
       .slice(0, 12)
       .flatMap((speaker) => {
         const meta = getAgendaSpeakerMeta(speaker) || (locale === "en" ? "Guest speaker" : "嘉宾");
