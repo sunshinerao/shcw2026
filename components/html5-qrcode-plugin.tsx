@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { Html5QrcodeScanner, Html5QrcodeResult } from "html5-qrcode";
 
 interface Html5QrcodePluginProps {
@@ -14,19 +14,24 @@ interface Html5QrcodePluginProps {
 
 export default function Html5QrcodePlugin(props: Html5QrcodePluginProps) {
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+  const successCbRef = useRef(props.qrCodeSuccessCallback);
+  const errorCbRef = useRef(props.qrCodeErrorCallback);
+
+  // Keep refs up to date without re-triggering the effect
+  useEffect(() => { successCbRef.current = props.qrCodeSuccessCallback; }, [props.qrCodeSuccessCallback]);
+  useEffect(() => { errorCbRef.current = props.qrCodeErrorCallback; }, [props.qrCodeErrorCallback]);
+
   const {
     fps = 10,
     qrbox = { width: 250, height: 250 },
     aspectRatio = 1,
     disableFlip = false,
-    qrCodeSuccessCallback,
-    qrCodeErrorCallback,
   } = props;
 
   useEffect(() => {
     const config = {
       fps,
-      qrbox,
+      qrbox: typeof qrbox === "number" ? qrbox : { width: qrbox.width, height: qrbox.height },
       aspectRatio,
       disableFlip,
     };
@@ -36,11 +41,11 @@ export default function Html5QrcodePlugin(props: Html5QrcodePluginProps) {
 
     scannerRef.current.render(
       (decodedText: string, decodedResult: Html5QrcodeResult) => {
-        qrCodeSuccessCallback(decodedText, decodedResult);
+        successCbRef.current(decodedText, decodedResult);
       },
       (errorMessage: string) => {
-        if (qrCodeErrorCallback) {
-          qrCodeErrorCallback(errorMessage);
+        if (errorCbRef.current) {
+          errorCbRef.current(errorMessage);
         }
       }
     );
@@ -50,7 +55,8 @@ export default function Html5QrcodePlugin(props: Html5QrcodePluginProps) {
         scannerRef.current.clear().catch(console.error);
       }
     };
-  }, [aspectRatio, disableFlip, fps, qrCodeErrorCallback, qrCodeSuccessCallback, qrbox]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fps, aspectRatio, disableFlip]);
 
   return (
     <div 

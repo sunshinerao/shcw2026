@@ -24,7 +24,7 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { isAdminConsoleRole } from "@/lib/permissions";
 
 /** Pages with light background where the navbar needs dark text/logo */
-const LIGHT_BG_PREFIXES = ["/dashboard", "/admin", "/auth", "/events", "/tracks", "/speakers"];
+const LIGHT_BG_PREFIXES = ["/dashboard", "/admin", "/auth", "/events", "/tracks", "/speakers", "/verifier"];
 
 export function Navbar({
   newsEnabled = true,
