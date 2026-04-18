@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import QRCode from "qrcode";
 import {
   ArrowLeft,
   Building2,
@@ -10,9 +11,11 @@ import {
   ChevronDown,
   ChevronUp,
   Clock,
+  Copy,
   Edit2,
   MapPin,
   Plus,
+  QrCode,
   Search,
   Trash2,
   UserPlus,
@@ -133,6 +136,27 @@ type InstitutionOption = {
   orgType: string | null;
 };
 
+type VerifierAssignment = {
+  userId: string;
+  eventId: string;
+  assignedAt: string;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+    role: string;
+  };
+};
+
+type VerifierUserOption = {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string | null;
+  role: string;
+};
+
 type AgendaFormState = {
   title: string;
   titleEn: string;
@@ -237,6 +261,14 @@ export default function EventAgendaPage({
   const [isInstitutionPickerOpen, setIsInstitutionPickerOpen] = useState(false);
   const [institutionSearch, setInstitutionSearch] = useState("");
   const [institutionRoleMap, setInstitutionRoleMap] = useState<Record<string, string>>({});
+  const [assignedVerifiers, setAssignedVerifiers] = useState<VerifierAssignment[]>([]);
+  const [verifierOptions, setVerifierOptions] = useState<VerifierUserOption[]>([]);
+  const [selectedVerifierId, setSelectedVerifierId] = useState("");
+  const [venueCheckinSecret, setVenueCheckinSecret] = useState<string | null>(null);
+  const [venueQrSvg, setVenueQrSvg] = useState("");
+  const [siteOrigin, setSiteOrigin] = useState("");
+  const [isVerifierSubmitting, setIsVerifierSubmitting] = useState(false);
+  const [isVenueQrSubmitting, setIsVenueQrSubmitting] = useState(false);
 
   const setMessage = (tone: "success" | "error", msg: string) => {
     setStatusTone(tone);
@@ -337,12 +369,64 @@ export default function EventAgendaPage({
     }
   }, []);
 
+  const loadVerifierAssignments = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/events/${eventId}/verifiers`);
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAssignedVerifiers(data.data as VerifierAssignment[]);
+      }
+    } catch {
+      // ignore
+    }
+  }, [eventId]);
+
+  const loadVerifierOptions = useCallback(async () => {
+    try {
+      const res = await fetch("/api/users?pageSize=200&role=VERIFIER", { cache: "no-store" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setVerifierOptions((data.data?.users || []) as VerifierUserOption[]);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const loadVenueQr = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/events/${eventId}/venue-qr`, { cache: "no-store" });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setVenueCheckinSecret(data.data?.venueCheckinSecret || null);
+      }
+    } catch {
+      // ignore
+    }
+  }, [eventId]);
+
   useEffect(() => {
     setIsLoading(true);
-    Promise.all([loadEvent(), loadAgenda(), loadSpeakers(), loadEventInstitutions(), loadAllInstitutions()]).finally(() =>
-      setIsLoading(false)
-    );
-  }, [loadEvent, loadAgenda, loadSpeakers, loadEventInstitutions, loadAllInstitutions]);
+    Promise.all([
+      loadEvent(),
+      loadAgenda(),
+      loadSpeakers(),
+      loadEventInstitutions(),
+      loadAllInstitutions(),
+      loadVerifierAssignments(),
+      loadVerifierOptions(),
+      loadVenueQr(),
+    ]).finally(() => setIsLoading(false));
+  }, [
+    loadEvent,
+    loadAgenda,
+    loadSpeakers,
+    loadEventInstitutions,
+    loadAllInstitutions,
+    loadVerifierAssignments,
+    loadVerifierOptions,
+    loadVenueQr,
+  ]);
 
   useEffect(() => {
     let cancelled = false;
@@ -361,6 +445,10 @@ export default function EventAgendaPage({
           setCurrentUserStaffPermissions(null);
         }
       }
+    }
+
+    if (typeof window !== "undefined") {
+      setSiteOrigin(window.location.origin);
     }
 
     void loadCurrentUserRole();
@@ -464,6 +552,35 @@ export default function EventAgendaPage({
     });
   }, [allInstitutions, eventInstitutions, institutionSearch]);
 
+  const availableVerifierOptions = useMemo(() => {
+    const assignedIds = new Set(assignedVerifiers.map((item) => item.userId));
+    return verifierOptions.filter((user) => !assignedIds.has(user.id));
+  }, [assignedVerifiers, verifierOptions]);
+
+  const venueCheckinUrl = useMemo(() => {
+    if (!siteOrigin || !venueCheckinSecret) return "";
+    return `${siteOrigin}/${locale}/self-checkin?eventId=${encodeURIComponent(eventId)}&secret=${encodeURIComponent(venueCheckinSecret)}`;
+  }, [siteOrigin, venueCheckinSecret, locale, eventId]);
+
+  useEffect(() => {
+    if (!venueCheckinUrl) {
+      setVenueQrSvg("");
+      return;
+    }
+
+    QRCode.toString(venueCheckinUrl, {
+      type: "svg",
+      width: 220,
+      margin: 1,
+      color: {
+        dark: "#0f172a",
+        light: "#ffffff",
+      },
+    })
+      .then((svg) => setVenueQrSvg(svg))
+      .catch(() => setVenueQrSvg(""));
+  }, [venueCheckinUrl]);
+
   const addEventInstitution = async (institutionId: string) => {
     const role = institutionRoleMap[institutionId] ?? null;
     try {
@@ -498,6 +615,78 @@ export default function EventAgendaPage({
       }
     } catch {
       setMessage("error", "Failed to remove institution");
+    }
+  };
+
+  const assignVerifierToEvent = async () => {
+    if (!selectedVerifierId) return;
+
+    setIsVerifierSubmitting(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/verifiers`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: selectedVerifierId }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || (locale === "zh" ? "分配失败" : "Assignment failed"));
+      }
+
+      setSelectedVerifierId("");
+      await loadVerifierAssignments();
+      setMessage("success", locale === "zh" ? "验证人员已分配到本活动" : "Verifier assigned to this event");
+    } catch (error) {
+      setMessage("error", error instanceof Error ? error.message : "Failed");
+    } finally {
+      setIsVerifierSubmitting(false);
+    }
+  };
+
+  const removeVerifierFromEvent = async (userId: string) => {
+    setIsVerifierSubmitting(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/verifiers?userId=${encodeURIComponent(userId)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || (locale === "zh" ? "移除失败" : "Remove failed"));
+      }
+      await loadVerifierAssignments();
+      setMessage("success", locale === "zh" ? "已移除该活动验证权限" : "Verifier removed from this event");
+    } catch (error) {
+      setMessage("error", error instanceof Error ? error.message : "Failed");
+    } finally {
+      setIsVerifierSubmitting(false);
+    }
+  };
+
+  const generateVenueQr = async () => {
+    setIsVenueQrSubmitting(true);
+    try {
+      const res = await fetch(`/api/events/${eventId}/venue-qr`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || (locale === "zh" ? "生成失败" : "Failed to generate"));
+      }
+      setVenueCheckinSecret(data.data?.venueCheckinSecret || null);
+      setMessage("success", locale === "zh" ? "现场签到二维码已生成" : "Venue self-check-in QR generated");
+    } catch (error) {
+      setMessage("error", error instanceof Error ? error.message : "Failed");
+    } finally {
+      setIsVenueQrSubmitting(false);
+    }
+  };
+
+  const copyVenueCheckinLink = async () => {
+    if (!venueCheckinUrl) return;
+    try {
+      await navigator.clipboard.writeText(venueCheckinUrl);
+      setMessage("success", locale === "zh" ? "签到链接已复制" : "Check-in link copied");
+    } catch {
+      setMessage("error", locale === "zh" ? "复制失败，请手动复制" : "Copy failed, please copy manually");
     }
   };
 
@@ -877,6 +1066,138 @@ export default function EventAgendaPage({
             >
               <CardContent className="p-4 text-sm font-medium text-slate-700">
                 {statusMessage}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+
+        {(currentUserRole === "ADMIN" || currentUserRole === "STAFF") && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.05 }}
+            className="grid gap-6 lg:grid-cols-2"
+          >
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-slate-500" />
+                  {locale === "zh" ? "活动验证人员" : "Event verifiers"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-500">
+                  {locale === "zh"
+                    ? "先在用户管理中把工作人员设为验证人员，再在这里绑定到本场活动。"
+                    : "First set a staff member as a verifier in user management, then bind them to this event here."}
+                </p>
+
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <Select value={selectedVerifierId || undefined} onValueChange={setSelectedVerifierId}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue placeholder={locale === "zh" ? "选择验证人员" : "Select verifier"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableVerifierOptions.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name} · {user.email}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={() => void assignVerifierToEvent()}
+                    disabled={!selectedVerifierId || isVerifierSubmitting}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    {locale === "zh" ? "分配" : "Assign"}
+                  </Button>
+                </div>
+
+                {assignedVerifiers.length === 0 ? (
+                  <div className="rounded-lg border border-dashed border-slate-200 p-4 text-sm text-slate-400">
+                    {locale === "zh" ? "当前活动还没有分配验证人员。" : "No verifiers assigned to this event yet."}
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    {assignedVerifiers.map((assignment) => (
+                      <div
+                        key={assignment.userId}
+                        className="flex items-center gap-3 rounded-lg border border-slate-100 p-3"
+                      >
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={assignment.user.avatar || undefined} />
+                          <AvatarFallback>{assignment.user.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        <div className="min-w-0 flex-1">
+                          <div className="truncate text-sm font-medium text-slate-900">{assignment.user.name}</div>
+                          <div className="truncate text-xs text-slate-500">{assignment.user.email}</div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-red-600 hover:bg-red-50 hover:text-red-700"
+                          onClick={() => void removeVerifierFromEvent(assignment.userId)}
+                          disabled={isVerifierSubmitting}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <QrCode className="h-5 w-5 text-slate-500" />
+                  {locale === "zh" ? "参会者现场扫码二维码" : "Attendee venue QR"}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-sm text-slate-500">
+                  {locale === "zh"
+                    ? "这个二维码就是参会者到现场后扫码自助签到用的二维码。生成后可直接下载、打印或张贴在会场入口。"
+                    : "This is the QR attendees scan on site for self check-in. Generate it and place it at the venue entrance."}
+                </p>
+
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    onClick={() => void generateVenueQr()}
+                    disabled={isVenueQrSubmitting}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <QrCode className="mr-2 h-4 w-4" />
+                    {venueCheckinSecret
+                      ? (locale === "zh" ? "重新生成二维码" : "Regenerate QR")
+                      : (locale === "zh" ? "生成二维码" : "Generate QR")}
+                  </Button>
+                  {venueCheckinUrl && (
+                    <Button variant="outline" onClick={() => void copyVenueCheckinLink()}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      {locale === "zh" ? "复制签到链接" : "Copy check-in link"}
+                    </Button>
+                  )}
+                </div>
+
+                {venueQrSvg ? (
+                  <div className="space-y-3">
+                    <div className="flex justify-center rounded-xl border border-slate-200 bg-white p-4">
+                      <div
+                        className="h-[220px] w-[220px]"
+                        dangerouslySetInnerHTML={{ __html: venueQrSvg }}
+                      />
+                    </div>
+                    <Input value={venueCheckinUrl} readOnly className="text-xs" />
+                  </div>
+                ) : (
+                  <div className="rounded-lg border border-dashed border-slate-200 p-4 text-sm text-slate-400">
+                    {locale === "zh" ? "点击上方按钮生成本场活动的现场签到二维码。" : "Generate the venue QR for this event using the button above."}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
