@@ -884,8 +884,14 @@ export default function AdminEventsPage() {
                             </Button>
                           </Link>
                           <Link href={`/admin/events/${event.id}`}>
-                            <Button size="sm" variant="outline" title={t("agenda.title")}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="gap-1.5"
+                              title={locale === "zh" ? "详情 / 验码设置" : "Details / verifier settings"}
+                            >
                               <Mic className="h-4 w-4" />
+                              <span className="hidden sm:inline">{locale === "zh" ? "详情/验码" : "Details"}</span>
                             </Button>
                           </Link>
                           <Link href={`/admin/events/${event.id}/registrations`}>
@@ -960,6 +966,34 @@ export default function AdminEventsPage() {
               {editingEvent ? t("form.editDescription") : t("form.createDescription")}
             </DialogDescription>
           </DialogHeader>
+          {editingEvent ? (
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <div className="text-sm font-semibold text-emerald-900">
+                    {locale === "zh" ? "现场验码与参会者扫码签到设置" : "On-site verifier and attendee QR settings"}
+                  </div>
+                  <div className="mt-1 text-xs text-emerald-700">
+                    {locale === "zh"
+                      ? "验证人员分配、参会者现场扫码二维码，都在活动详情页中设置。"
+                      : "Verifier assignment and venue self-check-in QR are configured on the event detail page."}
+                  </div>
+                </div>
+                <div className="flex gap-2">
+                  <Link href={`/admin/events/${editingEvent.id}`}>
+                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                      {locale === "zh" ? "打开详情页" : "Open detail page"}
+                    </Button>
+                  </Link>
+                  <Link href={`/admin/events/${editingEvent.id}/registrations`}>
+                    <Button size="sm" variant="outline">
+                      {locale === "zh" ? "报名名单" : "Registrations"}
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : null}
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2 md:col-span-2">
               <Label htmlFor="event-title">{t("form.title")}</Label>
