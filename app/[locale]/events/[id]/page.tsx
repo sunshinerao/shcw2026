@@ -728,6 +728,8 @@ export default function EventDetailPage() {
     const venueLineHeight = 36;
     const sectionHeadingGap = 50;
     const sectionBodyGap = 40;
+    const qrBlockHeight = 320;
+    const bottomPadding = 96;
     const cardInset = 52;
     const cardLeft = cardInset;
     const cardTop = cardInset;
@@ -809,10 +811,23 @@ export default function EventDetailPage() {
     );
     const speakerHeight = (speakerEntries.length > 0 ? speakerEntries.length : 1) * sectionBodyGap;
     const institutionHeight = (institutionEntries.length > 0 ? institutionEntries.length : 1) * sectionBodyGap;
-    const infoBlockHeight = 168 + scheduleLines.length * scheduleLineHeight + venueLines.length * venueLineHeight + (metaText ? 42 : 0);
-    const estimatedHeight = 360 + titleLines.length * titleLineHeight + descriptionLines.length * descriptionLineHeight + infoBlockHeight + agendaHeight + speakerHeight + institutionHeight + 860;
+    const infoBlockHeight = 186 + scheduleLines.length * scheduleLineHeight + venueLines.length * venueLineHeight + (metaText ? 42 : 0);
+    const estimatedHeight =
+      240 +
+      78 +
+      titleLines.length * titleLineHeight +
+      10 +
+      descriptionLines.length * descriptionLineHeight +
+      30 +
+      infoBlockHeight +
+      62 +
+      58 + agendaHeight +
+      24 + 58 + speakerHeight +
+      24 + 58 + institutionHeight +
+      36 + qrBlockHeight + bottomPadding;
+    const a4MinHeight = Math.round(canvas.width * 1.414);
 
-    canvas.height = Math.max(2400, Math.min(7800, estimatedHeight));
+    canvas.height = Math.max(a4MinHeight, Math.min(7800, estimatedHeight));
 
     const background = context.createLinearGradient(0, 0, canvas.width, canvas.height);
     background.addColorStop(0, "#032b29");
@@ -854,8 +869,12 @@ export default function EventDetailPage() {
     context.fillText("SHANGHAI CLIMATE WEEK 2026", 128, y + 4);
     y += 78;
 
+    const titleStartY = y;
+    const titleBlockTop = titleStartY - 58;
+    const titleBlockHeight = Math.max(96, titleLines.length * titleLineHeight - 18);
+
     context.fillStyle = "#14b8a6";
-    drawRoundedRect(context, 110, y - 14, 8, Math.max(84, titleLines.length * titleLineHeight - 10), 4);
+    drawRoundedRect(context, 110, titleBlockTop, 8, titleBlockHeight, 4);
     context.fill();
 
     context.fillStyle = "#0f172a";
@@ -882,24 +901,30 @@ export default function EventDetailPage() {
     drawRoundedRect(context, 110, y, 1020, infoBlockHeight, 26);
     context.stroke();
 
-    context.fillStyle = "#0f766e";
-    context.font = "700 18px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    context.fillText(locale === "en" ? "EVENT OVERVIEW" : overviewTitle, 140, y + 34);
+    context.fillStyle = "#0f172a";
+    context.font = "700 34px 'PingFang SC', 'Microsoft YaHei', sans-serif";
+    context.fillText(overviewTitle, 140, y + 52);
+    context.strokeStyle = "#99f6e4";
+    context.lineWidth = 3;
+    context.beginPath();
+    context.moveTo(330, y + 64);
+    context.lineTo(1110, y + 64);
+    context.stroke();
 
     context.fillStyle = "#0f172a";
     context.font = "700 30px 'PingFang SC', 'Microsoft YaHei', sans-serif";
-    context.fillText(scheduleLines[0] || scheduleLabel, 140, y + 84);
+    context.fillText(scheduleLines[0] || scheduleLabel, 140, y + 112);
 
     context.fillStyle = "#475569";
     context.font = "500 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     scheduleLines.slice(1).forEach((line, index) => {
-      context.fillText(line, 140, y + 120 + index * scheduleLineHeight);
+      context.fillText(line, 140, y + 148 + index * scheduleLineHeight);
     });
 
     context.fillStyle = "#334155";
     context.font = "400 24px 'PingFang SC', 'Microsoft YaHei', sans-serif";
     venueLines.forEach((line, index) => {
-      context.fillText(line, 140, y + 120 + Math.max(0, scheduleLines.length - 1) * scheduleLineHeight + 18 + index * venueLineHeight);
+      context.fillText(line, 140, y + 148 + Math.max(0, scheduleLines.length - 1) * scheduleLineHeight + 18 + index * venueLineHeight);
     });
 
     if (metaText) {
@@ -979,7 +1004,6 @@ export default function EventDetailPage() {
     const qrBlockY = y;
     const qrBlockX = 110;
     const qrBlockWidth = 1020;
-    const qrBlockHeight = 320;
     const qrSize = 188;
     const qrX = qrBlockX + qrBlockWidth - qrSize - 42;
     const qrLabelY = qrBlockY + 270;
