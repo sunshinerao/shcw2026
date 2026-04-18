@@ -245,14 +245,11 @@ export default function VerifierPage() {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="relative rounded-xl overflow-hidden bg-black">
-                    <Html5QrcodePlugin
-                      fps={10}
-                      qrbox={{ width: 250, height: 250 }}
-                      disableFlip={false}
-                      qrCodeSuccessCallback={onNewScanResult}
-                    />
-                  </div>
+                  <Html5QrcodePlugin
+                    fps={10}
+                    disableFlip={false}
+                    qrCodeSuccessCallback={onNewScanResult}
+                  />
                   <p className="text-center text-sm text-slate-500 mt-4">
                     {t("scanning.hint")}
                   </p>
