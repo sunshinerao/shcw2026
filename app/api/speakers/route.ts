@@ -187,6 +187,19 @@ export async function GET(req: NextRequest) {
         institution: {
           select: { id: true, slug: true, name: true, nameEn: true, logo: true },
         },
+        roles: {
+          where: { isCurrent: true },
+          orderBy: [{ order: "asc" }, { startYear: "desc" }],
+          select: {
+            id: true,
+            title: true,
+            titleEn: true,
+            organization: true,
+            organizationEn: true,
+            isCurrent: true,
+            order: true,
+          },
+        },
         createdAt: true,
         updatedAt: true,
         _count: {

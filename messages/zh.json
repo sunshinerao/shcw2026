@@ -1223,7 +1223,8 @@
             "profileFailed": "更新失败，请稍后重试。",
             "passwordUpdated": "密码修改成功。",
             "passwordFailed": "密码修改失败，请检查当前密码。",
-            "profileIncomplete": "您的基本信息尚未完善，请补充姓名、职位、机构名称和国别/地区后保存，无需修改密码。"
+            "profileIncomplete": "您的基本信息尚未完善，请补全后保存。",
+            "profileIncompleteList": "请完善以下必填信息：{fields}。"
         },
         "tabs": {
             "profile": "基本信息",

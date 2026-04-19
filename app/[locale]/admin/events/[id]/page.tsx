@@ -55,6 +55,7 @@ import {
   normalizeAgendaDateKey,
 } from "@/lib/agenda";
 import { getEventDateRangeLabel, getEventTimeSummaryLabel, type EventDateSlot } from "@/lib/data/events";
+import { getSpeakerDisplayMeta, type SpeakerDisplayRole } from "@/lib/speaker-display";
 
 type AgendaSpeaker = {
   id: string;
@@ -65,6 +66,7 @@ type AgendaSpeaker = {
   titleEn?: string | null;
   organization: string;
   organizationEn?: string | null;
+  roles?: SpeakerDisplayRole[] | null;
   isKeynote: boolean;
 };
 
@@ -331,6 +333,7 @@ export default function EventAgendaPage({
             titleEn: s.titleEn,
             organization: s.organization,
             organizationEn: s.organizationEn,
+            roles: s.roles,
             isKeynote: s.isKeynote,
           }))
         );
@@ -464,11 +467,8 @@ export default function EventAgendaPage({
   const getSpeakerName = (s: AgendaSpeaker) =>
     locale === "en" && s.nameEn ? s.nameEn : s.name;
 
-  const getSpeakerTitle = (s: AgendaSpeaker) =>
-    locale === "en" && s.titleEn ? s.titleEn : s.title;
-
-  const getSpeakerOrg = (s: AgendaSpeaker) =>
-    locale === "en" && s.organizationEn ? s.organizationEn : s.organization;
+  const getSpeakerMeta = (s: AgendaSpeaker) =>
+    getSpeakerDisplayMeta(s, locale, "allCurrent");
 
   const getAgendaTitle = (item: AgendaItem) =>
     locale === "en" && item.titleEn ? item.titleEn : item.title;
@@ -1768,9 +1768,9 @@ export default function EventAgendaPage({
                                     return (
                                       <div
                                         key={speaker.id}
-                                        className="flex items-start gap-2"
+                                        className="flex items-center gap-2"
                                       >
-                                        <Avatar className="h-5 w-5 shrink-0 mt-0.5">
+                                        <Avatar className="h-5 w-5 shrink-0">
                                           <AvatarImage src={speaker.avatar || undefined} />
                                           <AvatarFallback className="text-[10px]">
                                             {getSpeakerName(speaker).charAt(0)}
@@ -1782,7 +1782,7 @@ export default function EventAgendaPage({
                                               {getSpeakerName(speaker)}
                                             </span>
                                             <span className="text-xs text-slate-400">
-                                              {getSpeakerTitle(speaker)} · {getSpeakerOrg(speaker)}
+                                              {getSpeakerMeta(speaker)}
                                             </span>
                                           </div>
                                           {topic && (
@@ -2300,9 +2300,11 @@ export default function EventAgendaPage({
                             <span className="text-sm font-medium text-slate-700">
                               {getSpeakerName(s)}
                             </span>
-                            <span className="text-xs text-slate-400 ml-1.5">
-                              {getSpeakerOrg(s)}
-                            </span>
+                            {getSpeakerMeta(s) ? (
+                              <span className="ml-1.5 text-xs text-slate-400">
+                                {getSpeakerMeta(s)}
+                              </span>
+                            ) : null}
                           </div>
                           {canManageSpeakersFlag ? (
                             <div className="ml-1 flex items-center gap-1">
@@ -2423,9 +2425,11 @@ export default function EventAgendaPage({
                     <span className="text-sm font-medium text-slate-700">
                       {getSpeakerName(selectedModerator)}
                     </span>
-                    <span className="text-xs text-slate-400">
-                      {getSpeakerOrg(selectedModerator)}
-                    </span>
+                    {getSpeakerMeta(selectedModerator) ? (
+                      <span className="text-xs text-slate-400">
+                        {getSpeakerMeta(selectedModerator)}
+                      </span>
+                    ) : null}
                     {canManageSpeakersFlag ? (
                       <button
                         type="button"
@@ -2513,7 +2517,7 @@ export default function EventAgendaPage({
                           )}
                         </div>
                         <span className="text-xs text-slate-500 truncate block">
-                          {getSpeakerTitle(s)} · {getSpeakerOrg(s)}
+                          {getSpeakerMeta(s)}
                         </span>
                       </div>
                       <Plus className="h-4 w-4 shrink-0 text-emerald-600" />

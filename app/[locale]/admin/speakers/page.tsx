@@ -59,6 +59,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { getLocalizedSalutationOptions } from "@/lib/user-form-options";
+import { getSpeakerDisplayOrganization, getSpeakerDisplayTitle, type SpeakerRoleDisplayMode } from "@/lib/speaker-display";
 
 // Speaker interface based on schema
 interface Speaker {
@@ -91,6 +92,7 @@ interface Speaker {
   order: number;
   institutionId?: string | null;
   institution?: { id: string; slug: string; name: string; nameEn?: string | null; logo?: string | null } | null;
+  roles?: SpeakerRoleForm[];
   agendaItemsCount?: number;
   events?: string[];
   eventsEn?: string[];
@@ -353,13 +355,15 @@ export default function AdminSpeakersPage() {
   const getSecondaryName = (speaker: Speaker) =>
     locale === "en" ? null : speaker.nameEn || null;
 
-  const getSpeakerTitle = (speaker: Speaker) =>
-    locale === "en" ? speaker.titleEn || speaker.title : speaker.title;
+  const getSpeakerTitle = (
+    speaker: Speaker,
+    mode: SpeakerRoleDisplayMode = "allCurrent"
+  ) => getSpeakerDisplayTitle(speaker, locale, mode);
 
-  const getSpeakerOrganization = (speaker: Speaker) =>
-    locale === "en"
-      ? speaker.organizationEn || speaker.organization
-      : speaker.organization;
+  const getSpeakerOrganization = (
+    speaker: Speaker,
+    mode: SpeakerRoleDisplayMode = "allCurrent"
+  ) => getSpeakerDisplayOrganization(speaker, locale, mode);
 
   const getSpeakerBio = (speaker: Speaker) =>
     locale === "en" ? speaker.bioEn || speaker.bio : speaker.bio;
@@ -1341,7 +1345,7 @@ export default function AdminSpeakersPage() {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label>
-                  {locale === "en" ? "Career Roles" : "历任职务"}
+                  {locale === "en" ? "Role Records" : "职务信息"}
                 </Label>
                 <Button
                   type="button"
@@ -1350,7 +1354,7 @@ export default function AdminSpeakersPage() {
                   onClick={() =>
                     setFormRoles((prev) => [
                       ...prev,
-                      { title: "", titleEn: "", organization: "", organizationEn: "", startYear: "", endYear: "", isCurrent: false, order: prev.length },
+                      { title: "", titleEn: "", organization: "", organizationEn: "", startYear: "", endYear: "", isCurrent: true, order: prev.length },
                     ])
                   }
                 >
@@ -1358,6 +1362,9 @@ export default function AdminSpeakersPage() {
                   {locale === "en" ? "Add Role" : "添加职务"}
                 </Button>
               </div>
+              <p className="text-xs text-slate-500">
+                {locale === "en" ? "You can maintain multiple current positions here. Compact cards can show the primary role, while detailed views can show all current roles." : "这里支持维护多个当前职务。紧凑场景可显示主职务，详细场景可显示全部当前职务。"}
+              </p>
               {isFetchingRoles ? (
                 <div className="flex items-center gap-2 text-sm text-slate-400 py-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -1365,7 +1372,7 @@ export default function AdminSpeakersPage() {
                 </div>
               ) : formRoles.length === 0 ? (
                 <div className="rounded-xl border border-dashed border-slate-300 bg-slate-50 py-4 text-center text-sm text-slate-400">
-                  {locale === "en" ? "No career roles added yet." : "暂无历任职务记录。"}
+                  {locale === "en" ? "No role records yet. You can add multiple current positions." : "暂无职务记录，可添加多个当前职务。"}
                 </div>
               ) : (
                 <div className="space-y-3">

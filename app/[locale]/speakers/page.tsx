@@ -7,6 +7,7 @@ import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Link } from "@/i18n/routing";
+import { getSpeakerDisplayOrganization, getSpeakerDisplayTitle, type SpeakerDisplayRole } from "@/lib/speaker-display";
 
 type Speaker = {
   id: string;
@@ -21,6 +22,7 @@ type Speaker = {
   organizationEn?: string | null;
   bio?: string | null;
   bioEn?: string | null;
+  roles?: SpeakerDisplayRole[] | null;
   isKeynote: boolean;
   isVisible?: boolean;
 };
@@ -117,7 +119,7 @@ export default function SpeakersPage() {
                 </h2>
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {keynoteSpeakers.map((s, i) => (
-                    <SpeakerCard key={s.id} speaker={s} index={i} featured localize={localize} />
+                    <SpeakerCard key={s.id} speaker={s} index={i} featured localize={localize} locale={locale} />
                   ))}
                 </div>
               </div>
@@ -133,7 +135,7 @@ export default function SpeakersPage() {
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {otherSpeakers.map((s, i) => (
-                    <SpeakerCard key={s.id} speaker={s} index={i} localize={localize} />
+                    <SpeakerCard key={s.id} speaker={s} index={i} localize={localize} locale={locale} />
                   ))}
                 </div>
               )}
@@ -150,16 +152,18 @@ function SpeakerCard({
   index,
   featured,
   localize,
+  locale,
 }: {
   speaker: Speaker;
   index: number;
   featured?: boolean;
   localize: (zh?: string | null, en?: string | null) => string;
+  locale: string;
 }) {
   const name = localize(speaker.name, speaker.nameEn);
   const displayName = speaker.salutation ? `${speaker.salutation} ${name}` : name;
-  const title = localize(speaker.title, speaker.titleEn);
-  const org = localize(speaker.organization, speaker.organizationEn);
+  const title = getSpeakerDisplayTitle(speaker, locale, "primary") || localize(speaker.title, speaker.titleEn);
+  const org = getSpeakerDisplayOrganization(speaker, locale, "primary") || localize(speaker.organization, speaker.organizationEn);
   const bio = localize(speaker.bio, speaker.bioEn);
 
   return (

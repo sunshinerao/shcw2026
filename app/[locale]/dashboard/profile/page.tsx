@@ -113,6 +113,29 @@ export default function ProfilePage() {
   const salutationOptions = getLocalizedSalutationOptions(locale === "en" ? "en" : "zh");
   const showIncompleteNotice = searchParams.get("incomplete") === "1" || missingRequiredFields.length > 0;
 
+  const hasMissingField = (field: string) => missingRequiredFields.includes(field);
+
+  const getMissingFieldLabel = (field: string) => {
+    switch (field) {
+      case "name":
+        return t("fields.name");
+      case "title":
+        return t("fields.title");
+      case "country":
+        return t("fields.country");
+      case "organizationName":
+        return t("fields.organizationName");
+      default:
+        return field;
+    }
+  };
+
+  const incompleteMessage = missingRequiredFields.length > 0
+    ? t("messages.profileIncompleteList", {
+        fields: missingRequiredFields.map(getMissingFieldLabel).join(locale === "zh" ? "、" : ", "),
+      })
+    : t("messages.profileIncomplete");
+
   const fetchProfile = useCallback(async () => {
     if (!session?.user) {
       return;
@@ -170,6 +193,29 @@ export default function ProfilePage() {
     const timer = setTimeout(() => setAlert(null), 5000);
     return () => clearTimeout(timer);
   }, [alert]);
+
+  useEffect(() => {
+    if (isProfileLoading || missingRequiredFields.length === 0) {
+      return;
+    }
+
+    const focusOrder = ["name", "organizationName", "country", "title"];
+    const firstMissingField = focusOrder.find((field) => missingRequiredFields.includes(field));
+
+    if (!firstMissingField) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      const target = document.getElementById(firstMissingField);
+      if (target instanceof HTMLElement) {
+        target.focus();
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [isProfileLoading, missingRequiredFields]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -359,12 +405,12 @@ export default function ProfilePage() {
           <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>{t("alerts.error")}</AlertTitle>
-            <AlertDescription>{t("messages.profileIncomplete")}</AlertDescription>
+            <AlertDescription>{incompleteMessage}</AlertDescription>
           </Alert>
         </motion.div>
       )}
 
-      {alert && (
+      {alert && alert.messageKey !== "profileIncomplete" && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
           <Alert variant={alert.type === "error" ? "destructive" : "default"}>
             {alert.type === "success" ? <CheckCircle2 className="h-4 w-4 text-emerald-600" /> : <AlertCircle className="h-4 w-4" />}
@@ -443,11 +489,11 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="name">
+                      <Label htmlFor="name" className={hasMissingField("name") ? "text-red-600" : undefined}>
                         <User className="w-4 h-4 inline mr-1" />
                         {t("fields.name")} *
                       </Label>
-                      <Input id="name" value={profile.name} onChange={(event) => setProfile((previous) => ({ ...previous, name: event.target.value }))} placeholder={t("placeholders.name")} required />
+                      <Input id="name" value={profile.name} onChange={(event) => setProfile((previous) => ({ ...previous, name: event.target.value }))} placeholder={t("placeholders.name")} className={hasMissingField("name") ? "border-red-500 focus-visible:ring-red-500" : undefined} required />
                     </div>
 
                     <div className="space-y-2">
@@ -459,7 +505,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="organizationName">
+                      <Label htmlFor="organizationName" className={hasMissingField("organizationName") ? "text-red-600" : undefined}>
                         <Building2 className="w-4 h-4 inline mr-1" />
                         {t("fields.organizationName")} *
                       </Label>
@@ -468,6 +514,7 @@ export default function ProfilePage() {
                         value={organization.name || ""}
                         onChange={(event) => setOrganization((prev) => ({ ...prev, name: event.target.value }))}
                         placeholder={t("placeholders.organizationName")}
+                        className={hasMissingField("organizationName") ? "border-red-500 focus-visible:ring-red-500" : undefined}
                         required
                       />
                     </div>
@@ -502,7 +549,7 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="country">
+                      <Label htmlFor="country" className={hasMissingField("country") ? "text-red-600" : undefined}>
                         <Globe className="w-4 h-4 inline mr-1" />
                         {t("fields.country")} *
                       </Label>
@@ -514,7 +561,7 @@ export default function ProfilePage() {
                           setCountrySearch("");
                         }}
                       >
-                        <SelectTrigger id="country">
+                        <SelectTrigger id="country" className={hasMissingField("country") ? "border-red-500 focus:ring-red-500" : undefined}>
                           <SelectValue placeholder={t("placeholders.country")} />
                         </SelectTrigger>
                         <SelectContent>
@@ -543,11 +590,11 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="title">
+                      <Label htmlFor="title" className={hasMissingField("title") ? "text-red-600" : undefined}>
                         <Briefcase className="w-4 h-4 inline mr-1" />
                         {t("fields.title")} *
                       </Label>
-                      <Input id="title" value={profile.title} onChange={(event) => setProfile((previous) => ({ ...previous, title: event.target.value }))} placeholder={t("placeholders.title")} required />
+                      <Input id="title" value={profile.title} onChange={(event) => setProfile((previous) => ({ ...previous, title: event.target.value }))} placeholder={t("placeholders.title")} className={hasMissingField("title") ? "border-red-500 focus-visible:ring-red-500" : undefined} required />
                     </div>
                   </div>
 

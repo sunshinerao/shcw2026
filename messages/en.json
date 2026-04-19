@@ -1223,7 +1223,8 @@
             "profileFailed": "Update failed. Please try again later.",
             "passwordUpdated": "Your password has been changed successfully.",
             "passwordFailed": "Password update failed. Please check your current password.",
-            "profileIncomplete": "Your basic profile is incomplete. Please fill in your name, title, organization name, and country or region, then save. No password change is required."
+            "profileIncomplete": "Your basic profile is incomplete. Please complete the required information and save.",
+            "profileIncompleteList": "Please complete these required fields: {fields}."
         },
         "tabs": {
             "profile": "Basic info",

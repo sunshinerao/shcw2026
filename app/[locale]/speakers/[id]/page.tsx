@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { prisma } from "@/lib/prisma";
+import { getSpeakerDisplayPairs, getSpeakerDisplayTitle, getSpeakerDisplayOrganization } from "@/lib/speaker-display";
 
 function localize(locale: string, zh?: string | null, en?: string | null) {
   return locale === "en" ? en || zh || "" : zh || en || "";
@@ -178,8 +179,9 @@ export default async function SpeakerProfilePage({
 
   const displayName = localize(locale, speaker.name, speaker.nameEn);
   const headingName = speaker.salutation ? `${speaker.salutation} ${displayName}` : displayName;
-  const title = localize(locale, speaker.title, speaker.titleEn);
-  const organization = localize(locale, speaker.organization, speaker.organizationEn);
+  const title = getSpeakerDisplayTitle(speaker, locale, "primary") || localize(locale, speaker.title, speaker.titleEn);
+  const organization = getSpeakerDisplayOrganization(speaker, locale, "primary") || localize(locale, speaker.organization, speaker.organizationEn);
+  const currentRolePairs = getSpeakerDisplayPairs(speaker, locale, "allCurrent");
   const biography = localize(locale, speaker.bio, speaker.bioEn);
   // Use explicit summary if available, otherwise fall back to the first 160 chars of bio
   const summaryRaw = localize(locale, speaker.summary, speaker.summaryEn) || biography;
@@ -423,7 +425,14 @@ export default async function SpeakerProfilePage({
               <div className="mt-5 space-y-4">
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{copy.roleLabel}</p>
-                  <p className="mt-2 text-base font-semibold text-slate-900">{title}</p>
+                  <div className="mt-2 space-y-2">
+                    {currentRolePairs.length > 0 ? currentRolePairs.map((role, index) => (
+                      <div key={`${speaker.id}-current-role-${index}`} className="rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200">
+                        <p className="text-base font-semibold text-slate-900">{role.title || title}</p>
+                        {role.organization ? <p className="mt-0.5 text-sm text-slate-500">{role.organization}</p> : null}
+                      </div>
+                    )) : <p className="text-base font-semibold text-slate-900">{title}</p>}
+                  </div>
                 </div>
                 <div className="rounded-2xl bg-slate-50 p-4">
                   <p className="text-xs uppercase tracking-[0.2em] text-slate-400">{copy.orgLabel}</p>

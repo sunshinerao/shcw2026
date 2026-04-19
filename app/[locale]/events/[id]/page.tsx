@@ -44,6 +44,7 @@ import { Link } from "@/i18n/routing";
 import { normalizeAgendaDateKey } from "@/lib/agenda";
 import { buildEventMapLinks } from "@/lib/map-links";
 import { toast } from "sonner";
+import { getSpeakerDisplayMeta, type SpeakerDisplayRole } from "@/lib/speaker-display";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
 
@@ -56,6 +57,7 @@ type AgendaSpeaker = {
   titleEn?: string | null;
   organization: string;
   organizationEn?: string | null;
+  roles?: SpeakerDisplayRole[] | null;
   isKeynote: boolean;
 };
 
@@ -489,13 +491,7 @@ export default function EventDetailPage() {
   const getAgendaSpeakerName = (speaker: AgendaSpeaker) =>
     locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name;
 
-  const getAgendaSpeakerMeta = (speaker: AgendaSpeaker) => {
-    const parts = locale === "en"
-      ? [speaker.titleEn?.trim(), speaker.organizationEn?.trim()].filter(Boolean)
-      : [speaker.title?.trim(), speaker.organization?.trim()].filter(Boolean);
-
-    return parts.join(" · ");
-  };
+  const getAgendaSpeakerMeta = (speaker: AgendaSpeaker) => getSpeakerDisplayMeta(speaker, locale, "allCurrent");
 
   const getAgendaTopic = (item: AgendaItem, speakerId: string) => {
     if (locale === "en") {
@@ -1473,8 +1469,8 @@ export default function EventDetailPage() {
                                             const meta = getAgendaSpeakerMeta(speaker);
                                             const topic = getAgendaTopic(item, speaker.id);
                                             return (
-                                              <div key={speaker.id} className="flex items-start gap-2">
-                                                <Avatar className="mt-0.5 h-5 w-5 shrink-0">
+                                              <div key={speaker.id} className="flex items-center gap-2">
+                                                <Avatar className="h-5 w-5 shrink-0">
                                                   <AvatarImage src={speaker.avatar || undefined} />
                                                   <AvatarFallback className="text-[10px]">
                                                     {name.charAt(0)}
@@ -1502,12 +1498,12 @@ export default function EventDetailPage() {
                                     </div>
                                   )}
                                   {item.moderator && (
-                                    <div className="mt-1 flex items-start gap-2 pl-0">
-                                      <span className="shrink-0 pt-0.5 text-xs text-slate-400">
+                                    <div className="mt-1 flex items-center gap-2 pl-0">
+                                      <span className="shrink-0 text-xs text-slate-400">
                                         {locale === "zh" ? "主持：" : "Host:"}
                                       </span>
-                                      <div className="flex min-w-0 flex-1 items-start gap-2">
-                                        <Avatar className="mt-0.5 h-5 w-5 shrink-0">
+                                      <div className="flex min-w-0 flex-1 items-center gap-2">
+                                        <Avatar className="h-5 w-5 shrink-0">
                                           <AvatarImage src={item.moderator.avatar || undefined} />
                                           <AvatarFallback className="text-[10px]">
                                             {getAgendaSpeakerName(item.moderator).charAt(0)}
