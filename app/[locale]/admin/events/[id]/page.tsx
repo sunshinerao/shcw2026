@@ -715,18 +715,21 @@ export default function EventAgendaPage({
   const downloadCheckinPoster = async () => {
     if (!venueCheckinUrl || !event) return;
 
-    // A4 at 300dpi: 2480 × 3508
-    const W = 2480;
-    const H = 3508;
-    // 1mm = 2480/210 ≈ 11.81px
+    // A4 @ 300 dpi
+    const W = 2480, H = 3508;
+    // CSS mm → canvas px   (210 mm = 2480 px)
     const mm = (v: number) => Math.round(v * W / 210);
-    const canvas = document.createElement("canvas");
-    canvas.width = W;
-    canvas.height = H;
-    const ctx = canvas.getContext("2d")!;
-    const font = (w: string, s: number) => `${w} ${s}px 'PingFang SC', 'Microsoft YaHei', 'Inter', sans-serif`;
+    // CSS px → canvas px   (96 dpi screen → 300 dpi print = ×3.125)
+    const px = (v: number) => Math.round(v * 3.125);
 
-    // --- Background ---
+    const canvas = document.createElement("canvas");
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d")!;
+    ctx.textBaseline = "top";
+    const ft = (w: string, s: number) =>
+      `${w} ${s}px 'PingFang SC','Microsoft YaHei','Inter',sans-serif`;
+
+    /* ── background ── */
     const bg = ctx.createLinearGradient(0, 0, 0, H);
     bg.addColorStop(0, "#08111f");
     bg.addColorStop(0.45, "#0b172c");
@@ -734,11 +737,10 @@ export default function EventAgendaPage({
     ctx.fillStyle = bg;
     ctx.fillRect(0, 0, W, H);
 
-    // Radial glows (matching CSS radial-gradient)
-    const drawRadial = (cx: number, cy: number, r: number, color: string) => {
+    const drawRadial = (cx: number, cy: number, r: number, c: string) => {
       const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      g.addColorStop(0, color);
-      g.addColorStop(0.6, color.replace(/[\d.]+\)$/, "0.03)"));
+      g.addColorStop(0, c);
+      g.addColorStop(0.6, c.replace(/[\d.]+\)$/, "0.03)"));
       g.addColorStop(1, "transparent");
       ctx.fillStyle = g;
       ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
@@ -747,37 +749,40 @@ export default function EventAgendaPage({
     drawRadial(W * 0.85, H * 0.18, mm(55), "rgba(34,197,94,0.18)");
     drawRadial(W * 0.50, H * 0.82, mm(60), "rgba(14,165,233,0.16)");
 
-    // Grid overlay (28px CSS ≈ mm(2.4))
-    const gridStep = mm(2.4);
-    ctx.strokeStyle = "rgba(255,255,255,0.04)";
-    ctx.lineWidth = 1;
+    /* ── grid (28 CSS-px, opacity 0.22) ── */
+    const gridStep = px(28);
+    ctx.save(); ctx.globalAlpha = 0.22;
+    ctx.strokeStyle = "rgba(255,255,255,0.05)"; ctx.lineWidth = 1;
     for (let gx = 0; gx < W; gx += gridStep) {
       ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
     }
     for (let gy = 0; gy < H; gy += gridStep) {
       ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
     }
+    ctx.restore();
 
-    // Decorative orbs
-    drawRadial(W + mm(-45), mm(-60) + mm(90), mm(90), "rgba(34,197,94,0.15)");
-    drawRadial(mm(-20) + mm(60), H - mm(35), mm(60), "rgba(56,189,248,0.12)");
+    /* ── orbs ── */
+    drawRadial(W + mm(-45), mm(30), mm(90), "rgba(34,197,94,0.15)");
+    drawRadial(mm(40), H + mm(-35), mm(60), "rgba(56,189,248,0.12)");
 
-    // Rounded rect helper
-    const drawPill = (x: number, py: number, pw: number, ph: number, r: number) => {
+    /* ── helpers ── */
+    const pill = (x: number, y2: number, w: number, h: number, r: number) => {
       ctx.beginPath();
-      ctx.moveTo(x + r, py); ctx.lineTo(x + pw - r, py);
-      ctx.arcTo(x + pw, py, x + pw, py + r, r);
-      ctx.lineTo(x + pw, py + ph - r);
-      ctx.arcTo(x + pw, py + ph, x + pw - r, py + ph, r);
-      ctx.lineTo(x + r, py + ph);
-      ctx.arcTo(x, py + ph, x, py + ph - r, r);
-      ctx.lineTo(x, py + r);
-      ctx.arcTo(x, py, x + r, py, r);
+      ctx.moveTo(x + r, y2); ctx.lineTo(x + w - r, y2);
+      ctx.arcTo(x + w, y2, x + w, y2 + r, r);
+      ctx.lineTo(x + w, y2 + h - r);
+      ctx.arcTo(x + w, y2 + h, x + w - r, y2 + h, r);
+      ctx.lineTo(x + r, y2 + h);
+      ctx.arcTo(x, y2 + h, x, y2 + h - r, r);
+      ctx.lineTo(x, y2 + r);
+      ctx.arcTo(x, y2, x + r, y2, r);
       ctx.closePath();
     };
 
-    // Text wrap helper (wraps at word/char boundary, returns final y)
-    const wrapTextAt = (text: string, tx: number, ty: number, maxW: number, lineH: number): number => {
+    // draw wrapped text (textBaseline = top), returns y after last line
+    const drawWrapped = (
+      text: string, tx: number, ty: number, maxW: number, lineH: number,
+    ): number => {
       let line = "";
       for (const ch of text.split("")) {
         if (ctx.measureText(line + ch).width > maxW) {
@@ -788,256 +793,351 @@ export default function EventAgendaPage({
       return ty;
     };
 
-    // Layout constants (from CSS mm units)
-    const padLeft = mm(16);    // padding: 16mm sides
-    const padRight = mm(16);
-    const padTop = mm(18);     // padding: 18mm top
-    const contentW = W - padLeft - padRight; // 178mm
-    let y = padTop;
+    // measure wrapped height without drawing
+    const measureWrapped = (
+      text: string, maxW: number, lineH: number,
+    ): number => {
+      let line = "", h = 0;
+      for (const ch of text.split("")) {
+        if (ctx.measureText(line + ch).width > maxW) { h += lineH; line = ch; }
+        else { line += ch; }
+      }
+      if (line) h += lineH;
+      return h;
+    };
 
-    // ===== TAG =====
-    const tagText = "Climate Check-in · Event Access";
-    ctx.font = font("500", mm(1.4));
-    const tagTW = ctx.measureText(tagText).width + mm(4);
-    const tagH = mm(3.2);
+    // draw wrapped text centered (textAlign must be "center")
+    const drawCenteredWrapped = (
+      text: string, cx: number, ty: number, maxW: number, lineH: number,
+    ): number => {
+      const lines: string[] = [];
+      let line = "";
+      for (const ch of text.split("")) {
+        if (ctx.measureText(line + ch).width > maxW) { lines.push(line); line = ch; }
+        else { line += ch; }
+      }
+      if (line) lines.push(line);
+      for (const l of lines) { ctx.fillText(l, cx, ty); ty += lineH; }
+      return ty;
+    };
+
+    /* ── layout constants (CSS: padding 18mm 16mm 22mm) ── */
+    const pL = mm(16), pR = mm(16), pT = mm(18), pB = mm(22);
+    const cW = W - pL - pR; // 178 mm
+    let y = pT;
+
+    /* ========== TAG ========== */
+    const tagFs = px(12);
+    const tagPadX = px(14), tagPadY = px(7);
+    const dotR = px(4); // radius = half of 8 px dot
+    const tagGapX = px(10);
+    ctx.font = ft("500", tagFs);
+    const tagLabel = "CLIMATE CHECK-IN \u00B7 EVENT ACCESS";
+    const tagTextW = ctx.measureText(tagLabel).width;
+    const tagW = tagPadX + dotR * 2 + tagGapX + tagTextW + tagPadX;
+    const tagH = tagPadY * 2 + tagFs;
+
     ctx.fillStyle = "rgba(255,255,255,0.06)";
     ctx.strokeStyle = "rgba(255,255,255,0.16)";
-    ctx.lineWidth = 2;
-    drawPill(padLeft, y, tagTW, tagH, tagH / 2);
+    ctx.lineWidth = px(1);
+    pill(pL, y, tagW, tagH, tagH / 2);
     ctx.fill(); ctx.stroke();
-    // Dot
-    const dotGrad = ctx.createLinearGradient(padLeft + mm(1.2), y + tagH / 2 - mm(0.5), padLeft + mm(2), y + tagH / 2 + mm(0.5));
-    dotGrad.addColorStop(0, "#4ade80"); dotGrad.addColorStop(1, "#38bdf8");
-    ctx.fillStyle = dotGrad;
-    ctx.beginPath(); ctx.arc(padLeft + mm(1.8), y + tagH / 2, mm(0.5), 0, Math.PI * 2); ctx.fill();
+
+    // dot
+    const dotCx = pL + tagPadX + dotR;
+    const dotCy = y + tagH / 2;
+    const dg = ctx.createLinearGradient(dotCx - dotR, dotCy - dotR, dotCx + dotR, dotCy + dotR);
+    dg.addColorStop(0, "#4ade80"); dg.addColorStop(1, "#38bdf8");
+    ctx.fillStyle = dg;
+    ctx.save();
+    ctx.shadowColor = "rgba(74,222,128,0.6)"; ctx.shadowBlur = px(12);
+    ctx.beginPath(); ctx.arc(dotCx, dotCy, dotR, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+
+    // tag text
     ctx.fillStyle = "rgba(255,255,255,0.88)";
-    ctx.font = font("500", mm(1.4));
-    ctx.fillText(tagText, padLeft + mm(3.2), y + tagH / 2 + mm(0.5));
+    ctx.font = ft("500", tagFs);
+    ctx.fillText(tagLabel, pL + tagPadX + dotR * 2 + tagGapX, y + (tagH - tagFs) / 2);
+    y += tagH;
 
-    // ===== HEADLINE (margin-top: 16mm) =====
-    y += tagH + mm(16);
-    // CN line 1: 27px CSS → mm(3.2)
+    /* ========== HEADLINE (margin-top: 16 mm) ========== */
+    y += mm(16);
+
+    // headline-cn: 27 px, line-height 1.24, weight 700
+    const hCnFs = px(27), hCnLh = Math.round(px(27) * 1.24);
     ctx.fillStyle = "#ffffff";
-    ctx.font = font("700", mm(3.2));
-    ctx.fillText("扫码签到，留下您的气候足迹", padLeft, y);
-    // CN strong: margin-top 8px → mm(1), font 41px → mm(4.8)
-    y += mm(5.2);
-    ctx.font = font("800", mm(4.8));
-    const headGrad = ctx.createLinearGradient(padLeft, y, padLeft + mm(80), y);
-    headGrad.addColorStop(0, "#ffffff");
-    headGrad.addColorStop(0.38, "#c7f9d4");
-    headGrad.addColorStop(1, "#a5f3fc");
-    ctx.fillStyle = headGrad;
-    ctx.fillText("开启您的气候之旅", padLeft, y);
+    ctx.font = ft("700", hCnFs);
+    ctx.fillText("\u626B\u7801\u7B7E\u5230\uFF0C\u7559\u4E0B\u60A8\u7684\u6C14\u5019\u8DB3\u8FF9", pL, y);
+    y += hCnLh;
 
-    // EN headline: margin-top 10px → mm(1.2), font 17px → mm(2)
-    y += mm(6);
+    // headline-cn strong: margin-top 8 px, 41 px, line-height 1.14
+    y += px(8);
+    const hBigFs = px(41), hBigLh = Math.round(px(41) * 1.14);
+    ctx.font = ft("800", hBigFs);
+    const hGrad = ctx.createLinearGradient(pL, y, pL + mm(80), y);
+    hGrad.addColorStop(0, "#ffffff");
+    hGrad.addColorStop(0.38, "#c7f9d4");
+    hGrad.addColorStop(1, "#a5f3fc");
+    ctx.fillStyle = hGrad;
+    ctx.fillText("\u5F00\u542F\u60A8\u7684\u6C14\u5019\u4E4B\u65C5", pL, y);
+    y += hBigLh;
+
+    // headline-en: margin-top 10 px, 17 px, line-height 1.65
+    y += px(10);
+    const hEnFs = px(17), hEnLh = Math.round(px(17) * 1.65);
     ctx.fillStyle = "rgba(255,255,255,0.8)";
-    ctx.font = font("500", mm(2));
-    ctx.fillText("Scan to check in, leave your climate footprint,", padLeft, y);
-    y += mm(3.2);
-    ctx.fillText("and begin your climate journey.", padLeft, y);
+    ctx.font = ft("500", hEnFs);
+    y = drawWrapped(
+      "Scan to check in, leave your climate footprint, and begin your climate journey.",
+      pL, y, cW, hEnLh,
+    );
 
-    // ===== SUBTEXT (margin-top: 12mm) =====
+    /* ========== SUBTEXT (margin-top: 12 mm, gap: 10 px) ========== */
     y += mm(12);
-    // CN: font 14px → mm(1.65), line-height 1.9 → lineH = mm(3.1)
-    ctx.fillStyle = "rgba(255,255,255,0.84)";
-    ctx.font = font("400", mm(1.65));
-    const subCn = "欢迎来到本场活动。完成签到后，系统将为您记录本次参与行为，创建本场活动证书，并持续积累您的气候信用，沉淀成为您个人\u201C气候护照\u201D的重要行动记录。";
-    y = wrapTextAt(subCn, padLeft, y, contentW, mm(3.1));
-    // EN: gap 10px → mm(1.2), font 13.5px → mm(1.6)
-    y += mm(1.2);
-    ctx.fillStyle = "rgba(255,255,255,0.72)";
-    ctx.font = font("400", mm(1.6));
-    const subEn = "Welcome to this event. After check-in, your participation will be recorded in the system, an event certificate will be created for you, and your climate credit will continue to accumulate as part of your personal Climate Passport journey.";
-    y = wrapTextAt(subEn, padLeft, y, contentW, mm(2.8));
 
-    // ===== FEATURE CARDS (margin-top: 10mm) =====
+    // subtext-cn: 14 px, line-height 1.9
+    const sCnFs = px(14), sCnLh = Math.round(px(14) * 1.9);
+    ctx.fillStyle = "rgba(255,255,255,0.84)";
+    ctx.font = ft("400", sCnFs);
+    y = drawWrapped(
+      "\u6B22\u8FCE\u6765\u5230\u672C\u573A\u6D3B\u52A8\u3002\u5B8C\u6210\u7B7E\u5230\u540E\uFF0C\u7CFB\u7EDF\u5C06\u4E3A\u60A8\u8BB0\u5F55\u672C\u6B21\u53C2\u4E0E\u884C\u4E3A\uFF0C\u521B\u5EFA\u672C\u573A\u6D3B\u52A8\u8BC1\u4E66\uFF0C\u5E76\u6301\u7EED\u79EF\u7D2F\u60A8\u7684\u6C14\u5019\u4FE1\u7528\uFF0C\u6C89\u6DC0\u6210\u4E3A\u60A8\u4E2A\u4EBA\u201C\u6C14\u5019\u62A4\u7167\u201D\u7684\u91CD\u8981\u884C\u52A8\u8BB0\u5F55\u3002",
+      pL, y, cW, sCnLh,
+    );
+
+    // subtext-en: 13.5 px, line-height 1.9
+    y += px(10);
+    const sEnFs = px(13.5), sEnLh = Math.round(px(13.5) * 1.9);
+    ctx.fillStyle = "rgba(255,255,255,0.72)";
+    ctx.font = ft("400", sEnFs);
+    y = drawWrapped(
+      "Welcome to this event. After check-in, your participation will be recorded in the system, an event certificate will be created for you, and your climate credit will continue to accumulate as part of your personal Climate Passport journey.",
+      pL, y, cW, sEnLh,
+    );
+
+    /* ========== FEATURE ROW (margin-top: 10 mm, gap: 10 px) ========== */
     y += mm(10);
-    const featureGap = mm(1.2); // gap: 10px CSS
-    const featureW = (contentW - featureGap * 2) / 3;
-    const featureH = mm(10); // min-height: 82px CSS
-    const featurePad = mm(1.4); // padding
+
+    const fGap = px(10);
+    const fW = Math.floor((cW - fGap * 2) / 3);
+    const fPx2 = px(14), fPy2 = px(12);
+    const fBr = px(18);
+    const fLabelFs = px(11);
+    const fCnFs = px(16);
+    const fEnFs = px(12), fEnLh = Math.round(px(12) * 1.6);
+
     const features = [
-      { label: "CHECK-IN", cn: "现场扫码签到", en: "Scan on-site for verified event check-in" },
-      { label: "CERTIFICATE", cn: "自动生成活动证书", en: "Generate your event certificate automatically" },
-      { label: "CLIMATE CREDIT", cn: "积累个人气候信用", en: "Build your personal climate credit record" },
+      { label: "CHECK-IN", cn: "\u73B0\u573A\u626B\u7801\u7B7E\u5230", en: "Scan on-site for verified event check-in" },
+      { label: "CERTIFICATE", cn: "\u751F\u6210\u6D3B\u52A8\u8BC1\u4E66", en: "Generate your event certificate automatically" },
+      { label: "CLIMATE CREDIT", cn: "\u79EF\u7D2F\u4E2A\u4EBA\u6C14\u5019\u4FE1\u7528", en: "Build your personal climate credit record" },
     ];
+
+    // determine card height (use tallest)
+    let fH = px(82); // min-height
+    features.forEach((f) => {
+      ctx.font = ft("400", fEnFs);
+      const enH = measureWrapped(f.en, fW - fPx2 * 2, fEnLh);
+      const ch = fPy2 + fLabelFs + px(8) + fCnFs + px(4) + enH + fPy2;
+      if (ch > fH) fH = ch;
+    });
+
     features.forEach((f, i) => {
-      const fx = padLeft + i * (featureW + featureGap);
+      const fx = pL + i * (fW + fGap);
       ctx.fillStyle = "rgba(255,255,255,0.06)";
       ctx.strokeStyle = "rgba(255,255,255,0.12)";
-      ctx.lineWidth = 2;
-      drawPill(fx, y, featureW, featureH, mm(2.2));
-      ctx.fill(); ctx.stroke();
-      // Label
+      ctx.lineWidth = px(1);
+      pill(fx, y, fW, fH, fBr); ctx.fill(); ctx.stroke();
+
+      let fy = y + fPy2;
       ctx.fillStyle = "rgba(255,255,255,0.55)";
-      ctx.font = font("500", mm(1.3));
-      ctx.fillText(f.label, fx + featurePad, y + mm(2.4));
-      // CN value
+      ctx.font = ft("500", fLabelFs);
+      ctx.fillText(f.label, fx + fPx2, fy);
+      fy += fLabelFs + px(8);
+
       ctx.fillStyle = "rgba(255,255,255,0.95)";
-      ctx.font = font("600", mm(1.9));
-      ctx.fillText(f.cn, fx + featurePad, y + mm(5.2));
-      // EN value
+      ctx.font = ft("600", fCnFs);
+      ctx.fillText(f.cn, fx + fPx2, fy);
+      fy += fCnFs + px(4);
+
       ctx.fillStyle = "rgba(255,255,255,0.66)";
-      ctx.font = font("400", mm(1.4));
-      // Wrap EN text within card
-      const enMaxW = featureW - featurePad * 2;
-      let ey = y + mm(7.4);
-      let eLine = "";
-      for (const ch of f.en.split("")) {
-        if (ctx.measureText(eLine + ch).width > enMaxW) {
-          ctx.fillText(eLine, fx + featurePad, ey); ey += mm(1.9); eLine = ch;
-        } else { eLine += ch; }
-      }
-      if (eLine) ctx.fillText(eLine, fx + featurePad, ey);
+      ctx.font = ft("400", fEnFs);
+      drawWrapped(f.en, fx + fPx2, fy, fW - fPx2 * 2, fEnLh);
     });
 
-    // ===== BOTTOM SECTION (margin-top: auto → anchored to bottom) =====
-    // Footer sits at bottom 10mm = mm(10)
-    const footerY = H - mm(10);
-    // Bottom section: sits above footer with some gap
-    // CSS: .bottom { margin-top: auto; grid-template-columns: 1.1fr 0.9fr; gap: 14mm; }
-    // QR panel max-width: 56mm
-    const bottomGap = mm(14);
-    const qrPanelW = mm(56);
-    const stepsW = contentW - qrPanelW - bottomGap;
-    const stepsX = padLeft;
-    const qrPanelX = padLeft + stepsW + bottomGap;
+    y += fH; // y = bottom of feature row
 
-    // Calculate bottom section height: position it so it ends ~mm(18) above footer
-    const bottomEndY = footerY - mm(8);
+    /* ==========================================================
+       BOTTOM SECTION  (margin-top: auto → anchored to bottom)
+       grid: 1fr auto | gap 14 mm | align-items: stretch
+       ========================================================== */
+    const bottomEdge = H - pB; // content padding-bottom: 22 mm
+    const bGap = mm(14);
+    const qrPW = mm(56);
+    const stW = cW - qrPW - bGap;
+    const stX = pL;
+    const qrPX = pL + stW + bGap;
 
-    // Steps panel height: determined by content. ~mm(62) based on HTML
-    // QR panel: padding 12px, qr + text ~= mm(58)
-    const qrPanelH = mm(60);
-    // Steps height = max(steps content, qrPanelH)
-    const stepsH = qrPanelH;
+    /* --- measure QR panel content height --- */
+    const qrPad = px(12);
+    const qrBoxSz = mm(44); // max-width: 44 mm, aspect-ratio 1
+    const qrNoteMt = px(12);
+    const qrTitleFs = px(18);
+    const qrNoteCnFs = px(13), qrNoteCnLh = Math.round(px(13) * 1.6);
+    const qrNoteEnFs = px(11.5), qrNoteEnLh = Math.round(px(11.5) * 1.6);
+    const qrNoteGap = px(4);
+    const qrNoteMaxW = qrPW - qrPad * 2;
+    ctx.font = ft("400", qrNoteCnFs);
+    const qrCnTextH = measureWrapped("\u5B8C\u6210\u7B7E\u5230\uFF0C\u7559\u4E0B\u60A8\u53EF\u4FE1\u7684\u6C14\u5019\u884C\u52A8\u8BB0\u5F55", qrNoteMaxW, qrNoteCnLh);
+    ctx.font = ft("400", qrNoteEnFs);
+    const qrEnTextH = measureWrapped(
+      "Scan to check in and start building your verified climate footprint.", qrNoteMaxW, qrNoteEnLh,
+    );
+    const qrContentH = qrPad + qrBoxSz + qrNoteMt + qrTitleFs + qrNoteGap + qrCnTextH + qrNoteGap + qrEnTextH + qrPad;
 
-    // Align bottom of both panels
-    const bottomY = bottomEndY - Math.max(stepsH, qrPanelH);
+    /* --- measure steps content height --- */
+    const stPadY = px(16), stPadX = px(18);
+    const stTitleFs = px(13), stTitleMb = px(14);
+    const stNumSz = px(28), stNumGap = px(12);
+    const stCnFs = px(14), stCnLh = Math.round(px(14) * 1.7);
+    const stEnFs = px(12), stEnLh2 = Math.round(px(12) * 1.6);
+    const stMb = px(14);
+    const stTextMaxW = stW - stPadX * 2 - stNumSz - stNumGap;
 
-    // Steps card
-    ctx.fillStyle = "rgba(255,255,255,0.06)";
-    ctx.strokeStyle = "rgba(255,255,255,0.12)";
-    ctx.lineWidth = 2;
-    drawPill(stepsX, bottomY, stepsW, stepsH, mm(2.8));
-    ctx.fill(); ctx.stroke();
-
-    // Steps title
-    ctx.fillStyle = "rgba(255,255,255,0.62)";
-    ctx.font = font("500", mm(1.5));
-    ctx.fillText("How it works · 签到流程", stepsX + mm(2.2), bottomY + mm(3.4));
-
-    const steps = [
-      { cn: "使用手机扫描右侧二维码，进入活动签到页面。", en: "Use your phone to scan the QR code and enter the event check-in page." },
-      { cn: "完成签到后，您的参与记录将与个人气候护照关联。", en: "Once completed, your participation record will be linked to your personal Climate Passport." },
-      { cn: "活动结束后，您将获得本场活动证书，并沉淀可持续行动信用。", en: "After the event, you will receive an event certificate and accumulate verified sustainability action credit." },
+    const stepsData = [
+      { cn: "\u4F7F\u7528\u624B\u673A\u626B\u63CF\u53F3\u4FA7\u4E8C\u7EF4\u7801\uFF0C\u8FDB\u5165\u6D3B\u52A8\u7B7E\u5230\u9875\u9762\u3002", en: "Use your phone to scan the QR code and enter the event check-in page." },
+      { cn: "\u5B8C\u6210\u7B7E\u5230\u540E\uFF0C\u60A8\u7684\u53C2\u4E0E\u8BB0\u5F55\u5C06\u4E0E\u4E2A\u4EBA\u6C14\u5019\u62A4\u7167\u5173\u8054\u3002", en: "Once completed, your participation record will be linked to your personal Climate Passport." },
+      { cn: "\u6D3B\u52A8\u7ED3\u675F\u540E\uFF0C\u60A8\u5C06\u83B7\u5F97\u672C\u573A\u6D3B\u52A8\u8BC1\u4E66\uFF08\u901A\u8FC7\u7535\u5B50\u90AE\u4EF6\uFF09\uFF0C\u5E76\u6C89\u6DC0\u53EF\u6301\u7EED\u884C\u52A8\u4FE1\u7528\u3002", en: "After the event, you will receive an event certificate (Email) and accumulate verified sustainability action credit." },
     ];
 
-    let sy = bottomY + mm(7);
-    const stepTextX = stepsX + mm(6.6);
-    const stepTextMaxW = stepsW - mm(9);
-    steps.forEach((s, i) => {
-      // Number circle (28px CSS → mm(3.3))
-      const circR = mm(1.6);
-      const numGrad = ctx.createLinearGradient(stepsX + mm(2.2), sy, stepsX + mm(5), sy);
-      numGrad.addColorStop(0, "#4ade80"); numGrad.addColorStop(1, "#38bdf8");
-      ctx.fillStyle = numGrad;
-      ctx.beginPath(); ctx.arc(stepsX + mm(3.6), sy + circR, circR, 0, Math.PI * 2); ctx.fill();
+    let stepsH = stPadY + stTitleFs + stTitleMb;
+    stepsData.forEach((s, i) => {
+      ctx.font = ft("400", stCnFs);
+      const cnH = measureWrapped(s.cn, stTextMaxW, stCnLh);
+      ctx.font = ft("400", stEnFs);
+      const enH = measureWrapped(s.en, stTextMaxW, stEnLh2);
+      stepsH += Math.max(stNumSz, cnH + enH);
+      if (i < stepsData.length - 1) stepsH += stMb;
+    });
+    stepsH += stPadY;
+
+    /* panel height = tallest of the two */
+    const panelH = Math.max(stepsH, qrContentH);
+    const bottomTop = bottomEdge - panelH;
+
+    /* --- steps card --- */
+    const stGrad = ctx.createLinearGradient(stX, bottomTop, stX, bottomTop + panelH);
+    stGrad.addColorStop(0, "rgba(255,255,255,0.08)");
+    stGrad.addColorStop(1, "rgba(255,255,255,0.04)");
+    ctx.fillStyle = stGrad;
+    ctx.strokeStyle = "rgba(255,255,255,0.12)";
+    ctx.lineWidth = px(1);
+    pill(stX, bottomTop, stW, panelH, px(24));
+    ctx.fill(); ctx.stroke();
+
+    // steps content (justify-content: flex-end → offset from bottom)
+    let sy = bottomTop + panelH - stepsH + stPadY;
+    ctx.fillStyle = "rgba(255,255,255,0.62)";
+    ctx.font = ft("500", stTitleFs);
+    ctx.fillText("HOW IT WORKS \u00B7 \u7B7E\u5230\u6D41\u7A0B", stX + stPadX, sy);
+    sy += stTitleFs + stTitleMb;
+
+    stepsData.forEach((s, i) => {
+      const numCx = stX + stPadX + stNumSz / 2;
+      const numCy = sy + stNumSz / 2;
+      const ng = ctx.createLinearGradient(
+        numCx - stNumSz / 2, numCy - stNumSz / 2,
+        numCx + stNumSz / 2, numCy + stNumSz / 2,
+      );
+      ng.addColorStop(0, "#4ade80"); ng.addColorStop(1, "#38bdf8");
+      ctx.fillStyle = ng;
+      ctx.beginPath(); ctx.arc(numCx, numCy, stNumSz / 2, 0, Math.PI * 2); ctx.fill();
+
+      const numFs = px(13);
       ctx.fillStyle = "#04111d";
-      ctx.font = font("700", mm(1.5));
+      ctx.font = ft("700", numFs);
       ctx.textAlign = "center";
-      ctx.fillText(String(i + 1), stepsX + mm(3.6), sy + circR + mm(0.55));
+      ctx.fillText(String(i + 1), numCx, numCy - numFs / 2);
       ctx.textAlign = "start";
 
-      // CN text: font 14px → mm(1.65), line-height 1.7
+      const textX = stX + stPadX + stNumSz + stNumGap;
       ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.font = font("400", mm(1.65));
-      sy = wrapTextAt(s.cn, stepTextX, sy + mm(0.4), stepTextMaxW, mm(2.8));
-      // EN text: font 12px → mm(1.4), line-height 1.6
+      ctx.font = ft("400", stCnFs);
+      let ty = drawWrapped(s.cn, textX, sy, stTextMaxW, stCnLh);
       ctx.fillStyle = "rgba(255,255,255,0.62)";
-      ctx.font = font("400", mm(1.4));
-      sy = wrapTextAt(s.en, stepTextX, sy + mm(0.2), stepTextMaxW, mm(2.4));
-      sy += mm(1.6); // margin-bottom: 14px
+      ctx.font = ft("400", stEnFs);
+      ty = drawWrapped(s.en, textX, ty, stTextMaxW, stEnLh2);
+      sy = Math.max(sy + stNumSz, ty);
+      if (i < stepsData.length - 1) sy += stMb;
     });
 
-    // QR panel (white card, align-self: end → bottom aligned)
-    const qrPanelY = bottomEndY - qrPanelH;
-    ctx.fillStyle = "rgba(255,255,255,0.96)";
+    /* --- QR panel (white card, align-items: stretch) --- */
     ctx.save();
     ctx.shadowColor = "rgba(0,0,0,0.25)";
-    ctx.shadowBlur = mm(3);
-    ctx.shadowOffsetY = mm(1.5);
-    drawPill(qrPanelX, qrPanelY, qrPanelW, qrPanelH, mm(2.6));
+    ctx.shadowBlur = px(36); ctx.shadowOffsetY = px(18);
+    ctx.fillStyle = "rgba(255,255,255,0.96)";
+    pill(qrPX, bottomTop, qrPW, panelH, px(22));
     ctx.fill();
     ctx.restore();
 
-    // QR code
-    const qrSize = mm(36);
-    const qrX = qrPanelX + (qrPanelW - qrSize) / 2;
-    const qrY = qrPanelY + mm(2);
-    // White border + outline
+    // QR content (justify-content: flex-end → offset from bottom)
+    let qy = bottomTop + panelH - qrContentH + qrPad;
+
+    // qr-box: 44 mm, border 8 px, border-radius 16 px
+    const qrBorder = px(8);
+    const qrImgSz = qrBoxSz - qrBorder * 2;
+    const qrBoxX = qrPX + (qrPW - qrBoxSz) / 2;
     ctx.fillStyle = "#ffffff";
-    drawPill(qrX - mm(1), qrY, qrSize + mm(2), qrSize + mm(2), mm(1.8));
-    ctx.fill();
-    ctx.strokeStyle = "rgba(15,23,42,0.08)";
-    ctx.lineWidth = 2;
-    drawPill(qrX - mm(1), qrY, qrSize + mm(2), qrSize + mm(2), mm(1.8));
-    ctx.stroke();
+    pill(qrBoxX, qy, qrBoxSz, qrBoxSz, px(16)); ctx.fill();
+    ctx.strokeStyle = "rgba(15,23,42,0.08)"; ctx.lineWidth = px(1);
+    pill(qrBoxX, qy, qrBoxSz, qrBoxSz, px(16)); ctx.stroke();
 
     const qrDataUrl = await QRCode.toDataURL(venueCheckinUrl, {
-      width: qrSize,
-      margin: 1,
+      width: qrImgSz, margin: 1,
       color: { dark: "#0f172a", light: "#ffffff" },
     });
     const qrImg = await new Promise<HTMLImageElement>((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(img);
-      img.src = qrDataUrl;
+      const img = new Image(); img.onload = () => resolve(img); img.src = qrDataUrl;
     });
-    ctx.drawImage(qrImg, qrX, qrY + mm(1), qrSize, qrSize);
+    ctx.drawImage(qrImg, qrBoxX + qrBorder, qy + qrBorder, qrImgSz, qrImgSz);
+    qy += qrBoxSz + qrNoteMt;
 
-    // QR panel text
-    const qrCenterX = qrPanelX + qrPanelW / 2;
-    let qrTextY = qrY + qrSize + mm(4.5);
+    // qr-note (text-align: center)
     ctx.textAlign = "center";
-    // "请扫码签到": font 18px → mm(2.1)
+    const qrCenterX = qrPX + qrPW / 2;
+
     ctx.fillStyle = "#0f172a";
-    ctx.font = font("700", mm(2.1));
-    ctx.fillText("请扫码签到", qrCenterX, qrTextY);
-    qrTextY += mm(3.6);
-    // CN subtitle: 13px → mm(1.5)
+    ctx.font = ft("700", qrTitleFs);
+    ctx.fillText("\u8BF7\u626B\u7801\u7B7E\u5230", qrCenterX, qy);
+    qy += qrTitleFs + qrNoteGap;
+
     ctx.fillStyle = "#1e293b";
-    ctx.font = font("400", mm(1.5));
-    ctx.fillText("完成签到，留下您可信的", qrCenterX, qrTextY);
-    qrTextY += mm(2.4);
-    ctx.fillText("气候行动记录", qrCenterX, qrTextY);
-    qrTextY += mm(3);
-    // EN subtitle: 11.5px → mm(1.35)
+    ctx.font = ft("400", qrNoteCnFs);
+    qy = drawCenteredWrapped(
+      "\u5B8C\u6210\u7B7E\u5230\uFF0C\u7559\u4E0B\u60A8\u53EF\u4FE1\u7684\u6C14\u5019\u884C\u52A8\u8BB0\u5F55",
+      qrCenterX, qy, qrNoteMaxW, qrNoteCnLh,
+    );
+    qy += qrNoteGap;
+
     ctx.fillStyle = "#475569";
-    ctx.font = font("400", mm(1.35));
-    ctx.fillText("Scan to check in and start building", qrCenterX, qrTextY);
-    qrTextY += mm(2.2);
-    ctx.fillText("your verified climate footprint.", qrCenterX, qrTextY);
+    ctx.font = ft("400", qrNoteEnFs);
+    drawCenteredWrapped(
+      "Scan to check in and start building your verified climate footprint.",
+      qrCenterX, qy, qrNoteMaxW, qrNoteEnLh,
+    );
     ctx.textAlign = "start";
 
-    // ===== FOOTER (position: absolute; bottom: 10mm) =====
+    /* ========== FOOTER (position: absolute; bottom: 6 mm) ========== */
+    const footerFs = px(10.5);
+    ctx.textBaseline = "bottom";
     ctx.fillStyle = "rgba(255,255,255,0.7)";
-    ctx.font = font("600", mm(1.3));
-    ctx.fillText("Climate Passport · Event Check-in Poster", padLeft, footerY);
-    ctx.fillStyle = "rgba(255,255,255,0.45)";
-    ctx.font = font("400", mm(1.2));
-    ctx.textAlign = "right";
-    ctx.fillText("请将此海报打印后张贴在会场入口", W - padRight, footerY - mm(1));
-    ctx.fillText("Print this poster and place it at the venue entrance.", W - padRight, footerY + mm(1.5));
-    ctx.textAlign = "start";
+    ctx.font = ft("600", footerFs);
+    ctx.fillText("CLIMATE PASSPORT \u00B7 EVENT CHECK-IN POSTER", pL, H - mm(6));
+    ctx.textBaseline = "top";
 
-    // Download
+    /* ========== download ========== */
     const eventTitle = (locale === "en" && event.titleEn ? event.titleEn : event.title)
       .replace(/[\\/:*?"<>|]/g, "-").replace(/\s+/g, " ").trim();
     const fileName = locale === "zh"
-      ? `${eventTitle}-现场签到海报.png`
+      ? `${eventTitle}-\u73B0\u573A\u7B7E\u5230\u6D77\u62A5.png`
       : `${eventTitle}-checkin-poster.png`;
     const dataUrl = canvas.toDataURL("image/png");
     const anchor = document.createElement("a");
