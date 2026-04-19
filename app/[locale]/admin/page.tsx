@@ -23,7 +23,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<{ key: string; value: string }[]>([]);
   const [upcomingEvents, setUpcomingEvents] = useState<any[]>([]);
-  const [recentRegistrations, setRecentRegistrations] = useState<any[]>([]);
+  const [recentCheckins, setRecentCheckins] = useState<any[]>([]);
   const [trendData, setTrendData] = useState<{ month: string; count: number }[]>([]);
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
           event: c.event?.title ?? "-",
           time: c.scannedAt,
         }));
-        setRecentRegistrations(recent);
+        setRecentCheckins(recent);
 
         // 注册趋势
         if (trendResult.success) {
@@ -201,7 +201,7 @@ export default function AdminDashboard() {
           </Card>
         </motion.div>
 
-        {/* Recent Registrations */}
+        {/* Recent Check-ins */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -213,9 +213,9 @@ export default function AdminDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {recentRegistrations.length === 0 ? (
+                {recentCheckins.length === 0 ? (
                   <p className="text-sm text-slate-500 text-center py-4">-</p>
-                ) : recentRegistrations.map((reg) => (
+                ) : recentCheckins.map((reg) => (
                   <div key={reg.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50">
                     <div>
                       <p className="font-medium text-slate-900">{reg.user}</p>
