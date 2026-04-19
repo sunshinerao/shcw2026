@@ -1222,7 +1222,8 @@
             "profileUpdated": "Your profile has been updated successfully.",
             "profileFailed": "Update failed. Please try again later.",
             "passwordUpdated": "Your password has been changed successfully.",
-            "passwordFailed": "Password update failed. Please check your current password."
+            "passwordFailed": "Password update failed. Please check your current password.",
+            "profileIncomplete": "Your basic profile is incomplete. Please fill in your name, title, organization name, and country or region, then save. No password change is required."
         },
         "tabs": {
             "profile": "Basic info",
@@ -1234,6 +1235,7 @@
             "email": "Email",
             "phone": "Phone",
             "title": "Title",
+            "organizationName": "Organization name",
             "bio": "Bio",
             "salutation": "Salutation",
             "climatePassportId": "Climate Passport ID",
@@ -1244,6 +1246,7 @@
             "email": "Enter your email",
             "phone": "Enter your phone number",
             "title": "Enter your title",
+            "organizationName": "Enter organization name",
             "bio": "Tell us a bit about yourself...",
             "salutation": "Select salutation",
             "country": "Select country/region"
@@ -1285,7 +1288,7 @@
         },
         "organization": {
             "title": "Organization",
-            "description": "Manage the organization associated with your account.",
+            "description": "Manage additional information for the organization associated with your account.",
             "nameLabel": "Organization name",
             "namePlaceholder": "Enter organization name",
             "industry": "Industry",

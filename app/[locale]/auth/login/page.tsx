@@ -47,6 +47,21 @@ function LoginForm() {
         return;
       }
 
+      try {
+        const profileResponse = await fetch(`/api/user/profile?locale=${locale}`, {
+          cache: "no-store",
+        });
+        const profileData = await profileResponse.json();
+
+        if (profileResponse.ok && profileData.success && !profileData.data?.profileComplete) {
+          router.push(`/${locale}/dashboard/profile?incomplete=1`);
+          router.refresh();
+          return;
+        }
+      } catch {
+        // Ignore profile check errors and continue to the requested page.
+      }
+
       router.push(callbackUrl);
       router.refresh();
     } catch {

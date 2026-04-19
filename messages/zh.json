@@ -1222,7 +1222,8 @@
             "profileUpdated": "个人资料更新成功。",
             "profileFailed": "更新失败，请稍后重试。",
             "passwordUpdated": "密码修改成功。",
-            "passwordFailed": "密码修改失败，请检查当前密码。"
+            "passwordFailed": "密码修改失败，请检查当前密码。",
+            "profileIncomplete": "您的基本信息尚未完善，请补充姓名、职位、机构名称和国别/地区后保存，无需修改密码。"
         },
         "tabs": {
             "profile": "基本信息",
@@ -1234,6 +1235,7 @@
             "email": "邮箱",
             "phone": "电话",
             "title": "职位",
+            "organizationName": "机构名称",
             "bio": "个人简介",
             "salutation": "称谓",
             "climatePassportId": "气候护照ID",
@@ -1244,6 +1246,7 @@
             "email": "请输入邮箱",
             "phone": "请输入电话",
             "title": "请输入职位",
+            "organizationName": "请输入机构名称",
             "bio": "介绍一下自己...",
             "salutation": "请选择称谓",
             "country": "请选择国别/地区"
@@ -1285,7 +1288,7 @@
         },
         "organization": {
             "title": "所属机构",
-            "description": "管理您关联的机构信息。",
+            "description": "管理您关联机构的补充信息。",
             "nameLabel": "机构名称",
             "namePlaceholder": "请输入机构名称",
             "industry": "行业领域",

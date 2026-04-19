@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { motion } from "framer-motion";
 import {
@@ -67,6 +68,8 @@ export default function ProfilePage() {
   const t = useTranslations("dashboardProfilePage");
   const tLayout = useTranslations("dashboardLayout");
   const locale = useLocale();
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, update } = useSession();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -79,6 +82,7 @@ export default function ProfilePage() {
     messageKey: string;
   } | null>(null);
   const [showPassword, setShowPassword] = useState({ current: false, new: false, confirm: false });
+  const [missingRequiredFields, setMissingRequiredFields] = useState<string[]>([]);
   const [profile, setProfile] = useState<UserProfile>({
     id: "",
     name: "",
@@ -107,6 +111,7 @@ export default function ProfilePage() {
   const [phoneArea, setPhoneArea] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const salutationOptions = getLocalizedSalutationOptions(locale === "en" ? "en" : "zh");
+  const showIncompleteNotice = searchParams.get("incomplete") === "1" || missingRequiredFields.length > 0;
 
   const fetchProfile = useCallback(async () => {
     if (!session?.user) {
@@ -145,6 +150,7 @@ export default function ProfilePage() {
         website: "",
         description: "",
       });
+      setMissingRequiredFields(data.data.missingRequiredFields || []);
     } catch {
       setAlert({ type: "error", messageKey: "profileFailed" });
     } finally {
@@ -184,6 +190,19 @@ export default function ProfilePage() {
 
   const handleProfileSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
+
+    const missingFields: string[] = [];
+    if (!profile.name.trim()) missingFields.push("name");
+    if (!(profile.title || "").trim()) missingFields.push("title");
+    if (!profile.country?.trim()) missingFields.push("country");
+    if (!organization.name.trim()) missingFields.push("organizationName");
+
+    if (missingFields.length > 0) {
+      setMissingRequiredFields(missingFields);
+      setAlert({ type: "error", messageKey: "profileIncomplete" });
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -212,6 +231,12 @@ export default function ProfilePage() {
       const data = await response.json();
 
       if (!response.ok || !data.success) {
+        if (data.missingRequiredFields?.length) {
+          setMissingRequiredFields(data.missingRequiredFields);
+          setAlert({ type: "error", messageKey: "profileIncomplete" });
+          return;
+        }
+
         throw new Error(data.error || "Update failed");
       }
 
@@ -234,10 +259,15 @@ export default function ProfilePage() {
         website: "",
         description: "",
       });
+      setMissingRequiredFields(data.data.missingRequiredFields || []);
 
       await update({
         name: data.data.name || "",
       });
+
+      if (!data.data.missingRequiredFields?.length) {
+        router.replace(`/${locale}/dashboard/profile`);
+      }
 
       setAlert({ type: "success", messageKey: "profileUpdated" });
     } catch {
@@ -324,6 +354,16 @@ export default function ProfilePage() {
         <p className="text-slate-600">{t("subtitle")}</p>
       </motion.div>
 
+      {showIncompleteNotice && (
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>{t("alerts.error")}</AlertTitle>
+            <AlertDescription>{t("messages.profileIncomplete")}</AlertDescription>
+          </Alert>
+        </motion.div>
+      )}
+
       {alert && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
           <Alert variant={alert.type === "error" ? "destructive" : "default"}>
@@ -405,9 +445,9 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label htmlFor="name">
                         <User className="w-4 h-4 inline mr-1" />
-                        {t("fields.name")}
+                        {t("fields.name")} *
                       </Label>
-                      <Input id="name" value={profile.name} onChange={(event) => setProfile((previous) => ({ ...previous, name: event.target.value }))} placeholder={t("placeholders.name")} />
+                      <Input id="name" value={profile.name} onChange={(event) => setProfile((previous) => ({ ...previous, name: event.target.value }))} placeholder={t("placeholders.name")} required />
                     </div>
 
                     <div className="space-y-2">
@@ -416,6 +456,20 @@ export default function ProfilePage() {
                         {t("fields.email")}
                       </Label>
                       <Input id="email" type="email" value={profile.email} readOnly placeholder={t("placeholders.email")} className="bg-slate-50 text-slate-500" />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="organizationName">
+                        <Building2 className="w-4 h-4 inline mr-1" />
+                        {t("fields.organizationName")} *
+                      </Label>
+                      <Input
+                        id="organizationName"
+                        value={organization.name || ""}
+                        onChange={(event) => setOrganization((prev) => ({ ...prev, name: event.target.value }))}
+                        placeholder={t("placeholders.organizationName")}
+                        required
+                      />
                     </div>
 
                     <div className="space-y-2">
@@ -450,7 +504,7 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label htmlFor="country">
                         <Globe className="w-4 h-4 inline mr-1" />
-                        {t("fields.country")}
+                        {t("fields.country")} *
                       </Label>
                       <Select
                         value={profile.country || ""}
@@ -491,9 +545,9 @@ export default function ProfilePage() {
                     <div className="space-y-2">
                       <Label htmlFor="title">
                         <Briefcase className="w-4 h-4 inline mr-1" />
-                        {t("fields.title")}
+                        {t("fields.title")} *
                       </Label>
-                      <Input id="title" value={profile.title} onChange={(event) => setProfile((previous) => ({ ...previous, title: event.target.value }))} placeholder={t("placeholders.title")} />
+                      <Input id="title" value={profile.title} onChange={(event) => setProfile((previous) => ({ ...previous, title: event.target.value }))} placeholder={t("placeholders.title")} required />
                     </div>
                   </div>
 
@@ -596,19 +650,6 @@ export default function ProfilePage() {
                 <div className="space-y-6">
                   <div className="grid gap-6 md:grid-cols-2">
                     <div className="space-y-2">
-                      <Label htmlFor="orgName">
-                        <Building2 className="w-4 h-4 inline mr-1" />
-                        {t("organization.nameLabel")}
-                      </Label>
-                      <Input
-                        id="orgName"
-                        value={organization.name || ""}
-                        onChange={(event) => setOrganization((prev) => ({ ...prev, name: event.target.value }))}
-                        placeholder={t("organization.namePlaceholder")}
-                      />
-                    </div>
-
-                    <div className="space-y-2">
                       <Label htmlFor="orgIndustry">
                         {t("organization.industry")}
                       </Label>
@@ -619,20 +660,20 @@ export default function ProfilePage() {
                         placeholder={t("organization.industryPlaceholder")}
                       />
                     </div>
-                  </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="orgWebsite">
-                      <Globe className="w-4 h-4 inline mr-1" />
-                      {t("organization.website")}
-                    </Label>
-                    <Input
-                      id="orgWebsite"
-                      type="url"
-                      value={organization.website || ""}
-                      onChange={(event) => setOrganization((prev) => ({ ...prev, website: event.target.value }))}
-                      placeholder={t("organization.websitePlaceholder")}
-                    />
+                    <div className="space-y-2">
+                      <Label htmlFor="orgWebsite">
+                        <Globe className="w-4 h-4 inline mr-1" />
+                        {t("organization.website")}
+                      </Label>
+                      <Input
+                        id="orgWebsite"
+                        type="url"
+                        value={organization.website || ""}
+                        onChange={(event) => setOrganization((prev) => ({ ...prev, website: event.target.value }))}
+                        placeholder={t("organization.websitePlaceholder")}
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
