@@ -89,6 +89,7 @@ interface Speaker {
   website?: string;
   isKeynote: boolean;
   isVisible?: boolean;
+  agendaRoleDisplayMode?: SpeakerRoleDisplayMode | null;
   order: number;
   institutionId?: string | null;
   institution?: { id: string; slug: string; name: string; nameEn?: string | null; logo?: string | null } | null;
@@ -183,6 +184,7 @@ export default function AdminSpeakersPage() {
     website: "",
     isKeynote: false,
     isVisible: true,
+    agendaRoleDisplayMode: "allCurrent",
     order: 0,
   });
   // Expertise tags as a comma-separated string for the input field
@@ -608,6 +610,7 @@ export default function AdminSpeakersPage() {
       website: "",
       isKeynote: false,
       isVisible: true,
+      agendaRoleDisplayMode: "allCurrent",
       order: speakers.length + 1,
       institutionId: undefined,
     });
@@ -1339,6 +1342,36 @@ export default function AdminSpeakersPage() {
                   ))}
                 </div>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="agendaRoleDisplayMode">
+                {locale === "en" ? "Agenda role display" : "议程中职务显示方式"}
+              </Label>
+              <Select
+                value={formData.agendaRoleDisplayMode || "allCurrent"}
+                onValueChange={(value) =>
+                  setFormData({
+                    ...formData,
+                    agendaRoleDisplayMode: value as SpeakerRoleDisplayMode,
+                  })
+                }
+              >
+                <SelectTrigger id="agendaRoleDisplayMode">
+                  <SelectValue placeholder={locale === "en" ? "Select a display mode" : "选择显示方式"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="allCurrent">
+                    {locale === "en" ? "Show all current roles in agenda (default)" : "议程中显示全部当前职务（默认）"}
+                  </SelectItem>
+                  <SelectItem value="primary">
+                    {locale === "en" ? "Show primary role only in agenda" : "议程中仅显示主职务"}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-slate-500">
+                {locale === "en" ? "Use this to control how this speaker’s job titles appear in agenda rows." : "用这里控制该嘉宾在活动议程中显示主职务还是全部当前职务。"}
+              </p>
             </div>
 
             {/* Career Roles */}

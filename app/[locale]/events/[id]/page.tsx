@@ -44,7 +44,7 @@ import { Link } from "@/i18n/routing";
 import { normalizeAgendaDateKey } from "@/lib/agenda";
 import { buildEventMapLinks } from "@/lib/map-links";
 import { toast } from "sonner";
-import { getSpeakerDisplayMeta, type SpeakerDisplayRole } from "@/lib/speaker-display";
+import { getSpeakerAgendaRoleDisplayMode, getSpeakerDisplayMeta, type SpeakerDisplayRole, type SpeakerRoleDisplayMode } from "@/lib/speaker-display";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
 
@@ -58,6 +58,7 @@ type AgendaSpeaker = {
   organization: string;
   organizationEn?: string | null;
   roles?: SpeakerDisplayRole[] | null;
+  agendaRoleDisplayMode?: SpeakerRoleDisplayMode | null;
   isKeynote: boolean;
 };
 
@@ -491,7 +492,7 @@ export default function EventDetailPage() {
   const getAgendaSpeakerName = (speaker: AgendaSpeaker) =>
     locale === "en" && speaker.nameEn ? speaker.nameEn : speaker.name;
 
-  const getAgendaSpeakerMeta = (speaker: AgendaSpeaker) => getSpeakerDisplayMeta(speaker, locale, "allCurrent");
+  const getAgendaSpeakerMeta = (speaker: AgendaSpeaker) => getSpeakerDisplayMeta(speaker, locale, getSpeakerAgendaRoleDisplayMode(speaker));
 
   const getAgendaTopic = (item: AgendaItem, speakerId: string) => {
     if (locale === "en") {

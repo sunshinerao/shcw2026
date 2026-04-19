@@ -55,7 +55,7 @@ import {
   normalizeAgendaDateKey,
 } from "@/lib/agenda";
 import { getEventDateRangeLabel, getEventTimeSummaryLabel, type EventDateSlot } from "@/lib/data/events";
-import { getSpeakerDisplayMeta, type SpeakerDisplayRole } from "@/lib/speaker-display";
+import { getSpeakerAgendaRoleDisplayMode, getSpeakerDisplayMeta, type SpeakerDisplayRole, type SpeakerRoleDisplayMode } from "@/lib/speaker-display";
 
 type AgendaSpeaker = {
   id: string;
@@ -67,6 +67,7 @@ type AgendaSpeaker = {
   organization: string;
   organizationEn?: string | null;
   roles?: SpeakerDisplayRole[] | null;
+  agendaRoleDisplayMode?: SpeakerRoleDisplayMode | null;
   isKeynote: boolean;
 };
 
@@ -334,6 +335,7 @@ export default function EventAgendaPage({
             organization: s.organization,
             organizationEn: s.organizationEn,
             roles: s.roles,
+            agendaRoleDisplayMode: s.agendaRoleDisplayMode,
             isKeynote: s.isKeynote,
           }))
         );
@@ -468,7 +470,7 @@ export default function EventAgendaPage({
     locale === "en" && s.nameEn ? s.nameEn : s.name;
 
   const getSpeakerMeta = (s: AgendaSpeaker) =>
-    getSpeakerDisplayMeta(s, locale, "allCurrent");
+    getSpeakerDisplayMeta(s, locale, getSpeakerAgendaRoleDisplayMode(s));
 
   const getAgendaTitle = (item: AgendaItem) =>
     locale === "en" && item.titleEn ? item.titleEn : item.title;

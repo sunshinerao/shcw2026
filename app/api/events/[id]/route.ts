@@ -159,6 +159,7 @@ export async function GET(
                 titleEn: true,
                 organization: true,
                 organizationEn: true,
+                agendaRoleDisplayMode: true,
                 isKeynote: true,
                 roles: {
                   where: { isCurrent: true },
@@ -185,6 +186,7 @@ export async function GET(
                 titleEn: true,
                 organization: true,
                 organizationEn: true,
+                agendaRoleDisplayMode: true,
                 isKeynote: true,
                 roles: {
                   where: { isCurrent: true },

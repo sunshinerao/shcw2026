@@ -13,9 +13,14 @@ export type SpeakerDisplayLike = {
   organization?: string | null;
   organizationEn?: string | null;
   roles?: SpeakerDisplayRole[] | null;
+  agendaRoleDisplayMode?: SpeakerRoleDisplayMode | null;
 };
 
 export type SpeakerRoleDisplayMode = "primary" | "allCurrent";
+
+export function getSpeakerAgendaRoleDisplayMode(speaker: SpeakerDisplayLike): SpeakerRoleDisplayMode {
+  return speaker.agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent";
+}
 
 function localize(locale: string, zh?: string | null, en?: string | null) {
   return locale === "en" ? en || zh || "" : zh || en || "";

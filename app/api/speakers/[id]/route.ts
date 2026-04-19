@@ -61,6 +61,7 @@ export async function GET(
         avatar: true,
         isKeynote: true,
         isVisible: true,
+        agendaRoleDisplayMode: true,
         order: true,
         institutionId: true,
         institution: {
@@ -164,6 +165,7 @@ export async function PUT(
       avatar,
       isKeynote,
       isVisible,
+      agendaRoleDisplayMode,
       order,
       roles,
       institutionId,
@@ -218,6 +220,7 @@ export async function PUT(
         ...(avatar !== undefined && { avatar: avatar || null }),
         ...(isKeynote !== undefined && { isKeynote }),
         ...(isVisible !== undefined && { isVisible: Boolean(isVisible) }),
+        ...(agendaRoleDisplayMode !== undefined && { agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent" }),
         ...(order !== undefined && { order }),
         ...(institutionId !== undefined && { institutionId: institutionId || null }),
       },

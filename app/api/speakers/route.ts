@@ -182,6 +182,7 @@ export async function GET(req: NextRequest) {
         website: true,
         isKeynote: true,
         isVisible: true,
+        agendaRoleDisplayMode: true,
         order: true,
         institutionId: true,
         institution: {
@@ -289,6 +290,7 @@ export async function POST(req: NextRequest) {
       avatar,
       isKeynote,
       isVisible,
+      agendaRoleDisplayMode,
       order,
     } = body;
 
@@ -356,6 +358,7 @@ export async function POST(req: NextRequest) {
         avatar: avatar || null,
         isKeynote: isEventManagerCreate ? false : Boolean(isKeynote),
         isVisible: isEventManagerCreate ? true : (isVisible !== undefined ? Boolean(isVisible) : true),
+        agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent",
         order: isEventManagerCreate ? 0 : order || 0,
       },
     });

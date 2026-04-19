@@ -561,6 +561,8 @@ model Speaker {
   isKeynote       Boolean  @default(false)
   // 是否在前端公开展示
   isVisible       Boolean  @default(true)
+  // 议程中显示职务的方式：primary = 主职务，allCurrent = 全部当前职务
+  agendaRoleDisplayMode String @default("allCurrent")
   
   // 关联机构（可选，链接到 Institution 表）
   institutionId   String?
