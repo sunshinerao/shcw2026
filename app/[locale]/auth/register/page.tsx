@@ -28,6 +28,7 @@ export default function RegisterPage() {
   const [success, setSuccess] = useState(false);
   const [showOrgSection, setShowOrgSection] = useState(false);
   const [countrySearch, setCountrySearch] = useState("");
+  const [phoneAreaSearch, setPhoneAreaSearch] = useState("");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -45,6 +46,28 @@ export default function RegisterPage() {
     organizationDescription: "",
   });
   const salutationOptions = getLocalizedSalutationOptions(locale === "en" ? "en" : "zh");
+  const phoneAreaOptions = Object.values(
+    COUNTRIES.reduce<Record<string, { value: string; countries: string[]; searchText: string[] }>>((acc, country) => {
+      const areaCode = getPhoneAreaByCountry(country.code);
+      if (!areaCode) {
+        return acc;
+      }
+
+      if (!acc[areaCode]) {
+        acc[areaCode] = { value: areaCode, countries: [], searchText: [] };
+      }
+
+      acc[areaCode].countries.push(locale === "zh" ? `${country.zh}/${country.en}` : `${country.en}/${country.zh}`);
+      acc[areaCode].searchText.push(country.zh, country.en, country.code, areaCode);
+      return acc;
+    }, {})
+  )
+    .map((option) => ({
+      value: option.value,
+      label: `${option.value} (${option.countries.join(", ")})`,
+      searchText: option.searchText.join(" ").toLowerCase(),
+    }))
+    .sort((a, b) => a.value.localeCompare(b.value));
 
   useEffect(() => {
     if (!success) {
@@ -155,23 +178,23 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-start justify-center bg-slate-50 pt-6 pb-12 px-4 sm:px-6 lg:px-8 overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
         className="max-w-lg w-full"
       >
-        <div className="text-center mb-8">
+        <div className="text-center mb-6 pt-1">
           <Link href="/">
             <Image
               src="/images/logo.png"
               alt={layout("logoAlt")}
-              width={220}
-              height={64}
+              width={260}
+              height={72}
               priority
-              sizes="220px"
-              className="h-16 w-auto object-contain mx-auto"
+              sizes="(max-width: 640px) 200px, 260px"
+              className="h-12 sm:h-16 w-auto object-contain mx-auto"
             />
           </Link>
         </div>
@@ -282,7 +305,7 @@ export default function RegisterPage() {
                   setFormData((prev) => ({
                     ...prev,
                     country: value,
-                    phoneArea: prev.phoneArea || getPhoneAreaByCountry(value),
+                    phoneArea: getPhoneAreaByCountry(value) || prev.phoneArea,
                   }));
                   setCountrySearch("");
                 }}
@@ -313,16 +336,42 @@ export default function RegisterPage() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-4">
+            <div className="grid grid-cols-[180px_minmax(0,1fr)] gap-4">
               <div className="space-y-2">
                 <Label htmlFor="phoneArea">{t("phoneAreaLabel")}</Label>
-                <Input
-                  id="phoneArea"
-                  type="tel"
-                  placeholder={t("phoneAreaPlaceholder")}
+                <Select
                   value={formData.phoneArea}
-                  onChange={(event) => setFormData((prev) => ({ ...prev, phoneArea: event.target.value }))}
-                />
+                  onValueChange={(value) => {
+                    setFormData((prev) => ({ ...prev, phoneArea: value }));
+                    setPhoneAreaSearch("");
+                  }}
+                >
+                  <SelectTrigger id="phoneArea">
+                    <SelectValue placeholder={t("phoneAreaPlaceholder")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <div className="px-2 pb-2">
+                      <Input
+                        placeholder={locale === "zh" ? "输入国家或区号..." : "Search country or code..."}
+                        value={phoneAreaSearch}
+                        onChange={(event) => setPhoneAreaSearch(event.target.value)}
+                        className="h-8"
+                        onKeyDown={(event) => event.stopPropagation()}
+                      />
+                    </div>
+                    {phoneAreaOptions
+                      .filter((option) => {
+                        if (!phoneAreaSearch) return true;
+                        const query = phoneAreaSearch.toLowerCase();
+                        return option.searchText.includes(query);
+                      })
+                      .map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="space-y-2">
