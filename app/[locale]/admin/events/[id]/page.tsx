@@ -12,6 +12,7 @@ import {
   ChevronUp,
   Clock,
   Copy,
+  Download,
   Edit2,
   MapPin,
   Plus,
@@ -266,6 +267,8 @@ export default function EventAgendaPage({
   const [selectedVerifierId, setSelectedVerifierId] = useState("");
   const [venueCheckinSecret, setVenueCheckinSecret] = useState<string | null>(null);
   const [venueQrSvg, setVenueQrSvg] = useState("");
+  const [posterPreviewUrl, setPosterPreviewUrl] = useState<string | null>(null);
+  const [posterFileName, setPosterFileName] = useState("");
   const [siteOrigin, setSiteOrigin] = useState("");
   const [isVerifierSubmitting, setIsVerifierSubmitting] = useState(false);
   const [isVenueQrSubmitting, setIsVenueQrSubmitting] = useState(false);
@@ -1133,16 +1136,22 @@ export default function EventAgendaPage({
     ctx.fillText("CLIMATE PASSPORT \u00B7 EVENT CHECK-IN POSTER", pL, H - mm(6));
     ctx.textBaseline = "top";
 
-    /* ========== download ========== */
+    /* ========== show preview ========== */
     const eventTitle = (locale === "en" && event.titleEn ? event.titleEn : event.title)
       .replace(/[\\/:*?"<>|]/g, "-").replace(/\s+/g, " ").trim();
-    const fileName = locale === "zh"
-      ? `${eventTitle}-\u73B0\u573A\u7B7E\u5230\u6D77\u62A5.png`
-      : `${eventTitle}-checkin-poster.png`;
-    const dataUrl = canvas.toDataURL("image/png");
+    setPosterFileName(
+      locale === "zh"
+        ? `${eventTitle}-\u73B0\u573A\u7B7E\u5230\u6D77\u62A5.png`
+        : `${eventTitle}-checkin-poster.png`,
+    );
+    setPosterPreviewUrl(canvas.toDataURL("image/png"));
+  };
+
+  const handleDownloadPoster = () => {
+    if (!posterPreviewUrl) return;
     const anchor = document.createElement("a");
-    anchor.href = dataUrl;
-    anchor.download = fileName;
+    anchor.href = posterPreviewUrl;
+    anchor.download = posterFileName;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
@@ -1644,8 +1653,8 @@ export default function EventAgendaPage({
                         {locale === "zh" ? "下载二维码" : "Download QR"}
                       </Button>
                       <Button variant="outline" onClick={() => void downloadCheckinPoster()}>
-                        <ArrowLeft className="mr-2 h-4 w-4 rotate-[270deg]" />
-                        {locale === "zh" ? "下载签到海报" : "Download Check-in Poster"}
+                        <QrCode className="mr-2 h-4 w-4" />
+                        {locale === "zh" ? "签到海报" : "Check-in Poster"}
                       </Button>
                     </>
                   )}
@@ -2677,6 +2686,36 @@ export default function EventAgendaPage({
                 {t("deleteItem")}
               </LoadingButton>
             </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Poster Preview Modal */}
+        <Dialog open={!!posterPreviewUrl} onOpenChange={(open) => { if (!open) setPosterPreviewUrl(null); }}>
+          <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 gap-0">
+            <DialogHeader className="px-6 pt-6 pb-2">
+              <DialogTitle>{locale === "zh" ? "签到海报预览" : "Check-in Poster Preview"}</DialogTitle>
+              <DialogDescription className="sr-only">
+                {locale === "zh" ? "签到海报预览" : "Check-in poster preview"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex-1 overflow-auto px-6 pb-4">
+              {posterPreviewUrl && (
+                <img
+                  src={posterPreviewUrl}
+                  alt="Check-in poster preview"
+                  className="w-full rounded-lg border border-slate-200 shadow-sm"
+                />
+              )}
+            </div>
+            <div className="border-t px-6 py-4 flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setPosterPreviewUrl(null)}>
+                {locale === "zh" ? "关闭" : "Close"}
+              </Button>
+              <Button onClick={handleDownloadPoster}>
+                <Download className="mr-2 h-4 w-4" />
+                {locale === "zh" ? "下载海报" : "Download Poster"}
+              </Button>
+            </div>
           </DialogContent>
         </Dialog>
       </div>
