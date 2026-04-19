@@ -6,6 +6,11 @@ import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canCreateSpeakerProfiles, canManageSpeakers } from "@/lib/permissions";
 
+function isAgendaRoleDisplayModeError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /agendaRoleDisplayMode|agenda_role_display_mode/i.test(message);
+}
+
 // 检查用户是否有嘉宾管理权限
 async function checkSpeakerPermission(sessionUserId: string, locale: "zh" | "en") {
   const currentUser = await prisma.user.findUnique({
@@ -146,70 +151,96 @@ export async function GET(req: NextRequest) {
 
     // 获取总数
     const total = await prisma.speaker.count({ where });
-    
-    // 获取嘉宾列表
-    const speakers = await prisma.speaker.findMany({
-      where,
-      orderBy: [
-        { order: "asc" },
-        { createdAt: "desc" },
-      ],
-      skip,
-      take: limit,
-      select: {
-        id: true,
-        slug: true,
-        salutation: true,
-        name: true,
-        nameEn: true,
-        avatar: true,
-        title: true,
-        titleEn: true,
-        organization: true,
-        organizationEn: true,
-        organizationLogo: true,
-        bio: true,
-        bioEn: true,
-        summary: true,
-        summaryEn: true,
-        countryOrRegion: true,
-        countryOrRegionEn: true,
-        relevanceToShcw: true,
-        relevanceToShcwEn: true,
-        expertiseTags: true,
-        linkedin: true,
-        twitter: true,
-        website: true,
-        isKeynote: true,
-        isVisible: true,
-        agendaRoleDisplayMode: true,
-        order: true,
-        institutionId: true,
-        institution: {
-          select: { id: true, slug: true, name: true, nameEn: true, logo: true },
-        },
-        roles: {
-          where: { isCurrent: true },
-          orderBy: [{ order: "asc" }, { startYear: "desc" }],
-          select: {
-            id: true,
-            title: true,
-            titleEn: true,
-            organization: true,
-            organizationEn: true,
-            isCurrent: true,
-            order: true,
-          },
-        },
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            agendaItems: true,
-          },
+
+    const baseSpeakerSelect: Prisma.SpeakerSelect = {
+      id: true,
+      slug: true,
+      salutation: true,
+      name: true,
+      nameEn: true,
+      avatar: true,
+      title: true,
+      titleEn: true,
+      organization: true,
+      organizationEn: true,
+      organizationLogo: true,
+      bio: true,
+      bioEn: true,
+      summary: true,
+      summaryEn: true,
+      countryOrRegion: true,
+      countryOrRegionEn: true,
+      relevanceToShcw: true,
+      relevanceToShcwEn: true,
+      expertiseTags: true,
+      linkedin: true,
+      twitter: true,
+      website: true,
+      isKeynote: true,
+      isVisible: true,
+      order: true,
+      institutionId: true,
+      institution: {
+        select: { id: true, slug: true, name: true, nameEn: true, logo: true },
+      },
+      roles: {
+        where: { isCurrent: true },
+        orderBy: [{ order: "asc" }, { startYear: "desc" }],
+        select: {
+          id: true,
+          title: true,
+          titleEn: true,
+          organization: true,
+          organizationEn: true,
+          isCurrent: true,
+          order: true,
         },
       },
-    });
+      createdAt: true,
+      updatedAt: true,
+      _count: {
+        select: {
+          agendaItems: true,
+        },
+      },
+    };
+
+    let speakers: Array<Record<string, unknown>>;
+    try {
+      speakers = await prisma.speaker.findMany({
+        where,
+        orderBy: [
+          { order: "asc" },
+          { createdAt: "desc" },
+        ],
+        skip,
+        take: limit,
+        select: {
+          ...baseSpeakerSelect,
+          agendaRoleDisplayMode: true,
+        },
+      });
+    } catch (error) {
+      if (!isAgendaRoleDisplayModeError(error)) {
+        throw error;
+      }
+
+      const fallbackSpeakers = await prisma.speaker.findMany({
+        where,
+        orderBy: [
+          { order: "asc" },
+          { createdAt: "desc" },
+        ],
+        skip,
+        take: limit,
+        select: baseSpeakerSelect,
+      });
+
+      speakers = fallbackSpeakers.map((speaker) => ({
+        ...speaker,
+        agendaRoleDisplayMode: "allCurrent" as const,
+      }));
+    }
     
     const filterOptions = includeFilterOptions
       ? {
@@ -330,38 +361,48 @@ export async function POST(req: NextRequest) {
     const isEventManagerCreate = permission.userRole === "EVENT_MANAGER";
 
     // 创建嘉宾
-    const speaker = await prisma.speaker.create({
-      data: {
-        salutation: salutation || null,
-        name,
-        nameEn: nameEn || null,
-        title,
-        titleEn: titleEn || null,
-        organization,
-        organizationEn: organizationEn || null,
-        organizationLogo: organizationLogo || null,
-        bio: bio || null,
-        bioEn: bioEn || null,
-        summary: summary || null,
-        summaryEn: summaryEn || null,
-        countryOrRegion: countryOrRegion || null,
-        countryOrRegionEn: countryOrRegionEn || null,
-        relevanceToShcw: relevanceToShcw || null,
-        relevanceToShcwEn: relevanceToShcwEn || null,
-        expertiseTags: expertiseTags ?? null,
-        slug: slug?.trim() || null,
-        institutionId: isEventManagerCreate ? null : institutionId || null,
-        email: email || null,
-        linkedin: linkedin || null,
-        twitter: twitter || null,
-        website: website || null,
-        avatar: avatar || null,
-        isKeynote: isEventManagerCreate ? false : Boolean(isKeynote),
-        isVisible: isEventManagerCreate ? true : (isVisible !== undefined ? Boolean(isVisible) : true),
-        agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent",
-        order: isEventManagerCreate ? 0 : order || 0,
-      },
-    });
+    const createData = {
+      salutation: salutation || null,
+      name,
+      nameEn: nameEn || null,
+      title,
+      titleEn: titleEn || null,
+      organization,
+      organizationEn: organizationEn || null,
+      organizationLogo: organizationLogo || null,
+      bio: bio || null,
+      bioEn: bioEn || null,
+      summary: summary || null,
+      summaryEn: summaryEn || null,
+      countryOrRegion: countryOrRegion || null,
+      countryOrRegionEn: countryOrRegionEn || null,
+      relevanceToShcw: relevanceToShcw || null,
+      relevanceToShcwEn: relevanceToShcwEn || null,
+      expertiseTags: expertiseTags ?? null,
+      slug: slug?.trim() || null,
+      institutionId: isEventManagerCreate ? null : institutionId || null,
+      email: email || null,
+      linkedin: linkedin || null,
+      twitter: twitter || null,
+      website: website || null,
+      avatar: avatar || null,
+      isKeynote: isEventManagerCreate ? false : Boolean(isKeynote),
+      isVisible: isEventManagerCreate ? true : (isVisible !== undefined ? Boolean(isVisible) : true),
+      agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent",
+      order: isEventManagerCreate ? 0 : order || 0,
+    };
+
+    let speaker: Awaited<ReturnType<typeof prisma.speaker.create>>;
+    try {
+      speaker = await prisma.speaker.create({ data: createData });
+    } catch (error) {
+      if (!isAgendaRoleDisplayModeError(error)) {
+        throw error;
+      }
+
+      const { agendaRoleDisplayMode: _ignored, ...fallbackCreateData } = createData;
+      speaker = await prisma.speaker.create({ data: fallbackCreateData });
+    }
 
     // 如果提供了 roles，创建历史职务
     if (Array.isArray(roles) && roles.length > 0) {

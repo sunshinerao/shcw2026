@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canManageSpeakers } from "@/lib/permissions";
+
+function isAgendaRoleDisplayModeError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /agendaRoleDisplayMode|agenda_role_display_mode/i.test(message);
+}
 
 // 检查用户是否有嘉宾管理权限
 async function checkSpeakerPermission(sessionUserId: string, locale: "zh" | "en") {
@@ -32,66 +38,86 @@ export async function GET(
     const requestLocale = resolveRequestLocale(req);
     const { id } = params;
     
-    const speaker = await prisma.speaker.findFirst({
-      where: { OR: [{ id }, { slug: id }] },
-      select: {
-        id: true,
-        slug: true,
-        salutation: true,
-        name: true,
-        nameEn: true,
-        title: true,
-        titleEn: true,
-        organization: true,
-        organizationEn: true,
-        organizationLogo: true,
-        bio: true,
-        bioEn: true,
-        summary: true,
-        summaryEn: true,
-        countryOrRegion: true,
-        countryOrRegionEn: true,
-        relevanceToShcw: true,
-        relevanceToShcwEn: true,
-        expertiseTags: true,
-        email: true,
-        linkedin: true,
-        twitter: true,
-        website: true,
-        avatar: true,
-        isKeynote: true,
-        isVisible: true,
-        agendaRoleDisplayMode: true,
-        order: true,
-        institutionId: true,
-        institution: {
-          select: { id: true, slug: true, name: true, nameEn: true, logo: true },
-        },
-        roles: {
-          orderBy: [
-            { isCurrent: "desc" },
-            { order: "asc" },
-            { startYear: "desc" },
-          ],
-        },
-        agendaItems: {
-          include: {
-            event: {
-              select: {
-                id: true,
-                title: true,
-                titleEn: true,
-                startDate: true,
-                venue: true,
-              },
+    const baseSpeakerSelect: Prisma.SpeakerSelect = {
+      id: true,
+      slug: true,
+      salutation: true,
+      name: true,
+      nameEn: true,
+      title: true,
+      titleEn: true,
+      organization: true,
+      organizationEn: true,
+      organizationLogo: true,
+      bio: true,
+      bioEn: true,
+      summary: true,
+      summaryEn: true,
+      countryOrRegion: true,
+      countryOrRegionEn: true,
+      relevanceToShcw: true,
+      relevanceToShcwEn: true,
+      expertiseTags: true,
+      email: true,
+      linkedin: true,
+      twitter: true,
+      website: true,
+      avatar: true,
+      isKeynote: true,
+      isVisible: true,
+      order: true,
+      institutionId: true,
+      institution: {
+        select: { id: true, slug: true, name: true, nameEn: true, logo: true },
+      },
+      roles: {
+        orderBy: [
+          { isCurrent: "desc" },
+          { order: "asc" },
+          { startYear: "desc" },
+        ],
+      },
+      agendaItems: {
+        include: {
+          event: {
+            select: {
+              id: true,
+              title: true,
+              titleEn: true,
+              startDate: true,
+              venue: true,
             },
           },
-          orderBy: {
-            startTime: "asc",
-          },
+        },
+        orderBy: {
+          startTime: "asc",
         },
       },
-    });
+    };
+
+    let speaker: Awaited<ReturnType<typeof prisma.speaker.findFirst>>;
+    try {
+      speaker = await prisma.speaker.findFirst({
+        where: { OR: [{ id }, { slug: id }] },
+        select: {
+          ...baseSpeakerSelect,
+          agendaRoleDisplayMode: true,
+        },
+      });
+    } catch (error) {
+      if (!isAgendaRoleDisplayModeError(error)) {
+        throw error;
+      }
+
+      const fallbackSpeaker = await prisma.speaker.findFirst({
+        where: { OR: [{ id }, { slug: id }] },
+        select: baseSpeakerSelect,
+      });
+
+      speaker = fallbackSpeaker
+        ? { ...fallbackSpeaker, agendaRoleDisplayMode: "allCurrent" as const }
+        : null;
+    }
     
     if (!speaker) {
       return NextResponse.json(
@@ -192,39 +218,53 @@ export async function PUT(
     }
     
     // 更新嘉宾基本信息
-    await prisma.speaker.update({
-      where: { id },
-      data: {
-        ...(salutation !== undefined && { salutation: salutation || null }),
-        ...(name !== undefined && { name }),
-        ...(nameEn !== undefined && { nameEn: nameEn || null }),
-        ...(title !== undefined && { title }),
-        ...(titleEn !== undefined && { titleEn: titleEn || null }),
-        ...(organization !== undefined && { organization }),
-        ...(organizationEn !== undefined && { organizationEn: organizationEn || null }),
-        ...(organizationLogo !== undefined && { organizationLogo: organizationLogo || null }),
-        ...(bio !== undefined && { bio: bio || null }),
-        ...(bioEn !== undefined && { bioEn: bioEn || null }),
-        ...(summary !== undefined && { summary: summary || null }),
-        ...(summaryEn !== undefined && { summaryEn: summaryEn || null }),
-        ...(countryOrRegion !== undefined && { countryOrRegion: countryOrRegion || null }),
-        ...(countryOrRegionEn !== undefined && { countryOrRegionEn: countryOrRegionEn || null }),
-        ...(relevanceToShcw !== undefined && { relevanceToShcw: relevanceToShcw || null }),
-        ...(relevanceToShcwEn !== undefined && { relevanceToShcwEn: relevanceToShcwEn || null }),
-        ...(expertiseTags !== undefined && { expertiseTags: expertiseTags ?? null }),
-        ...(slug !== undefined && { slug: slug?.trim() || null }),
-        ...(email !== undefined && { email: email || null }),
-        ...(linkedin !== undefined && { linkedin: linkedin || null }),
-        ...(twitter !== undefined && { twitter: twitter || null }),
-        ...(website !== undefined && { website: website || null }),
-        ...(avatar !== undefined && { avatar: avatar || null }),
-        ...(isKeynote !== undefined && { isKeynote }),
-        ...(isVisible !== undefined && { isVisible: Boolean(isVisible) }),
-        ...(agendaRoleDisplayMode !== undefined && { agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent" }),
-        ...(order !== undefined && { order }),
-        ...(institutionId !== undefined && { institutionId: institutionId || null }),
-      },
-    });
+    const updateData = {
+      ...(salutation !== undefined && { salutation: salutation || null }),
+      ...(name !== undefined && { name }),
+      ...(nameEn !== undefined && { nameEn: nameEn || null }),
+      ...(title !== undefined && { title }),
+      ...(titleEn !== undefined && { titleEn: titleEn || null }),
+      ...(organization !== undefined && { organization }),
+      ...(organizationEn !== undefined && { organizationEn: organizationEn || null }),
+      ...(organizationLogo !== undefined && { organizationLogo: organizationLogo || null }),
+      ...(bio !== undefined && { bio: bio || null }),
+      ...(bioEn !== undefined && { bioEn: bioEn || null }),
+      ...(summary !== undefined && { summary: summary || null }),
+      ...(summaryEn !== undefined && { summaryEn: summaryEn || null }),
+      ...(countryOrRegion !== undefined && { countryOrRegion: countryOrRegion || null }),
+      ...(countryOrRegionEn !== undefined && { countryOrRegionEn: countryOrRegionEn || null }),
+      ...(relevanceToShcw !== undefined && { relevanceToShcw: relevanceToShcw || null }),
+      ...(relevanceToShcwEn !== undefined && { relevanceToShcwEn: relevanceToShcwEn || null }),
+      ...(expertiseTags !== undefined && { expertiseTags: expertiseTags ?? null }),
+      ...(slug !== undefined && { slug: slug?.trim() || null }),
+      ...(email !== undefined && { email: email || null }),
+      ...(linkedin !== undefined && { linkedin: linkedin || null }),
+      ...(twitter !== undefined && { twitter: twitter || null }),
+      ...(website !== undefined && { website: website || null }),
+      ...(avatar !== undefined && { avatar: avatar || null }),
+      ...(isKeynote !== undefined && { isKeynote }),
+      ...(isVisible !== undefined && { isVisible: Boolean(isVisible) }),
+      ...(agendaRoleDisplayMode !== undefined && { agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent" }),
+      ...(order !== undefined && { order }),
+      ...(institutionId !== undefined && { institutionId: institutionId || null }),
+    };
+
+    try {
+      await prisma.speaker.update({
+        where: { id },
+        data: updateData,
+      });
+    } catch (error) {
+      if (!isAgendaRoleDisplayModeError(error)) {
+        throw error;
+      }
+
+      const { agendaRoleDisplayMode: _ignored, ...fallbackUpdateData } = updateData;
+      await prisma.speaker.update({
+        where: { id },
+        data: fallbackUpdateData,
+      });
+    }
 
     // 如果提供了 roles 数组，原子替换所有历史职务
     if (Array.isArray(roles)) {
