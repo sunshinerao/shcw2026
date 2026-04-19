@@ -1854,6 +1854,7 @@
                 "nameTaken": "This name is already registered. Please review it and try again.",
                 "countryRequired": "Please select your country/region.",
                 "titleRequired": "Please enter your title.",
+                "organizationRequired": "Please enter your organization.",
                 "failed": "Registration failed. Please try again later."
             }
         },

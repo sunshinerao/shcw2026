@@ -81,6 +81,12 @@ export default function RegisterPage() {
       return;
     }
 
+    if (!formData.organizationName.trim()) {
+      setError(t("errors.organizationRequired"));
+      setIsLoading(false);
+      return;
+    }
+
     if (!formData.country) {
       setError(t("errors.countryRequired"));
       setIsLoading(false);
@@ -98,16 +104,14 @@ export default function RegisterPage() {
           salutation: formData.salutation || undefined,
           phone: combinePhoneNumber(formData.phoneArea, formData.phone) || undefined,
           country: formData.country,
-          title: formData.title,
+          title: formData.title.trim(),
           bio: formData.bio || undefined,
-          organization: formData.organizationName
-            ? {
-                name: formData.organizationName,
-                industry: formData.organizationIndustry || undefined,
-                website: formData.organizationWebsite || undefined,
-                description: formData.organizationDescription || undefined,
-              }
-            : undefined,
+          organization: {
+            name: formData.organizationName.trim(),
+            industry: formData.organizationIndustry || undefined,
+            website: formData.organizationWebsite || undefined,
+            description: formData.organizationDescription || undefined,
+          },
           locale,
         }),
       });
@@ -254,43 +258,59 @@ export default function RegisterPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="country">{t("countryLabel")} *</Label>
-                <Select
-                  value={formData.country}
-                  onValueChange={(value) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      country: value,
-                      phoneArea: prev.phoneArea || getPhoneAreaByCountry(value),
-                    }));
-                    setCountrySearch("");
-                  }}
-                >
-                  <SelectTrigger id="country">
-                    <SelectValue placeholder={t("countryPlaceholder")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <div className="px-2 pb-2">
-                      <Input
-                        placeholder={locale === "zh" ? "输入搜索..." : "Search..."}
-                        value={countrySearch}
-                        onChange={(event) => setCountrySearch(event.target.value)}
-                        className="h-8"
-                        onKeyDown={(event) => event.stopPropagation()}
-                      />
-                    </div>
-                    {COUNTRIES.filter((country) => {
-                      if (!countrySearch) return true;
-                      const q = countrySearch.toLowerCase();
-                      return country.zh.includes(q) || country.en.toLowerCase().includes(q) || country.code.toLowerCase().includes(q);
-                    }).map((country) => (
-                      <SelectItem key={country.code} value={country.code}>
-                        {locale === "zh" ? `${country.zh} [${country.en}]` : `${country.en} [${country.zh}]`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="orgName">{t("orgNameLabel")} *</Label>
+                <div className="relative">
+                  <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    id="orgName"
+                    type="text"
+                    placeholder={t("orgNamePlaceholder")}
+                    value={formData.organizationName}
+                    onChange={(event) => setFormData((prev) => ({ ...prev, organizationName: event.target.value }))}
+                    className="pl-10"
+                    required
+                  />
+                </div>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="country">{t("countryLabel")} *</Label>
+              <Select
+                value={formData.country}
+                onValueChange={(value) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    country: value,
+                    phoneArea: prev.phoneArea || getPhoneAreaByCountry(value),
+                  }));
+                  setCountrySearch("");
+                }}
+              >
+                <SelectTrigger id="country">
+                  <SelectValue placeholder={t("countryPlaceholder")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <div className="px-2 pb-2">
+                    <Input
+                      placeholder={locale === "zh" ? "输入搜索..." : "Search..."}
+                      value={countrySearch}
+                      onChange={(event) => setCountrySearch(event.target.value)}
+                      className="h-8"
+                      onKeyDown={(event) => event.stopPropagation()}
+                    />
+                  </div>
+                  {COUNTRIES.filter((country) => {
+                    if (!countrySearch) return true;
+                    const q = countrySearch.toLowerCase();
+                    return country.zh.includes(q) || country.en.toLowerCase().includes(q) || country.code.toLowerCase().includes(q);
+                  }).map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                      {locale === "zh" ? `${country.zh} [${country.en}]` : `${country.en} [${country.zh}]`}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="grid grid-cols-[120px_minmax(0,1fr)] gap-4">
@@ -387,15 +407,6 @@ export default function RegisterPage() {
                 <div className="px-4 pb-4 space-y-4">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="orgName">{t("orgNameLabel")}</Label>
-                      <Input
-                        id="orgName"
-                        placeholder={t("orgNamePlaceholder")}
-                        value={formData.organizationName}
-                        onChange={(event) => setFormData((prev) => ({ ...prev, organizationName: event.target.value }))}
-                      />
-                    </div>
-                    <div className="space-y-2">
                       <Label htmlFor="orgIndustry">{t("orgIndustryLabel")}</Label>
                       <Input
                         id="orgIndustry"
@@ -404,16 +415,16 @@ export default function RegisterPage() {
                         onChange={(event) => setFormData((prev) => ({ ...prev, organizationIndustry: event.target.value }))}
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="orgWebsite">{t("orgWebsiteLabel")}</Label>
-                    <Input
-                      id="orgWebsite"
-                      type="url"
-                      placeholder={t("orgWebsitePlaceholder")}
-                      value={formData.organizationWebsite}
-                      onChange={(event) => setFormData((prev) => ({ ...prev, organizationWebsite: event.target.value }))}
-                    />
+                    <div className="space-y-2">
+                      <Label htmlFor="orgWebsite">{t("orgWebsiteLabel")}</Label>
+                      <Input
+                        id="orgWebsite"
+                        type="url"
+                        placeholder={t("orgWebsitePlaceholder")}
+                        value={formData.organizationWebsite}
+                        onChange={(event) => setFormData((prev) => ({ ...prev, organizationWebsite: event.target.value }))}
+                      />
+                    </div>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="orgDescription">{t("orgDescriptionLabel")}</Label>

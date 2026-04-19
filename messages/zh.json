@@ -1854,6 +1854,7 @@
                 "nameTaken": "该姓名已被注册，请核对后重试",
                 "countryRequired": "请选择您的国别/地区",
                 "titleRequired": "请输入您的职位",
+                "organizationRequired": "请输入您的所属机构",
                 "failed": "注册失败，请稍后重试"
             }
         },

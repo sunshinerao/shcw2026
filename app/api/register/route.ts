@@ -25,9 +25,12 @@ export async function POST(req: NextRequest) {
     const requestLocale = resolveRequestLocale(req, locale);
     const normalizedName = normalizeUserName(name || "");
     const normalizedEmail = normalizeUserEmail(email || "");
+    const normalizedTitle = typeof title === "string" ? title.trim() : "";
+    const normalizedCountry = typeof country === "string" ? country.trim() : "";
+    const normalizedOrganizationName = typeof organization?.name === "string" ? organization.name.trim() : "";
 
     // Validation
-    if (!normalizedName || !normalizedEmail || !password || !title || !country) {
+    if (!normalizedName || !normalizedEmail || !password || !normalizedTitle || !normalizedCountry || !normalizedOrganizationName) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "registerRequired") },
         { status: 400 }
@@ -135,8 +138,8 @@ export async function POST(req: NextRequest) {
           email: normalizedEmail,
           password: hashedPassword,
           phone: phone || null,
-          country,
-          title,
+          country: normalizedCountry,
+          title: normalizedTitle,
           salutation: normalizeSalutationValue(salutation),
           bio: bio || null,
           role,
@@ -146,18 +149,15 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Create organization if provided
-      if (organization?.name) {
-        await tx.organization.create({
-          data: {
-            name: organization.name,
-            industry: organization.industry || null,
-            website: organization.website || null,
-            description: organization.description || null,
-            userId: newUser.id,
-          },
-        });
-      }
+      await tx.organization.create({
+        data: {
+          name: normalizedOrganizationName,
+          industry: organization?.industry || null,
+          website: organization?.website || null,
+          description: organization?.description || null,
+          userId: newUser.id,
+        },
+      });
 
       return newUser;
     });
