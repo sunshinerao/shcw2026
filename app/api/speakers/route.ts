@@ -48,6 +48,15 @@ async function checkSpeakerCreatePermission(
   }
 
   if (currentUser.role === "EVENT_MANAGER") {
+    const hasGlobalSpeakerPermission = canManageSpeakers(
+      currentUser.role,
+      currentUser.staffPermissions
+    );
+
+    if (hasGlobalSpeakerPermission) {
+      return { allowed: true, userRole: currentUser.role };
+    }
+
     if (!sourceEventId) {
       return {
         allowed: false,
