@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { Calendar, Edit2, Eye, Mic, Plus, Search, Sparkles, Star, Trash2, Users } from "lucide-react";
@@ -230,6 +231,7 @@ const initialFormState: EventFormState = {
 export default function AdminEventsPage() {
   const t = useTranslations("adminEventsPage");
   const locale = useLocale();
+  const searchParams = useSearchParams();
   const [events, setEvents] = useState<ManagedEvent[]>([]);
   const [tracks, setTracks] = useState<ManagedTrack[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -249,6 +251,8 @@ export default function AdminEventsPage() {
   const [sponsors, setSponsors] = useState<SponsorOption[]>([]);
   const [sponsorSearch, setSponsorSearch] = useState("");
   const canEditRestrictedEventFields = currentUserRole === "ADMIN";
+  const speakerFilterId = searchParams.get("speakerId")?.trim() || "";
+  const speakerFilterName = searchParams.get("speakerName")?.trim() || "";
 
   const loadingLabel = t("loading");
   const genericLoadError = t("loadError");
@@ -262,7 +266,12 @@ export default function AdminEventsPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/events?page=1&pageSize=100");
+      const params = new URLSearchParams({ page: "1", pageSize: "100" });
+      if (speakerFilterId) {
+        params.set("speakerId", speakerFilterId);
+      }
+
+      const response = await fetch(`/api/events?${params.toString()}`);
       const payload = await response.json();
 
       if (!response.ok) {
@@ -279,7 +288,7 @@ export default function AdminEventsPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [genericLoadError]);
+  }, [genericLoadError, speakerFilterId]);
 
   useEffect(() => {
     void loadEvents();
@@ -790,14 +799,30 @@ export default function AdminEventsPage() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }}>
         <Card>
           <CardContent className="p-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
-              <Input
-                placeholder={t("searchPlaceholder")}
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                className="pl-10"
-              />
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                <Input
+                  placeholder={t("searchPlaceholder")}
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              {speakerFilterId ? (
+                <div className="flex flex-col gap-2 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-900 sm:flex-row sm:items-center sm:justify-between">
+                  <span>
+                    {locale === "en"
+                      ? `Showing events attended by ${speakerFilterName || "this speaker"}`
+                      : `当前仅显示嘉宾“${speakerFilterName || "该嘉宾"}”参加的活动`}
+                  </span>
+                  <Link href="/admin/events">
+                    <Button size="sm" variant="outline" className="border-emerald-300 bg-white hover:bg-emerald-100">
+                      {locale === "en" ? "Clear filter" : "清除筛选"}
+                    </Button>
+                  </Link>
+                </div>
+              ) : null}
             </div>
           </CardContent>
         </Card>

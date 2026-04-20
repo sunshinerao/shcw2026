@@ -110,6 +110,7 @@ export async function GET(req: NextRequest) {
     const city = (searchParams.get("city") || "").trim();
     const eventLayer = searchParams.get("eventLayer");
     const hostType = searchParams.get("hostType");
+    const speakerId = (searchParams.get("speakerId") || "").trim();
 
     const where: Prisma.EventWhereInput = {};
 
@@ -148,6 +149,18 @@ export async function GET(req: NextRequest) {
 
     if (hostType && EVENT_HOST_TYPES.has(hostType)) {
       where.hostType = hostType as EventHostType;
+    }
+
+    if (speakerId) {
+      where.agendaItems = {
+        some: {
+          speakers: {
+            some: {
+              id: speakerId,
+            },
+          },
+        },
+      };
     }
 
     if (published === "true") {

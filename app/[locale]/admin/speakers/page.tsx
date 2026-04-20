@@ -60,6 +60,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { getLocalizedSalutationOptions } from "@/lib/user-form-options";
 import { getSpeakerDisplayOrganization, getSpeakerDisplayTitle, type SpeakerRoleDisplayMode } from "@/lib/speaker-display";
+import { Link } from "@/i18n/navigation";
 
 // Speaker interface based on schema
 interface Speaker {
@@ -372,6 +373,9 @@ export default function AdminSpeakersPage() {
 
   const getSpeakerInitial = (speaker: Speaker) =>
     (getPrimaryName(speaker).trim().charAt(0) || "S").toUpperCase();
+
+  const getSpeakerEventCount = (speaker: Speaker) =>
+    speaker.agendaItemsCount ?? speaker.events?.length ?? 0;
 
   const getOrganizationLabel = (organization: string) => {
     const matchingOrg = organizationOptions.find((item) => item.organization === organization);
@@ -891,13 +895,23 @@ export default function AdminSpeakersPage() {
                     <div className="flex items-center gap-4">
                       {/* Event Count */}
                       <div className="flex items-center gap-2 text-sm text-slate-500">
-                        <div className="flex items-center px-3 py-1.5 bg-slate-50 rounded-lg">
-                          <Mic className="w-4 h-4 mr-2 text-emerald-600" />
-                          <span className="font-medium">
-                            {speaker.agendaItemsCount ?? speaker.events?.length ?? 0}
-                          </span>
-                          <span className="ml-1">{t("eventCount")}</span>
-                        </div>
+                        {getSpeakerEventCount(speaker) > 0 ? (
+                          <Link
+                            href={`/admin/events?speakerId=${speaker.id}&speakerName=${encodeURIComponent(getPrimaryName(speaker))}`}
+                          >
+                            <Button variant="outline" size="sm" className="h-auto rounded-lg border-emerald-200 bg-emerald-50 px-3 py-1.5 text-slate-700 hover:bg-emerald-100">
+                              <Mic className="w-4 h-4 mr-2 text-emerald-600" />
+                              <span className="font-medium">{getSpeakerEventCount(speaker)}</span>
+                              <span className="ml-1">{t("eventCount")}</span>
+                            </Button>
+                          </Link>
+                        ) : (
+                          <div className="flex items-center rounded-lg bg-slate-50 px-3 py-1.5">
+                            <Mic className="w-4 h-4 mr-2 text-emerald-600" />
+                            <span className="font-medium">0</span>
+                            <span className="ml-1">{t("eventCount")}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* Order Badge */}
