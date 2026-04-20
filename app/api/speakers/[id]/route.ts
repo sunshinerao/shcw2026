@@ -6,9 +6,9 @@ import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canManageSpeakers } from "@/lib/permissions";
 
-function isAgendaRoleDisplayModeError(error: unknown) {
+function isSpeakerSchemaCompatibilityError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
-  return /agendaRoleDisplayMode|agenda_role_display_mode/i.test(message);
+  return /agendaRoleDisplayMode|agenda_role_display_mode|organizationLogo|summary|countryOrRegion|relevanceToShcw|institutionId|Unknown argument|Unknown field|column .* does not exist/i.test(message);
 }
 
 // 检查用户是否有嘉宾管理权限
@@ -105,7 +105,7 @@ export async function GET(
         },
       });
     } catch (error) {
-      if (!isAgendaRoleDisplayModeError(error)) {
+      if (!isSpeakerSchemaCompatibilityError(error)) {
         throw error;
       }
 
@@ -255,11 +255,18 @@ export async function PUT(
         data: updateData,
       });
     } catch (error) {
-      if (!isAgendaRoleDisplayModeError(error)) {
+      if (!isSpeakerSchemaCompatibilityError(error)) {
         throw error;
       }
 
-      const { agendaRoleDisplayMode: _ignored, ...fallbackUpdateData } = updateData;
+      const fallbackUpdateData = {
+        ...(name !== undefined && { name }),
+        ...(title !== undefined && { title }),
+        ...(organization !== undefined && { organization }),
+        ...(isKeynote !== undefined && { isKeynote }),
+        ...(isVisible !== undefined && { isVisible: Boolean(isVisible) }),
+        ...(order !== undefined && { order }),
+      };
       await prisma.speaker.update({
         where: { id },
         data: fallbackUpdateData,
@@ -268,26 +275,32 @@ export async function PUT(
 
     // 如果提供了 roles 数组，原子替换所有历史职务
     if (Array.isArray(roles)) {
-      await prisma.$transaction([
-        prisma.speakerRole.deleteMany({ where: { speakerId: id } }),
-        ...((roles as Array<Record<string, unknown>>)
-          .filter((r) => typeof r.title === "string" && r.title.trim() && typeof r.organization === "string" && r.organization.trim())
-          .map((r, idx) =>
-            prisma.speakerRole.create({
-              data: {
-                speakerId: id,
-                title: (r.title as string).trim(),
-                titleEn: typeof r.titleEn === "string" ? r.titleEn.trim() || null : null,
-                organization: (r.organization as string).trim(),
-                organizationEn: typeof r.organizationEn === "string" ? r.organizationEn.trim() || null : null,
-                startYear: typeof r.startYear === "number" ? r.startYear : null,
-                endYear: typeof r.endYear === "number" && !r.isCurrent ? r.endYear : null,
-                isCurrent: !!r.isCurrent,
-                order: typeof r.order === "number" ? r.order : idx,
-              },
-            })
-          )),
-      ]);
+      try {
+        await prisma.$transaction([
+          prisma.speakerRole.deleteMany({ where: { speakerId: id } }),
+          ...((roles as Array<Record<string, unknown>>)
+            .filter((r) => typeof r.title === "string" && r.title.trim() && typeof r.organization === "string" && r.organization.trim())
+            .map((r, idx) =>
+              prisma.speakerRole.create({
+                data: {
+                  speakerId: id,
+                  title: (r.title as string).trim(),
+                  titleEn: typeof r.titleEn === "string" ? r.titleEn.trim() || null : null,
+                  organization: (r.organization as string).trim(),
+                  organizationEn: typeof r.organizationEn === "string" ? r.organizationEn.trim() || null : null,
+                  startYear: typeof r.startYear === "number" ? r.startYear : null,
+                  endYear: typeof r.endYear === "number" && !r.isCurrent ? r.endYear : null,
+                  isCurrent: !!r.isCurrent,
+                  order: typeof r.order === "number" ? r.order : idx,
+                },
+              })
+            )),
+        ]);
+      } catch (error) {
+        if (!isSpeakerSchemaCompatibilityError(error)) {
+          throw error;
+        }
+      }
     }
 
     // 返回包含 roles 的完整数据
@@ -305,8 +318,12 @@ export async function PUT(
     });
   } catch (error) {
     console.error("Error updating speaker:", error);
+    const requestLocale = resolveRequestLocale(req);
+    const message = error instanceof Error && error.message
+      ? error.message
+      : apiMessage(requestLocale, "speakerUpdateFailed");
     return NextResponse.json(
-      { success: false, error: apiMessage(resolveRequestLocale(req), "speakerUpdateFailed") },
+      { success: false, error: message },
       { status: 500 }
     );
   }

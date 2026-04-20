@@ -6,9 +6,9 @@ import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
 import { canCreateSpeakerProfiles, canManageSpeakers } from "@/lib/permissions";
 
-function isAgendaRoleDisplayModeError(error: unknown) {
+function isSpeakerSchemaCompatibilityError(error: unknown) {
   const message = error instanceof Error ? error.message : String(error);
-  return /agendaRoleDisplayMode|agenda_role_display_mode/i.test(message);
+  return /agendaRoleDisplayMode|agenda_role_display_mode|organizationLogo|summary|countryOrRegion|relevanceToShcw|institutionId|Unknown argument|Unknown field|column .* does not exist/i.test(message);
 }
 
 // 检查用户是否有嘉宾管理权限
@@ -230,7 +230,7 @@ export async function GET(req: NextRequest) {
         },
       });
     } catch (error) {
-      if (!isAgendaRoleDisplayModeError(error)) {
+      if (!isSpeakerSchemaCompatibilityError(error)) {
         throw error;
       }
 
@@ -405,11 +405,18 @@ export async function POST(req: NextRequest) {
     try {
       speaker = await prisma.speaker.create({ data: createData });
     } catch (error) {
-      if (!isAgendaRoleDisplayModeError(error)) {
+      if (!isSpeakerSchemaCompatibilityError(error)) {
         throw error;
       }
 
-      const { agendaRoleDisplayMode: _ignored, ...fallbackCreateData } = createData;
+      const fallbackCreateData = {
+        name: createData.name,
+        title: createData.title,
+        organization: createData.organization,
+        isKeynote: createData.isKeynote,
+        isVisible: createData.isVisible,
+        order: createData.order,
+      };
       speaker = await prisma.speaker.create({ data: fallbackCreateData });
     }
 
@@ -419,19 +426,25 @@ export async function POST(req: NextRequest) {
         (r) => typeof r.title === "string" && r.title.trim() && typeof r.organization === "string" && r.organization.trim()
       );
       if (validRoles.length > 0) {
-        await prisma.speakerRole.createMany({
-          data: validRoles.map((r, idx) => ({
-            speakerId: speaker.id,
-            title: (r.title as string).trim(),
-            titleEn: typeof r.titleEn === "string" ? r.titleEn.trim() || null : null,
-            organization: (r.organization as string).trim(),
-            organizationEn: typeof r.organizationEn === "string" ? r.organizationEn.trim() || null : null,
-            startYear: typeof r.startYear === "number" ? r.startYear : null,
-            endYear: typeof r.endYear === "number" && !r.isCurrent ? r.endYear : null,
-            isCurrent: !!r.isCurrent,
-            order: typeof r.order === "number" ? r.order : idx,
-          })),
-        });
+        try {
+          await prisma.speakerRole.createMany({
+            data: validRoles.map((r, idx) => ({
+              speakerId: speaker.id,
+              title: (r.title as string).trim(),
+              titleEn: typeof r.titleEn === "string" ? r.titleEn.trim() || null : null,
+              organization: (r.organization as string).trim(),
+              organizationEn: typeof r.organizationEn === "string" ? r.organizationEn.trim() || null : null,
+              startYear: typeof r.startYear === "number" ? r.startYear : null,
+              endYear: typeof r.endYear === "number" && !r.isCurrent ? r.endYear : null,
+              isCurrent: !!r.isCurrent,
+              order: typeof r.order === "number" ? r.order : idx,
+            })),
+          });
+        } catch (error) {
+          if (!isSpeakerSchemaCompatibilityError(error)) {
+            throw error;
+          }
+        }
       }
     }
     
@@ -443,8 +456,11 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Error creating speaker:", error);
     const requestLocale = resolveRequestLocale(req);
+    const message = error instanceof Error && error.message
+      ? error.message
+      : apiMessage(requestLocale, "speakerCreateFailed");
     return NextResponse.json(
-      { success: false, error: apiMessage(requestLocale, "speakerCreateFailed") },
+      { success: false, error: message },
       { status: 500 }
     );
   }
