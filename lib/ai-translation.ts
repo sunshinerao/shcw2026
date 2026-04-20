@@ -166,7 +166,8 @@ export async function translateMissingEventFieldsToEnglish(
  * Keys are preserved as-is in the output.
  */
 export async function translateRecordValuesToEnglish(
-  record: Record<string, string>
+  record: Record<string, string>,
+  options?: { additionalGuidance?: string }
 ): Promise<Record<string, string>> {
   const entries = Object.entries(record).filter(([, v]) => v && v.trim());
   if (entries.length === 0) return {};
@@ -187,10 +188,11 @@ export async function translateRecordValuesToEnglish(
   const prompt = [
     "Translate the JSON values from Chinese to natural English.",
     "Keep proper nouns and brand names accurate.",
+    options?.additionalGuidance?.trim() || "",
     "Return JSON only with the same numeric keys.",
     "Input JSON:",
     JSON.stringify(payload),
-  ].join("\n");
+  ].filter(Boolean).join("\n");
 
   try {
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
