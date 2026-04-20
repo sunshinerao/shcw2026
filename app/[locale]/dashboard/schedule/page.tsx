@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { getEventDateRangeLabel, getEventTimeSummaryLabel, type Event } from "@/lib/data/events";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { toast } from "sonner";
 
 interface ScheduleEvent {

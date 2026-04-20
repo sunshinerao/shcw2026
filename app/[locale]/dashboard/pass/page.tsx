@@ -25,7 +25,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { EVENT_PASS_ENTRY_WINDOW_MS, combineEventDateTime, getEventPassState, type EventPassState } from "@/lib/climate-passport";
 import { getEventDateRangeLabel, getEventScheduleLabel, getEventTimeSummaryLabel, normalizeEventDateSlots, type EventDateSlot } from "@/lib/data/events";
 import { toast } from "sonner";

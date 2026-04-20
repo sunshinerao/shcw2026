@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Award, Calendar, Loader2, QrCode, ShieldCheck, Sparkles, Star } from "lucide-react";
 import { buildPassportAchievements, formatLearningHours, getEventTotalDurationMinutes, type SupportedLocale } from "@/lib/climate-passport";
 import type { EventDateSlot } from "@/lib/data/events";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 interface ProfileResponse {
   id: string;

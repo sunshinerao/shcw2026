@@ -26,6 +26,18 @@ function localize(locale: string, zh?: string | null, en?: string | null) {
   return locale === "en" ? en || zh || "" : zh || en || "";
 }
 
+function dedupeDisplayPairs(pairs: Array<{ title: string; organization: string }>) {
+  const seen = new Set<string>();
+  return pairs.filter((pair) => {
+    const key = `${pair.title}__${pair.organization}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
 export function getSpeakerCurrentRoles(speaker: SpeakerDisplayLike) {
   const roles = Array.isArray(speaker.roles) ? speaker.roles : [];
   const sortedRoles = [...roles].sort((left, right) => {
@@ -61,20 +73,12 @@ export function getSpeakerDisplayPairs(
     }))
     .filter((pair) => pair.title || pair.organization);
 
-  const selected = roles.length > 0 ? roles : fallback;
   if (mode === "primary") {
+    const selected = roles.length > 0 ? roles : fallback;
     return selected.slice(0, 1);
   }
 
-  const seen = new Set<string>();
-  return selected.filter((pair) => {
-    const key = `${pair.title}__${pair.organization}`;
-    if (seen.has(key)) {
-      return false;
-    }
-    seen.add(key);
-    return true;
-  });
+  return dedupeDisplayPairs([...fallback, ...roles]);
 }
 
 export function getSpeakerDisplayTitle(

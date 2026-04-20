@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import { Calendar, Eye, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 type NewsItem = {
   id: string;

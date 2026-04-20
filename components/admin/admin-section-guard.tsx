@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useLocale } from "next-intl";
-import { useRouter } from "@/i18n/routing";
+import { useRouter } from "@/i18n/navigation";
 import { canAccessAdminSection, getAdminLandingPath, type AdminSectionKey } from "@/lib/permissions";
 
 export function AdminSectionGuard({

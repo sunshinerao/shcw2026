@@ -12,7 +12,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 type FaqItem = {
   id: string;

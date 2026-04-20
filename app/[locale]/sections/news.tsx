@@ -6,7 +6,7 @@ import { motion, useInView } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, Calendar, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 type NewsItem = {
   id: string;

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
-import { useRouter } from "@/i18n/routing";
+import { useRouter } from "@/i18n/navigation";
 import { motion } from "framer-motion";
 import { FileText, Plus, Download, Clock, CheckCircle, XCircle, Loader2, User, Pencil, Eye, ArrowLeft } from "lucide-react";
 import { Badge } from "@/components/ui/badge";

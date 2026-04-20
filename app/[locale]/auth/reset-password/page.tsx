@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { Loader2, Lock, ArrowLeft, CheckCircle, AlertCircle, Eye, EyeOff } from "lucide-react";
 
 // 密码验证规则

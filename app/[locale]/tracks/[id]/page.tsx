@@ -23,7 +23,7 @@ import {
   typeColors,
 } from "@/lib/data/events";
 import { prisma } from "@/lib/prisma";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 const iconMap: Record<string, React.ElementType> = {
   Building2,

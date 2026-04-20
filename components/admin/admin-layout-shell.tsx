@@ -22,7 +22,7 @@ import {
   Key,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link, usePathname } from "@/i18n/routing";
+import { Link, usePathname } from "@/i18n/navigation";
 import { canAccessAdminSection, type AppUserRole, type AdminSectionKey } from "@/lib/permissions";
 
 type NavItem = {

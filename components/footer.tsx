@@ -4,7 +4,7 @@ import Image from "next/image";
 import { Mail, MapPin } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { LanguageSwitcherSimple } from "@/components/language-switcher";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 export function Footer({
   newsEnabled = true,

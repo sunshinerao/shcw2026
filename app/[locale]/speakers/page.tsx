@@ -6,7 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { getSpeakerDisplayOrganization, getSpeakerDisplayTitle, type SpeakerDisplayRole } from "@/lib/speaker-display";
 
 type Speaker = {

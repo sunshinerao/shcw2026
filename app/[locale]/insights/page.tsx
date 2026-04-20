@@ -8,7 +8,7 @@ import { Calendar, FileText, Filter, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 type Insight = {
   id: string;

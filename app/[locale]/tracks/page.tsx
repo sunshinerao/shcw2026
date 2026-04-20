@@ -11,7 +11,7 @@ import {
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 type TrackCategory = "institution" | "economy" | "foundation" | "accelerator";
 

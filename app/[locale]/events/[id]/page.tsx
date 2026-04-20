@@ -40,7 +40,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getEventDateRangeLabel, getEventScheduleLabel, getEventTimeSummaryLabel, getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors, type EventDateSlot } from "@/lib/data/events";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { normalizeAgendaDateKey } from "@/lib/agenda";
 import { buildEventMapLinks } from "@/lib/map-links";
 import { toast } from "sonner";

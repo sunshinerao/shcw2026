@@ -7,7 +7,7 @@ import { Users, Calendar, Ticket, TrendingUp, ArrowRight, Activity, Loader2 } fr
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 const statIcons = [
   { key: "users", icon: Users, color: "text-blue-600", bgColor: "bg-blue-50" },

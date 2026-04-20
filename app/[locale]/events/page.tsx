@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 import { Calendar, Clock, MapPin, Users, ArrowRight, Filter, Loader2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors, getEventDateLabel, getEventScheduleLabel } from "@/lib/data/events";
 import { formatEventDateRangeFromEvents } from "@/lib/homepage-stats";
 

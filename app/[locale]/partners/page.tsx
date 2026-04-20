@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { useLocale, useTranslations } from "next-intl";
 import { ArrowRight, Building2, ExternalLink, FileText, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 type Sponsor = {
   id: string;

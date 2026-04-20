@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { Calendar, Copy, Download, ExternalLink, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 function normalizeSlug(value: string | string[] | undefined) {
   const rawValue = Array.isArray(value) ? value[0] : value;

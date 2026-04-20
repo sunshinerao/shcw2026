@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { prisma } from "@/lib/prisma";
 import { getSpeakerDisplayPairs, getSpeakerDisplayTitle, getSpeakerDisplayOrganization } from "@/lib/speaker-display";
 

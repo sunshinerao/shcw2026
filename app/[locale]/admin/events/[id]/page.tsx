@@ -47,7 +47,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import {
   doAgendaSlotsOverlap,
   isAgendaDateWithinEventRange,

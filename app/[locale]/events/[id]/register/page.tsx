@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { LoadingButton } from "@/components/ui/loading-button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { getEventDateRangeLabel, getEventTimeSummaryLabel, getEventTypeLabel, typeColors, type EventDateSlot } from "@/lib/data/events";
 import { useSession } from "next-auth/react";
 

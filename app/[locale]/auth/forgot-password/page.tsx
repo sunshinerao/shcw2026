@@ -11,7 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { LoadingButton } from "@/components/ui/loading-button";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 import { Mail, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 
 // 邮箱格式验证正则表达式

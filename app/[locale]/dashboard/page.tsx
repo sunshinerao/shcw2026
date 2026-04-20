@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Calendar, Heart, Trophy, CheckCircle2, ArrowRight, MapPin, Loader2, BadgeCheck, Clock, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Link, useRouter } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/navigation";
 import { combineEventDateTime } from "@/lib/climate-passport";
 import { getEventDateRangeLabel, getEventTimeSummaryLabel, normalizeEventDateSlots, type EventDateSlot } from "@/lib/data/events";
 

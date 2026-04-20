@@ -22,7 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 const INQUIRY_TYPES = [
   "general", "partnership", "speaker", "media", "sponsor", "volunteer", "other",

@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AdminSectionGuard } from "@/components/admin/admin-section-guard";
-import { Link } from "@/i18n/routing";
+import { Link } from "@/i18n/navigation";
 
 type RegistrationUser = {
   id: string;
