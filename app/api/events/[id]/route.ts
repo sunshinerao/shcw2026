@@ -13,6 +13,37 @@ const EVENT_TYPES = new Set(["forum", "workshop", "ceremony", "conference", "net
 const EVENT_LAYERS = new Set<string>(Object.values(EventLayer));
 const EVENT_HOST_TYPES = new Set<string>(Object.values(EventHostType));
 
+function isAgendaRoleDisplayModeError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /agendaRoleDisplayMode|agenda_role_display_mode/i.test(message);
+}
+
+function applyDefaultAgendaRoleDisplayMode<
+  T extends {
+    agendaItems: Array<{
+      speakers: Array<Record<string, unknown>>;
+      moderator: Record<string, unknown> | null;
+    }>;
+  },
+>(event: T): T {
+  return {
+    ...event,
+    agendaItems: event.agendaItems.map((item) => ({
+      ...item,
+      speakers: item.speakers.map((speaker) => ({
+        agendaRoleDisplayMode: "allCurrent",
+        ...speaker,
+      })),
+      moderator: item.moderator
+        ? {
+            agendaRoleDisplayMode: "allCurrent",
+            ...item.moderator,
+          }
+        : null,
+    })),
+  };
+}
+
 async function requireSessionUser() {
   const session = await getServerSession(authOptions);
 
@@ -100,121 +131,245 @@ export async function GET(
     const isEventManager = currentUser?.role === UserRole.EVENT_MANAGER;
     const canViewUnpublished = isAdmin || isStaff || isEventManager;
 
-    const event = await prisma.event.findFirst({
-      where: {
-        id: params.id,
-        ...(canViewUnpublished
-          ? {}
-          : currentUser?.role === UserRole.EVENT_MANAGER && currentUser?.id
-            ? { OR: [{ isPublished: true }, { managerUserId: currentUser.id }] }
-            : { isPublished: true }),
-      },
-      include: {
-        eventDateSlots: {
-          orderBy: [{ scheduleDate: "asc" }],
-        },
-        manager: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
+    const event = await (async () => {
+      try {
+        return await prisma.event.findFirst({
+          where: {
+            id: params.id,
+            ...(canViewUnpublished
+              ? {}
+              : currentUser?.role === UserRole.EVENT_MANAGER && currentUser?.id
+                ? { OR: [{ isPublished: true }, { managerUserId: currentUser.id }] }
+                : { isPublished: true }),
           },
-        },
-        track: {
-          select: {
-            id: true,
-            code: true,
-            name: true,
-            nameEn: true,
-            category: true,
-            color: true,
-            icon: true,
-            order: true,
-          },
-        },
-        institutions: {
-          orderBy: [{ order: "asc" }],
           include: {
-            institution: {
+            eventDateSlots: {
+              orderBy: [{ scheduleDate: "asc" }],
+            },
+            manager: {
               select: {
                 id: true,
-                slug: true,
                 name: true,
-                nameEn: true,
-                logo: true,
-                orgType: true,
+                email: true,
               },
             },
-          },
-        },
-        agendaItems: {
-          include: {
-            speakers: {
+            track: {
               select: {
                 id: true,
+                code: true,
                 name: true,
                 nameEn: true,
-                avatar: true,
-                title: true,
-                titleEn: true,
-                organization: true,
-                organizationEn: true,
-                agendaRoleDisplayMode: true,
-                isKeynote: true,
-                roles: {
-                  where: { isCurrent: true },
-                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                category: true,
+                color: true,
+                icon: true,
+                order: true,
+              },
+            },
+            institutions: {
+              orderBy: [{ order: "asc" }],
+              include: {
+                institution: {
                   select: {
                     id: true,
-                    title: true,
-                    titleEn: true,
-                    organization: true,
-                    organizationEn: true,
-                    isCurrent: true,
-                    order: true,
+                    slug: true,
+                    name: true,
+                    nameEn: true,
+                    logo: true,
+                    orgType: true,
                   },
                 },
               },
             },
-            moderator: {
-              select: {
-                id: true,
-                name: true,
-                nameEn: true,
-                avatar: true,
-                title: true,
-                titleEn: true,
-                organization: true,
-                organizationEn: true,
-                agendaRoleDisplayMode: true,
-                isKeynote: true,
-                roles: {
-                  where: { isCurrent: true },
-                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+            agendaItems: {
+              include: {
+                speakers: {
                   select: {
                     id: true,
+                    name: true,
+                    nameEn: true,
+                    avatar: true,
                     title: true,
                     titleEn: true,
                     organization: true,
                     organizationEn: true,
-                    isCurrent: true,
-                    order: true,
+                    agendaRoleDisplayMode: true,
+                    isKeynote: true,
+                    roles: {
+                      where: { isCurrent: true },
+                      orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                      select: {
+                        id: true,
+                        title: true,
+                        titleEn: true,
+                        organization: true,
+                        organizationEn: true,
+                        isCurrent: true,
+                        order: true,
+                      },
+                    },
+                  },
+                },
+                moderator: {
+                  select: {
+                    id: true,
+                    name: true,
+                    nameEn: true,
+                    avatar: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    agendaRoleDisplayMode: true,
+                    isKeynote: true,
+                    roles: {
+                      where: { isCurrent: true },
+                      orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                      select: {
+                        id: true,
+                        title: true,
+                        titleEn: true,
+                        organization: true,
+                        organizationEn: true,
+                        isCurrent: true,
+                        order: true,
+                      },
+                    },
+                  },
+                },
+              },
+              orderBy: [{ agendaDate: "asc" }, { order: "asc" }, { startTime: "asc" }],
+            },
+            _count: {
+              select: {
+                registrations: true,
+                checkins: true,
+                agendaItems: true,
+              },
+            },
+          },
+        });
+      } catch (error) {
+        if (!isAgendaRoleDisplayModeError(error)) {
+          throw error;
+        }
+
+        const fallbackEvent = await prisma.event.findFirst({
+          where: {
+            id: params.id,
+            ...(canViewUnpublished
+              ? {}
+              : currentUser?.role === UserRole.EVENT_MANAGER && currentUser?.id
+                ? { OR: [{ isPublished: true }, { managerUserId: currentUser.id }] }
+                : { isPublished: true }),
+          },
+          include: {
+            eventDateSlots: {
+              orderBy: [{ scheduleDate: "asc" }],
+            },
+            manager: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+              },
+            },
+            track: {
+              select: {
+                id: true,
+                code: true,
+                name: true,
+                nameEn: true,
+                category: true,
+                color: true,
+                icon: true,
+                order: true,
+              },
+            },
+            institutions: {
+              orderBy: [{ order: "asc" }],
+              include: {
+                institution: {
+                  select: {
+                    id: true,
+                    slug: true,
+                    name: true,
+                    nameEn: true,
+                    logo: true,
+                    orgType: true,
                   },
                 },
               },
             },
+            agendaItems: {
+              include: {
+                speakers: {
+                  select: {
+                    id: true,
+                    name: true,
+                    nameEn: true,
+                    avatar: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isKeynote: true,
+                    roles: {
+                      where: { isCurrent: true },
+                      orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                      select: {
+                        id: true,
+                        title: true,
+                        titleEn: true,
+                        organization: true,
+                        organizationEn: true,
+                        isCurrent: true,
+                        order: true,
+                      },
+                    },
+                  },
+                },
+                moderator: {
+                  select: {
+                    id: true,
+                    name: true,
+                    nameEn: true,
+                    avatar: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isKeynote: true,
+                    roles: {
+                      where: { isCurrent: true },
+                      orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                      select: {
+                        id: true,
+                        title: true,
+                        titleEn: true,
+                        organization: true,
+                        organizationEn: true,
+                        isCurrent: true,
+                        order: true,
+                      },
+                    },
+                  },
+                },
+              },
+              orderBy: [{ agendaDate: "asc" }, { order: "asc" }, { startTime: "asc" }],
+            },
+            _count: {
+              select: {
+                registrations: true,
+                checkins: true,
+                agendaItems: true,
+              },
+            },
           },
-          orderBy: [{ agendaDate: "asc" }, { order: "asc" }, { startTime: "asc" }],
-        },
-        _count: {
-          select: {
-            registrations: true,
-            checkins: true,
-            agendaItems: true,
-          },
-        },
-      },
-    });
+        });
+
+        return fallbackEvent ? applyDefaultAgendaRoleDisplayMode(fallbackEvent) : null;
+      }
+    })();
 
     if (!event) {
       return NextResponse.json(
