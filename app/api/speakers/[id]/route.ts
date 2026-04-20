@@ -200,6 +200,7 @@ export async function PUT(
     // 检查嘉宾是否存在
     const existingSpeaker = await prisma.speaker.findUnique({
       where: { id },
+      select: { id: true },
     });
     
     if (!existingSpeaker) {
@@ -253,6 +254,7 @@ export async function PUT(
       await prisma.speaker.update({
         where: { id },
         data: updateData,
+        select: { id: true },
       });
     } catch (error) {
       if (!isSpeakerSchemaCompatibilityError(error)) {
@@ -270,6 +272,7 @@ export async function PUT(
       await prisma.speaker.update({
         where: { id },
         data: fallbackUpdateData,
+        select: { id: true },
       });
     }
 
@@ -306,7 +309,26 @@ export async function PUT(
     // 返回包含 roles 的完整数据
     const fullSpeaker = await prisma.speaker.findUnique({
       where: { id },
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        salutation: true,
+        name: true,
+        nameEn: true,
+        title: true,
+        titleEn: true,
+        organization: true,
+        organizationEn: true,
+        bio: true,
+        bioEn: true,
+        email: true,
+        linkedin: true,
+        twitter: true,
+        website: true,
+        avatar: true,
+        isKeynote: true,
+        isVisible: true,
+        order: true,
         roles: { orderBy: [{ isCurrent: "desc" }, { order: "asc" }] },
       },
     });

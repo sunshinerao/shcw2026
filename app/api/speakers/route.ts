@@ -11,6 +11,30 @@ function isSpeakerSchemaCompatibilityError(error: unknown) {
   return /agendaRoleDisplayMode|agenda_role_display_mode|organizationLogo|summary|countryOrRegion|relevanceToShcw|institutionId|Unknown argument|Unknown field|column .* does not exist/i.test(message);
 }
 
+const safeSpeakerMutationSelect: Prisma.SpeakerSelect = {
+  id: true,
+  slug: true,
+  salutation: true,
+  name: true,
+  nameEn: true,
+  avatar: true,
+  title: true,
+  titleEn: true,
+  organization: true,
+  organizationEn: true,
+  bio: true,
+  bioEn: true,
+  expertiseTags: true,
+  linkedin: true,
+  twitter: true,
+  website: true,
+  isKeynote: true,
+  isVisible: true,
+  order: true,
+  createdAt: true,
+  updatedAt: true,
+};
+
 // 检查用户是否有嘉宾管理权限
 async function checkSpeakerPermission(sessionUserId: string, locale: "zh" | "en") {
   const currentUser = await prisma.user.findUnique({
@@ -401,9 +425,9 @@ export async function POST(req: NextRequest) {
       order: isEventManagerCreate ? 0 : order || 0,
     };
 
-    let speaker: Awaited<ReturnType<typeof prisma.speaker.create>>;
+    let speaker: { id: string } & Record<string, unknown>;
     try {
-      speaker = await prisma.speaker.create({ data: createData });
+      speaker = await prisma.speaker.create({ data: createData, select: safeSpeakerMutationSelect });
     } catch (error) {
       if (!isSpeakerSchemaCompatibilityError(error)) {
         throw error;
@@ -417,7 +441,7 @@ export async function POST(req: NextRequest) {
         isVisible: createData.isVisible,
         order: createData.order,
       };
-      speaker = await prisma.speaker.create({ data: fallbackCreateData });
+      speaker = await prisma.speaker.create({ data: fallbackCreateData, select: safeSpeakerMutationSelect });
     }
 
     // 如果提供了 roles，创建历史职务
