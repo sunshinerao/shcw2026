@@ -245,7 +245,6 @@ export async function PUT(
       ...(avatar !== undefined && { avatar: avatar || null }),
       ...(isKeynote !== undefined && { isKeynote }),
       ...(isVisible !== undefined && { isVisible: Boolean(isVisible) }),
-      ...(agendaRoleDisplayMode !== undefined && { agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent" }),
       ...(order !== undefined && { order }),
       ...(institutionId !== undefined && { institutionId: institutionId || null }),
     };
@@ -274,6 +273,22 @@ export async function PUT(
         data: fallbackUpdateData,
         select: { id: true },
       });
+    }
+
+    if (agendaRoleDisplayMode !== undefined) {
+      try {
+        await prisma.speaker.update({
+          where: { id },
+          data: {
+            agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent",
+          },
+          select: { id: true },
+        });
+      } catch (error) {
+        if (!isSpeakerSchemaCompatibilityError(error)) {
+          throw error;
+        }
+      }
     }
 
     // 如果提供了 roles 数组，原子替换所有历史职务

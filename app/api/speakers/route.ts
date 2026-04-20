@@ -421,7 +421,6 @@ export async function POST(req: NextRequest) {
       avatar: avatar || null,
       isKeynote: isEventManagerCreate ? false : Boolean(isKeynote),
       isVisible: isEventManagerCreate ? true : (isVisible !== undefined ? Boolean(isVisible) : true),
-      agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent",
       order: isEventManagerCreate ? 0 : order || 0,
     };
 
@@ -442,6 +441,22 @@ export async function POST(req: NextRequest) {
         order: createData.order,
       };
       speaker = await prisma.speaker.create({ data: fallbackCreateData, select: safeSpeakerMutationSelect });
+    }
+
+    if (agendaRoleDisplayMode !== undefined) {
+      try {
+        await prisma.speaker.update({
+          where: { id: speaker.id },
+          data: {
+            agendaRoleDisplayMode: agendaRoleDisplayMode === "primary" ? "primary" : "allCurrent",
+          },
+          select: { id: true },
+        });
+      } catch (error) {
+        if (!isSpeakerSchemaCompatibilityError(error)) {
+          throw error;
+        }
+      }
     }
 
     // 如果提供了 roles，创建历史职务
