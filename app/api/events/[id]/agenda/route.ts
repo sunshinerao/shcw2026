@@ -15,6 +15,32 @@ import { prisma } from "@/lib/prisma";
 import { translateMissingEventFieldsToEnglish, translateRecordValuesToEnglish } from "@/lib/ai-translation";
 import { canAssignAgendaPeople } from "@/lib/permissions";
 
+function isAgendaRoleDisplayModeError(error: unknown) {
+  const message = error instanceof Error ? error.message : String(error);
+  return /agendaRoleDisplayMode|agenda_role_display_mode/i.test(message);
+}
+
+function applyDefaultAgendaRoleDisplayModeToAgendaItem<
+  T extends {
+    speakers: Array<Record<string, unknown>>;
+    moderator: Record<string, unknown> | null;
+  },
+>(item: T): T {
+  return {
+    ...item,
+    speakers: item.speakers.map((speaker) => ({
+      agendaRoleDisplayMode: "allCurrent",
+      ...speaker,
+    })),
+    moderator: item.moderator
+      ? {
+          agendaRoleDisplayMode: "allCurrent",
+          ...item.moderator,
+        }
+      : null,
+  };
+}
+
 async function requireEventManager(requestLocale: "zh" | "en", eventId: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
@@ -98,66 +124,135 @@ export async function GET(
   const requestLocale = resolveRequestLocale(req);
 
   try {
-    const agendaItems = await prisma.agendaItem.findMany({
-      where: { eventId: params.id },
-      include: {
-        speakers: {
-          select: {
-            id: true,
-            name: true,
-            nameEn: true,
-            avatar: true,
-            title: true,
-            titleEn: true,
-            organization: true,
-            organizationEn: true,
-            agendaRoleDisplayMode: true,
-            isKeynote: true,
-            roles: {
-              where: { isCurrent: true },
-              orderBy: [{ order: "asc" }, { startYear: "desc" }],
+    const agendaItems = await (async () => {
+      try {
+        return await prisma.agendaItem.findMany({
+          where: { eventId: params.id },
+          include: {
+            speakers: {
               select: {
                 id: true,
+                name: true,
+                nameEn: true,
+                avatar: true,
                 title: true,
                 titleEn: true,
                 organization: true,
                 organizationEn: true,
-                isCurrent: true,
-                order: true,
+                agendaRoleDisplayMode: true,
+                isKeynote: true,
+                roles: {
+                  where: { isCurrent: true },
+                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                  select: {
+                    id: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isCurrent: true,
+                    order: true,
+                  },
+                },
               },
             },
-          },
-        },
-        moderator: {
-          select: {
-            id: true,
-            name: true,
-            nameEn: true,
-            avatar: true,
-            title: true,
-            titleEn: true,
-            organization: true,
-            organizationEn: true,
-            agendaRoleDisplayMode: true,
-            isKeynote: true,
-            roles: {
-              where: { isCurrent: true },
-              orderBy: [{ order: "asc" }, { startYear: "desc" }],
+            moderator: {
               select: {
                 id: true,
+                name: true,
+                nameEn: true,
+                avatar: true,
                 title: true,
                 titleEn: true,
                 organization: true,
                 organizationEn: true,
-                isCurrent: true,
-                order: true,
+                agendaRoleDisplayMode: true,
+                isKeynote: true,
+                roles: {
+                  where: { isCurrent: true },
+                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                  select: {
+                    id: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isCurrent: true,
+                    order: true,
+                  },
+                },
               },
             },
           },
-        },
-      },
-      orderBy: [{ agendaDate: "asc" }, { order: "asc" }, { startTime: "asc" }],
-    });
+          orderBy: [{ agendaDate: "asc" }, { order: "asc" }, { startTime: "asc" }],
+        });
+      } catch (error) {
+        if (!isAgendaRoleDisplayModeError(error)) {
+          throw error;
+        }
+
+        const fallbackItems = await prisma.agendaItem.findMany({
+          where: { eventId: params.id },
+          include: {
+            speakers: {
+              select: {
+                id: true,
+                name: true,
+                nameEn: true,
+                avatar: true,
+                title: true,
+                titleEn: true,
+                organization: true,
+                organizationEn: true,
+                isKeynote: true,
+                roles: {
+                  where: { isCurrent: true },
+                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                  select: {
+                    id: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isCurrent: true,
+                    order: true,
+                  },
+                },
+              },
+            },
+            moderator: {
+              select: {
+                id: true,
+                name: true,
+                nameEn: true,
+                avatar: true,
+                title: true,
+                titleEn: true,
+                organization: true,
+                organizationEn: true,
+                isKeynote: true,
+                roles: {
+                  where: { isCurrent: true },
+                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                  select: {
+                    id: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isCurrent: true,
+                    order: true,
+                  },
+                },
+              },
+            },
+          },
+          orderBy: [{ agendaDate: "asc" }, { order: "asc" }, { startTime: "asc" }],
+        });
+
+        return fallbackItems.map((item) => applyDefaultAgendaRoleDisplayModeToAgendaItem(item));
+      }
+    })();
 
     const normalizedAgendaItems = agendaItems.map((item) => ({
       ...item,
@@ -280,8 +375,8 @@ export async function POST(
       }
     }
 
-    const agendaItem = await prisma.agendaItem.create({
-      data: {
+    const agendaItem = await (async () => {
+      const createData = {
         eventId: params.id,
         agendaDate: parsedAgendaDate!,
         title,
@@ -310,64 +405,134 @@ export async function POST(
             return { ...speakerMeta, topicsEn: { ...(speakerMeta.topicsEn || {}), ...translatedTopics } };
           })(),
         }),
-      },
-      include: {
-        speakers: {
-          select: {
-            id: true,
-            name: true,
-            nameEn: true,
-            avatar: true,
-            title: true,
-            titleEn: true,
-            organization: true,
-            organizationEn: true,
-            agendaRoleDisplayMode: true,
-            isKeynote: true,
-            roles: {
-              where: { isCurrent: true },
-              orderBy: [{ order: "asc" }, { startYear: "desc" }],
+      };
+
+      try {
+        return await prisma.agendaItem.create({
+          data: createData,
+          include: {
+            speakers: {
               select: {
                 id: true,
+                name: true,
+                nameEn: true,
+                avatar: true,
                 title: true,
                 titleEn: true,
                 organization: true,
                 organizationEn: true,
-                isCurrent: true,
-                order: true,
+                agendaRoleDisplayMode: true,
+                isKeynote: true,
+                roles: {
+                  where: { isCurrent: true },
+                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                  select: {
+                    id: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isCurrent: true,
+                    order: true,
+                  },
+                },
               },
             },
-          },
-        },
-        moderator: {
-          select: {
-            id: true,
-            name: true,
-            nameEn: true,
-            avatar: true,
-            title: true,
-            titleEn: true,
-            organization: true,
-            organizationEn: true,
-            agendaRoleDisplayMode: true,
-            isKeynote: true,
-            roles: {
-              where: { isCurrent: true },
-              orderBy: [{ order: "asc" }, { startYear: "desc" }],
+            moderator: {
               select: {
                 id: true,
+                name: true,
+                nameEn: true,
+                avatar: true,
                 title: true,
                 titleEn: true,
                 organization: true,
                 organizationEn: true,
-                isCurrent: true,
-                order: true,
+                agendaRoleDisplayMode: true,
+                isKeynote: true,
+                roles: {
+                  where: { isCurrent: true },
+                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                  select: {
+                    id: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isCurrent: true,
+                    order: true,
+                  },
+                },
               },
             },
           },
-        },
-      },
-    });
+        });
+      } catch (error) {
+        if (!isAgendaRoleDisplayModeError(error)) {
+          throw error;
+        }
+
+        const fallbackAgendaItem = await prisma.agendaItem.create({
+          data: createData,
+          include: {
+            speakers: {
+              select: {
+                id: true,
+                name: true,
+                nameEn: true,
+                avatar: true,
+                title: true,
+                titleEn: true,
+                organization: true,
+                organizationEn: true,
+                isKeynote: true,
+                roles: {
+                  where: { isCurrent: true },
+                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                  select: {
+                    id: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isCurrent: true,
+                    order: true,
+                  },
+                },
+              },
+            },
+            moderator: {
+              select: {
+                id: true,
+                name: true,
+                nameEn: true,
+                avatar: true,
+                title: true,
+                titleEn: true,
+                organization: true,
+                organizationEn: true,
+                isKeynote: true,
+                roles: {
+                  where: { isCurrent: true },
+                  orderBy: [{ order: "asc" }, { startYear: "desc" }],
+                  select: {
+                    id: true,
+                    title: true,
+                    titleEn: true,
+                    organization: true,
+                    organizationEn: true,
+                    isCurrent: true,
+                    order: true,
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        return applyDefaultAgendaRoleDisplayModeToAgendaItem(fallbackAgendaItem);
+      }
+    })();
 
     return NextResponse.json({
       success: true,
