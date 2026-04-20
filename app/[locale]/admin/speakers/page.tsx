@@ -489,6 +489,19 @@ export default function AdminSpeakersPage() {
       : "/api/speakers";
     const method = isEditDialogOpen && selectedSpeaker ? "PUT" : "POST";
 
+    const normalizedName = (formData.name || "").trim();
+    const normalizedTitle = (formData.title || "").trim();
+    const normalizedOrganization = (formData.organization || "").trim();
+
+    if (!normalizedName || !normalizedTitle || !normalizedOrganization) {
+      const message = locale === "en"
+        ? "Please fill in Name, Title, and Organization before saving."
+        : "请先填写姓名、职位和机构，再保存。";
+      setStatusMessage(message);
+      toast.error(message);
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       const parsedTags = expertiseTagsInput
@@ -508,7 +521,18 @@ export default function AdminSpeakersPage() {
           isCurrent: r.isCurrent,
           order: idx,
         }));
-      const bodyStr = JSON.stringify({ ...formData, expertiseTags: parsedTags, roles: rolesPayload, locale });
+      const bodyStr = JSON.stringify({
+        ...formData,
+        name: normalizedName,
+        title: normalizedTitle,
+        organization: normalizedOrganization,
+        nameEn: formData.nameEn?.trim() || "",
+        titleEn: formData.titleEn?.trim() || "",
+        organizationEn: formData.organizationEn?.trim() || "",
+        expertiseTags: parsedTags,
+        roles: rolesPayload,
+        locale,
+      });
       // Pre-flight: avatar is stored as base64 data URL; check it won't exceed Vercel's 4.5MB body limit.
       if (bodyStr.length > 3.5 * 1024 * 1024) {
         throw new Error(
@@ -523,19 +547,30 @@ export default function AdminSpeakersPage() {
         body: bodyStr,
       });
 
-      const data = await response.json();
+      const rawText = await response.text();
+      const data = (() => {
+        try {
+          return rawText ? JSON.parse(rawText) as { message?: string; error?: string } : {};
+        } catch {
+          return {} as { message?: string; error?: string };
+        }
+      })();
 
       if (!response.ok) {
         throw new Error(data.error || genericLoadError);
       }
 
-      setStatusMessage(data.message || "");
+      const successMessage = data.message || (locale === "en" ? "Speaker saved successfully." : "嘉宾保存成功。");
+      setStatusMessage(successMessage);
+      toast.success(successMessage);
       setIsCreateDialogOpen(false);
       setIsEditDialogOpen(false);
       resetForm();
       void loadSpeakers(currentParamsRef.current);
     } catch (error) {
-      setStatusMessage(error instanceof Error ? error.message : genericLoadError);
+      const message = error instanceof Error ? error.message : genericLoadError;
+      setStatusMessage(message);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
@@ -571,6 +606,7 @@ export default function AdminSpeakersPage() {
 
   // Open edit dialog
   const openEditDialog = (speaker: Speaker) => {
+    setStatusMessage("");
     setSelectedSpeaker(speaker);
     setFormData({ ...speaker });
     setExpertiseTagsInput(Array.isArray(speaker.expertiseTags) ? speaker.expertiseTags.join(", ") : "");
@@ -621,6 +657,7 @@ export default function AdminSpeakersPage() {
 
   // Open create dialog
   const openCreateDialog = () => {
+    setStatusMessage("");
     resetForm();
     setFormData((prev) => ({ ...prev, order: speakers.length + 1 }));
     setIsCreateDialogOpen(true);
@@ -986,6 +1023,12 @@ export default function AdminSpeakersPage() {
           </DialogHeader>
 
           <div className="space-y-6 py-4">
+            {statusMessage ? (
+              <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                {statusMessage}
+              </div>
+            ) : null}
+
             {/* Avatar Upload */}
             <div className="flex items-center gap-4">
               <Avatar className="w-20 h-20 border-2 border-dashed border-slate-300">
