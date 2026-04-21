@@ -194,6 +194,7 @@ export default function AdminInsightsPage() {
   const [webTemplates, setWebTemplates] = useState<TemplateItem[]>([]);
   const [knowledgeTypeSettings, setKnowledgeTypeSettings] = useState<KnowledgeTypeSettingsMap>(defaultKnowledgeTypeSettings);
   const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const currentTypePreset = getKnowledgeTypePreset(form.type, knowledgeTypeSettings);
   const nameOf = (item: { name: string; nameEn?: string | null }) => (locale === "en" && item.nameEn ? item.nameEn : item.name);
@@ -501,6 +502,7 @@ export default function AdminInsightsPage() {
   }
 
   async function save() {
+    setIsSaving(true);
     try {
       const inferredTitle = form.title || form.titleEn;
       const normalizedSubtitle = form.subtitle || inferredTitle || "";
@@ -540,6 +542,8 @@ export default function AdminInsightsPage() {
       loadData();
     } catch (error) {
       setStatus(error instanceof Error ? error.message : t("messages.failed"));
+    } finally {
+      setIsSaving(false);
     }
   }
 
@@ -933,7 +937,10 @@ export default function AdminInsightsPage() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setDialogOpen(false)}>{t("actions.cancel")}</Button>
-              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void save()}>{t("actions.save")}</Button>
+              <Button className="bg-emerald-600 hover:bg-emerald-700" onClick={() => void save()} disabled={isSaving || isUploadingFile}>
+                {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isSaving ? (locale === "en" ? "Saving..." : "保存中...") : t("actions.save")}
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>

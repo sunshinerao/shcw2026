@@ -348,6 +348,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       }
 
       return result;
+    }, {
+      timeout: 15000,
+      maxWait: 5000,
     });
 
     return NextResponse.json({ success: true, data: updated });
