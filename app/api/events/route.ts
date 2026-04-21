@@ -154,11 +154,18 @@ export async function GET(req: NextRequest) {
     if (speakerId) {
       where.agendaItems = {
         some: {
-          speakers: {
-            some: {
-              id: speakerId,
+          OR: [
+            {
+              speakers: {
+                some: {
+                  id: speakerId,
+                },
+              },
             },
-          },
+            {
+              moderatorId: speakerId,
+            },
+          ],
         },
       };
     }

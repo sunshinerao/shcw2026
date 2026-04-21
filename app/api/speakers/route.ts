@@ -11,6 +11,27 @@ function isSpeakerSchemaCompatibilityError(error: unknown) {
   return /agendaRoleDisplayMode|agenda_role_display_mode|organizationLogo|summary|countryOrRegion|relevanceToShcw|institutionId|Unknown argument|Unknown field|column .* does not exist/i.test(message);
 }
 
+function withSpeakerEventParticipationCount<T extends Record<string, unknown>>(speaker: T) {
+  const agendaItems = Array.isArray(speaker.agendaItems)
+    ? speaker.agendaItems as Array<{ eventId?: string | null }>
+    : [];
+  const moderatedItems = Array.isArray(speaker.moderatedItems)
+    ? speaker.moderatedItems as Array<{ eventId?: string | null }>
+    : [];
+
+  const eventIds = new Set<string>();
+  [...agendaItems, ...moderatedItems].forEach((item) => {
+    if (typeof item.eventId === "string" && item.eventId.trim()) {
+      eventIds.add(item.eventId);
+    }
+  });
+
+  return {
+    ...speaker,
+    eventParticipationCount: eventIds.size,
+  };
+}
+
 const safeSpeakerMutationSelect: Prisma.SpeakerSelect = {
   id: true,
   slug: true,
@@ -229,6 +250,16 @@ export async function GET(req: NextRequest) {
           order: true,
         },
       },
+      agendaItems: {
+        select: {
+          eventId: true,
+        },
+      },
+      moderatedItems: {
+        select: {
+          eventId: true,
+        },
+      },
       createdAt: true,
       updatedAt: true,
       _count: {
@@ -269,11 +300,13 @@ export async function GET(req: NextRequest) {
         select: baseSpeakerSelect,
       });
 
-      speakers = fallbackSpeakers.map((speaker) => ({
+      speakers = fallbackSpeakers.map((speaker) => withSpeakerEventParticipationCount({
         ...speaker,
         agendaRoleDisplayMode: "allCurrent" as const,
       }));
     }
+
+    speakers = speakers.map((speaker) => withSpeakerEventParticipationCount(speaker));
     
     const filterOptions = includeFilterOptions
       ? {

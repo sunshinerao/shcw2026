@@ -96,6 +96,7 @@ interface Speaker {
   institution?: { id: string; slug: string; name: string; nameEn?: string | null; logo?: string | null } | null;
   roles?: SpeakerRoleForm[];
   agendaItemsCount?: number;
+  eventParticipationCount?: number;
   events?: string[];
   eventsEn?: string[];
 }
@@ -270,7 +271,9 @@ export default function AdminSpeakersPage() {
         ...speaker,
         isVisible: typeof speaker.isVisible === "boolean" ? speaker.isVisible : true,
         agendaItemsCount:
-          typeof (speaker._count as { agendaItems?: number } | undefined)?.agendaItems === "number"
+          typeof speaker.eventParticipationCount === "number"
+            ? speaker.eventParticipationCount
+            : typeof (speaker._count as { agendaItems?: number } | undefined)?.agendaItems === "number"
             ? (speaker._count as { agendaItems: number }).agendaItems
             : 0,
       })) as Speaker[]);
