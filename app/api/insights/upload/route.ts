@@ -21,10 +21,18 @@ import { requireInsightAdmin } from "@/lib/insight-auth";
 import { getSystemSettingsForServer } from "@/lib/system-settings";
 import { translateMissingInsightFieldsToEnglish } from "@/lib/ai-translation";
 import { normalizeKnowledgeAssetType } from "@/lib/knowledge-type-config";
+import { prisma } from "@/lib/prisma";
 
 const execFileAsync = promisify(execFile);
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_COVER_IMAGE_SIZE = 1.5 * 1024 * 1024; // 1.5MB raw, safe for base64 transport
+
+const COVER_ALLOWED_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+]);
 
 const PUBLISH_ALLOWED_TYPES = new Set([
   "application/pdf",
@@ -542,25 +550,38 @@ export async function POST(req: NextRequest) {
 
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const insightIdRaw = (formData.get("insightId") as string | null)?.trim() || "";
     const uploadModeRaw = (formData.get("uploadMode") as string | null) || "publish";
-    const uploadMode = uploadModeRaw === "core" ? "core" : "publish";
+    const uploadMode = uploadModeRaw === "core"
+      ? "core"
+      : uploadModeRaw === "cover"
+      ? "cover"
+      : "publish";
 
     if (!file) {
       return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 });
     }
 
-    if (file.size > MAX_SIZE) {
-      return NextResponse.json({ success: false, error: "File too large (max 10MB)" }, { status: 400 });
+    const maxSize = uploadMode === "cover" ? MAX_COVER_IMAGE_SIZE : MAX_SIZE;
+
+    if (file.size > maxSize) {
+      return NextResponse.json(
+        { success: false, error: uploadMode === "cover" ? "File too large (max 1.5MB)" : "File too large (max 10MB)" },
+        { status: 400 }
+      );
     }
 
     const isCoreUpload = uploadMode === "core";
+    const isCoverUpload = uploadMode === "cover";
     const uploadLangRaw = (formData.get("uploadLang") as string | null) || "bilingual";
     const uploadLang: "zh" | "en" | "bilingual" = uploadLangRaw === "en"
       ? "en"
       : uploadLangRaw === "zh"
       ? "zh"
       : "bilingual";
-    const typeAllowed = isCoreUpload
+    const typeAllowed = isCoverUpload
+      ? COVER_ALLOWED_TYPES.has(file.type)
+      : isCoreUpload
       ? (CORE_ALLOWED_TYPES.has(file.type) || isMarkdownFile(file))
       : PUBLISH_ALLOWED_TYPES.has(file.type);
 
@@ -579,6 +600,59 @@ export async function POST(req: NextRequest) {
 
     const inferredTitle = fileNameWithoutExt(file.name);
     const inferredFormat = file.name.split(".").pop()?.toUpperCase() || "FILE";
+    const persistedUrl = !isCoreUpload && insightIdRaw ? `/api/insights/${encodeURIComponent(insightIdRaw)}/file` : null;
+
+    if (isCoverUpload) {
+      const coverPersistedUrl = insightIdRaw ? `/api/insights/${encodeURIComponent(insightIdRaw)}/cover-image` : null;
+
+      if (insightIdRaw) {
+        const existingInsight = await prisma.knowledgeAsset.findUnique({
+          where: { id: insightIdRaw },
+          select: { id: true },
+        });
+
+        if (!existingInsight) {
+          return NextResponse.json({ success: false, error: "Insight not found" }, { status: 404 });
+        }
+
+        await prisma.knowledgeAsset.update({
+          where: { id: insightIdRaw },
+          data: {
+            coverImage: url,
+          },
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: {
+          url,
+          persistedUrl: coverPersistedUrl,
+          filename: file.name,
+          mode: "cover",
+        },
+      });
+    }
+
+    if (!isCoreUpload && insightIdRaw) {
+      const existingInsight = await prisma.knowledgeAsset.findUnique({
+        where: { id: insightIdRaw },
+        select: { id: true },
+      });
+
+      if (!existingInsight) {
+        return NextResponse.json({ success: false, error: "Insight not found" }, { status: 404 });
+      }
+
+      await prisma.knowledgeAsset.update({
+        where: { id: insightIdRaw },
+        data: {
+          fileUrl: url,
+          fileFormat: inferredFormat,
+          fileSize: file.size,
+        },
+      });
+    }
 
     if (isCoreUpload) {
       if (!isMarkdownFile(file)) {
@@ -736,6 +810,7 @@ export async function POST(req: NextRequest) {
             success: true,
             data: {
               url,
+              persistedUrl,
               filename: file.name,
               extracted: {
                 title: aiDraft.title || pdfMeta.title || inferredTitle,
@@ -774,6 +849,7 @@ export async function POST(req: NextRequest) {
           success: true,
           data: {
             url,
+            persistedUrl,
             filename: file.name,
             mode: "publish",
             extracted: {
@@ -805,6 +881,7 @@ export async function POST(req: NextRequest) {
       success: true,
       data: {
         url,
+          persistedUrl,
         filename: file.name,
           mode: "publish",
         extracted: {

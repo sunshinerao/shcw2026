@@ -168,6 +168,15 @@ function todayDateInputValue() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function getPersistedInsightAssetUrl(insightId: string, assetPath: "file" | "cover-image") {
+  return `/api/insights/${insightId}/${assetPath}`;
+}
+
+function isPersistedInsightAssetUrl(assetUrl: string, insightId: string | null, assetPath: "file" | "cover-image") {
+  if (!assetUrl || !insightId) return false;
+  return assetUrl === getPersistedInsightAssetUrl(insightId, assetPath);
+}
+
 export default function AdminInsightsPage() {
   const locale = useLocale();
   const t = useTranslations("adminInsightsPage");
@@ -301,6 +310,9 @@ export default function AdminInsightsPage() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("uploadMode", "publish");
+      if (editingId) {
+        formData.append("insightId", editingId);
+      }
 
       const res = await fetch("/api/insights/upload", {
         method: "POST",
@@ -317,7 +329,7 @@ export default function AdminInsightsPage() {
         const nextTitle = prev.title || extracted.title || "";
         return {
           ...prev,
-          fileUrl: json.data?.url || prev.fileUrl,
+          fileUrl: json.data?.persistedUrl || json.data?.url || prev.fileUrl,
           fileFormat: extracted.fileFormat || prev.fileFormat,
           coverImage: prev.coverImage || extracted.coverImage || "",
           title: nextTitle,
@@ -413,23 +425,29 @@ export default function AdminInsightsPage() {
   }
 
   async function uploadCoverImage(file: File) {
+    setIsUploadingFile(true);
     setStatus("");
 
     try {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("category", "insights");
+      formData.append("uploadMode", "cover");
+      if (editingId) {
+        formData.append("insightId", editingId);
+      }
 
-      const res = await fetch("/api/upload/image", { method: "POST", body: formData });
+      const res = await fetch("/api/insights/upload", { method: "POST", body: formData });
       const json = await res.json();
-      if (!res.ok || !json.success || !json.data?.url) {
+      if (!res.ok || !json.success || !(json.data?.persistedUrl || json.data?.url)) {
         throw new Error(json.error || t("messages.uploadCoverFailed"));
       }
 
-      setForm((prev) => ({ ...prev, coverImage: json.data.url }));
+      setForm((prev) => ({ ...prev, coverImage: json.data.persistedUrl || json.data.url }));
       setStatus(t("messages.uploadedCover"));
     } catch (error) {
       setStatus(error instanceof Error ? error.message : t("messages.uploadCoverFailed"));
+    } finally {
+      setIsUploadingFile(false);
     }
   }
 
@@ -448,7 +466,7 @@ export default function AdminInsightsPage() {
       type: data.type || "REPORT",
       status: data.status || "DRAFT",
       accessType: data.accessType || "PUBLIC",
-      coverImage: data.coverImage || "",
+      coverImage: data.coverImage ? getPersistedInsightAssetUrl(id, "cover-image") : "",
       publishDate: data.publishDate ? new Date(data.publishDate).toISOString().slice(0, 10) : "",
       author: data.author || "",
       tags: data.tags || "",
@@ -470,7 +488,7 @@ export default function AdminInsightsPage() {
       references: Array.isArray(data.references) ? data.references.join("\n") : (data.references || ""),
       recommendations: data.recommendations || "",
       recommendationsEn: data.recommendationsEn || "",
-      fileUrl: data.fileUrl || "",
+      fileUrl: data.fileUrl ? getPersistedInsightAssetUrl(id, "file") : "",
       fileFormat: data.fileFormat || "PDF",
       primaryTemplateId: data.primaryTemplateId || "",
       webTemplateId: data.webTemplateId || "",
@@ -491,8 +509,12 @@ export default function AdminInsightsPage() {
         .split("\n")
         .map((r) => r.trim())
         .filter(Boolean);
+      const shouldOmitFileUrl = isPersistedInsightAssetUrl(form.fileUrl, editingId, "file");
+      const shouldOmitCoverImage = isPersistedInsightAssetUrl(form.coverImage, editingId, "cover-image");
       const payload = {
         ...form,
+        coverImage: shouldOmitCoverImage ? undefined : form.coverImage,
+        fileUrl: shouldOmitFileUrl ? undefined : form.fileUrl,
         subtitle: normalizedSubtitle,
         publishDate: form.publishDate || todayDateInputValue(),
         slug: form.slug || slugify(inferredTitle || ""),
