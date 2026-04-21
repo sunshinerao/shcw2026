@@ -12,6 +12,34 @@ const INSIGHT_INCLUDE = {
   versions: { orderBy: { createdAt: "desc" as const } },
 };
 
+function getInsightApiErrorMessage(error: unknown) {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    const meta = error.meta ? ` ${JSON.stringify(error.meta)}` : "";
+    return `${error.code}: ${error.message}${meta}`.trim();
+  }
+
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return error.message;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Unknown insight update error";
+}
+
+function normalizeRelatedIds(value: unknown) {
+  if (!Array.isArray(value)) return [] as string[];
+  return Array.from(new Set(value
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
+    .filter(Boolean)));
+}
+
+function isInternalInsightAssetPlaceholder(value: unknown, assetPath: "file" | "cover-image") {
+  return typeof value === "string" && /^\/api\/insights\/[^/]+\/(file|cover-image)$/.test(value) && value.endsWith(`/${assetPath}`);
+}
+
 async function resolveAssetId(idOrSlug: string) {
   const existing = await prisma.knowledgeAsset.findFirst({
     where: { OR: [{ id: idOrSlug }, { slug: idOrSlug }] },
@@ -134,37 +162,65 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const updated = await prisma.$transaction(async (tx) => {
       if (Array.isArray(relatedEventIds)) {
+        const normalizedEventIds = normalizeRelatedIds(relatedEventIds);
+        const validEventIds = normalizedEventIds.length
+          ? (await tx.event.findMany({
+              where: { id: { in: normalizedEventIds } },
+              select: { id: true },
+            })).map((item) => item.id)
+          : [];
         await tx.knowledgeAssetEvent.deleteMany({ where: { knowledgeAssetId: id } });
-        if (relatedEventIds.length) {
+        if (validEventIds.length) {
           await tx.knowledgeAssetEvent.createMany({
-            data: relatedEventIds.map((eventId: string) => ({ knowledgeAssetId: id, eventId })),
+            data: validEventIds.map((eventId) => ({ knowledgeAssetId: id, eventId })),
           });
         }
       }
 
       if (Array.isArray(relatedInstitutionIds)) {
+        const normalizedInstitutionIds = normalizeRelatedIds(relatedInstitutionIds);
+        const validInstitutionIds = normalizedInstitutionIds.length
+          ? (await tx.institution.findMany({
+              where: { id: { in: normalizedInstitutionIds } },
+              select: { id: true },
+            })).map((item) => item.id)
+          : [];
         await tx.knowledgeAssetInstitution.deleteMany({ where: { knowledgeAssetId: id } });
-        if (relatedInstitutionIds.length) {
+        if (validInstitutionIds.length) {
           await tx.knowledgeAssetInstitution.createMany({
-            data: relatedInstitutionIds.map((institutionId: string) => ({ knowledgeAssetId: id, institutionId })),
+            data: validInstitutionIds.map((institutionId) => ({ knowledgeAssetId: id, institutionId })),
           });
         }
       }
 
       if (Array.isArray(relatedSpeakerIds)) {
+        const normalizedSpeakerIds = normalizeRelatedIds(relatedSpeakerIds);
+        const validSpeakerIds = normalizedSpeakerIds.length
+          ? (await tx.speaker.findMany({
+              where: { id: { in: normalizedSpeakerIds } },
+              select: { id: true },
+            })).map((item) => item.id)
+          : [];
         await tx.knowledgeAssetSpeaker.deleteMany({ where: { knowledgeAssetId: id } });
-        if (relatedSpeakerIds.length) {
+        if (validSpeakerIds.length) {
           await tx.knowledgeAssetSpeaker.createMany({
-            data: relatedSpeakerIds.map((speakerId: string) => ({ knowledgeAssetId: id, speakerId })),
+            data: validSpeakerIds.map((speakerId) => ({ knowledgeAssetId: id, speakerId })),
           });
         }
       }
 
       if (Array.isArray(relatedTrackIds)) {
+        const normalizedTrackIds = normalizeRelatedIds(relatedTrackIds);
+        const validTrackIds = normalizedTrackIds.length
+          ? (await tx.track.findMany({
+              where: { id: { in: normalizedTrackIds } },
+              select: { id: true },
+            })).map((item) => item.id)
+          : [];
         await tx.knowledgeAssetTrack.deleteMany({ where: { knowledgeAssetId: id } });
-        if (relatedTrackIds.length) {
+        if (validTrackIds.length) {
           await tx.knowledgeAssetTrack.createMany({
-            data: relatedTrackIds.map((trackId: string) => ({ knowledgeAssetId: id, trackId })),
+            data: validTrackIds.map((trackId) => ({ knowledgeAssetId: id, trackId })),
           });
         }
       }
@@ -180,7 +236,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       if (slug !== undefined) updateData.slug = slug?.trim();
       if (type !== undefined && Object.values(KnowledgeAssetType).includes(type)) updateData.type = type;
       if (language !== undefined) updateData.language = language?.trim() || "zh";
-      if (coverImage !== undefined) updateData.coverImage = coverImage?.trim() || null;
+      if (coverImage !== undefined && !isInternalInsightAssetPlaceholder(coverImage, "cover-image")) {
+        updateData.coverImage = coverImage?.trim() || null;
+      }
       if (publishDate !== undefined) updateData.publishDate = publishDate ? new Date(publishDate) : null;
       if (summary !== undefined) updateData.summary = summary || null;
       if (summaryEn !== undefined) updateData.summaryEn = summaryEn || null;
@@ -202,7 +260,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       if (pullQuoteCaptionEn !== undefined) updateData.pullQuoteCaptionEn = pullQuoteCaptionEn?.trim() || null;
       if (aboutUs !== undefined) updateData.aboutUs = aboutUs?.trim() || null;
       if (aboutUsEn !== undefined) updateData.aboutUsEn = aboutUsEn?.trim() || null;
-      if (fileUrl !== undefined) updateData.fileUrl = fileUrl?.trim() || null;
+      if (fileUrl !== undefined && !isInternalInsightAssetPlaceholder(fileUrl, "file")) {
+        updateData.fileUrl = fileUrl?.trim() || null;
+      }
       if (fileFormat !== undefined) updateData.fileFormat = fileFormat?.trim() || null;
       if (fileSize !== undefined) updateData.fileSize = typeof fileSize === "number" ? fileSize : null;
       if (accessType !== undefined && Object.values(AccessType).includes(accessType)) updateData.accessType = accessType;
@@ -268,7 +328,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     return NextResponse.json({ success: true, data: updated });
   } catch (error) {
     console.error("Update insight error:", error);
-    return NextResponse.json({ success: false, error: "Failed to update insight" }, { status: 500 });
+    return NextResponse.json({ success: false, error: getInsightApiErrorMessage(error) }, { status: 500 });
   }
 }
 
