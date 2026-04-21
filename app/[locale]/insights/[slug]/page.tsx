@@ -25,6 +25,7 @@ type InsightDetail = {
   id: string;
   slug: string;
   title: string;
+  author?: string | null;
   titleEn?: string | null;
   subtitle?: string | null;
   subtitleEn?: string | null;
@@ -113,9 +114,10 @@ export default function InsightDetailPage() {
     if (!item?.fileUrl) return;
 
     const firstSpeaker = item.speakers?.[0]?.speaker;
-    const authorName = locale === "en"
-      ? firstSpeaker?.nameEn || firstSpeaker?.name || "author"
-      : firstSpeaker?.name || firstSpeaker?.nameEn || "作者";
+    const authorName = item.author?.trim()
+      || (locale === "en"
+        ? firstSpeaker?.nameEn || firstSpeaker?.name || "author"
+        : firstSpeaker?.name || firstSpeaker?.nameEn || "作者");
     const baseTitle = safeFilePart(title, "knowledge");
     const baseAuthor = safeFilePart(authorName, "author");
     const ext = fileExtension(item.fileFormat);
@@ -174,9 +176,9 @@ export default function InsightDetailPage() {
                 {formatDate(item.publishDate, locale)}
               </div>
             </div>
-            <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-slate-700 bg-slate-800">
+            <div className="relative aspect-[210/297] overflow-hidden rounded-xl border border-slate-700 bg-slate-800/70 p-3 shadow-2xl">
               {item.coverImage ? (
-                <Image src={item.coverImage} alt={title || "cover"} fill className="object-cover" unoptimized />
+                <Image src={item.coverImage} alt={title || "cover"} fill className="object-contain" unoptimized />
               ) : (
                 <div className="flex h-full items-center justify-center text-slate-500"><FileText className="h-8 w-8" /></div>
               )}
