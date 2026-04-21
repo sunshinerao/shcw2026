@@ -163,8 +163,8 @@ export default function InsightDetailPage() {
     <div className="bg-slate-50 min-h-screen">
       <section className="bg-slate-900 text-white py-14">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <Link href="/insights" className="text-sm text-slate-300 hover:text-white">{locale === "en" ? "← Back to Knowledge Hub" : "← Back to Knowledge Hub"}</Link>
-          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mt-6 grid gap-8 md:grid-cols-[1fr_300px]">
+          <Link href="/insights" className="inline-flex text-sm text-slate-300 hover:text-white">{locale === "en" ? "← Back to Knowledge Hub" : "← Back to Knowledge Hub"}</Link>
+          <motion.div initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} className="mt-10 grid gap-8 md:grid-cols-[1fr_300px]">
             <div>
               <Badge className="mb-4 bg-emerald-600 text-white border-none">{item.type}</Badge>
               <h1 className="text-3xl md:text-4xl font-semibold leading-tight">{title}</h1>
@@ -258,13 +258,11 @@ export default function InsightDetailPage() {
                   <Download className="mr-2 h-4 w-4" />
                   {locale === "en" ? "Download File" : "下载文件"}
                 </Button>
-                <a href={`/api/insights/${item.id}/export?format=pdf&download=true`} target="_blank" rel="noreferrer">
-                  <Button variant="outline" className="w-full">
-                    <Download className="mr-2 h-4 w-4" />
-                    {locale === "en" ? "Download Formal PDF" : "下载正式PDF"}
-                  </Button>
-                </a>
-                <Button variant="outline" className="w-full" onClick={showFullText}>
+                <Button variant="outline" className="w-full" disabled>
+                  <Download className="mr-2 h-4 w-4" />
+                  {locale === "en" ? "Download Formal PDF" : "下载正式PDF"}
+                </Button>
+                <Button variant="outline" className="w-full" onClick={showFullText} disabled>
                   <FileText className="mr-2 h-4 w-4" />
                   {locale === "en" ? "Show Full Text" : "显示全文"}
                 </Button>
