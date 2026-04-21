@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "@/i18n/navigation";
 import { getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors, getEventDateLabel, getEventScheduleLabel } from "@/lib/data/events";
+import { isEventRegistrationDeadlinePassed } from "@/lib/event-registration";
 import { formatEventDateRangeFromEvents } from "@/lib/homepage-stats";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
@@ -300,6 +301,7 @@ export default function EventsPage() {
 
                   <div className="grid gap-4">
                     {pinnedEvents.map((event, eventIndex) => {
+                      const registrationDeadlinePassed = isEventRegistrationDeadlinePassed(event);
                       const hostTypeBorderColor: Record<string, string> = {
                         OFFICIAL: "border-l-red-500",
                         CO_HOSTED: "border-l-sky-500",
@@ -358,12 +360,18 @@ export default function EventsPage() {
                                   {t("details")}
                                 </Button>
                               </Link>
-                              <Link href={`/events/${event.id}/register`}>
-                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                                  {event.isClosed ? t("applyAttend") : t("register")}
-                                  <ArrowRight className="w-4 h-4 ml-1" />
+                              {registrationDeadlinePassed && !event.isClosed ? (
+                                <Button size="sm" disabled variant="secondary">
+                                  {t("closedEvent")}
                                 </Button>
-                              </Link>
+                              ) : (
+                                <Link href={`/events/${event.id}/register`}>
+                                  <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                                    {event.isClosed ? t("applyAttend") : t("register")}
+                                    <ArrowRight className="w-4 h-4 ml-1" />
+                                  </Button>
+                                </Link>
+                              )}
                             </div>
                           </div>
                         </motion.div>
@@ -396,6 +404,7 @@ export default function EventsPage() {
 
                   <div className="grid gap-4">
                     {groupedEvents[date].map((event, eventIndex) => {
+                      const registrationDeadlinePassed = isEventRegistrationDeadlinePassed(event);
                       const hostTypeBorderColor: Record<string, string> = {
                         OFFICIAL: "border-l-red-500",
                         CO_HOSTED: "border-l-sky-500",
@@ -467,12 +476,18 @@ export default function EventsPage() {
                                 {t("details")}
                               </Button>
                             </Link>
-                            <Link href={`/events/${event.id}/register`}>
-                              <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
-                                {event.isClosed ? t("applyAttend") : t("register")}
-                                <ArrowRight className="w-4 h-4 ml-1" />
+                            {registrationDeadlinePassed && !event.isClosed ? (
+                              <Button size="sm" disabled variant="secondary">
+                                {t("closedEvent")}
                               </Button>
-                            </Link>
+                            ) : (
+                              <Link href={`/events/${event.id}/register`}>
+                                <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700">
+                                  {event.isClosed ? t("applyAttend") : t("register")}
+                                  <ArrowRight className="w-4 h-4 ml-1" />
+                                </Button>
+                              </Link>
+                            )}
                           </div>
                         </div>
                       </motion.div>

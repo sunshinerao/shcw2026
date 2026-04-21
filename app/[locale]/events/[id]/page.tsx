@@ -42,6 +42,7 @@ import {
 import { getEventDateRangeLabel, getEventScheduleLabel, getEventTimeSummaryLabel, getEventTypeLabel, typeColors, getEventLayerLabel, getEventHostTypeLabel, eventLayerColors, eventHostTypeColors, type EventDateSlot } from "@/lib/data/events";
 import { Link } from "@/i18n/navigation";
 import { normalizeAgendaDateKey } from "@/lib/agenda";
+import { isEventRegistrationDeadlinePassed } from "@/lib/event-registration";
 import { buildEventMapLinks } from "@/lib/map-links";
 import { toast } from "sonner";
 import { getSpeakerAgendaRoleDisplayMode, getSpeakerDisplayMeta, type SpeakerDisplayRole, type SpeakerRoleDisplayMode } from "@/lib/speaker-display";
@@ -1263,6 +1264,7 @@ export default function EventDetailPage() {
   const localizedTitle = getLocalizedTitle(event, locale);
   const localizedDescription = getLocalizedDescription(event, locale);
   const fullDescription = getFullDescription(event, locale);
+  const registrationDeadlinePassed = isEventRegistrationDeadlinePassed(event);
   const localizedVenue = getLocalizedVenueText(event, locale);
   const localizedAddress = getLocalizedAddressText(event, locale);
   const localizedCity = locale === "en"
@@ -1595,6 +1597,10 @@ export default function EventDetailPage() {
                   {isRegistered ? (
                     <Button className="w-full mb-3" disabled>
                       {t("register.registered")}
+                    </Button>
+                  ) : registrationDeadlinePassed ? (
+                    <Button className="w-full mb-3" disabled variant="secondary">
+                      {eventListT("closedEvent")}
                     </Button>
                   ) : event.isClosed ? (
                     <Link href={`/events/${eventId}/register`} className="block">

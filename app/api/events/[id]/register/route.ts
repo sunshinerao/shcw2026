@@ -3,6 +3,7 @@ import { RegistrationStatus } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { apiMessage, resolveRequestLocale } from "@/lib/api-i18n";
+import { isEventRegistrationUnavailable } from "@/lib/event-registration";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(
@@ -34,6 +35,8 @@ export async function POST(
         maxAttendees: true,
         requireApproval: true,
         isClosed: true,
+        startDate: true,
+        startTime: true,
       },
     });
 
@@ -44,7 +47,7 @@ export async function POST(
       );
     }
 
-    if (event.isClosed) {
+    if (isEventRegistrationUnavailable(event)) {
       return NextResponse.json(
         { success: false, error: apiMessage(requestLocale, "eventRegisterClosed") },
         { status: 403 }

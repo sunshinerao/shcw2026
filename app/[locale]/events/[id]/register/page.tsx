@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "@/i18n/navigation";
 import { getEventDateRangeLabel, getEventTimeSummaryLabel, getEventTypeLabel, typeColors, type EventDateSlot } from "@/lib/data/events";
+import { isEventRegistrationDeadlinePassed } from "@/lib/event-registration";
 import { useSession } from "next-auth/react";
 
 type EventType = "forum" | "workshop" | "ceremony" | "conference" | "networking";
@@ -296,7 +297,48 @@ export default function EventRegisterPage() {
   }
 
   const localizedEventTitle = locale === "en" ? event.titleEn || event.title : event.title;
+  const registrationDeadlinePassed = isEventRegistrationDeadlinePassed(event);
   const supportEmail = t("eventClosed.email");
+
+  if (registrationDeadlinePassed && !event.isClosed) {
+    return (
+      <div className="min-h-screen bg-slate-50 pt-20 py-12">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="space-y-6"
+          >
+            <div className="text-center">
+              <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-10 h-10 text-slate-500" />
+              </div>
+              <p className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">{localizedEventTitle}</p>
+              <h1 className="text-2xl font-bold text-slate-900 mb-4">
+                {locale === "en" ? "Registration closed" : "报名已截止"}
+              </h1>
+              <p className="text-slate-600 max-w-2xl mx-auto">
+                {locale === "en"
+                  ? "This event has passed the default registration cutoff and is no longer accepting registrations. The default cutoff is one hour after the event start time."
+                  : "该活动已超过默认报名截止时间，当前不再接受报名。默认报名截止时间为活动开始后 1 小时。"}
+              </p>
+            </div>
+
+            <Card>
+              <CardContent className="flex flex-col gap-3 p-6 sm:flex-row sm:justify-center">
+                <Link href={`/events/${eventId}`} className="sm:min-w-[200px]">
+                  <Button variant="outline" className="w-full">{t("backToEvent")}</Button>
+                </Link>
+                <Link href="/events" className="sm:min-w-[200px]">
+                  <Button className="w-full bg-emerald-600 hover:bg-emerald-700">{t("backToEvents")}</Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
 
   if (event.isClosed) {
     return (
