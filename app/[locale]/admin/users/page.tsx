@@ -26,6 +26,7 @@ import {
   Ticket,
   MapPin,
   CheckSquare,
+  Download,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -241,6 +242,7 @@ export default function AdminUsersPage() {
   const [pointsReason, setPointsReason] = useState("");
   const [userPoints, setUserPoints] = useState<{user: any; transactions: any[]} | null>(null);
   const [pointsLoading, setPointsLoading] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const [filteredTotal, setFilteredTotal] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -521,6 +523,28 @@ export default function AdminUsersPage() {
     }
   };
 
+  const exportUsers = async () => {
+    setIsExporting(true);
+    try {
+      const response = await fetch(`/api/admin/users/export?locale=${locale}`);
+      if (!response.ok) {
+        throw new Error(t("exportFailed"));
+      }
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `users-${new Date().toISOString().slice(0, 10)}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(t("exportSuccess"));
+    } catch {
+      toast.error(t("exportFailed"));
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   const openEditDialog = (user: ManagedUser) => {
     setEditingUser(user);
     setFormState({
@@ -645,16 +669,27 @@ export default function AdminUsersPage() {
           <h1 className="mb-2 text-2xl font-bold text-slate-900">{t("title")}</h1>
           <p className="text-slate-600">{t("subtitle")}</p>
         </div>
-        <Button
-          className="bg-emerald-600 hover:bg-emerald-700"
-          onClick={() => {
-            resetForm();
-            setIsFormDialogOpen(true);
-          }}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          {t("addUser")}
-        </Button>
+        <div className="flex items-center gap-2">
+          <LoadingButton
+            variant="outline"
+            onClick={() => void exportUsers()}
+            loading={isExporting}
+            loadingText={t("exportUsersLoading")}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            {t("exportUsers")}
+          </LoadingButton>
+          <Button
+            className="bg-emerald-600 hover:bg-emerald-700"
+            onClick={() => {
+              resetForm();
+              setIsFormDialogOpen(true);
+            }}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            {t("addUser")}
+          </Button>
+        </div>
       </motion.div>
 
       {statusMessage ? (

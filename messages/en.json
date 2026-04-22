@@ -985,6 +985,10 @@
         "title": "User management",
         "subtitle": "Manage all user accounts on the platform.",
         "addUser": "Add user",
+        "exportUsers": "Export users",
+        "exportUsersLoading": "Exporting...",
+        "exportSuccess": "User data exported successfully",
+        "exportFailed": "Export failed, please try again",
         "stats": {
             "total": "Total users",
             "active": "Active",
